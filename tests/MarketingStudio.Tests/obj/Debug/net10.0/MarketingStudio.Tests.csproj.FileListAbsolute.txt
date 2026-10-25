@@ -122,3 +122,5 @@ C:\Business\Software\MarketingStudio\tests\MarketingStudio.Tests\bin\Debug\net10
 C:\Business\Software\MarketingStudio\tests\MarketingStudio.Tests\bin\Debug\net10.0\Npgsql.dll
 C:\Business\Software\MarketingStudio\tests\MarketingStudio.Tests\bin\Debug\net10.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
 C:\Business\Software\MarketingStudio\tests\MarketingStudio.Tests\obj\Debug\net10.0\MarketingStudio.Tests.sourcelink.json
+C:\Business\Software\MarketingStudio\tests\MarketingStudio.Tests\bin\Debug\net10.0\Castle.Core.dll
+C:\Business\Software\MarketingStudio\tests\MarketingStudio.Tests\bin\Debug\net10.0\Moq.dll
