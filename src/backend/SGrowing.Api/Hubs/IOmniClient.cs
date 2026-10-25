@@ -17,4 +17,6 @@ public interface IOmniClient
     Task OnConversationUpdated(ConversationDto conversation);
     Task OnAiDraftGenerated(AiDraftDto draft);
     Task OnTypingIndicator(Guid conversationId, string senderName, bool isTyping);
+    Task OnConversationLocked(Guid conversationId, string lockedByAgentName);
+    Task OnConversationUnlocked(Guid conversationId);
 }

@@ -54,6 +54,9 @@ public class SGrowingDbContext : DbContext
     public DbSet<AppointmentBooking> AppointmentBookings => Set<AppointmentBooking>();
     public DbSet<CheckoutLink> CheckoutLinks => Set<CheckoutLink>();
 
+    // SLA Policies (Pillar E)
+    public DbSet<SlaPolicy> SlaPolicies => Set<SlaPolicy>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

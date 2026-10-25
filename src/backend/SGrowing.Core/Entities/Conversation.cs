@@ -32,6 +32,8 @@ public class Conversation
     public ConversationStatus Status { get; set; } = ConversationStatus.Open;
     public ConversationPriority Priority { get; set; } = ConversationPriority.Normal;
     public AiMode AiMode { get; set; } = AiMode.Copilot;
+    public bool IsSlaBreached { get; set; } = false;
+    public DateTime? FirstResponseAtUtc { get; set; }
     public DateTime? LastMessageAtUtc { get; set; }
     public DateTime CreatedAtUtc { get; private set; }
     public DateTime UpdatedAtUtc { get; set; }
