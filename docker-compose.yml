@@ -1,0 +1,71 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: marketing_studio_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: studio_user
+      POSTGRES_PASSWORD: studio_password
+      POSTGRES_DB: marketing_studio_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U studio_user -d marketing_studio_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: marketing_studio_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+  api:
+    build:
+      context: .
+      dockerfile: src/backend/Dockerfile
+    container_name: marketing_studio_api
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=marketing_studio_db;Username=studio_user;Password=studio_password
+      - Redis__ConnectionString=redis:6379
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  web:
+    build:
+      context: src/frontend/marketing-studio-web
+      dockerfile: Dockerfile
+    container_name: marketing_studio_web
+    restart: always
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+
+  evolution-api:
+    image: atendai/evolution-api:v2.1.2
+    container_name: marketing_studio_evolution_wa
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_URL=http://localhost:8080
+      - AUTHENTICATION_API_KEY=marketing_studio_super_secret_wa_key
+      - DATABASE_ENABLED=false
+
+volumes:
+  pgdata:
+  redisdata:
