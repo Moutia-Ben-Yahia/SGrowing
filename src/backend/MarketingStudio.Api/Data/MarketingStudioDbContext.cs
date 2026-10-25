@@ -20,6 +20,9 @@ public class MarketingStudioDbContext : DbContext
     public DbSet<Contact> Contacts => Set<Contact>();
     public DbSet<Company> Companies => Set<Company>();
     public DbSet<Activity> Activities => Set<Activity>();
+    public DbSet<Inbox> Inboxes => Set<Inbox>();
+    public DbSet<Conversation> Conversations => Set<Conversation>();
+    public DbSet<Message> Messages => Set<Message>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -69,6 +72,27 @@ public class MarketingStudioDbContext : DbContext
         {
             b.HasKey(a => a.Id);
             b.HasIndex(a => new { a.TenantId, a.ContactId, a.CreatedAtUtc });
+        });
+
+        modelBuilder.Entity<Inbox>(b =>
+        {
+            b.HasKey(i => i.Id);
+            b.Property(i => i.Name).IsRequired().HasMaxLength(100);
+            b.HasIndex(i => new { i.TenantId, i.ChannelType });
+        });
+
+        modelBuilder.Entity<Conversation>(b =>
+        {
+            b.HasKey(c => c.Id);
+            b.HasIndex(c => new { c.TenantId, c.Status, c.LastMessageAtUtc });
+            b.HasIndex(c => new { c.TenantId, c.ContactId });
+        });
+
+        modelBuilder.Entity<Message>(b =>
+        {
+            b.HasKey(m => m.Id);
+            b.HasIndex(m => new { m.TenantId, m.ConversationId, m.CreatedAtUtc });
+            b.HasIndex(m => new { m.TenantId, m.ExternalMessageId });
         });
     }
 }
