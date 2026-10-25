@@ -41,6 +41,10 @@ public class MarketingStudioDbContext : DbContext
     public DbSet<SurveyForm> SurveyForms => Set<SurveyForm>();
     public DbSet<SurveyResponse> SurveyResponses => Set<SurveyResponse>();
 
+    // Knowledge Base & Help Center (Phase 5)
+    public DbSet<HelpCategory> HelpCategories => Set<HelpCategory>();
+    public DbSet<HelpArticle> HelpArticles => Set<HelpArticle>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
