@@ -76,3 +76,78 @@ export interface RagDeflectionResultDto {
   articleSlug?: string;
   confidenceScore: number;
 }
+
+// WhatsApp Templates & Broadcasts
+export interface WhatsAppTemplateDto {
+  id: string;
+  tenantId: string;
+  name: string;
+  category: number; // 1 = Marketing, 2 = Utility, 3 = Authentication
+  language: string;
+  headerText?: string | null;
+  bodyText: string;
+  footerText?: string | null;
+  status: number; // 1 = Draft, 2 = PendingApproval, 3 = Approved, 4 = Rejected
+  createdAtUtc: string;
+}
+
+export interface BroadcastCampaignDto {
+  id: string;
+  tenantId: string;
+  name: string;
+  templateId: string;
+  targetTag: string;
+  status: number; // 1 = Scheduled, 2 = Processing, 3 = Completed, 4 = Failed
+  totalRecipients: number;
+  sentCount: number;
+  createdAtUtc: string;
+}
+
+// In-Chat Booking & Checkout
+export interface AppointmentSlotDto {
+  id: string;
+  tenantId: string;
+  title: string;
+  durationMinutes: number;
+  hostUserId: string;
+  isActive: boolean;
+}
+
+export interface AppointmentBookingDto {
+  id: string;
+  slotId: string;
+  contactId: string;
+  scheduledTimeUtc: string;
+  status: number; // 1 = Confirmed, 2 = Cancelled, 3 = Completed
+}
+
+export interface CheckoutLinkDto {
+  id: string;
+  contactId: string;
+  conversationId: string;
+  title: string;
+  amount: number;
+  currency: string;
+  paymentUrl: string;
+  status: number; // 1 = Active, 2 = Paid, 3 = Expired
+  createdAtUtc: string;
+}
+
+// SLA Policies
+export interface SlaPolicyDto {
+  id: string;
+  tenantId: string;
+  name: string;
+  priority: number; // 1 = Low, 2 = Normal, 3 = High, 4 = Urgent
+  targetFirstResponseMinutes: number;
+  targetResolutionMinutes: number;
+  isActive: boolean;
+}
+
+// Customer 360 Timeline
+export interface UnifiedCustomer360Dto {
+  contact: any;
+  conversations: any[];
+  deals: any[];
+  events: CustomerEventDto[];
+}

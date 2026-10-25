@@ -14,6 +14,8 @@ export class SignalRService {
   public conversationUpdated$ = new Subject<ConversationDto>();
   public aiDraftGenerated$ = new Subject<AiDraftDto>();
   public typingIndicator$ = new Subject<{ conversationId: string; senderName: string; isTyping: boolean }>();
+  public conversationLocked$ = new Subject<{ conversationId: string; lockedByUserId: string; agentName: string }>();
+  public conversationUnlocked$ = new Subject<{ conversationId: string }>();
 
   public async startConnection(hubUrl = 'http://localhost:5000/hubs/omni'): Promise<void> {
     try {
@@ -41,6 +43,14 @@ export class SignalRService {
         this.typingIndicator$.next({ conversationId, senderName, isTyping });
       });
 
+      this.hubConnection.on('OnConversationLocked', (conversationId: string, lockedByUserId: string, agentName: string) => {
+        this.conversationLocked$.next({ conversationId, lockedByUserId, agentName });
+      });
+
+      this.hubConnection.on('OnConversationUnlocked', (conversationId: string) => {
+        this.conversationUnlocked$.next({ conversationId });
+      });
+
       await this.hubConnection.start();
       this.isConnected.set(true);
       console.log('SignalR OmniHub connected successfully.');
@@ -65,6 +75,18 @@ export class SignalRService {
   public async broadcastTyping(conversationId: string, senderName: string, isTyping: boolean): Promise<void> {
     if (this.hubConnection && this.isConnected()) {
       await this.hubConnection.invoke('BroadcastTyping', conversationId, senderName, isTyping);
+    }
+  }
+
+  public async lockConversation(conversationId: string, lockedByUserId: string, agentName: string): Promise<void> {
+    if (this.hubConnection && this.isConnected()) {
+      await this.hubConnection.invoke('LockConversation', conversationId, lockedByUserId, agentName);
+    }
+  }
+
+  public async unlockConversation(conversationId: string): Promise<void> {
+    if (this.hubConnection && this.isConnected()) {
+      await this.hubConnection.invoke('UnlockConversation', conversationId);
     }
   }
 }

@@ -126,6 +126,23 @@ public class AutonomousAiAgentService
         );
         await _notifier.NotifyNewMessageAsync(tenantId, messageDto);
 
+        if (escalated)
+        {
+            var convDto = new ConversationDto(
+                conversation.Id,
+                conversation.TenantId,
+                conversation.InboxId,
+                conversation.ContactId,
+                conversation.AssigneeId,
+                conversation.Status,
+                conversation.Priority,
+                conversation.AiMode,
+                conversation.LastMessageAtUtc,
+                conversation.CreatedAtUtc
+            );
+            await _notifier.NotifyConversationUpdatedAsync(tenantId, convDto);
+        }
+
         return Result<AutonomousProcessResult>.Success(new AutonomousProcessResult(true, botReplyText, escalated));
     }
 }

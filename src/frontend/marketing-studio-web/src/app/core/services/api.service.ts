@@ -3,7 +3,20 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ContactDto, ConversationDto, MessageDto } from '../models/chat.models';
 import { SenderAccountDto, CampaignDto, DealDto } from '../models/outbound.models';
-import { CustomerJourneyDto, SurveyFormDto, SurveyResponseDto, HelpArticleDto, RagDeflectionResultDto } from '../models/platform.models';
+import { 
+  CustomerJourneyDto, 
+  SurveyFormDto, 
+  SurveyResponseDto, 
+  HelpArticleDto, 
+  RagDeflectionResultDto,
+  WhatsAppTemplateDto,
+  BroadcastCampaignDto,
+  AppointmentSlotDto,
+  AppointmentBookingDto,
+  CheckoutLinkDto,
+  SlaPolicyDto,
+  UnifiedCustomer360Dto
+} from '../models/platform.models';
 
 @Injectable({
   providedIn: 'root'
@@ -102,5 +115,71 @@ export class ApiService {
 
   public queryHelpCenter(tenantId: string, question: string): Observable<RagDeflectionResultDto> {
     return this.http.post<RagDeflectionResultDto>(`${this.baseUrl}/kb/query?tenantId=${tenantId}`, { question });
+  }
+
+  // WhatsApp Templates & Broadcasts
+  public getWhatsAppTemplates(tenantId: string): Observable<WhatsAppTemplateDto[]> {
+    return this.http.get<WhatsAppTemplateDto[]>(`${this.baseUrl}/channels/whatsapp/templates?tenantId=${tenantId}`);
+  }
+
+  public createWhatsAppTemplate(template: any): Observable<WhatsAppTemplateDto> {
+    return this.http.post<WhatsAppTemplateDto>(`${this.baseUrl}/channels/whatsapp/templates`, template);
+  }
+
+  public getBroadcasts(tenantId: string): Observable<BroadcastCampaignDto[]> {
+    return this.http.get<BroadcastCampaignDto[]>(`${this.baseUrl}/channels/broadcasts?tenantId=${tenantId}`);
+  }
+
+  public createBroadcast(campaign: any): Observable<BroadcastCampaignDto> {
+    return this.http.post<BroadcastCampaignDto>(`${this.baseUrl}/channels/broadcasts`, campaign);
+  }
+
+  public dispatchBroadcast(campaignId: string, tenantId: string): Observable<{ recipientsMatched: number; sentCount: number }> {
+    return this.http.post<{ recipientsMatched: number; sentCount: number }>(`${this.baseUrl}/channels/broadcasts/${campaignId}/dispatch?tenantId=${tenantId}`, {});
+  }
+
+  // Booking & Assisted Checkout
+  public getAppointmentSlots(tenantId: string): Observable<AppointmentSlotDto[]> {
+    return this.http.get<AppointmentSlotDto[]>(`${this.baseUrl}/sales/booking/slots?tenantId=${tenantId}`);
+  }
+
+  public bookAppointment(tenantId: string, slotId: string, contactId: string, scheduledTimeUtc: string): Observable<AppointmentBookingDto> {
+    return this.http.post<AppointmentBookingDto>(`${this.baseUrl}/sales/booking/book?tenantId=${tenantId}`, {
+      slotId,
+      contactId,
+      scheduledTimeUtc
+    });
+  }
+
+  public createCheckoutLink(tenantId: string, contactId: string, conversationId: string, title: string, amount: number, currency = 'USD'): Observable<CheckoutLinkDto> {
+    return this.http.post<CheckoutLinkDto>(`${this.baseUrl}/sales/checkout/create?tenantId=${tenantId}`, {
+      contactId,
+      conversationId,
+      title,
+      amount,
+      currency
+    });
+  }
+
+  public payCheckoutLink(linkId: string, tenantId: string): Observable<CheckoutLinkDto> {
+    return this.http.post<CheckoutLinkDto>(`${this.baseUrl}/sales/checkout/${linkId}/pay?tenantId=${tenantId}`, {});
+  }
+
+  // SLA Management
+  public getSlaPolicies(tenantId: string): Observable<SlaPolicyDto[]> {
+    return this.http.get<SlaPolicyDto[]>(`${this.baseUrl}/sla/policies?tenantId=${tenantId}`);
+  }
+
+  public createSlaPolicy(policy: any): Observable<SlaPolicyDto> {
+    return this.http.post<SlaPolicyDto>(`${this.baseUrl}/sla/policies`, policy);
+  }
+
+  public evaluateSla(tenantId: string): Observable<{ breachedCount: number }> {
+    return this.http.post<{ breachedCount: number }>(`${this.baseUrl}/sla/evaluate?tenantId=${tenantId}`, {});
+  }
+
+  // Customer 360 Timeline
+  public getCustomerTimeline(contactId: string, tenantId: string): Observable<UnifiedCustomer360Dto> {
+    return this.http.get<UnifiedCustomer360Dto>(`${this.baseUrl}/crm/contacts/${contactId}/timeline?tenantId=${tenantId}`);
   }
 }

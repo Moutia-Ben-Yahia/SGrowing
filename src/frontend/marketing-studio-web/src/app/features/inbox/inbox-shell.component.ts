@@ -34,13 +34,23 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
                 <span class="flex items-center gap-2">🚀 AI SDR Outbound</span>
               </a>
               <a
+                routerLink="/broadcasts"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
+                <span class="flex items-center gap-2">📢 WA Broadcasts</span>
+              </a>
+              <a
+                routerLink="/sla"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 transition">
+                <span class="flex items-center gap-2">🛡️ SLA & Escalations</span>
+              </a>
+              <a
                 routerLink="/journeys"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
                 <span class="flex items-center gap-2">⚡ Customer Journeys</span>
               </a>
               <a
                 routerLink="/feedback"
-                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-teal-400 hover:bg-teal-500/10 border border-teal-500/20 transition">
                 <span class="flex items-center gap-2">⭐ Feedback & CSAT</span>
               </a>
               <a
@@ -121,9 +131,18 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
                 <span class="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded font-mono">
                   {{ getChannelIcon(conv.inboxId) }}
                 </span>
-                @if (conv.aiMode === 1) {
+                @if (conv.aiMode === 2) {
+                  <span class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded">
+                    🤖 Autonomous Bot
+                  </span>
+                } @else if (conv.aiMode === 1) {
                   <span class="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-1.5 py-0.5 rounded">
                     ⚡ Copilot
+                  </span>
+                }
+                @if (conv.priority === 4) {
+                  <span class="text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-1.5 py-0.5 rounded font-semibold">
+                    🚨 Urgent SLA
                   </span>
                 }
               </div>
@@ -141,6 +160,12 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
               {{ activeConversation()?.contact?.firstName }} {{ activeConversation()?.contact?.lastName }}
             </h2>
             <span class="text-xs text-slate-400 font-mono">{{ activeConversation()?.contact?.phone || activeConversation()?.contact?.email }}</span>
+            
+            @if (activeConversation()?.priority === 4) {
+              <span class="text-xs bg-rose-950 text-rose-300 border border-rose-800 px-2 py-0.5 rounded-full font-medium">
+                SLA Breached - Auto Escalated
+              </span>
+            }
           </div>
 
           <div class="flex items-center gap-2">
@@ -172,11 +197,24 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
                 {{ msg.content }}
               </div>
               <span class="text-[10px] text-slate-500 mt-1 px-1">
-                {{ msg.senderType === 1 ? 'Customer' : msg.senderType === 2 ? 'Agent' : '🤖 AI Copilot' }} • {{ msg.createdAtUtc | date:'shortTime' }}
+                {{ msg.senderType === 1 ? 'Customer' : msg.senderType === 2 ? 'Agent' : '🤖 AI Agent' }} • {{ msg.createdAtUtc | date:'shortTime' }}
               </span>
             </div>
           }
         </div>
+
+        <!-- Real-Time Collision Warning Banner (if another agent is locked/typing) -->
+        @if (lockedByAgent()) {
+          <div class="mx-6 mb-2 p-2.5 rounded-lg border border-amber-500/40 bg-amber-950/40 flex items-center justify-between text-xs text-amber-200">
+            <span class="flex items-center gap-2">
+              <span class="animate-pulse text-amber-400">⚠️</span>
+              <strong>Collision Warning:</strong> Agent {{ lockedByAgent() }} is viewing or replying to this conversation.
+            </span>
+            <button (click)="lockedByAgent.set(null)" class="text-amber-400 hover:text-white underline text-[11px]">
+              Dismiss lock
+            </button>
+          </div>
+        }
 
         <!-- AI Copilot Suggestion Card (if pending draft exists) -->
         @if (currentAiDraft()) {
@@ -203,14 +241,50 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
           </div>
         }
 
-        <!-- Composer -->
-        <footer class="p-4 border-t border-slate-800 bg-slate-900/40">
+        <!-- Composer & Action Bar -->
+        <footer class="p-4 border-t border-slate-800 bg-slate-900/40 space-y-2.5">
+          <!-- Quick Action Bar -->
+          <div class="flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <!-- Channel Switcher -->
+              <span class="text-slate-400">Send via:</span>
+              <div class="flex items-center bg-slate-950 p-0.5 rounded-lg border border-slate-800">
+                <button 
+                  (click)="activeComposerChannel.set('whatsapp')"
+                  [class]="activeComposerChannel() === 'whatsapp' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-200'"
+                  class="px-2 py-0.5 rounded text-[11px] font-medium transition">
+                  🟢 WhatsApp
+                </button>
+                <button 
+                  (click)="activeComposerChannel.set('email')"
+                  [class]="activeComposerChannel() === 'email' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-200'"
+                  class="px-2 py-0.5 rounded text-[11px] font-medium transition">
+                  ✉️ Email
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button 
+                (click)="insertBookingLink()"
+                class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1 rounded-lg text-xs transition flex items-center gap-1">
+                <span>📅 Schedule Meeting</span>
+              </button>
+              <button 
+                (click)="insertCheckoutLink()"
+                class="bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-800/80 px-2.5 py-1 rounded-lg text-xs transition flex items-center gap-1 font-medium">
+                <span>💳 Checkout Link ($299)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Input Box -->
           <div class="flex items-center gap-2">
             <input
               type="text"
               [(ngModel)]="composerText"
               (keyup.enter)="sendMessage()"
-              placeholder="Type your message or click an AI prompt..."
+              placeholder="Type your message or click an action above..."
               class="flex-1 bg-slate-800/80 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition"
             />
             <button
@@ -236,19 +310,25 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
                 {{ activeConversation()?.contact?.firstName }} {{ activeConversation()?.contact?.lastName }}
               </h4>
               <span class="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full font-medium">
-                Active Customer
+                Resolved 360 Identity
               </span>
             </div>
           </div>
 
           <div class="space-y-4 text-xs">
             <div>
-              <span class="text-slate-400 block mb-1">Email</span>
+              <span class="text-slate-400 block mb-1">Email (Resolved)</span>
               <span class="text-slate-200 font-mono">{{ activeConversation()?.contact?.email || 'None' }}</span>
             </div>
             <div>
               <span class="text-slate-400 block mb-1">Phone / WhatsApp</span>
               <span class="text-slate-200 font-mono">{{ activeConversation()?.contact?.phone || 'None' }}</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block mb-1">CRM Deal Pipeline</span>
+              <div class="p-2 rounded bg-slate-950/80 border border-slate-800 text-amber-300 font-medium">
+                Enterprise Deal: $2,400 (Won)
+              </div>
             </div>
             <div>
               <span class="text-slate-400 block mb-1">Tags</span>
@@ -269,7 +349,7 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
 
         <div class="border-t border-slate-800 pt-4 mt-6">
           <button class="w-full text-xs text-center text-slate-400 hover:text-slate-200 py-1 transition">
-            View Full CRM Profile →
+            View Full 360 Timeline →
           </button>
         </div>
       </aside>
@@ -285,6 +365,8 @@ export class InboxShellComponent implements OnInit {
   public activeConversation = signal<ConversationDto | null>(null);
   public activeMessages = signal<MessageDto[]>([]);
   public currentAiDraft = signal<AiDraftDto | null>(null);
+  public lockedByAgent = signal<string | null>(null);
+  public activeComposerChannel = signal<'whatsapp' | 'email'>('whatsapp');
   public composerText = '';
 
   private currentTenantId = '00000000-0000-0000-0000-000000000001';
@@ -309,6 +391,19 @@ export class InboxShellComponent implements OnInit {
         this.currentAiDraft.set(draft);
       }
     });
+
+    // 5. Subscribe to conversation collision lock
+    this.signalR.conversationLocked$.subscribe((lock) => {
+      if (this.activeConversation()?.id === lock.conversationId) {
+        this.lockedByAgent.set(lock.agentName);
+      }
+    });
+
+    this.signalR.conversationUnlocked$.subscribe((unlock) => {
+      if (this.activeConversation()?.id === unlock.conversationId) {
+        this.lockedByAgent.set(null);
+      }
+    });
   }
 
   private seedDemoData(): void {
@@ -320,8 +415,8 @@ export class InboxShellComponent implements OnInit {
       email: 'elena@travelmag.org',
       phone: '+15559876543',
       lifecycleStage: 3,
-      customFields: { plan: 'Pro', lead_source: 'WhatsApp', satisfaction_score: 98 },
-      tags: ['vip', 'whatsapp-verified'],
+      customFields: { plan: 'Enterprise', lead_source: 'WhatsApp', satisfaction_score: 98 },
+      tags: ['vip', 'whatsapp-verified', 'paying-customer'],
       createdAtUtc: new Date().toISOString()
     };
 
@@ -332,7 +427,7 @@ export class InboxShellComponent implements OnInit {
       contactId: contactA.id,
       status: 1,
       priority: 2,
-      aiMode: 1,
+      aiMode: 2, // Autonomous Agent enabled
       lastMessageAtUtc: new Date().toISOString(),
       createdAtUtc: new Date().toISOString(),
       contact: contactA
@@ -353,6 +448,15 @@ export class InboxShellComponent implements OnInit {
         content: 'Hi! Can you share pricing for the enterprise tier and how WhatsApp integrates with CRM?',
         deliveryStatus: 3,
         createdAtUtc: new Date(Date.now() - 1000 * 60 * 15).toISOString()
+      },
+      {
+        id: 'msg-02',
+        conversationId: conv.id,
+        senderType: 3, // Bot
+        contentType: 1,
+        content: 'Our Enterprise tier starts at $299/mo with full WhatsApp multi-device integration, automated AI SDR, and assisted commerce.',
+        deliveryStatus: 3,
+        createdAtUtc: new Date(Date.now() - 1000 * 60 * 14).toISOString()
       }
     ]);
 
@@ -360,8 +464,8 @@ export class InboxShellComponent implements OnInit {
     this.currentAiDraft.set({
       id: 'draft-01',
       conversationId: conv.id,
-      suggestedReply: 'Our Enterprise tier starts at $299/mo and features unlimited WhatsApp channels via Evolution-API and Meta Cloud API, full CRM 360, and autonomous AI agents.',
-      confidenceScore: 0.94,
+      suggestedReply: 'Would you like to schedule a 15-minute onboarding demo or get an instant checkout link?',
+      confidenceScore: 0.96,
       status: 'Drafted',
       createdAtUtc: new Date().toISOString()
     });
@@ -382,6 +486,14 @@ export class InboxShellComponent implements OnInit {
 
     this.activeMessages.update(list => [...list, newMsg]);
     this.composerText = '';
+  }
+
+  public insertBookingLink(): void {
+    this.composerText = 'You can select a convenient slot for our meeting here: https://sgrowing.app/book/slot-enterprise-demo';
+  }
+
+  public insertCheckoutLink(): void {
+    this.composerText = 'Here is your direct assisted payment link: https://sgrowing.app/pay/chk-987216 ($299.00 USD)';
   }
 
   public applyAiDraft(): void {
@@ -407,7 +519,7 @@ export class InboxShellComponent implements OnInit {
   }
 
   public getLastMessagePreview(convId: string): string {
-    return 'Hi! Can you share pricing for the enterprise tier...';
+    return 'Our Enterprise tier starts at $299/mo with full WhatsApp...';
   }
 
   public getChannelIcon(inboxId: string): string {

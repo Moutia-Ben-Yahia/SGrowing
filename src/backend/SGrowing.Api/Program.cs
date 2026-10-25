@@ -67,7 +67,18 @@ builder.Services.AddScoped<ChangeStatusHandler>();
 builder.Services.AddScoped<GetConversationMessagesHandler>();
 builder.Services.AddScoped<ApproveAiDraftHandler>();
 
-// 6. SignalR & CORS
+// 6. Autonomous AI Agent, SLA, Identity, Broadcasts & Assisted Commerce
+builder.Services.AddScoped<IAgentTool, KnowledgeBaseTool>();
+builder.Services.AddScoped<IAgentTool, OrderLookupTool>();
+builder.Services.AddScoped<IAgentTool, EscalateToHumanTool>();
+builder.Services.AddScoped<AutonomousAiAgentService>();
+builder.Services.AddScoped<IdentityResolverService>();
+builder.Services.AddScoped<BroadcastDispatcherService>();
+builder.Services.AddScoped<AppointmentBookingService>();
+builder.Services.AddScoped<CheckoutLinkService>();
+builder.Services.AddScoped<SlaMonitoringService>();
+
+// 7. SignalR & CORS
 builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
 {
@@ -275,6 +286,111 @@ app.MapPost("/api/kb/query", async ([FromQuery] Guid tenantId, [FromBody] KbQuer
     return Results.Ok(res);
 });
 
+// ----------------- Identity 360 Endpoints -----------------
+app.MapPost("/api/crm/resolve-contact", async ([FromQuery] Guid tenantId, [FromBody] ResolveContactDto req, IdentityResolverService resolver) =>
+{
+    var res = await resolver.ResolveOrCreateContactAsync(tenantId, req.Email, req.Phone, req.FirstName, req.LastName);
+    return res.IsSuccess ? Results.Ok(res.Value) : Results.BadRequest(new { error = res.Error });
+});
+
+app.MapGet("/api/crm/contacts/{id:guid}/timeline", async (Guid id, [FromQuery] Guid tenantId, IdentityResolverService resolver) =>
+{
+    var res = await resolver.GetUnifiedCustomerTimelineAsync(tenantId, id);
+    return res.IsSuccess ? Results.Ok(res.Value) : Results.NotFound(new { error = res.Error });
+});
+
+// ----------------- WhatsApp Templates & Broadcasts -----------------
+app.MapGet("/api/channels/whatsapp/templates", async ([FromQuery] Guid tenantId, SGrowingDbContext db) =>
+{
+    var templates = await db.WhatsAppTemplates.Where(t => t.TenantId == tenantId).ToListAsync();
+    return Results.Ok(templates);
+});
+
+app.MapPost("/api/channels/whatsapp/templates", async ([FromBody] WhatsAppTemplate template, SGrowingDbContext db) =>
+{
+    db.WhatsAppTemplates.Add(template);
+    await db.SaveChangesAsync();
+    return Results.Ok(template);
+});
+
+app.MapGet("/api/channels/broadcasts", async ([FromQuery] Guid tenantId, SGrowingDbContext db) =>
+{
+    var broadcasts = await db.BroadcastCampaigns.Where(b => b.TenantId == tenantId).ToListAsync();
+    return Results.Ok(broadcasts);
+});
+
+app.MapPost("/api/channels/broadcasts", async ([FromBody] BroadcastCampaign campaign, SGrowingDbContext db) =>
+{
+    db.BroadcastCampaigns.Add(campaign);
+    await db.SaveChangesAsync();
+    return Results.Ok(campaign);
+});
+
+app.MapPost("/api/channels/broadcasts/{id:guid}/dispatch", async (Guid id, [FromQuery] Guid tenantId, BroadcastDispatcherService dispatcher) =>
+{
+    var res = await dispatcher.DispatchBroadcastAsync(tenantId, id);
+    return res.IsSuccess ? Results.Ok(res.Value) : Results.BadRequest(new { error = res.Error });
+});
+
+// ----------------- In-Chat Booking & Assisted Checkout -----------------
+app.MapGet("/api/sales/booking/slots", async ([FromQuery] Guid tenantId, SGrowingDbContext db) =>
+{
+    var slots = await db.AppointmentSlots.Where(s => s.TenantId == tenantId && s.IsActive).ToListAsync();
+    return Results.Ok(slots);
+});
+
+app.MapPost("/api/sales/booking/slots", async ([FromBody] AppointmentSlot slot, SGrowingDbContext db) =>
+{
+    db.AppointmentSlots.Add(slot);
+    await db.SaveChangesAsync();
+    return Results.Ok(slot);
+});
+
+app.MapPost("/api/sales/booking/book", async ([FromQuery] Guid tenantId, [FromBody] BookSlotDto req, AppointmentBookingService bookingService) =>
+{
+    var res = await bookingService.BookSlotAsync(tenantId, req.SlotId, req.ContactId, req.ScheduledTimeUtc);
+    return res.IsSuccess ? Results.Ok(res.Value) : Results.BadRequest(new { error = res.Error });
+});
+
+app.MapPost("/api/sales/checkout/create", async ([FromQuery] Guid tenantId, [FromBody] CreateCheckoutDto req, CheckoutLinkService checkoutService) =>
+{
+    var res = await checkoutService.CreateCheckoutLinkAsync(tenantId, req.ContactId, req.ConversationId, req.Title, req.Amount, req.Currency ?? "USD");
+    return res.IsSuccess ? Results.Ok(res.Value) : Results.BadRequest(new { error = res.Error });
+});
+
+app.MapPost("/api/sales/checkout/{id:guid}/pay", async (Guid id, [FromQuery] Guid tenantId, CheckoutLinkService checkoutService) =>
+{
+    var res = await checkoutService.MarkPaidAsync(tenantId, id);
+    return res.IsSuccess ? Results.Ok(res.Value) : Results.BadRequest(new { error = res.Error });
+});
+
+// ----------------- SLA Policies & Evaluation -----------------
+app.MapGet("/api/sla/policies", async ([FromQuery] Guid tenantId, SGrowingDbContext db) =>
+{
+    var policies = await db.SlaPolicies.Where(p => p.TenantId == tenantId).ToListAsync();
+    return Results.Ok(policies);
+});
+
+app.MapPost("/api/sla/policies", async ([FromBody] SlaPolicy policy, SGrowingDbContext db) =>
+{
+    db.SlaPolicies.Add(policy);
+    await db.SaveChangesAsync();
+    return Results.Ok(policy);
+});
+
+app.MapPost("/api/sla/evaluate", async ([FromQuery] Guid tenantId, SlaMonitoringService slaService) =>
+{
+    var count = await slaService.EvaluateSlaBreachesAsync(tenantId);
+    return Results.Ok(new { breachedCount = count });
+});
+
+// ----------------- Autonomous AI Agent -----------------
+app.MapPost("/api/ai/agent/handle", async ([FromQuery] Guid tenantId, [FromBody] AutonomousAgentQueryDto req, AutonomousAiAgentService agentService) =>
+{
+    var res = await agentService.HandleIncomingMessageAsync(tenantId, req.ConversationId, req.ContactId, req.Message);
+    return res.IsSuccess ? Results.Ok(res.Value) : Results.BadRequest(new { error = res.Error });
+});
+
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
 
@@ -283,6 +399,10 @@ app.Run();
 public record IngestEventDto(Guid ContactId, string EventName, string? PayloadJson);
 public record SubmitFeedbackDto(Guid SurveyFormId, Guid ContactId, int Score, string? FeedbackText);
 public record KbQueryDto(string Question);
+public record ResolveContactDto(string? Email, string? Phone, string? FirstName, string? LastName);
+public record BookSlotDto(Guid SlotId, Guid ContactId, DateTime ScheduledTimeUtc);
+public record CreateCheckoutDto(Guid ContactId, Guid ConversationId, string Title, decimal Amount, string? Currency = "USD");
+public record AutonomousAgentQueryDto(Guid ConversationId, Guid ContactId, string Message);
 
 // Required for WebApplicationFactory in integration tests
 public partial class Program { }

@@ -30,7 +30,13 @@ public class IdentityResolverService
         CancellationToken cancellationToken = default)
     {
         var normEmail = email?.Trim().ToLowerInvariant();
-        var normPhone = phone?.Trim().Replace(" ", "").Replace("-", "").Replace("+", "");
+        var normPhone = phone?.Trim()
+            .Replace(" ", "")
+            .Replace("-", "")
+            .Replace("+", "")
+            .Replace("(", "")
+            .Replace(")", "")
+            .Replace(".", "");
 
         Contact? contact = null;
 
