@@ -31,6 +31,12 @@ public class MarketingStudioDbContext : DbContext
     public DbSet<ProspectEnrollment> ProspectEnrollments => Set<ProspectEnrollment>();
     public DbSet<Deal> Deals => Set<Deal>();
 
+    // Customer Journeys (Phase 3)
+    public DbSet<CustomerEvent> CustomerEvents => Set<CustomerEvent>();
+    public DbSet<CustomerJourney> CustomerJourneys => Set<CustomerJourney>();
+    public DbSet<JourneyStep> JourneySteps => Set<JourneyStep>();
+    public DbSet<JourneyEnrollment> JourneyEnrollments => Set<JourneyEnrollment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
