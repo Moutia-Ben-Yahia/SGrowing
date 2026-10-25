@@ -45,6 +45,10 @@ public class SGrowingDbContext : DbContext
     public DbSet<HelpCategory> HelpCategories => Set<HelpCategory>();
     public DbSet<HelpArticle> HelpArticles => Set<HelpArticle>();
 
+    // WhatsApp Templates & Audience Broadcasts (Pillar C)
+    public DbSet<WhatsAppTemplate> WhatsAppTemplates => Set<WhatsAppTemplate>();
+    public DbSet<BroadcastCampaign> BroadcastCampaigns => Set<BroadcastCampaign>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
