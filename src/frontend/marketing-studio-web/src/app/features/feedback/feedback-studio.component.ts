@@ -19,7 +19,7 @@ import { SurveyFormDto, SurveyResponseDto } from '../../core/models/platform.mod
               ⭐
             </div>
             <div>
-              <h1 class="text-sm font-semibold tracking-wide text-white">MarketingStudio</h1>
+              <h1 class="text-sm font-semibold tracking-wide text-white">SGrowing</h1>
               <p class="text-xs text-emerald-400 font-medium">Feedback & CSAT</p>
             </div>
           </div>

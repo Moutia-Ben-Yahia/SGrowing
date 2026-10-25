@@ -19,7 +19,7 @@ import { SenderAccountDto, CampaignDto, DealDto } from '../../core/models/outbou
               SDR
             </div>
             <div>
-              <h1 class="text-sm font-semibold tracking-wide text-white">MarketingStudio</h1>
+              <h1 class="text-sm font-semibold tracking-wide text-white">SGrowing</h1>
               <p class="text-xs text-amber-400 font-medium">Autonomous AI SDR</p>
             </div>
           </div>
@@ -392,7 +392,7 @@ export class OutboundStudioComponent implements OnInit {
             delayDays: 0,
             channel: 1,
             subjectTemplate: 'Accelerating {{company}} customer communications with AI',
-            bodyTemplate: 'Hi {{first_name}}, {{icebreaker}} Wanted to explore if MarketingStudio could help your SDR team scale pipeline.'
+            bodyTemplate: 'Hi {{first_name}}, {{icebreaker}} Wanted to explore if SGrowing could help your SDR team scale pipeline.'
           },
           {
             stepNumber: 2,

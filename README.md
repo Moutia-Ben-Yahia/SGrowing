@@ -1,4 +1,4 @@
-# MarketingStudio — Autonomous AI Omnicommunication Platform
+# SGrowing — Autonomous AI Omnicommunication Platform
 
 An enterprise-grade, multi-tenant AI Omnicommunication & Autonomous Outreach platform built with **.NET 10** (C#, ASP.NET Core Minimal APIs, EF Core, PostgreSQL), **Angular 19** (Signals, Standalone Components, Tailwind CSS), and native **SignalR** real-time streaming.
 
@@ -53,8 +53,8 @@ Services started:
 
 1. **Backend (.NET 10):**
    ```bash
-   dotnet build
-   dotnet run --project src/backend/MarketingStudio.Api
+   dotnet build SGrowing.slnx
+   dotnet run --project src/backend/SGrowing.Api
    ```
 2. **Frontend (Angular 19):**
    ```bash
@@ -65,7 +65,7 @@ Services started:
 
 3. **Run Automated Tests:**
    ```bash
-   dotnet test
+   dotnet test SGrowing.slnx
    ```
 
 ---

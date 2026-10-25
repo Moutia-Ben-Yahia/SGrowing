@@ -19,7 +19,7 @@ import { HelpArticleDto, RagDeflectionResultDto } from '../../core/models/platfo
               📚
             </div>
             <div>
-              <h1 class="text-sm font-semibold tracking-wide text-white">MarketingStudio</h1>
+              <h1 class="text-sm font-semibold tracking-wide text-white">SGrowing</h1>
               <p class="text-xs text-purple-400 font-medium">Knowledge & AI RAG</p>
             </div>
           </div>
@@ -176,7 +176,7 @@ export class KnowledgeStudioComponent implements OnInit {
         categoryId: 'cat-1',
         title: 'Connecting WhatsApp Meta Cloud API',
         slug: 'whatsapp-meta-setup',
-        contentMarkdown: 'To connect Meta WhatsApp Cloud API: 1. Generate a System User Access Token in Facebook Business Manager. 2. Copy your Phone Number ID. 3. Navigate to MarketingStudio Settings > WhatsApp and click Save.',
+        contentMarkdown: 'To connect Meta WhatsApp Cloud API: 1. Generate a System User Access Token in Facebook Business Manager. 2. Copy your Phone Number ID. 3. Navigate to SGrowing Settings > WhatsApp and click Save.',
         isPublished: true,
         viewCount: 142,
         createdAtUtc: new Date().toISOString()
@@ -203,7 +203,7 @@ export class KnowledgeStudioComponent implements OnInit {
         if (query.includes('whatsapp') || query.includes('meta')) {
           this.ragResult.set({
             deflected: true,
-            answer: "Based on our documentation 'Connecting WhatsApp Meta Cloud API':\n\nTo connect Meta WhatsApp Cloud API: 1. Generate a System User Access Token in Facebook Business Manager. 2. Copy your Phone Number ID. 3. Navigate to MarketingStudio Settings > WhatsApp and click Save.",
+            answer: "Based on our documentation 'Connecting WhatsApp Meta Cloud API':\n\nTo connect Meta WhatsApp Cloud API: 1. Generate a System User Access Token in Facebook Business Manager. 2. Copy your Phone Number ID. 3. Navigate to SGrowing Settings > WhatsApp and click Save.",
             articleTitle: 'Connecting WhatsApp Meta Cloud API',
             articleSlug: 'whatsapp-meta-setup',
             confidenceScore: 92

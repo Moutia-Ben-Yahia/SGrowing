@@ -17,10 +17,10 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
         <div>
           <div class="flex items-center gap-2 mb-6">
             <div class="h-8 w-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">
-              MS
+              SG
             </div>
             <div>
-              <h1 class="text-sm font-semibold tracking-wide text-white">MarketingStudio</h1>
+              <h1 class="text-sm font-semibold tracking-wide text-white">SGrowing</h1>
               <p class="text-xs text-slate-400">Omnicommunication</p>
             </div>
           </div>

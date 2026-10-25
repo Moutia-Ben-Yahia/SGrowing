@@ -19,7 +19,7 @@ import { CustomerJourneyDto } from '../../core/models/platform.models';
               ⚡
             </div>
             <div>
-              <h1 class="text-sm font-semibold tracking-wide text-white">MarketingStudio</h1>
+              <h1 class="text-sm font-semibold tracking-wide text-white">SGrowing</h1>
               <p class="text-xs text-cyan-400 font-medium">Customer Journeys</p>
             </div>
           </div>
@@ -192,7 +192,7 @@ export class JourneyStudioComponent implements OnInit {
             id: 's-1',
             stepOrder: 1,
             stepType: 1,
-            subjectTemplate: 'Welcome to MarketingStudio!',
+            subjectTemplate: 'Welcome to SGrowing!',
             bodyTemplate: 'Hi {{first_name}}, welcome to our omnicommunication platform. Let us know if you need setup help!',
             delaySeconds: 0
           },
