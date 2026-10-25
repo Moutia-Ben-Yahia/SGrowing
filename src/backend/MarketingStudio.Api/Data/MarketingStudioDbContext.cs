@@ -37,6 +37,10 @@ public class MarketingStudioDbContext : DbContext
     public DbSet<JourneyStep> JourneySteps => Set<JourneyStep>();
     public DbSet<JourneyEnrollment> JourneyEnrollments => Set<JourneyEnrollment>();
 
+    // Feedback & CSAT (Phase 4)
+    public DbSet<SurveyForm> SurveyForms => Set<SurveyForm>();
+    public DbSet<SurveyResponse> SurveyResponses => Set<SurveyResponse>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
