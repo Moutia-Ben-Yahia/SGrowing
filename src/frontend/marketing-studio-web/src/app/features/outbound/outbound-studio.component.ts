@@ -28,9 +28,26 @@ import { SenderAccountDto, CampaignDto, DealDto } from '../../core/models/outbou
             <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2">Navigation</span>
             <a
               routerLink="/"
-              class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
+              class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition">
               <span>📥 Omnichannel Inbox</span>
             </a>
+            <a
+              routerLink="/journeys"
+              class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-cyan-400 hover:bg-slate-800/60 transition">
+              <span>⚡ Customer Journeys</span>
+            </a>
+            <a
+              routerLink="/feedback"
+              class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-emerald-400 hover:bg-slate-800/60 transition">
+              <span>⭐ Feedback & CSAT</span>
+            </a>
+            <a
+              routerLink="/help"
+              class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-purple-400 hover:bg-slate-800/60 transition">
+              <span>📚 Help Center & Bot</span>
+            </a>
+
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2 pt-2">Outbound Tabs</span>
             <button
               (click)="activeTab.set('campaigns')"
               [class.bg-slate-800]="activeTab() === 'campaigns'"

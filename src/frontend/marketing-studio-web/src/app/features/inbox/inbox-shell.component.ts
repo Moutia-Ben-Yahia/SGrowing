@@ -27,12 +27,28 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
 
           <div class="space-y-1 mb-6">
             <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2">Navigation</span>
-            <a
-              routerLink="/outbound"
-              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition mb-3">
-              <span class="flex items-center gap-2">🚀 AI SDR & Outbound</span>
-              <span class="bg-amber-500/20 text-amber-300 text-[10px] px-1.5 py-0.5 rounded font-mono">NEW</span>
-            </a>
+            <div class="space-y-1 mb-4">
+              <a
+                routerLink="/outbound"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
+                <span class="flex items-center gap-2">🚀 AI SDR Outbound</span>
+              </a>
+              <a
+                routerLink="/journeys"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
+                <span class="flex items-center gap-2">⚡ Customer Journeys</span>
+              </a>
+              <a
+                routerLink="/feedback"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
+                <span class="flex items-center gap-2">⭐ Feedback & CSAT</span>
+              </a>
+              <a
+                routerLink="/help"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-purple-400 hover:bg-purple-500/10 border border-purple-500/20 transition">
+                <span class="flex items-center gap-2">📚 Help Center & Bot</span>
+              </a>
+            </div>
 
             <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2">Inboxes</span>
             <button

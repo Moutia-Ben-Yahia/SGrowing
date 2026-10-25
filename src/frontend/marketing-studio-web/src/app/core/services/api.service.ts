@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ContactDto, ConversationDto, MessageDto } from '../models/chat.models';
 import { SenderAccountDto, CampaignDto, DealDto } from '../models/outbound.models';
+import { CustomerJourneyDto, SurveyFormDto, SurveyResponseDto, HelpArticleDto, RagDeflectionResultDto } from '../models/platform.models';
 
 @Injectable({
   providedIn: 'root'
@@ -61,5 +62,45 @@ export class ApiService {
 
   public getDeals(tenantId: string): Observable<DealDto[]> {
     return this.http.get<DealDto[]>(`${this.baseUrl}/crm/deals?tenantId=${tenantId}`);
+  }
+
+  // Customer Journeys (Phase 3)
+  public getJourneys(tenantId: string): Observable<CustomerJourneyDto[]> {
+    return this.http.get<CustomerJourneyDto[]>(`${this.baseUrl}/journeys?tenantId=${tenantId}`);
+  }
+
+  public triggerEvent(tenantId: string, contactId: string, eventName: string, payloadJson = '{}'): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/events?tenantId=${tenantId}`, { contactId, eventName, payloadJson });
+  }
+
+  public dispatchJourneys(tenantId: string): Observable<{ processed: number }> {
+    return this.http.post<{ processed: number }>(`${this.baseUrl}/journeys/dispatch?tenantId=${tenantId}`, {});
+  }
+
+  // Feedback & CSAT (Phase 4)
+  public getSurveys(tenantId: string): Observable<SurveyFormDto[]> {
+    return this.http.get<SurveyFormDto[]>(`${this.baseUrl}/feedback/surveys?tenantId=${tenantId}`);
+  }
+
+  public submitFeedback(tenantId: string, surveyFormId: string, contactId: string, score: number, feedbackText?: string): Observable<SurveyResponseDto> {
+    return this.http.post<SurveyResponseDto>(`${this.baseUrl}/feedback/submit?tenantId=${tenantId}`, {
+      surveyFormId,
+      contactId,
+      score,
+      feedbackText
+    });
+  }
+
+  public getFeedbackResponses(tenantId: string): Observable<SurveyResponseDto[]> {
+    return this.http.get<SurveyResponseDto[]>(`${this.baseUrl}/feedback/responses?tenantId=${tenantId}`);
+  }
+
+  // Knowledge Base & RAG (Phase 5)
+  public getArticles(tenantId: string): Observable<HelpArticleDto[]> {
+    return this.http.get<HelpArticleDto[]>(`${this.baseUrl}/kb/articles?tenantId=${tenantId}`);
+  }
+
+  public queryHelpCenter(tenantId: string, question: string): Observable<RagDeflectionResultDto> {
+    return this.http.post<RagDeflectionResultDto>(`${this.baseUrl}/kb/query?tenantId=${tenantId}`, { question });
   }
 }
