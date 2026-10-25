@@ -8,6 +8,9 @@ using SGrowing.Api.Modules.Feedback;
 using SGrowing.Api.Modules.Journeys;
 using SGrowing.Api.Modules.KnowledgeBase;
 using SGrowing.Api.Modules.Outbound;
+using SGrowing.Api.Modules.Automation;
+using SGrowing.Api.Modules.Marketing;
+using SGrowing.Api.Modules.Voice;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Entities;
@@ -53,10 +56,15 @@ builder.Services.AddScoped<JourneyExecutionService>();
 builder.Services.AddScoped<FeedbackService>();
 builder.Services.AddScoped<HelpCenterRagService>();
 
-// 4. Channel Adapters
+// 4. Channel Adapters (Messaging, Social & SMS)
 builder.Services.AddSingleton<WhatsAppCloudAdapter>();
 builder.Services.AddSingleton<EvolutionApiAdapter>();
 builder.Services.AddSingleton<EmailAdapter>();
+builder.Services.AddSingleton<TelegramAdapter>();
+builder.Services.AddSingleton<DiscordAdapter>();
+builder.Services.AddSingleton<MetaGraphAdapter>();
+builder.Services.AddSingleton<XTwitterAdapter>();
+builder.Services.AddSingleton<SmsAdapter>();
 
 // 5. Inbound Slices Handlers
 builder.Services.AddScoped<CreateContactHandler>();
@@ -78,7 +86,24 @@ builder.Services.AddScoped<AppointmentBookingService>();
 builder.Services.AddScoped<CheckoutLinkService>();
 builder.Services.AddScoped<SlaMonitoringService>();
 
-// 7. SignalR & CORS
+// 7. Voice & Telephony
+builder.Services.AddScoped<VoiceTelephonyService>();
+builder.Services.AddScoped<RealtimeVoiceAgentService>();
+
+// 8. Social Publishing & Deflection
+builder.Services.AddSingleton<ISocialPostRepository, InMemorySocialPostRepository>();
+builder.Services.AddScoped<SocialPublishingService>();
+builder.Services.AddScoped<SocialCommentDeflectionService>();
+
+// 9. Multi-Touch AI SDR
+builder.Services.AddScoped<LinkedInOutreachAdapter>();
+builder.Services.AddScoped<MultiTouchCadenceOrchestrator>();
+
+// 10. B2B CRM Accounts & Visual Workflows
+builder.Services.AddScoped<CompanyAccountService>();
+builder.Services.AddScoped<WorkflowEngineService>();
+
+// 11. SignalR & CORS
 builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
 {
@@ -161,7 +186,12 @@ app.MapPost("/api/webhooks/{channel}", async (
     ProspectReplyHandoffService handoffService,
     WhatsAppCloudAdapter waCloud,
     EvolutionApiAdapter evoWa,
-    EmailAdapter email) =>
+    EmailAdapter email,
+    TelegramAdapter telegram,
+    DiscordAdapter discord,
+    MetaGraphAdapter meta,
+    XTwitterAdapter xTwitter,
+    SmsAdapter sms) =>
 {
     using var reader = new StreamReader(request.Body);
     var body = await reader.ReadToEndAsync();
@@ -171,6 +201,14 @@ app.MapPost("/api/webhooks/{channel}", async (
         "whatsapp_cloud" => waCloud.ParseInboundWebhook(tenantId, body),
         "evolution_api" => evoWa.ParseInboundWebhook(tenantId, body),
         "email" => email.ParseInboundWebhook(tenantId, body),
+        "telegram" => telegram.ParseInboundWebhook(tenantId, body),
+        "discord" => discord.ParseInboundWebhook(tenantId, body),
+        "meta_graph" => meta.ParseInboundWebhook(tenantId, body),
+        "instagram" => meta.ParseInboundWebhook(tenantId, body),
+        "facebook" => meta.ParseInboundWebhook(tenantId, body),
+        "threads" => meta.ParseInboundWebhook(tenantId, body),
+        "x_twitter" => xTwitter.ParseInboundWebhook(tenantId, body),
+        "sms" => sms.ParseInboundWebhook(tenantId, body),
         _ => null
     };
 
@@ -391,6 +429,96 @@ app.MapPost("/api/ai/agent/handle", async ([FromQuery] Guid tenantId, [FromBody]
     return res.IsSuccess ? Results.Ok(res.Value) : Results.BadRequest(new { error = res.Error });
 });
 
+// ----------------- Voice & Telephony Endpoints -----------------
+app.MapPost("/api/voice/inbound", async (HttpRequest request, [FromQuery] Guid tenantId, [FromQuery] string callSid, [FromQuery] string from, [FromQuery] string to, VoiceTelephonyService voiceService) =>
+{
+    var twiml = await voiceService.HandleInboundCallWebhookAsync(tenantId, callSid, from, to);
+    return Results.Content(twiml, "application/xml");
+});
+
+app.MapPost("/api/voice/turn", async ([FromQuery] Guid tenantId, [FromBody] VoiceTurnDto req, RealtimeVoiceAgentService voiceAgent) =>
+{
+    var responseSpeech = await voiceAgent.ProcessVoiceTurnAsync(tenantId, req.SessionId, req.CallerSpeechTranscript);
+    return Results.Ok(new { response = responseSpeech });
+});
+
+app.MapGet("/api/voice/sessions", async ([FromQuery] Guid tenantId, SGrowingDbContext db) =>
+{
+    var sessions = await db.VoiceCallSessions.Where(s => s.TenantId == tenantId).OrderByDescending(s => s.CreatedAtUtc).ToListAsync();
+    return Results.Ok(sessions);
+});
+
+// ----------------- Social Media Publishing & Deflection -----------------
+app.MapGet("/api/social/posts", async ([FromQuery] Guid tenantId, SGrowingDbContext db) =>
+{
+    var posts = await db.SocialPosts.Where(p => p.TenantId == tenantId).OrderByDescending(p => p.CreatedAtUtc).ToListAsync();
+    return Results.Ok(posts);
+});
+
+app.MapPost("/api/social/posts", async ([FromQuery] Guid tenantId, [FromBody] CreateSocialPostDto req, SocialPublishingService publishingService) =>
+{
+    var post = await publishingService.CreatePostAsync(tenantId, req.Content, req.Platforms, req.ScheduledAtUtc, req.MediaUrls);
+    return Results.Ok(post);
+});
+
+app.MapPost("/api/social/publish-due", async ([FromQuery] Guid tenantId, SocialPublishingService publishingService) =>
+{
+    var count = await publishingService.PublishDuePostsAsync(tenantId);
+    return Results.Ok(new { publishedCount = count });
+});
+
+app.MapPost("/api/social/comments/deflect", async ([FromQuery] Guid tenantId, [FromBody] DeflectCommentDto req, SocialCommentDeflectionService deflectionService) =>
+{
+    var res = await deflectionService.HandlePublicCommentAsync(tenantId, req.Platform, req.PostExternalId, req.CommenterUsername, req.CommentText);
+    return Results.Ok(res);
+});
+
+// ----------------- Multi-Touch AI SDR Outreach -----------------
+app.MapPost("/api/outbound/multitouch/dispatch", async ([FromQuery] Guid tenantId, MultiTouchCadenceOrchestrator orchestrator) =>
+{
+    var count = await orchestrator.ProcessDueMultiTouchStepsAsync(tenantId);
+    return Results.Ok(new { processed = count });
+});
+
+// ----------------- B2B CRM Accounts & Companies -----------------
+app.MapGet("/api/crm/companies", async ([FromQuery] Guid tenantId, SGrowingDbContext db) =>
+{
+    var companies = await db.Companies.Where(c => c.TenantId == tenantId).ToListAsync();
+    return Results.Ok(companies);
+});
+
+app.MapPost("/api/crm/companies", async ([FromQuery] Guid tenantId, [FromBody] CreateCompanyDto req, CompanyAccountService companyService) =>
+{
+    var company = await companyService.CreateCompanyAsync(tenantId, req.Name, req.Domain, req.Industry, req.Revenue, req.ParentCompanyId);
+    return Results.Ok(company);
+});
+
+app.MapPost("/api/crm/companies/associate", async ([FromQuery] Guid tenantId, [FromBody] AssociateCompanyDto req, CompanyAccountService companyService) =>
+{
+    var company = await companyService.AssociateContactByDomainAsync(tenantId, req.ContactId, req.ContactEmail);
+    return company != null ? Results.Ok(company) : Results.NotFound(new { error = "No company found matching contact email domain." });
+});
+
+// ----------------- Visual Node Workflows -----------------
+app.MapGet("/api/workflows", async ([FromQuery] Guid tenantId, SGrowingDbContext db) =>
+{
+    var workflows = await db.WorkflowGraphs.Where(w => w.TenantId == tenantId).ToListAsync();
+    return Results.Ok(workflows);
+});
+
+app.MapPost("/api/workflows", async ([FromBody] WorkflowGraph graph, SGrowingDbContext db) =>
+{
+    db.WorkflowGraphs.Add(graph);
+    await db.SaveChangesAsync();
+    return Results.Ok(graph);
+});
+
+app.MapPost("/api/workflows/{id:guid}/trigger", async (Guid id, [FromQuery] Guid tenantId, [FromBody] TriggerWorkflowDto req, WorkflowEngineService engine) =>
+{
+    var execution = await engine.ExecuteWorkflowAsync(tenantId, id, req.InputPayloadJson);
+    return Results.Ok(execution);
+});
+
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
 
@@ -403,6 +531,12 @@ public record ResolveContactDto(string? Email, string? Phone, string? FirstName,
 public record BookSlotDto(Guid SlotId, Guid ContactId, DateTime ScheduledTimeUtc);
 public record CreateCheckoutDto(Guid ContactId, Guid ConversationId, string Title, decimal Amount, string? Currency = "USD");
 public record AutonomousAgentQueryDto(Guid ConversationId, Guid ContactId, string Message);
+public record VoiceTurnDto(Guid SessionId, string CallerSpeechTranscript);
+public record CreateSocialPostDto(string Content, List<SocialPlatform> Platforms, DateTime? ScheduledAtUtc = null, List<string>? MediaUrls = null);
+public record DeflectCommentDto(SocialPlatform Platform, string PostExternalId, string CommenterUsername, string CommentText);
+public record CreateCompanyDto(string Name, string Domain, string? Industry = null, decimal Revenue = 0, Guid? ParentCompanyId = null);
+public record AssociateCompanyDto(Guid ContactId, string ContactEmail);
+public record TriggerWorkflowDto(string InputPayloadJson);
 
 // Required for WebApplicationFactory in integration tests
 public partial class Program { }

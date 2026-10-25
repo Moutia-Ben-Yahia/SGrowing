@@ -34,8 +34,28 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
                 <span class="flex items-center gap-2">🚀 AI SDR Outbound</span>
               </a>
               <a
-                routerLink="/broadcasts"
+                routerLink="/social"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-fuchsia-400 hover:bg-fuchsia-500/10 border border-fuchsia-500/20 transition">
+                <span class="flex items-center gap-2">📱 Social Media Studio</span>
+              </a>
+              <a
+                routerLink="/voice"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
+                <span class="flex items-center gap-2">📞 Voice & Softphone</span>
+              </a>
+              <a
+                routerLink="/accounts"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-blue-400 hover:bg-blue-500/10 border border-blue-500/20 transition">
+                <span class="flex items-center gap-2">🏢 B2B Accounts CRM</span>
+              </a>
+              <a
+                routerLink="/workflows"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
+                <span class="flex items-center gap-2">⚡ Node Workflows</span>
+              </a>
+              <a
+                routerLink="/broadcasts"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-teal-400 hover:bg-teal-500/10 border border-teal-500/20 transition">
                 <span class="flex items-center gap-2">📢 WA Broadcasts</span>
               </a>
               <a
@@ -45,17 +65,17 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
               </a>
               <a
                 routerLink="/journeys"
-                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
-                <span class="flex items-center gap-2">⚡ Customer Journeys</span>
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-purple-400 hover:bg-purple-500/10 border border-purple-500/20 transition">
+                <span class="flex items-center gap-2">🎯 Customer Journeys</span>
               </a>
               <a
                 routerLink="/feedback"
-                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-teal-400 hover:bg-teal-500/10 border border-teal-500/20 transition">
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-yellow-400 hover:bg-yellow-500/10 border border-yellow-500/20 transition">
                 <span class="flex items-center gap-2">⭐ Feedback & CSAT</span>
               </a>
               <a
                 routerLink="/help"
-                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-purple-400 hover:bg-purple-500/10 border border-purple-500/20 transition">
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-indigo-400 hover:bg-indigo-500/10 border border-indigo-500/20 transition">
                 <span class="flex items-center gap-2">📚 Help Center & Bot</span>
               </a>
             </div>

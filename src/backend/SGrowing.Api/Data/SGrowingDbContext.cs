@@ -57,6 +57,21 @@ public class SGrowingDbContext : DbContext
     // SLA Policies (Pillar E)
     public DbSet<SlaPolicy> SlaPolicies => Set<SlaPolicy>();
 
+    // Voice & Telephony
+    public DbSet<VoiceCallSession> VoiceCallSessions => Set<VoiceCallSession>();
+
+    // Social Publishing
+    public DbSet<SocialAccount> SocialAccounts => Set<SocialAccount>();
+    public DbSet<SocialPost> SocialPosts => Set<SocialPost>();
+
+    // Multi-Touch AI SDR
+    public DbSet<CadenceTouchpoint> CadenceTouchpoints => Set<CadenceTouchpoint>();
+    public DbSet<TouchpointExecution> TouchpointExecutions => Set<TouchpointExecution>();
+
+    // Workflows & Visual Automation
+    public DbSet<WorkflowGraph> WorkflowGraphs => Set<WorkflowGraph>();
+    public DbSet<WorkflowExecution> WorkflowExecutions => Set<WorkflowExecution>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

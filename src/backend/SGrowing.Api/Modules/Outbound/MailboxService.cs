@@ -37,4 +37,20 @@ public class MailboxService
             await _db.SaveChangesAsync(cancellationToken);
         }
     }
+
+    public async Task<bool> SendEmailAsync(Guid tenantId, Guid contactId, string recipientEmail, string subject, string body, CancellationToken cancellationToken = default)
+    {
+        var senders = await _db.SenderAccounts
+            .Where(s => s.TenantId == tenantId && s.IsActive)
+            .ToListAsync(cancellationToken);
+
+        var sender = senders.FirstOrDefault(s => s.CanSendToday());
+        if (sender != null)
+        {
+            sender.RecordSend();
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+
+        return true;
+    }
 }
