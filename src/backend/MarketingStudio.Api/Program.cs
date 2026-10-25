@@ -4,6 +4,9 @@ using MarketingStudio.Api.Modules.AI;
 using MarketingStudio.Api.Modules.Channels;
 using MarketingStudio.Api.Modules.Conversations;
 using MarketingStudio.Api.Modules.CRM;
+using MarketingStudio.Api.Modules.Feedback;
+using MarketingStudio.Api.Modules.Journeys;
+using MarketingStudio.Api.Modules.KnowledgeBase;
 using MarketingStudio.Api.Modules.Outbound;
 using MarketingStudio.Api.Services;
 using MarketingStudio.Core.Channels;
@@ -44,6 +47,11 @@ builder.Services.AddScoped<ProspectReplyHandoffService>();
 builder.Services.AddScoped<CadenceDispatcherService>();
 builder.Services.AddScoped<CreateCampaignHandler>();
 builder.Services.AddScoped<EnrollProspectsHandler>();
+
+// 4. Journeys, Feedback & Knowledge Base
+builder.Services.AddScoped<JourneyExecutionService>();
+builder.Services.AddScoped<FeedbackService>();
+builder.Services.AddScoped<HelpCenterRagService>();
 
 // 4. Channel Adapters
 builder.Services.AddSingleton<WhatsAppCloudAdapter>();
@@ -216,10 +224,65 @@ app.MapGet("/api/crm/deals", async ([FromQuery] Guid tenantId, MarketingStudioDb
     return Results.Ok(deals);
 });
 
+// ----------------- Customer Journeys Endpoints -----------------
+app.MapPost("/api/events", async ([FromQuery] Guid tenantId, [FromBody] IngestEventDto req, JourneyExecutionService service) =>
+{
+    var res = await service.IngestEventAsync(tenantId, req.ContactId, req.EventName, req.PayloadJson ?? "{}");
+    return res.IsSuccess ? Results.Ok(res.Value) : Results.BadRequest(new { error = res.Error });
+});
+
+app.MapGet("/api/journeys", async ([FromQuery] Guid tenantId, MarketingStudioDbContext db) =>
+{
+    var journeys = await db.CustomerJourneys.Where(j => j.TenantId == tenantId).ToListAsync();
+    return Results.Ok(journeys);
+});
+
+app.MapPost("/api/journeys/dispatch", async ([FromQuery] Guid tenantId, JourneyExecutionService service) =>
+{
+    var count = await service.ProcessDueStepsAsync(tenantId);
+    return Results.Ok(new { processed = count });
+});
+
+// ----------------- Feedback & CSAT Endpoints -----------------
+app.MapGet("/api/feedback/surveys", async ([FromQuery] Guid tenantId, MarketingStudioDbContext db) =>
+{
+    var forms = await db.SurveyForms.Where(f => f.TenantId == tenantId).ToListAsync();
+    return Results.Ok(forms);
+});
+
+app.MapPost("/api/feedback/submit", async ([FromQuery] Guid tenantId, [FromBody] SubmitFeedbackDto req, FeedbackService service) =>
+{
+    var res = await service.SubmitFeedbackAsync(tenantId, req.SurveyFormId, req.ContactId, req.Score, req.FeedbackText);
+    return res.IsSuccess ? Results.Ok(res.Value) : Results.BadRequest(new { error = res.Error });
+});
+
+app.MapGet("/api/feedback/responses", async ([FromQuery] Guid tenantId, MarketingStudioDbContext db) =>
+{
+    var responses = await db.SurveyResponses.Where(r => r.TenantId == tenantId).OrderByDescending(r => r.CreatedAtUtc).ToListAsync();
+    return Results.Ok(responses);
+});
+
+// ----------------- Knowledge Base & RAG Endpoints -----------------
+app.MapGet("/api/kb/articles", async ([FromQuery] Guid tenantId, MarketingStudioDbContext db) =>
+{
+    var articles = await db.HelpArticles.Where(a => a.TenantId == tenantId && a.IsPublished).ToListAsync();
+    return Results.Ok(articles);
+});
+
+app.MapPost("/api/kb/query", async ([FromQuery] Guid tenantId, [FromBody] KbQueryDto req, HelpCenterRagService ragService) =>
+{
+    var res = await ragService.GenerateAiDeflectionReplyAsync(tenantId, req.Question);
+    return Results.Ok(res);
+});
+
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
 
 app.Run();
+
+public record IngestEventDto(Guid ContactId, string EventName, string? PayloadJson);
+public record SubmitFeedbackDto(Guid SurveyFormId, Guid ContactId, int Score, string? FeedbackText);
+public record KbQueryDto(string Question);
 
 // Required for WebApplicationFactory in integration tests
 public partial class Program { }
