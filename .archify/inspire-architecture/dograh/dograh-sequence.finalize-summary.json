@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "sequence",
+  "quality": "showcase",
+  "specification": {
+    "path": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\dograh\\candidate-seq.json",
+    "sha256": "57efca47fa7b6c7424b3db31a1a331b1fcc24945f20f73e9ab78fd045ecc80af",
+    "bytes": 4432
+  },
+  "artifact": {
+    "path": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\dograh\\dograh-sequence.html",
+    "sha256": "bd5128c677a239c720572f3dda5ea8af7828bb4aee9e00c36d8961372a1b42f0",
+    "bytes": 841147
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\dograh\\dograh-sequence.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\dograh\\dograh-sequence.finalize-summary.json",
+    "browserCheckReceipt": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\dograh\\dograh-sequence.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-25T12:43:09.686Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2643,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

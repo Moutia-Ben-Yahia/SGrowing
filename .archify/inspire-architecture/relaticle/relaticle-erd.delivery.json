@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "210fe12e-2690-45d9-9a0d-f04eeefeefae",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\relaticle\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\relaticle\\relaticle-erd.html",
+  "specification": {
+    "sha256": "b184b1f4e27f159314218459f3ac6fdff5956c475e5ce976bb1c79aee1391188",
+    "bytes": 5340
+  },
+  "artifact": {
+    "sha256": "e5ea1f405573bc3af633bf41d0a34f932761e5d911679ea3d3d11ebc43182a88",
+    "bytes": 855152
+  }
+}

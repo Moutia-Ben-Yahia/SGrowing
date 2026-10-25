@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "e39008c7-49af-4526-944c-ae16cc560919",
+  "status": "current",
+  "command": "deliver",
+  "type": "class",
+  "input": "C:\\Business\\Software\\MarketingStudio\\.archify\\class-listmonk\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\class-listmonk\\listmonk-class.html",
+  "specification": {
+    "sha256": "bd7a8cf748f7c5f19f1bd5304411ddcd1abea65c383e558867c97c09866f5774",
+    "bytes": 3646
+  },
+  "artifact": {
+    "sha256": "80d4c83b17a819e76eeb6ff27b442722eb887c11f1e7ccc899fa20217bec415a",
+    "bytes": 844353
+  }
+}

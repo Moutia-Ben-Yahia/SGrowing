@@ -1,0 +1,253 @@
+{
+  "schema_version": 1,
+  "diagram_type": "erd",
+  "meta": {
+    "title": "postiz-app Database Schema",
+    "output": ".archify/inspire-architecture/postiz-app/postiz-app-erd.html",
+    "quality_profile": "showcase"
+  },
+  "entities": [
+    {
+      "id": "organization",
+      "label": "organization",
+      "tag": "Core & Identity",
+      "row": 0,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "slug",
+          "type": "varchar(64)",
+          "key": "uk"
+        },
+        {
+          "name": "name",
+          "type": "varchar(128)"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "tags",
+      "label": "tags",
+      "tag": "Core & Identity",
+      "row": 1,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "organization.id"
+        },
+        {
+          "name": "email",
+          "type": "varchar(255)",
+          "key": "uk"
+        },
+        {
+          "name": "role",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "tagsposts",
+      "label": "tagsposts",
+      "tag": "Core & Identity",
+      "row": 2,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "organization.id"
+        },
+        {
+          "name": "tags_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "tags.id"
+        },
+        {
+          "name": "access_level",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "user",
+      "label": "user",
+      "tag": "Domain Operations",
+      "row": 0,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "organization.id"
+        },
+        {
+          "name": "title",
+          "type": "varchar(255)"
+        },
+        {
+          "name": "state",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "usedcodes",
+      "label": "usedcodes",
+      "tag": "Domain Operations",
+      "row": 1,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "user.id"
+        },
+        {
+          "name": "payload",
+          "type": "jsonb"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "executed_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "userorganization",
+      "label": "userorganization",
+      "tag": "Domain Operations",
+      "row": 2,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "usedcodes_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "usedcodes.id"
+        },
+        {
+          "name": "event_name",
+          "type": "varchar(64)"
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb"
+        },
+        {
+          "name": "recorded_at",
+          "type": "timestamptz"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel-t0-t1",
+      "from": "organization",
+      "to": "tags",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t1-t2",
+      "from": "tags",
+      "to": "tagsposts",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t0-d0",
+      "from": "organization",
+      "to": "user",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d0-d1",
+      "from": "user",
+      "to": "usedcodes",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d1-d2",
+      "from": "usedcodes",
+      "to": "userorganization",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "postiz-app Normalized Relational Schema",
+      "items": [
+        "Strict multi-tenant referential integrity anchored on organization.id primary key",
+        "Clean separation between organization identity cluster and user operational data models",
+        "High-concurrency composite indexes enforcing unique constraints across tenant partitions"
+      ]
+    }
+  ]
+}

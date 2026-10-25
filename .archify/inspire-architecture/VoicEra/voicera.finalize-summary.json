@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\VoicEra\\candidate.json",
+    "sha256": "1c672dd4706c55fd14ed6082f9666b4851a8fb04b754c18a83ebaa49a0e87ff5",
+    "bytes": 5877
+  },
+  "artifact": {
+    "path": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\VoicEra\\VoicEra.html",
+    "sha256": "5849367613d0a9ca3121a83cc0ed62007a552cb28c1a74e62f00fe8d419559d5",
+    "bytes": 850450
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\VoicEra\\voicera.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\VoicEra\\voicera.finalize-summary.json",
+    "browserCheckReceipt": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\VoicEra\\voicera.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-25T12:43:09.686Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2508,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

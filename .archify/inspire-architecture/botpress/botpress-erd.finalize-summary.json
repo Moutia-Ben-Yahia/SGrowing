@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "erd",
+  "quality": "showcase",
+  "specification": {
+    "path": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\botpress\\candidate-erd.json",
+    "sha256": "700ebc0c98c8f410c6fd9d4e634708c58e5a1633b85d54af608a097fa0c4e1b7",
+    "bytes": 5336
+  },
+  "artifact": {
+    "path": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\botpress\\botpress-erd.html",
+    "sha256": "6a627d9cea733acf245bdfcf7d8f51911fb8a226dc2f6f7e4100d9c90560632b",
+    "bytes": 855148
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\botpress\\botpress-erd.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\botpress\\botpress-erd.finalize-summary.json",
+    "browserCheckReceipt": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\botpress\\botpress-erd.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-25T12:43:09.686Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2491,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

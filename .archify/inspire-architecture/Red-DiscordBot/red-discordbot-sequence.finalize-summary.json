@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "sequence",
+  "quality": "showcase",
+  "specification": {
+    "path": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Red-DiscordBot\\candidate-seq.json",
+    "sha256": "f011cdd6963243bb86f6c40d21b176b44bafcbdf78a6de67dba3d5e62031ab51",
+    "bytes": 4459
+  },
+  "artifact": {
+    "path": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Red-DiscordBot\\Red-DiscordBot-sequence.html",
+    "sha256": "2940171bd1dbc2c70c4863b9d5c103c79d299cd8fe66944324cdb406b8f35612",
+    "bytes": 841266
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Red-DiscordBot\\red-discordbot-sequence.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Red-DiscordBot\\red-discordbot-sequence.finalize-summary.json",
+    "browserCheckReceipt": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Red-DiscordBot\\red-discordbot-sequence.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-25T12:43:09.686Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2971,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

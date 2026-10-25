@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "sequence",
+  "quality": "showcase",
+  "specification": {
+    "path": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\postiz-app\\candidate-seq.json",
+    "sha256": "24d1920f9d91baea6be2f91f9e24207a8e1f64436da6e3b32dc27056ac8fa19a",
+    "bytes": 4428
+  },
+  "artifact": {
+    "path": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\postiz-app\\postiz-app-sequence.html",
+    "sha256": "98dc015e1e050466a149d2c7a91fce7a89ea22513dcf1a18aae1a65ab00ace48",
+    "bytes": 841097
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\postiz-app\\postiz-app-sequence.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\postiz-app\\postiz-app-sequence.finalize-summary.json",
+    "browserCheckReceipt": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\postiz-app\\postiz-app-sequence.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-25T12:43:09.686Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2514,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

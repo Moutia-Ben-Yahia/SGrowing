@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "ced0abf8-1857-4dd4-a624-49088492885e",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\DeskcommCRM\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\DeskcommCRM\\DeskcommCRM-erd.html",
+  "specification": {
+    "sha256": "c9e2ae2025d47ae53a74f3bcdd0b3cbc1304e6e5aad5d473563f8c0d0df8cde5",
+    "bytes": 5459
+  },
+  "artifact": {
+    "sha256": "0c0342c3b952cc6a3cbf8de1e4da0c538e78394a36c5bd9b4f2ed4950b73b559",
+    "bytes": 855301
+  }
+}

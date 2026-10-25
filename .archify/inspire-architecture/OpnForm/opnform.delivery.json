@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "f28d9c4d-d982-46f7-9af1-f20c2892c66f",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpnForm\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpnForm\\OpnForm.html",
+  "specification": {
+    "sha256": "6a3e15e4a132d21607bfd9369275ae6e1e1bec2a12ee7ce04e14f405b502d9b1",
+    "bytes": 5887
+  },
+  "artifact": {
+    "sha256": "6e2600624237cb7bcef2acca4318c7990ed5358a63db992e28208213fd5f4db4",
+    "bytes": 850496
+  }
+}

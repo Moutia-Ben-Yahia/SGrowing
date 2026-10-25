@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "44737fa4-d451-4ecf-bcf9-8cfe6e64c36b",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\papermark\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\papermark\\papermark.html",
+  "specification": {
+    "sha256": "125aadf5a32d899592873947ff6a3f220433e35085ed20f7d5c4d0877a73adc5",
+    "bytes": 5896
+  },
+  "artifact": {
+    "sha256": "2970662b5433d502ee4f827f456bc55b509830461d8fe2d6700b31c7ce769c29",
+    "bytes": 850551
+  }
+}

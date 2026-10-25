@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "fa3a4646-5f81-4e20-b5f4-f8aa490c5da1",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\discord.js\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\discord.js\\discord.js.html",
+  "specification": {
+    "sha256": "282c787a1f85041dab831cd75f6ee86fed2d67e83ed0e502422b1fa9fd968846",
+    "bytes": 5928
+  },
+  "artifact": {
+    "sha256": "b8592ced3d1f2dd81e4d20264043f87d9fb85d112028f938fcfc4577dd6db5f4",
+    "bytes": 850659
+  }
+}

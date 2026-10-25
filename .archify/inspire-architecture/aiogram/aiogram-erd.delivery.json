@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "43ce309b-a4e4-48e4-8cf3-c9bde4a08daa",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\aiogram-erd.html",
+  "specification": {
+    "sha256": "5ce120c24c6ae06fed43b1d5f9a1697d2f6326de92c7747510370d2a63813fea",
+    "bytes": 5209
+  },
+  "artifact": {
+    "sha256": "46bff221b820f3ad3cd6f8308dd88696d6e4374f2eaa216eccfb272824a9d9a9",
+    "bytes": 854967
+  }
+}

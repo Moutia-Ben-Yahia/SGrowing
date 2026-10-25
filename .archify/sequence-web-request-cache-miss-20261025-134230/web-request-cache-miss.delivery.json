@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "328c2a47-fb68-4383-9582-a8dccee1f761",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "C:\\Business\\Software\\MarketingStudio\\.archify\\sequence-web-request-cache-miss-20261025-134230\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\sequence-web-request-cache-miss-20261025-134230\\web-request-cache-miss.html",
+  "specification": {
+    "sha256": "6ad2022d4ce4da218941be123a911e4b80d1d88f896c1ed47ccd44276bab1288",
+    "bytes": 3615
+  },
+  "artifact": {
+    "sha256": "e12f748c014f899f20ba91a6492af81e6bd6eedea3cf034bc812f0f399f03f52",
+    "bytes": 833734
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "5d5068ab-6944-43d3-9f61-8540662d8dc3",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Quickly\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Quickly\\Quickly-erd.html",
+  "specification": {
+    "sha256": "819731261fd22bbacb4bfa77effda29b49be35ace2c9eee2ad91dd1aba614085",
+    "bytes": 5332
+  },
+  "artifact": {
+    "sha256": "ff9aef57caeae4495869059bcd590fb3a6a7aff156e0ac435cfac36b594a462e",
+    "bytes": 855144
+  }
+}

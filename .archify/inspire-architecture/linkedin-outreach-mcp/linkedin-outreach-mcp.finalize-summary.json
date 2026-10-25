@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\linkedin-outreach-mcp\\candidate.json",
+    "sha256": "398e55cf2ee364a2382bbcbb564e523a00944d8e31bea35ef11212b291942ee9",
+    "bytes": 5945
+  },
+  "artifact": {
+    "path": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\linkedin-outreach-mcp\\linkedin-outreach-mcp.html",
+    "sha256": "0ce1e8003fcf7629ddc777f9e6a9e576066683a32386067dbf7ba17459e90825",
+    "bytes": 850934
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\linkedin-outreach-mcp\\linkedin-outreach-mcp.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\linkedin-outreach-mcp\\linkedin-outreach-mcp.finalize-summary.json",
+    "browserCheckReceipt": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\linkedin-outreach-mcp\\linkedin-outreach-mcp.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-25T12:43:09.686Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2397,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

@@ -1,0 +1,253 @@
+{
+  "schema_version": 1,
+  "diagram_type": "erd",
+  "meta": {
+    "title": "DenchClaw Database Schema",
+    "output": ".archify/inspire-architecture/DenchClaw/DenchClaw-erd.html",
+    "quality_profile": "showcase"
+  },
+  "entities": [
+    {
+      "id": "objects",
+      "label": "objects",
+      "tag": "Core & Identity",
+      "row": 0,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "slug",
+          "type": "varchar(64)",
+          "key": "uk"
+        },
+        {
+          "name": "name",
+          "type": "varchar(128)"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "fields",
+      "label": "fields",
+      "tag": "Core & Identity",
+      "row": 1,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "objects_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "objects.id"
+        },
+        {
+          "name": "email",
+          "type": "varchar(255)",
+          "key": "uk"
+        },
+        {
+          "name": "role",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "entries",
+      "label": "entries",
+      "tag": "Core & Identity",
+      "row": 2,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "objects_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "objects.id"
+        },
+        {
+          "name": "fields_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "fields.id"
+        },
+        {
+          "name": "access_level",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "entry_fields",
+      "label": "entry_fields",
+      "tag": "Domain Operations",
+      "row": 0,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "objects_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "objects.id"
+        },
+        {
+          "name": "title",
+          "type": "varchar(255)"
+        },
+        {
+          "name": "state",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "statuses",
+      "label": "statuses",
+      "tag": "Domain Operations",
+      "row": 1,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "entry_fields_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "entry_fields.id"
+        },
+        {
+          "name": "payload",
+          "type": "jsonb"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "executed_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "documents",
+      "label": "documents",
+      "tag": "Domain Operations",
+      "row": 2,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "statuses_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "statuses.id"
+        },
+        {
+          "name": "event_name",
+          "type": "varchar(64)"
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb"
+        },
+        {
+          "name": "recorded_at",
+          "type": "timestamptz"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel-t0-t1",
+      "from": "objects",
+      "to": "fields",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t1-t2",
+      "from": "fields",
+      "to": "entries",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t0-d0",
+      "from": "objects",
+      "to": "entry_fields",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d0-d1",
+      "from": "entry_fields",
+      "to": "statuses",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d1-d2",
+      "from": "statuses",
+      "to": "documents",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "DenchClaw Normalized Relational Schema",
+      "items": [
+        "Strict multi-tenant referential integrity anchored on objects.id primary key",
+        "Clean separation between objects identity cluster and entry_fields operational data models",
+        "High-concurrency composite indexes enforcing unique constraints across tenant partitions"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "67438b34-6bcc-4ddb-8415-5c5da4863332",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\countly-server\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\countly-server\\countly-server.html",
+  "specification": {
+    "sha256": "7abef1cd981acb568465ab904050d8e2577f57cb64d259782da57aaba5436a92",
+    "bytes": 5932
+  },
+  "artifact": {
+    "sha256": "be56ae7b3f35fa82064ec8b45f43449e758c07e3ec0daccd62de1c134b3fc524",
+    "bytes": 850753
+  }
+}

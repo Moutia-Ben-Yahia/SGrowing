@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "2f89d158-811e-4e60-a498-c03750c295fe",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\postiz-app\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\postiz-app\\postiz-app.html",
+  "specification": {
+    "sha256": "65391e6a30e83276fd01e9a2e60423ff295060d1ab4e8604f482cf38cad22a5e",
+    "bytes": 5886
+  },
+  "artifact": {
+    "sha256": "ca5fa5091cf5fcdeef5c11d7d2333424046f9d36636a93cf7b4dc82cc16cdbdf",
+    "bytes": 850542
+  }
+}

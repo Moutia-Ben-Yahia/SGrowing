@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "461b1bba-e78f-455c-b8bb-46c7ad106493",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenOutreach\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenOutreach\\OpenOutreach.html",
+  "specification": {
+    "sha256": "145531a5e5890a0e7db11a7b2e717b052d6d6b79adfe193353996ad53d3e3db7",
+    "bytes": 5893
+  },
+  "artifact": {
+    "sha256": "6e84365ed9dbdb807bbd549e9338a33887e64fc35bf51eedf1c790411c1e8488",
+    "bytes": 850594
+  }
+}

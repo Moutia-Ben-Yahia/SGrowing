@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "2334aa83-d4c0-4f9f-a584-01cd527a3521",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Ghost\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Ghost\\Ghost-erd.html",
+  "specification": {
+    "sha256": "7a34a40591aacc282fdb3218089d069d5a2ef8e42b058dd509bfc64ffaadd8c4",
+    "bytes": 5322
+  },
+  "artifact": {
+    "sha256": "9c47378f46596a0d7d99ac1698b0ed9bab2d604127f40a3367888af3d2abcd8d",
+    "bytes": 855114
+  }
+}

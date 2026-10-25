@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "fail",
+  "type": "architecture",
+  "quality": "showcase",
+  "startedAt": "2026-10-25T12:51:28.392Z",
+  "specification": {
+    "path": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\candidate.json",
+    "sha256": "1981f14d944b057253c05f213582eff0c5d9b2dd230f1b6e367192acf17ab5c9",
+    "bytes": 2710
+  },
+  "artifact": {
+    "path": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\chatwoot.html",
+    "sha256": "3e8917874ed22dc15a2c14ba7e76a945a08b8088c726c5f8d4fdb17b27d2ba47",
+    "bytes": 841323
+  },
+  "stages": {
+    "validate": {
+      "status": "fail",
+      "exitCode": 1,
+      "durationMs": null,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\Admin\\.gemini\\config\\skills\\archify\\archify\\bin\\archify.mjs",
+        "deliver",
+        "architecture",
+        "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\candidate.json",
+        "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\chatwoot.html",
+        "--quality",
+        "showcase",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": false,
+        "command": "deliver",
+        "receiptId": "a69d9eab-392a-48f8-8ea1-260f55bf73aa",
+        "stage": "render",
+        "type": "architecture",
+        "input": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\candidate.json",
+        "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\chatwoot.html",
+        "error": "Architecture layout validation failed:\n- Component \"ext\" is not wrapped by boundary \"Chatwoot Application Cluster\" but sits inside its frame — move it outside the frame, place the wrapped members in one compact axis-aligned cluster (no empty bay for a non-member), or add it to wraps only when it truly belongs there.",
+        "diagnostics": [
+          {
+            "code": "layout/boundary-encloses-non-member",
+            "severity": "error",
+            "message": "Component \"ext\" is not wrapped by boundary \"Chatwoot Application Cluster\" but sits inside its frame — move it outside the frame, place the wrapped members in one compact axis-aligned cluster (no empty bay for a non-member), or add it to wraps only when it truly belongs there.",
+            "subject": {
+              "diagramType": "architecture",
+              "boundary": {
+                "kind": "region",
+                "label": "Chatwoot Application Cluster",
+                "wraps": [
+                  "frontend",
+                  "backend",
+                  "redis",
+                  "db",
+                  "worker"
+                ]
+              },
+              "component": "ext"
+            },
+            "evidence": {
+              "bounds": {
+                "x": 200,
+                "y": 20,
+                "width": 650,
+                "height": 220
+              },
+              "component": {
+                "id": "ext",
+                "type": "external",
+                "label": "External Channels",
+                "x": 670,
+                "y": 50,
+                "width": 150,
+                "height": 60,
+                "pos": [
+                  670,
+                  50
+                ]
+              }
+            },
+            "supportedFixes": [
+              "move \"ext\" outside the boundary frame",
+              "reposition the wrapped members into one compact axis-aligned cluster (no empty bay) that leaves non-members outside"
+            ]
+          }
+        ],
+        "provenance": "failed",
+        "update": {
+          "status": "unavailable",
+          "installedVersion": null,
+          "availableVersion": null,
+          "releaseNotes": null,
+          "checkedAt": null,
+          "source": null,
+          "noticeRequired": false,
+          "noticeText": null,
+          "reason": "disabled"
+        }
+      },
+      "execution": "embedded-in-deliver"
+    },
+    "deliver": {
+      "status": "not-run",
+      "execution": "blocked-by-validate"
+    }
+  },
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  },
+  "diagnostics": [
+    {
+      "code": "layout/boundary-encloses-non-member",
+      "severity": "error",
+      "message": "Component \"ext\" is not wrapped by boundary \"Chatwoot Application Cluster\" but sits inside its frame — move it outside the frame, place the wrapped members in one compact axis-aligned cluster (no empty bay for a non-member), or add it to wraps only when it truly belongs there.",
+      "subject": {
+        "diagramType": "architecture",
+        "boundary": {
+          "kind": "region",
+          "label": "Chatwoot Application Cluster",
+          "wraps": [
+            "frontend",
+            "backend",
+            "redis",
+            "db",
+            "worker"
+          ]
+        },
+        "component": "ext"
+      },
+      "evidence": {
+        "bounds": {
+          "x": 200,
+          "y": 20,
+          "width": 650,
+          "height": 220
+        },
+        "component": {
+          "id": "ext",
+          "type": "external",
+          "label": "External Channels",
+          "x": 670,
+          "y": 50,
+          "width": 150,
+          "height": 60,
+          "pos": [
+            670,
+            50
+          ]
+        }
+      },
+      "supportedFixes": [
+        "move \"ext\" outside the boundary frame",
+        "reposition the wrapped members into one compact axis-aligned cluster (no empty bay) that leaves non-members outside"
+      ]
+    }
+  ],
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\review-1\\chatwoot.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\review-1\\chatwoot.finalize-summary.json"
+  },
+  "visualReview": "not-requested",
+  "failedStage": "validate",
+  "finishedAt": "2026-10-25T12:51:28.809Z",
+  "durationMs": 417,
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-25T12:43:09.686Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  }
+}

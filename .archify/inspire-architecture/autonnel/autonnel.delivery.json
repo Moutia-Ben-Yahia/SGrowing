@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "f919c65d-619c-4594-a30e-e662b906043b",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\autonnel\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\autonnel\\autonnel.html",
+  "specification": {
+    "sha256": "0eefeac4d05926d31c9ceae6a6b227b4e582cc375ce8158f0bc750eddaadaad3",
+    "bytes": 5883
+  },
+  "artifact": {
+    "sha256": "6d9c9766e81d0cc5798cc3ff5012ef35b069f0af1a293ccf135db3c5513823eb",
+    "bytes": 850519
+  }
+}

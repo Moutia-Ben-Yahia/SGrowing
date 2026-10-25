@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "ad957955-5c42-4a52-9617-c71d1d9f6d89",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\mixpost\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\mixpost\\mixpost-sequence.html",
+  "specification": {
+    "sha256": "35adda52a23676485f67d39163b59008684365c2980b85ef4e36158996140738",
+    "bytes": 4421
+  },
+  "artifact": {
+    "sha256": "99b0f38b4a1c137c7fddbbc05d80128bbbc1d45b5ab2f597af7b74c607acd19e",
+    "bytes": 841118
+  }
+}

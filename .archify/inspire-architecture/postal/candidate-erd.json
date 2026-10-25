@@ -1,0 +1,259 @@
+{
+  "schema_version": 1,
+  "diagram_type": "erd",
+  "meta": {
+    "title": "postal Database Schema",
+    "output": ".archify/inspire-architecture/postal/postal-erd.html",
+    "quality_profile": "showcase"
+  },
+  "entities": [
+    {
+      "id": "additional_r",
+      "label": "additional_r",
+      "tag": "Core & Identity",
+      "row": 0,
+      "col": 0,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "slug",
+          "type": "varchar(64)",
+          "key": "uk"
+        },
+        {
+          "name": "name",
+          "type": "varchar(128)"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "address_endp",
+      "label": "address_endp",
+      "tag": "Core & Identity",
+      "row": 1,
+      "col": 0,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "addition_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "additional_r.id"
+        },
+        {
+          "name": "email",
+          "type": "varchar(255)",
+          "key": "uk"
+        },
+        {
+          "name": "role",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "authie_sessi",
+      "label": "authie_sessi",
+      "tag": "Core & Identity",
+      "row": 2,
+      "col": 0,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "addition_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "additional_r.id"
+        },
+        {
+          "name": "address__id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "address_endp.id"
+        },
+        {
+          "name": "access_level",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "credentials",
+      "label": "credentials",
+      "tag": "Domain Operations",
+      "row": 0,
+      "col": 1,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "addition_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "additional_r.id"
+        },
+        {
+          "name": "title",
+          "type": "varchar(255)"
+        },
+        {
+          "name": "state",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "domains",
+      "label": "domains",
+      "tag": "Domain Operations",
+      "row": 1,
+      "col": 1,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "credenti_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "credentials.id"
+        },
+        {
+          "name": "payload",
+          "type": "jsonb"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "executed_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "http_endpoin",
+      "label": "http_endpoin",
+      "tag": "Domain Operations",
+      "row": 2,
+      "col": 1,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "domains_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "domains.id"
+        },
+        {
+          "name": "event_name",
+          "type": "varchar(64)"
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb"
+        },
+        {
+          "name": "recorded_at",
+          "type": "timestamptz"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel-t0-t1",
+      "from": "additional_r",
+      "to": "address_endp",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t1-t2",
+      "from": "address_endp",
+      "to": "authie_sessi",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t0-d0",
+      "from": "additional_r",
+      "to": "credentials",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d0-d1",
+      "from": "credentials",
+      "to": "domains",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d1-d2",
+      "from": "domains",
+      "to": "http_endpoin",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "postal Relational Schema",
+      "items": [
+        "Multi-tenant isolation anchored on additional_r.id primary key",
+        "Columnar separation between additional_r core cluster and credentials operational data models",
+        "Referential integrity with cascade constraints and optimized composite indexes"
+      ]
+    }
+  ]
+}

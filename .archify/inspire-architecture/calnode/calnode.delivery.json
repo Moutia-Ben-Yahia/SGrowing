@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "dae48cdc-2fe1-4813-b14c-0ea24316392e",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\calnode\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\calnode\\calnode.html",
+  "specification": {
+    "sha256": "c0f4246d9d355de76ec3525182b018bec9f38ac64b73bd96140ba16947058e91",
+    "bytes": 5866
+  },
+  "artifact": {
+    "sha256": "8bd9a300826c7c87ebf6f23a4ba7d44945eb338bb370e46d8b90e58b0fbe8c19",
+    "bytes": 850430
+  }
+}

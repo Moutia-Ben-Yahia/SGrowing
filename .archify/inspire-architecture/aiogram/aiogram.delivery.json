@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "035d8b9f-282c-41c8-8292-1a492bc09aed",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\aiogram.html",
+  "specification": {
+    "sha256": "f4035424a74a14f1b72517ab9b351f978e643e8990ebd33c0a80aff5254c8888",
+    "bytes": 5912
+  },
+  "artifact": {
+    "sha256": "971e3017c674a8beca6f3114cafaaad37c589fb44638e51e078147bbe629cb3f",
+    "bytes": 850569
+  }
+}

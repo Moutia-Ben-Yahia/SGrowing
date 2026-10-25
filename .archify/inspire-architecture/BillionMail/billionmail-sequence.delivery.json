@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "417f3179-6a29-4ee1-a68d-312265404274",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\BillionMail\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\BillionMail\\BillionMail-sequence.html",
+  "specification": {
+    "sha256": "cb19d24258f4c61f800f1393280bb5aa892ac224715cce18456c815e03e259cd",
+    "bytes": 4447
+  },
+  "artifact": {
+    "sha256": "ca271e8c3cd15bb364240bda797157afc58d0bf26f551ea8671f1329c4884275",
+    "bytes": 841232
+  }
+}

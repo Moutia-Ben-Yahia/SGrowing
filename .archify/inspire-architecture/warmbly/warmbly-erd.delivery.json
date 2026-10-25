@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "6eafb37d-9a86-4b7f-87c5-6abcf0d84edc",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\warmbly\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\warmbly\\warmbly-erd.html",
+  "specification": {
+    "sha256": "509ce4209f8bf9984421c2aad68d4d55f1cf643c83ff018e7bbc11f8e7f9243c",
+    "bytes": 5483
+  },
+  "artifact": {
+    "sha256": "c62fbe9c149802e13d19b21dd6b4bd8b7181939902cf74ac11176ca482f7a4f8",
+    "bytes": 855219
+  }
+}

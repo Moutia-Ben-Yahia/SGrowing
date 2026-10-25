@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "069baa88-b184-484d-82bb-fb71ba453c0f",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\textbee\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\textbee\\textbee-sequence.html",
+  "specification": {
+    "sha256": "a3467bea06816e2ee93d1f1e6daf19d3a0889689b2f31a2e4e8f2663eb1f34a2",
+    "bytes": 4441
+  },
+  "artifact": {
+    "sha256": "df200df82d8e3e92369c2c313e27554e72e242337bdb36ab9dd5663ab8dde2ea",
+    "bytes": 841171
+  }
+}

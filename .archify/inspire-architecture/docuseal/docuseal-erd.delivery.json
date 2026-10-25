@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "783e5850-5187-4def-957c-7cbb00081878",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\docuseal\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\docuseal\\docuseal-erd.html",
+  "specification": {
+    "sha256": "fa860bbf617874b09771fce3b2d10302646dd176c617186a7e066f34a82f1c22",
+    "bytes": 5493
+  },
+  "artifact": {
+    "sha256": "530480eab3221b7ba6d2c4e7d6bfe011409133293a983b6dd977fe09c5181043",
+    "bytes": 855237
+  }
+}

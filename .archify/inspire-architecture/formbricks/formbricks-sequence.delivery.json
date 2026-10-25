@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "152e56ec-59a8-4e8d-87d2-51bbbf847a77",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\formbricks\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\formbricks\\formbricks-sequence.html",
+  "specification": {
+    "sha256": "f23be2578b5a97473c2d6b4ef11fc128ba1a8854bb4a517b02ab97ba620aa0f2",
+    "bytes": 4452
+  },
+  "artifact": {
+    "sha256": "6b7aebbf633e2eb5bc88b5eddf54f904ac0df941d908e0eec4bf8905a900bd50",
+    "bytes": 841180
+  }
+}

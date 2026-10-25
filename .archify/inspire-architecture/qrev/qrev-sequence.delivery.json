@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "21633eab-2904-40ed-95a8-78f1894c03e2",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\qrev\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\qrev\\qrev-sequence.html",
+  "specification": {
+    "sha256": "d07ae1734d9e4b3791f79225267f11ead36c05db4f9df41554a14227c9d1f190",
+    "bytes": 4394
+  },
+  "artifact": {
+    "sha256": "1f7501132c4654795f592ca3abc140e30cc1f19f3e769bf229c80e787fcd880d",
+    "bytes": 841049
+  }
+}

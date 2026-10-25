@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "dbd23bf0-0ee3-4cca-a80b-3969bd8c94ca",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\evolution-api\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\evolution-api\\evolution-api.html",
+  "specification": {
+    "sha256": "554aad54a89543cf630fdad51ce77e4d7d837ad8f614dd5a1bcf244ee69a6f42",
+    "bytes": 5911
+  },
+  "artifact": {
+    "sha256": "2648a98e361e9a2b68197035238d1fabe6fba0e7e67f3c335b65e491c23d458a",
+    "bytes": 850659
+  }
+}

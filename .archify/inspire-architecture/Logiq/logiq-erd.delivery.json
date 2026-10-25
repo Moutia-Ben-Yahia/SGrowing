@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "b416e78e-233f-466f-a3f8-4609c07a6b8b",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Logiq\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Logiq\\Logiq-erd.html",
+  "specification": {
+    "sha256": "00b58f4285e5f2afd41f90c99f0e70307e1cce5ebc17e1b3d0aa494171f9998e",
+    "bytes": 5324
+  },
+  "artifact": {
+    "sha256": "5745a851d4c48d1e36d3e6eaf88bf72c6dfbfb633684a19f08e4a92f6d1896e3",
+    "bytes": 855136
+  }
+}

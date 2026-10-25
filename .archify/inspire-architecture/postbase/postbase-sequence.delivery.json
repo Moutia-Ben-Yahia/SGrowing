@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "a041a184-fb23-4561-aed0-659dc49a2005",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\postbase\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\postbase\\postbase-sequence.html",
+  "specification": {
+    "sha256": "2c30480d38e5294404e20e40c34f02c9ada65ac4085b6e2164763056520aa9af",
+    "bytes": 4421
+  },
+  "artifact": {
+    "sha256": "90ccd86439aad4f8f6534bc7e987ec8107e3ddad2ce57dea254ec883cdbcd329",
+    "bytes": 841090
+  }
+}

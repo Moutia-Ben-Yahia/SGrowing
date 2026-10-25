@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "8abccc37-e649-461b-b6c9-bbd2b4bfa7d8",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\countly-server\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\countly-server\\countly-server-sequence.html",
+  "specification": {
+    "sha256": "49deefe6164d6e8575eaa4f83cb18a9f2d797d4a4087f5248a4e01e48eafacf2",
+    "bytes": 4453
+  },
+  "artifact": {
+    "sha256": "25f8f7e62fc346ab707535de4302fa96cfefbe4949838517b8488e77b1b7b79f",
+    "bytes": 841157
+  }
+}

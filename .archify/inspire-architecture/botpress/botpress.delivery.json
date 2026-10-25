@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "e07c70bd-a9fe-4b5a-9c98-9aedeff91f2f",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\botpress\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\botpress\\botpress.html",
+  "specification": {
+    "sha256": "e624336fedd2ea6fce7bddbb94b270fd6053f9001d1a689bae4a2959cb38d3c9",
+    "bytes": 5888
+  },
+  "artifact": {
+    "sha256": "d5c2bdd5708c60f2bdc8a1f94ec477d3ea8a1084664c5c2708e20785e4895e50",
+    "bytes": 850513
+  }
+}

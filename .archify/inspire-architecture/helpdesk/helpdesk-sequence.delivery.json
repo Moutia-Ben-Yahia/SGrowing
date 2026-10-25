@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "6f76797d-e19a-4f0d-9270-6db78c7569fa",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\helpdesk\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\helpdesk\\helpdesk-sequence.html",
+  "specification": {
+    "sha256": "574bc598fde2f5f86c6822f2d700dda8bb458ba9888f095214f96e9abd6d49da",
+    "bytes": 4448
+  },
+  "artifact": {
+    "sha256": "8b850684d2e97f2c72c81aee0f94bd8c73cce9929a0af5cbe776cee7cc3e0d97",
+    "bytes": 841167
+  }
+}

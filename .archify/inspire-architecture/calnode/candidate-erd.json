@@ -1,0 +1,253 @@
+{
+  "schema_version": 1,
+  "diagram_type": "erd",
+  "meta": {
+    "title": "calnode Database Schema",
+    "output": ".archify/inspire-architecture/calnode/calnode-erd.html",
+    "quality_profile": "showcase"
+  },
+  "entities": [
+    {
+      "id": "users",
+      "label": "users",
+      "tag": "Core & Identity",
+      "row": 0,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "slug",
+          "type": "varchar(64)",
+          "key": "uk"
+        },
+        {
+          "name": "name",
+          "type": "varchar(128)"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "api_keys",
+      "label": "api_keys",
+      "tag": "Core & Identity",
+      "row": 1,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "users_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "users.id"
+        },
+        {
+          "name": "email",
+          "type": "varchar(255)",
+          "key": "uk"
+        },
+        {
+          "name": "role",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "teams",
+      "label": "teams",
+      "tag": "Core & Identity",
+      "row": 2,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "users_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "users.id"
+        },
+        {
+          "name": "api_keys_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "api_keys.id"
+        },
+        {
+          "name": "access_level",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "team_members",
+      "label": "team_members",
+      "tag": "Domain Operations",
+      "row": 0,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "users_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "users.id"
+        },
+        {
+          "name": "title",
+          "type": "varchar(255)"
+        },
+        {
+          "name": "state",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "event_types",
+      "label": "event_types",
+      "tag": "Domain Operations",
+      "row": 1,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "team_members_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "team_members.id"
+        },
+        {
+          "name": "payload",
+          "type": "jsonb"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "executed_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "event_type_questions",
+      "label": "event_type_questions",
+      "tag": "Domain Operations",
+      "row": 2,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "event_types_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "event_types.id"
+        },
+        {
+          "name": "event_name",
+          "type": "varchar(64)"
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb"
+        },
+        {
+          "name": "recorded_at",
+          "type": "timestamptz"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel-t0-t1",
+      "from": "users",
+      "to": "api_keys",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t1-t2",
+      "from": "api_keys",
+      "to": "teams",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t0-d0",
+      "from": "users",
+      "to": "team_members",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d0-d1",
+      "from": "team_members",
+      "to": "event_types",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d1-d2",
+      "from": "event_types",
+      "to": "event_type_questions",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "calnode Normalized Relational Schema",
+      "items": [
+        "Strict multi-tenant referential integrity anchored on users.id primary key",
+        "Clean separation between users identity cluster and team_members operational data models",
+        "High-concurrency composite indexes enforcing unique constraints across tenant partitions"
+      ]
+    }
+  ]
+}

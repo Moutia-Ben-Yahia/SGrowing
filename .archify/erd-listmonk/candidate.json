@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "diagram_type": "erd",
+  "meta": {
+    "title": "Listmonk Database Schema",
+    "output": ".archify/erd-listmonk/listmonk-erd.html",
+    "quality_profile": "showcase"
+  },
+  "entities": [
+    {
+      "id": "subscribers",
+      "label": "subscribers",
+      "tag": "Audience",
+      "row": 0,
+      "col": 0,
+      "attributes": [
+        { "name": "id", "type": "serial", "key": "pk" },
+        { "name": "uuid", "type": "uuid", "key": "uk" },
+        { "name": "email", "type": "text", "key": "uk" },
+        { "name": "name", "type": "text" },
+        { "name": "status", "type": "subscriber_status" },
+        { "name": "attribs", "type": "jsonb" },
+        { "name": "created_at", "type": "timestamptz" }
+      ]
+    },
+    {
+      "id": "subscriber_lists",
+      "label": "subscriber_lists",
+      "tag": "Audience",
+      "row": 1,
+      "col": 0,
+      "attributes": [
+        { "name": "id", "type": "serial", "key": "pk" },
+        { "name": "subscriber_id", "type": "integer", "key": "fk", "references": "subscribers.id" },
+        { "name": "list_id", "type": "integer", "key": "fk", "references": "lists.id" },
+        { "name": "status", "type": "subscription_status" },
+        { "name": "created_at", "type": "timestamptz" }
+      ]
+    },
+    {
+      "id": "lists",
+      "label": "lists",
+      "tag": "Audience",
+      "row": 2,
+      "col": 0,
+      "attributes": [
+        { "name": "id", "type": "serial", "key": "pk" },
+        { "name": "uuid", "type": "uuid", "key": "uk" },
+        { "name": "name", "type": "text" },
+        { "name": "type", "type": "list_type" },
+        { "name": "optin", "type": "list_optin" },
+        { "name": "tags", "type": "varchar[]" }
+      ]
+    },
+    {
+      "id": "templates",
+      "label": "templates",
+      "tag": "Messaging",
+      "row": 0,
+      "col": 1,
+      "attributes": [
+        { "name": "id", "type": "serial", "key": "pk" },
+        { "name": "name", "type": "text", "key": "uk" },
+        { "name": "type", "type": "template_type" },
+        { "name": "body", "type": "text" }
+      ]
+    },
+    {
+      "id": "campaigns",
+      "label": "campaigns",
+      "tag": "Messaging",
+      "row": 1,
+      "col": 1,
+      "attributes": [
+        { "name": "id", "type": "serial", "key": "pk" },
+        { "name": "uuid", "type": "uuid", "key": "uk" },
+        { "name": "name", "type": "text" },
+        { "name": "subject", "type": "text" },
+        { "name": "status", "type": "campaign_status" },
+        { "name": "template_id", "type": "integer", "key": "fk", "references": "templates.id" }
+      ]
+    },
+    {
+      "id": "campaign_lists",
+      "label": "campaign_lists",
+      "tag": "Messaging",
+      "row": 2,
+      "col": 1,
+      "attributes": [
+        { "name": "id", "type": "serial", "key": "pk" },
+        { "name": "campaign_id", "type": "integer", "key": "fk", "references": "campaigns.id" },
+        { "name": "list_id", "type": "integer", "key": "fk", "references": "lists.id" }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "sub-to-sublists",
+      "from": "subscribers",
+      "to": "subscriber_lists",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "list-to-sublists",
+      "from": "lists",
+      "to": "subscriber_lists",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "template-to-campaign",
+      "from": "templates",
+      "to": "campaigns",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "camp-to-camplists",
+      "from": "campaigns",
+      "to": "campaign_lists",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "list-to-camplists",
+      "from": "lists",
+      "to": "campaign_lists",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Normalized Relational Design",
+      "items": [
+        "PostgreSQL 17 schema utilizing custom ENUMs for subscriber and campaign state machines",
+        "Compound indexing on email, tags, and status for ultra-fast million-row query scans",
+        "Junction tables subscriber_lists and campaign_lists enforce strict referential integrity"
+      ]
+    }
+  ]
+}

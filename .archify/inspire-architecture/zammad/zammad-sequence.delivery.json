@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "31a6179a-7840-4e55-8699-e0817fd4257d",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\zammad\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\zammad\\zammad-sequence.html",
+  "specification": {
+    "sha256": "c7b06d06bd04651a8407c3949ff69d894bf4db4c2ac8ca0b045f683145c6afce",
+    "bytes": 4432
+  },
+  "artifact": {
+    "sha256": "1ee139e141615ee4ba234d50e8fafac5330026248b568c5bdb67c3419b81fd07",
+    "bytes": 841143
+  }
+}

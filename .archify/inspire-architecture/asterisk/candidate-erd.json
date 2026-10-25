@@ -1,0 +1,253 @@
+{
+  "schema_version": 1,
+  "diagram_type": "erd",
+  "meta": {
+    "title": "asterisk Database Schema",
+    "output": ".archify/inspire-architecture/asterisk/asterisk-erd.html",
+    "quality_profile": "showcase"
+  },
+  "entities": [
+    {
+      "id": "endpoint",
+      "label": "endpoint",
+      "tag": "Core & Identity",
+      "row": 0,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "slug",
+          "type": "varchar(64)",
+          "key": "uk"
+        },
+        {
+          "name": "name",
+          "type": "varchar(128)"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "channel",
+      "label": "channel",
+      "tag": "Core & Identity",
+      "row": 1,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "endpoint_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "endpoint.id"
+        },
+        {
+          "name": "email",
+          "type": "varchar(255)",
+          "key": "uk"
+        },
+        {
+          "name": "role",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "bridge",
+      "label": "bridge",
+      "tag": "Core & Identity",
+      "row": 2,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "endpoint_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "endpoint.id"
+        },
+        {
+          "name": "channel_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "channel.id"
+        },
+        {
+          "name": "access_level",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "extension",
+      "label": "extension",
+      "tag": "Domain Operations",
+      "row": 0,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "endpoint_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "endpoint.id"
+        },
+        {
+          "name": "title",
+          "type": "varchar(255)"
+        },
+        {
+          "name": "state",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "cdr",
+      "label": "cdr",
+      "tag": "Domain Operations",
+      "row": 1,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "extension_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "extension.id"
+        },
+        {
+          "name": "payload",
+          "type": "jsonb"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "executed_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "voicemail",
+      "label": "voicemail",
+      "tag": "Domain Operations",
+      "row": 2,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "cdr_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "cdr.id"
+        },
+        {
+          "name": "event_name",
+          "type": "varchar(64)"
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb"
+        },
+        {
+          "name": "recorded_at",
+          "type": "timestamptz"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel-t0-t1",
+      "from": "endpoint",
+      "to": "channel",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t1-t2",
+      "from": "channel",
+      "to": "bridge",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t0-d0",
+      "from": "endpoint",
+      "to": "extension",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d0-d1",
+      "from": "extension",
+      "to": "cdr",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d1-d2",
+      "from": "cdr",
+      "to": "voicemail",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "asterisk Normalized Relational Schema",
+      "items": [
+        "Strict multi-tenant referential integrity anchored on endpoint.id primary key",
+        "Clean separation between endpoint identity cluster and extension operational data models",
+        "High-concurrency composite indexes enforcing unique constraints across tenant partitions"
+      ]
+    }
+  ]
+}

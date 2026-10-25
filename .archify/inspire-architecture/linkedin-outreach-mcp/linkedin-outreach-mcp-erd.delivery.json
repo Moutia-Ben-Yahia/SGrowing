@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "0c03c985-9982-4cf0-8aaf-e0c3176307f2",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\linkedin-outreach-mcp\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\linkedin-outreach-mcp\\linkedin-outreach-mcp-erd.html",
+  "specification": {
+    "sha256": "774fd3a63875dd4ee59bb24c084f352ea6771fda947dc680b7aaad6f35f647bd",
+    "bytes": 5388
+  },
+  "artifact": {
+    "sha256": "fa65cc2e2916ac8f648fb37bc7080ad24e4d859be1cbe3e75e8a8f07669e7c1b",
+    "bytes": 855200
+  }
+}

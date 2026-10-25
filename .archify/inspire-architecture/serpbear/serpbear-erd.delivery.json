@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "d020f1ff-2039-4c03-8061-c5d7ce084c5b",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\serpbear\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\serpbear\\serpbear-erd.html",
+  "specification": {
+    "sha256": "a38aa3aec77947fb1a976492ddbbeed3a2b66a52905ba21b2074644a8f8ef58b",
+    "bytes": 5336
+  },
+  "artifact": {
+    "sha256": "1f14f1ef7899a0be4b489a8c53b5058f3bb72db372be3e0b1ba52e544a0d8994",
+    "bytes": 855148
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "c3be1e8f-f6d0-4f05-b017-f33e77d703f9",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\dittofeed\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\dittofeed\\dittofeed-erd.html",
+  "specification": {
+    "sha256": "526c95a2a5f4425394d33c51e17ef706453070ef66fdae06141bf1a6364322f0",
+    "bytes": 5467
+  },
+  "artifact": {
+    "sha256": "d6a1590b63e923909105647acaec52262bbfbcf1cd3f00718a65e2b55f850e5a",
+    "bytes": 855204
+  }
+}

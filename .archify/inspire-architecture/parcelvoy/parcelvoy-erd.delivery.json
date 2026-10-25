@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "f9ef451c-a0d0-4065-be44-1068ec81a70c",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\parcelvoy\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\parcelvoy\\parcelvoy-erd.html",
+  "specification": {
+    "sha256": "911f0af829913d8d8a5c191bef25421c71d764e826192328289499d7acc14afb",
+    "bytes": 5314
+  },
+  "artifact": {
+    "sha256": "20e180a1c5e4f94fb5c3839a467bbea74cbcbc1579ebb6c884e5a75794379dc8",
+    "bytes": 855109
+  }
+}

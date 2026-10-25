@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "diagram_type": "class",
+  "meta": {
+    "title": "Listmonk Core Messenger Class Architecture",
+    "output": ".archify/class-listmonk/listmonk-class.html",
+    "quality_profile": "showcase"
+  },
+  "layout": {
+    "mode": "grid"
+  },
+  "types": [
+    {
+      "id": "campaign_manager",
+      "label": "CampaignManager",
+      "kind": "class",
+      "sublabel": "Coordinates email campaign dispatch",
+      "row": 0,
+      "col": 0,
+      "attributes": [
+        { "name": "db", "type": "*sqlx.DB", "visibility": "private" },
+        { "name": "messenger", "type": "Messenger", "visibility": "private" }
+      ],
+      "methods": [
+        { "name": "Start", "parameters": "c: Campaign", "returns": "error", "visibility": "public" },
+        { "name": "Pause", "parameters": "id: int", "returns": "error", "visibility": "public" },
+        { "name": "DispatchBatch", "parameters": "", "returns": "int", "visibility": "public" }
+      ]
+    },
+    {
+      "id": "messenger",
+      "label": "Messenger",
+      "kind": "interface",
+      "sublabel": "Transport driver interface",
+      "row": 0,
+      "col": 1.5,
+      "methods": [
+        { "name": "Push", "parameters": "msg: Message", "returns": "error", "visibility": "public", "abstract": true },
+        { "name": "Flush", "parameters": "", "returns": "error", "visibility": "public", "abstract": true },
+        { "name": "Close", "parameters": "", "returns": "error", "visibility": "public", "abstract": true }
+      ]
+    },
+    {
+      "id": "message_model",
+      "label": "Message",
+      "kind": "class",
+      "sublabel": "Payload data entity",
+      "row": 1,
+      "col": 0,
+      "attributes": [
+        { "name": "ID", "type": "string", "visibility": "public" },
+        { "name": "Recipient", "type": "string", "visibility": "public" },
+        { "name": "Subject", "type": "string", "visibility": "public" }
+      ]
+    },
+    {
+      "id": "smtp_messenger",
+      "label": "SMTPMessenger",
+      "kind": "class",
+      "sublabel": "SMTP connection pool",
+      "row": 1,
+      "col": 1,
+      "attributes": [
+        { "name": "pool", "type": "emailPool", "visibility": "private" }
+      ],
+      "methods": [
+        { "name": "Push", "parameters": "msg: Message", "returns": "error", "visibility": "public" }
+      ]
+    },
+    {
+      "id": "ses_messenger",
+      "label": "SESMessenger",
+      "kind": "class",
+      "sublabel": "AWS SES API client",
+      "row": 1,
+      "col": 2,
+      "attributes": [
+        { "name": "client", "type": "sesClient", "visibility": "private" }
+      ],
+      "methods": [
+        { "name": "Push", "parameters": "msg: Message", "returns": "error", "visibility": "public" }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "mgr-has-messenger",
+      "from": "campaign_manager",
+      "to": "messenger",
+      "kind": "association",
+      "label": "uses"
+    },
+    {
+      "id": "mgr-produces-msg",
+      "from": "campaign_manager",
+      "to": "message_model",
+      "kind": "dependency",
+      "label": "creates"
+    },
+    {
+      "id": "smtp-realize",
+      "from": "smtp_messenger",
+      "to": "messenger",
+      "kind": "realization"
+    },
+    {
+      "id": "ses-realize",
+      "from": "ses_messenger",
+      "to": "messenger",
+      "kind": "realization"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Go Interface Decoupling",
+      "items": [
+        "Messenger interface abstracts transport drivers (SMTP pool, AWS SES, Postmark, and Webhooks)",
+        "CampaignManager concurrency pool streams subscriber batches without coupling to network I/O"
+      ]
+    }
+  ]
+}

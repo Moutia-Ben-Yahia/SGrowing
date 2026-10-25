@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "b20a37a9-de1b-4926-b0c3-fef128430ab6",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\relaticle\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\relaticle\\relaticle.html",
+  "specification": {
+    "sha256": "053f9b3df736c037687349a98246163b1fd9ba98a9e3dd9635f33b91e315cf68",
+    "bytes": 5907
+  },
+  "artifact": {
+    "sha256": "f4116fbaa70488915f91c5de2f447aee6f4a65cfc5a32d9a9bad634912522b2a",
+    "bytes": 850577
+  }
+}

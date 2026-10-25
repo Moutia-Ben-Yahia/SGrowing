@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "ad25f524-1bfa-4370-9775-bed2981f71a8",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\spree\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\spree\\spree-erd.html",
+  "specification": {
+    "sha256": "352e940697abb8270a7dbba5cde16fc908724ed9c5bd6f17c2ab83bf9547ee56",
+    "bytes": 5324
+  },
+  "artifact": {
+    "sha256": "ac1b4f52507c57901b1f16374894911a536b9dd65a5d5df40191a96ecf437bfc",
+    "bytes": 855136
+  }
+}

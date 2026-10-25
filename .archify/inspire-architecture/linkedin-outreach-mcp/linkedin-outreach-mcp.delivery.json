@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "38ffbfde-3b15-4197-9796-c7542f2a824e",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\linkedin-outreach-mcp\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\linkedin-outreach-mcp\\linkedin-outreach-mcp.html",
+  "specification": {
+    "sha256": "398e55cf2ee364a2382bbcbb564e523a00944d8e31bea35ef11212b291942ee9",
+    "bytes": 5945
+  },
+  "artifact": {
+    "sha256": "0ce1e8003fcf7629ddc777f9e6a9e576066683a32386067dbf7ba17459e90825",
+    "bytes": 850934
+  }
+}

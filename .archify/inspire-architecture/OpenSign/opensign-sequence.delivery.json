@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "ba98283f-42a7-4b41-a046-7569782a6afa",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenSign\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenSign\\OpenSign-sequence.html",
+  "specification": {
+    "sha256": "bb2f2b3643424e4f60d60ecddeb4439bd488c99e07944ac43dbb3f7c935727fd",
+    "bytes": 4438
+  },
+  "artifact": {
+    "sha256": "2aecd03be20a8fcede3946744e043d2b60270711171f2cd73d7f02107c4d13a0",
+    "bytes": 841131
+  }
+}

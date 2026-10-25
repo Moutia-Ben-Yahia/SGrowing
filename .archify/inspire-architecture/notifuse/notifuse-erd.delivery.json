@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "54cd606e-debc-4cb2-b5c7-a7c640b0e0fc",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\notifuse\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\notifuse\\notifuse-erd.html",
+  "specification": {
+    "sha256": "41d633ef429edbd1231fdbfba86c9f3a187fb0a876005700ae5be8c6e007343c",
+    "bytes": 5336
+  },
+  "artifact": {
+    "sha256": "d7b8ec8f4f11a4cd9b91bf53d8b01590915fb9ed9ffc83f3f25ab3812e15f696",
+    "bytes": 855148
+  }
+}

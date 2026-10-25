@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "9d696e0e-f18b-40dc-bcaa-699cc5451fd3",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\libredesk\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\libredesk\\libredesk-erd.html",
+  "specification": {
+    "sha256": "faa1c55432a78f6dd644eba319ecc0f3e7fd29df1617e9aed54075bf28e8d640",
+    "bytes": 5443
+  },
+  "artifact": {
+    "sha256": "2e81f798e0edc50b07c060fe53815213e8113ee783dbccd3dcdd0d9d3067d588",
+    "bytes": 855130
+  }
+}

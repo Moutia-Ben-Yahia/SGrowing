@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "63b1bc35-47f6-4f03-bd9c-61a87a2a901a",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\VoicEra\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\VoicEra\\VoicEra-sequence.html",
+  "specification": {
+    "sha256": "fa50469295b3305c9dede0449be1397c3ecfbe95b5df064a5b1627bdf785afed",
+    "bytes": 4438
+  },
+  "artifact": {
+    "sha256": "87b27cfc7f5d9110d56296f596e591d9b52ad85e4cc0122407f3aecb88a966e1",
+    "bytes": 841159
+  }
+}

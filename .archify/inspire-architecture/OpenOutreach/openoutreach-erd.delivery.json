@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "deb102de-8a68-4f30-8a52-cc4b59f53861",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenOutreach\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenOutreach\\OpenOutreach-erd.html",
+  "specification": {
+    "sha256": "44443d2fae439acb2658179fcfd0d8f48751274b566e6f885bc0236948ad65b3",
+    "bytes": 5352
+  },
+  "artifact": {
+    "sha256": "edc930fd0f00df31b700c90dda4cf223b1d792795ac9b2738265a858f2accf09",
+    "bytes": 855164
+  }
+}

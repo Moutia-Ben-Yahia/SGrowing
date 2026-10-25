@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "dab6a950-708a-4ca8-8ab9-52ff381bfe52",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\grammY\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\grammY\\grammY.html",
+  "specification": {
+    "sha256": "e9360545bee5fb7a491491b29e3d7f2da040fafb34d8f65225d11e44c364dac7",
+    "bytes": 5907
+  },
+  "artifact": {
+    "sha256": "8352d4fa50e6ed835f83b7c43b9c50444a81abc274346afc432b1de168cb067c",
+    "bytes": 850535
+  }
+}

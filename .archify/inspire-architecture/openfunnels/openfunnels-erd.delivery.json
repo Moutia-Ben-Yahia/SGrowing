@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "98f48f4b-fff6-4839-a4ca-f5a65d94077b",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\openfunnels\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\openfunnels\\openfunnels-erd.html",
+  "specification": {
+    "sha256": "8b9635676c9a48441c7a74dc771ee96745686002dcee3fc05f0fd533636751e6",
+    "bytes": 5322
+  },
+  "artifact": {
+    "sha256": "fb0c8f4b267658f82714ac8e7aed015bb50467b43265d463ac7f7c9fc1c71edc",
+    "bytes": 855117
+  }
+}

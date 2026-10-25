@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "6414a53b-980d-45e8-92ad-b4f4e5ca20cd",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\seonaut\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\seonaut\\seonaut-erd.html",
+  "specification": {
+    "sha256": "11b42022a2a85ca6af92e3431d23a715e7701b4da46c8bac99f1560bc158863c",
+    "bytes": 5332
+  },
+  "artifact": {
+    "sha256": "6ba6b54b179cb48afa6a6cb682c1b6c6d969e28189f9132e19f10bf30d20ea47",
+    "bytes": 855144
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "cebe04c9-fc65-4814-95a0-fc4093e76914",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenOutreach\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenOutreach\\OpenOutreach-sequence.html",
+  "specification": {
+    "sha256": "47aceb70b29555993f1d5e9e3d48de1a53ce7ca27dfbe71cac27e275db42e939",
+    "bytes": 4450
+  },
+  "artifact": {
+    "sha256": "84d3271eae3226a3d360d5d93e3a1f7bd34568af45993a0e5a1f56cb47f27e7b",
+    "bytes": 840144
+  }
+}

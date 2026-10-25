@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "ecb071de-cd29-4b46-b481-850a2cd36ace",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\laudspeaker\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\laudspeaker\\laudspeaker-sequence.html",
+  "specification": {
+    "sha256": "b9633c608d7c28f418dcc2d150af5574b119ac1eb2ae765e231cfed8a8ce525a",
+    "bytes": 4439
+  },
+  "artifact": {
+    "sha256": "34536e471803893299d1fc88fb71fc4d2994d1e2302ee32dbbe5933630c947cd",
+    "bytes": 841224
+  }
+}

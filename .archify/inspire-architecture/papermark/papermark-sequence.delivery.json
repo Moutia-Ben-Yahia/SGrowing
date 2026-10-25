@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "46fd7d1e-fdc9-4dc8-aaa6-8e9e94df4025",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\papermark\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\papermark\\papermark-sequence.html",
+  "specification": {
+    "sha256": "a254ddfe9d07c8b0dab06116040656facf14213b3ac7c741da342e2c3d83ecd8",
+    "bytes": 4446
+  },
+  "artifact": {
+    "sha256": "0aab35c29ef626001c8e1a83dc88f39170450ee467013cb5b7bf414713f3ea48",
+    "bytes": 841153
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "4cd71f94-ac76-4381-a00d-7118da4347b0",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\logchimp\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\logchimp\\logchimp-erd.html",
+  "specification": {
+    "sha256": "d724bfe4d8102a66ee028cd3b10f30a61c2e9ccdf93352861acc4cccbf0e7b81",
+    "bytes": 5336
+  },
+  "artifact": {
+    "sha256": "0fa3d68d060bd9f407d6e40e5e5ad342d6f1ad568d3e8830e3eb7711a179e973",
+    "bytes": 855148
+  }
+}

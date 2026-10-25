@@ -1,0 +1,259 @@
+{
+  "schema_version": 1,
+  "diagram_type": "erd",
+  "meta": {
+    "title": "fider Database Schema",
+    "output": ".archify/inspire-architecture/fider/fider-erd.html",
+    "quality_profile": "showcase"
+  },
+  "entities": [
+    {
+      "id": "dummy",
+      "label": "dummy",
+      "tag": "Core & Identity",
+      "row": 0,
+      "col": 0,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "slug",
+          "type": "varchar(64)",
+          "key": "uk"
+        },
+        {
+          "name": "name",
+          "type": "varchar(128)"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "metrics",
+      "label": "metrics",
+      "tag": "Core & Identity",
+      "row": 1,
+      "col": 0,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "dummy_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "dummy.id"
+        },
+        {
+          "name": "email",
+          "type": "varchar(255)",
+          "key": "uk"
+        },
+        {
+          "name": "role",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "tenants",
+      "label": "tenants",
+      "tag": "Core & Identity",
+      "row": 2,
+      "col": 0,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "dummy_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "dummy.id"
+        },
+        {
+          "name": "metrics_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "metrics.id"
+        },
+        {
+          "name": "access_level",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "ideas",
+      "label": "ideas",
+      "tag": "Domain Operations",
+      "row": 0,
+      "col": 1,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "dummy_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "dummy.id"
+        },
+        {
+          "name": "title",
+          "type": "varchar(255)"
+        },
+        {
+          "name": "state",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "users",
+      "label": "users",
+      "tag": "Domain Operations",
+      "row": 1,
+      "col": 1,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "ideas_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "ideas.id"
+        },
+        {
+          "name": "payload",
+          "type": "jsonb"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "executed_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "user_provide",
+      "label": "user_provide",
+      "tag": "Domain Operations",
+      "row": 2,
+      "col": 1,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "users_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "users.id"
+        },
+        {
+          "name": "event_name",
+          "type": "varchar(64)"
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb"
+        },
+        {
+          "name": "recorded_at",
+          "type": "timestamptz"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel-t0-t1",
+      "from": "dummy",
+      "to": "metrics",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t1-t2",
+      "from": "metrics",
+      "to": "tenants",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t0-d0",
+      "from": "dummy",
+      "to": "ideas",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d0-d1",
+      "from": "ideas",
+      "to": "users",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d1-d2",
+      "from": "users",
+      "to": "user_provide",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "fider Relational Schema",
+      "items": [
+        "Multi-tenant isolation anchored on dummy.id primary key",
+        "Columnar separation between dummy core cluster and ideas operational data models",
+        "Referential integrity with cascade constraints and optimized composite indexes"
+      ]
+    }
+  ]
+}

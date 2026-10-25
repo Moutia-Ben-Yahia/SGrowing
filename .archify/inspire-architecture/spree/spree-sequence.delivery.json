@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "fd873980-9e8b-4f8a-a61f-5c5522936b3d",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\spree\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\spree\\spree-sequence.html",
+  "specification": {
+    "sha256": "f987dbb8261fa2f01f06bceab56fe7556c2bf0556f0abe975bed48bf18eaecea",
+    "bytes": 4402
+  },
+  "artifact": {
+    "sha256": "a9b9c2d9b55991d2ba3794061faab2771182faa47aed4d256531458ef395428d",
+    "bytes": 841085
+  }
+}

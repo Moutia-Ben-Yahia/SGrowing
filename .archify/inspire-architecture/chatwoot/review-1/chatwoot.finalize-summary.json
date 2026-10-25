@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "fail",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\candidate.json",
+    "sha256": "1981f14d944b057253c05f213582eff0c5d9b2dd230f1b6e367192acf17ab5c9",
+    "bytes": 2710
+  },
+  "artifact": {
+    "path": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\chatwoot.html",
+    "sha256": "3e8917874ed22dc15a2c14ba7e76a945a08b8088c726c5f8d4fdb17b27d2ba47",
+    "bytes": 841323
+  },
+  "gates": {
+    "validate": "fail",
+    "deliver": "not-run",
+    "check": "not-run",
+    "browser-check": "not-run"
+  },
+  "failedStage": "validate",
+  "diagnostics": [
+    {
+      "code": "layout/boundary-encloses-non-member",
+      "severity": "error",
+      "message": "Component \"ext\" is not wrapped by boundary \"Chatwoot Application Cluster\" but sits inside its frame — move it outside the frame, place the wrapped members in one compact axis-aligned cluster (no empty bay for a non-member), or add it to wraps only when it truly belongs there.",
+      "subject": {
+        "diagramType": "architecture",
+        "boundary": {
+          "kind": "region",
+          "label": "Chatwoot Application Cluster",
+          "wraps": [
+            "frontend",
+            "backend",
+            "redis",
+            "db",
+            "worker"
+          ]
+        },
+        "component": "ext"
+      },
+      "evidence": {
+        "bounds": {
+          "x": 200,
+          "y": 20,
+          "width": 650,
+          "height": 220
+        },
+        "component": {
+          "id": "ext",
+          "type": "external",
+          "label": "External Channels",
+          "x": 670,
+          "y": 50,
+          "width": 150,
+          "height": 60,
+          "pos": [
+            670,
+            50
+          ]
+        }
+      },
+      "supportedFixes": [
+        "move \"ext\" outside the boundary frame",
+        "reposition the wrapped members into one compact axis-aligned cluster (no empty bay) that leaves non-members outside"
+      ]
+    }
+  ],
+  "diagnosticSummary": {
+    "total": 1,
+    "shown": 1,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\review-1\\chatwoot.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\review-1\\chatwoot.finalize-summary.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-25T12:43:09.686Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 417,
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  },
+  "nextAction": {
+    "action": "edit-in-place",
+    "candidate": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\candidate.json",
+    "constraint": "Preserve unaffected semantics and geometry; apply each diagnostic's supportedFixes, or the fix its message names, and do not replace the whole candidate.",
+    "then": "finalize-once"
+  }
+}

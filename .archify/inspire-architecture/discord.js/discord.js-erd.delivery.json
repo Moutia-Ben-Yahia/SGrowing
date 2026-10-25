@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "888eb73c-58eb-46eb-b769-d8230f405169",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\discord.js\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\discord.js\\discord.js-erd.html",
+  "specification": {
+    "sha256": "d43984a0ef40d4ecb2923e8e5db30be773f8a8a124a657c8a09b186ba4bd555e",
+    "bytes": 5230
+  },
+  "artifact": {
+    "sha256": "a8a79ed2e3b142b5d5c9546f36ffd78e81319487916da1af78109c6900aed429",
+    "bytes": 854980
+  }
+}

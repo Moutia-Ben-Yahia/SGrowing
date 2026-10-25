@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "24b03920-cc87-4fb1-95f9-1f3c6ec41594",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\qrev\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\qrev\\qrev-erd.html",
+  "specification": {
+    "sha256": "a628ae7e08264e03a0468d410d352d1c14376424e799acb519277400c978512a",
+    "bytes": 5320
+  },
+  "artifact": {
+    "sha256": "1cb1c375c30d1db0a061ed456fe3af5b1ab25a4e338c75ef89301c08e1056252",
+    "bytes": 855132
+  }
+}

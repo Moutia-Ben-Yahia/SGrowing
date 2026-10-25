@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "2b787bb0-f45d-4851-958a-73536d5dbfb9",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Red-DiscordBot\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Red-DiscordBot\\Red-DiscordBot-erd.html",
+  "specification": {
+    "sha256": "a823bc12ab2c345f98dff0b635db389f3738daab2ad2569b29d6ad633d419b45",
+    "bytes": 5360
+  },
+  "artifact": {
+    "sha256": "76dbdf6ae85319295112d8c5df0f73683eb822e6b253281aecb3584c48eea798",
+    "bytes": 855172
+  }
+}

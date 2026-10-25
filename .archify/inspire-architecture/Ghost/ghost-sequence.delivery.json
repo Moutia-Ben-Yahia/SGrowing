@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "1f9ca9f7-0d6f-4c4d-8f9d-a0327b8acfa3",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Ghost\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Ghost\\Ghost-sequence.html",
+  "specification": {
+    "sha256": "85f68857ac0eab30ed1efa93c74e8e0ca9e9c0e66b1f9f8a5b5a99391439df29",
+    "bytes": 4403
+  },
+  "artifact": {
+    "sha256": "95038221d0ec88a96dd589401e4167ce39b1674ce31f70e98b26c1c4dc64dc3a",
+    "bytes": 841054
+  }
+}

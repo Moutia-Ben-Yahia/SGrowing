@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "6d5f4e35-f856-4f56-a6d1-91d0aa8d3978",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\serpbear\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\serpbear\\serpbear-sequence.html",
+  "specification": {
+    "sha256": "17ff6e9302f7c046c70cf1ac2866d11fb2fcaae6d5b8769b177a77f2ecd5fc6e",
+    "bytes": 4433
+  },
+  "artifact": {
+    "sha256": "2bf3e942b4a84b19a3c64b59f12c9f842f385b77b4bd4dae939f04d5ff2c1ac0",
+    "bytes": 841149
+  }
+}

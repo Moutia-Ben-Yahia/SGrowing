@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "73becca3-350a-4f1b-8cd7-3e914a8e8906",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\brightbean-chat\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\brightbean-chat\\brightbean-chat-sequence.html",
+  "specification": {
+    "sha256": "a8d675f55b842362e1a36ac337c0cee155ea2202ce9b00d69fbf7edda6023996",
+    "bytes": 4459
+  },
+  "artifact": {
+    "sha256": "4120b38d30dbef9bacd632e8e239f756d407f33ad4518e7abc37912201268052",
+    "bytes": 841254
+  }
+}

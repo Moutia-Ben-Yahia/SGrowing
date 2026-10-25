@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "1aa190ee-e0fa-4963-adc9-137774800161",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\twenty\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\twenty\\twenty-erd.html",
+  "specification": {
+    "sha256": "ec6d0820da0f1b784d3e0c1fc1538b500686c80e3398140f94ab4e132080cfdf",
+    "bytes": 5464
+  },
+  "artifact": {
+    "sha256": "15ff509fd80d30464b14787fae0cf805cf4374568b1304bdf72eaf5b6b7a8ba2",
+    "bytes": 855190
+  }
+}

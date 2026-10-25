@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "965c818a-3886-46a6-bce1-f7ec44b292c0",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\dsforms\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\dsforms\\dsforms.html",
+  "specification": {
+    "sha256": "ecbcf7fd8b5dc42de69056ecd9fdc8c4b33ad088fdbd5ea8bd7b0e04d5d03236",
+    "bytes": 5862
+  },
+  "artifact": {
+    "sha256": "f4a806b6d93e966444399cb279cafbe1b457f1cf5209e07836e77f589796c3fd",
+    "bytes": 850420
+  }
+}

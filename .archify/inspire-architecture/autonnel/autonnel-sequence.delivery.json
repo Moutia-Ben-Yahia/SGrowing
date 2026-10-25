@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "e718386e-2385-43b4-8107-0d86ca7899c1",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\autonnel\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\autonnel\\autonnel-sequence.html",
+  "specification": {
+    "sha256": "b3b04e8a625b903069fed78405f7a02959c416fc11d97d122a3112b421984348",
+    "bytes": 4427
+  },
+  "artifact": {
+    "sha256": "58d02a81e9b266b5b293f52533e4762fc4308ff1eaf86f1353630d3cefb3714b",
+    "bytes": 841107
+  }
+}

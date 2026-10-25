@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\candidate.json",
+    "sha256": "4fdda7c5531a900941fed2930f24548cb916378a2b2f2f4160b13ffe7ba28633",
+    "bytes": 2745
+  },
+  "artifact": {
+    "path": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\chatwoot.html",
+    "sha256": "c0a11a0ca02c06cad8d3e14f280dd953f190ea4eeaaa76a9dddc7eccf784762f",
+    "bytes": 841255
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\review-2\\chatwoot.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\review-2\\chatwoot.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\review-2\\chatwoot.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-25T12:43:09.686Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2545,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

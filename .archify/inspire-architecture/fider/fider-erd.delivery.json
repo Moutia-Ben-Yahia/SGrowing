@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "d9ac973e-84b7-4d1d-93f2-ff0639795bb5",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\fider\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\fider\\fider-erd.html",
+  "specification": {
+    "sha256": "ac5f37d7bdc0b6b1bcbb6cdd975be8ea7c276ebe3df07679de83ad062304188a",
+    "bytes": 5305
+  },
+  "artifact": {
+    "sha256": "0d165215ff821f06531456137287c15591d8219306cd5806047b12bdf34b8bf0",
+    "bytes": 854977
+  }
+}

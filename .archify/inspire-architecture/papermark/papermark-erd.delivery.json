@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "b236b740-4f21-4068-82e0-f84088f32aec",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\papermark\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\papermark\\papermark-erd.html",
+  "specification": {
+    "sha256": "7bc32a14a532c1b91e57475dd10009dfb0e350f3d7088c37edbc56222dbaa719",
+    "bytes": 5591
+  },
+  "artifact": {
+    "sha256": "868674d65f375e1bbe8e7dde90f45e05c2c54b8b1b6b3983b457d2f9ccebde49",
+    "bytes": 855508
+  }
+}

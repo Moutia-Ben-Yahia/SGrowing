@@ -1,0 +1,259 @@
+{
+  "schema_version": 1,
+  "diagram_type": "erd",
+  "meta": {
+    "title": "chaskiq Database Schema",
+    "output": ".archify/inspire-architecture/chaskiq/chaskiq-erd.html",
+    "quality_profile": "showcase"
+  },
+  "entities": [
+    {
+      "id": "active_stora",
+      "label": "active_stora",
+      "tag": "Core & Identity",
+      "row": 0,
+      "col": 0,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "slug",
+          "type": "varchar(64)",
+          "key": "uk"
+        },
+        {
+          "name": "name",
+          "type": "varchar(128)"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "metrics",
+      "label": "metrics",
+      "tag": "Core & Identity",
+      "row": 1,
+      "col": 0,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "active_s_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "active_stora.id"
+        },
+        {
+          "name": "email",
+          "type": "varchar(255)",
+          "key": "uk"
+        },
+        {
+          "name": "role",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "activity",
+      "label": "activity",
+      "tag": "Core & Identity",
+      "row": 2,
+      "col": 0,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "active_s_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "active_stora.id"
+        },
+        {
+          "name": "metrics_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "metrics.id"
+        },
+        {
+          "name": "access_level",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "agent_teams",
+      "label": "agent_teams",
+      "tag": "Domain Operations",
+      "row": 0,
+      "col": 1,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "active_s_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "active_stora.id"
+        },
+        {
+          "name": "title",
+          "type": "varchar(255)"
+        },
+        {
+          "name": "state",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "agents",
+      "label": "agents",
+      "tag": "Domain Operations",
+      "row": 1,
+      "col": 1,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "agent_te_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "agent_teams.id"
+        },
+        {
+          "name": "payload",
+          "type": "jsonb"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "executed_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "app_package_",
+      "label": "app_package_",
+      "tag": "Domain Operations",
+      "row": 2,
+      "col": 1,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "agents_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "agents.id"
+        },
+        {
+          "name": "event_name",
+          "type": "varchar(64)"
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb"
+        },
+        {
+          "name": "recorded_at",
+          "type": "timestamptz"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel-t0-t1",
+      "from": "active_stora",
+      "to": "metrics",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t1-t2",
+      "from": "metrics",
+      "to": "activity",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t0-d0",
+      "from": "active_stora",
+      "to": "agent_teams",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d0-d1",
+      "from": "agent_teams",
+      "to": "agents",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d1-d2",
+      "from": "agents",
+      "to": "app_package_",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "chaskiq Relational Schema",
+      "items": [
+        "Multi-tenant isolation anchored on active_stora.id primary key",
+        "Columnar separation between active_stora core cluster and agent_teams operational data models",
+        "Referential integrity with cascade constraints and optimized composite indexes"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "fail",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Business\\Software\\MarketingStudio\\.archify\\architecture-listmonk\\candidate.json",
+    "sha256": "acdc4f7bc4ddbb859d77b6a5ed02aa2e99457e790fd50eff6d6e312843080f53",
+    "bytes": 1669
+  },
+  "artifact": {
+    "path": "C:\\Business\\Software\\MarketingStudio\\.archify\\architecture-listmonk\\listmonk.html",
+    "sha256": "04fa290a9e87c3c9f9aa375057b7c193c92366d812b5fd3c46f5ec9416872e38",
+    "bytes": 834585
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "fail"
+  },
+  "failedStage": "browser-check",
+  "diagnostics": [
+    {
+      "code": "viewer/evidence-path-conflict",
+      "severity": "error",
+      "message": "browser-check will not replace the existing unowned evidence path \"C:\\Business\\Software\\MarketingStudio\\.archify\\architecture-listmonk\\listmonk.browser-check.json\".",
+      "subject": {
+        "artifact": "C:\\Business\\Software\\MarketingStudio\\.archify\\architecture-listmonk\\listmonk.html",
+        "evidencePath": "C:\\Business\\Software\\MarketingStudio\\.archify\\architecture-listmonk\\listmonk.browser-check.json"
+      },
+      "evidence": {
+        "reason": {
+          "code": "ownership-artifact-mismatch"
+        }
+      },
+      "supportedFixes": [
+        "move the conflicting file aside, or choose a separate --out-dir, then rerun browser-check"
+      ]
+    }
+  ],
+  "diagnosticSummary": {
+    "total": 1,
+    "shown": 1,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\architecture-listmonk\\listmonk.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\architecture-listmonk\\listmonk.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\architecture-listmonk\\listmonk.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-25T12:43:09.686Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 925,
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  }
+}

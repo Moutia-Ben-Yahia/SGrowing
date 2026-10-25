@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "76813c91-bf85-4629-ab9e-dd1a87f6f998",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\documenso\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\documenso\\documenso.html",
+  "specification": {
+    "sha256": "e2ad9d5d931ff4021d66bed56bbc1f6497e24250275cd15d93d3c92912aa13ed",
+    "bytes": 5885
+  },
+  "artifact": {
+    "sha256": "8bdc67766e420575b75c2b1b3e135db4d59755d34d259d56b49eac5a8e406faa",
+    "bytes": 850530
+  }
+}

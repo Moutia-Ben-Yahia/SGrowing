@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "1530ab7c-af50-41ef-b7c3-c31992e1d3f8",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\countly-server\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\countly-server\\countly-server-erd.html",
+  "specification": {
+    "sha256": "79871cff4d3c56f95961ea83d6d9129e0d9a6b35c4042f86e3fde512f9db0dfc",
+    "bytes": 5210
+  },
+  "artifact": {
+    "sha256": "5919baa64431564072eb53dd8549295a616314a579195f5af4d2ce241e01d6e0",
+    "bytes": 854957
+  }
+}

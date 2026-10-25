@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "e83ef297-3b23-426d-9f1a-4b9855a9e123",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\wppconnect\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\wppconnect\\wppconnect-sequence.html",
+  "specification": {
+    "sha256": "a90886527c160b4f0945e1e2efddddef9efb828f524611d7233b4944bacdc47e",
+    "bytes": 4453
+  },
+  "artifact": {
+    "sha256": "411eba1aa7dbff2772e8fc9c14c04b42f62fa056de05ec5b1fb67357abdc9424",
+    "bytes": 841217
+  }
+}

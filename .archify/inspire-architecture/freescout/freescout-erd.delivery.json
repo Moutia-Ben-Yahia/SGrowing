@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "ec96939a-9011-4105-88a5-45f1f72ce5bf",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\freescout\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\freescout\\freescout-erd.html",
+  "specification": {
+    "sha256": "d3fd4e70130e0bce618fa04467c1249fb8083e6e0b163fc599ee1c127f5dae62",
+    "bytes": 5328
+  },
+  "artifact": {
+    "sha256": "fc1b1cfd00648a566ad42fa91a804d100da32d1be41ce2aae3253693a927fa29",
+    "bytes": 855126
+  }
+}

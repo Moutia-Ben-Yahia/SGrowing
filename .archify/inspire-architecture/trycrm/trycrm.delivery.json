@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "6d58bed8-c490-4d42-a3d6-a4071daab573",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\trycrm\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\trycrm\\trycrm.html",
+  "specification": {
+    "sha256": "25a1dbf4d07e4deb8a70e903a82ce91b3ae9565c5baa91ccc7f5f57075f17d8c",
+    "bytes": 5882
+  },
+  "artifact": {
+    "sha256": "563f6e835b9d548c510ec6d53f31ab664e0b95a160d4cc5101b4beb0b093be10",
+    "bytes": 850455
+  }
+}

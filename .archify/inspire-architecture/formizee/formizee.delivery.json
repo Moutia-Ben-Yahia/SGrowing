@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "845e2a7f-a48e-4890-9194-24578419cac0",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\formizee\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\formizee\\formizee.html",
+  "specification": {
+    "sha256": "523258fefa6d7ad94feaa818f1730cebe9efa99328c93831d5a21d101f74ae1f",
+    "bytes": 5892
+  },
+  "artifact": {
+    "sha256": "3b78c6906e2fbed75745dbbec4c54e4560c58167f2fb64fdf91020d84e16dec4",
+    "bytes": 850523
+  }
+}

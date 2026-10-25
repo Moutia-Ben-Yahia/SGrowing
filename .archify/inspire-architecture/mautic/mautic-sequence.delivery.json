@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "7dfa3b81-b046-4885-b37a-b3344e577ff2",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\mautic\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\mautic\\mautic-sequence.html",
+  "specification": {
+    "sha256": "ae3491bc7f89d5c23e2f67ea58304bdbe2634bb2a202883be8319ece6c9e16be",
+    "bytes": 4433
+  },
+  "artifact": {
+    "sha256": "b463280c33d880ae5b4e72ebedd409dafbfa241d90b1ee68f659489b2a042ef0",
+    "bytes": 841175
+  }
+}

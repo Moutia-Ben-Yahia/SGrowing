@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "4672bdf5-9f8e-4d2b-9b54-3da061dfe766",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\documenso\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\documenso\\documenso-erd.html",
+  "specification": {
+    "sha256": "8dd42523779106eefa39d8fad8552a024d735daafec97add26984f6a1f299fdd",
+    "bytes": 5432
+  },
+  "artifact": {
+    "sha256": "9e3c23d722dd4c41dc83f434784689d6bf9e6f0c9e3963ff9c22bda8674c7946",
+    "bytes": 855374
+  }
+}

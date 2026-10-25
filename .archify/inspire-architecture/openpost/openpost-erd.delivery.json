@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "73a09108-d362-4d60-91e0-01e55d58e140",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\openpost\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\openpost\\openpost-erd.html",
+  "specification": {
+    "sha256": "0023f12d557376609081aab7920464f2635762f4f86c3c598b52e6ea4cc400d0",
+    "bytes": 5528
+  },
+  "artifact": {
+    "sha256": "7aee1c1dd8a04e97e97c2f9a30158191014b6e27bc9e7a5e5abc73d3dfff9668",
+    "bytes": 855463
+  }
+}

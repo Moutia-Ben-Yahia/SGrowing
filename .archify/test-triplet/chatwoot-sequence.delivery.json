@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "b0aec188-cbee-4d4e-a4b5-254aaea59488",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\test-triplet\\cand-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\test-triplet\\chatwoot-sequence.html",
+  "specification": {
+    "sha256": "995f8329eaaaa3e86427065fb7fded8c7311603fc6e4b41ad33cba807ca3d28e",
+    "bytes": 4492
+  },
+  "artifact": {
+    "sha256": "147eae4ccf5a2cc2ccbd95a069850c5b73fd950dce178a73959ee68d7077edfd",
+    "bytes": 841313
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "2c2a7f3e-b369-4885-8478-1d4dfe7e7fba",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Open-Cold-Dialer\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Open-Cold-Dialer\\Open-Cold-Dialer-sequence.html",
+  "specification": {
+    "sha256": "e80ef3d26258de37d773b10b1aec05f5e13664a19b568a695216e8f8b0e309b1",
+    "bytes": 4473
+  },
+  "artifact": {
+    "sha256": "71e5a15de91904bc8a4aba5f4d15f5240b22410f8ed7b13821f17060ed4678c1",
+    "bytes": 841191
+  }
+}

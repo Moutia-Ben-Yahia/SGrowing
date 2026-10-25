@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "2c633211-2489-42c3-8a17-595f966bed90",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\DenchClaw\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\DenchClaw\\DenchClaw.html",
+  "specification": {
+    "sha256": "f7e609669a86c80ce9e1e6db3aa7fc3af11a85900b49a13024fc09c947e482ef",
+    "bytes": 5897
+  },
+  "artifact": {
+    "sha256": "82ca7d1345af619fd8e868642f2f4b8a9af3a6c953d557605addf2e1a4a0cce5",
+    "bytes": 850555
+  }
+}

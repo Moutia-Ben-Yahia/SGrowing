@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "1ae75738-3f6f-4eab-846d-bba6d82682f9",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\openfunnels\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\openfunnels\\openfunnels-sequence.html",
+  "specification": {
+    "sha256": "048d5023568a6440a7199a4ef67abb7f09359e7dca95731bbebe46953052192b",
+    "bytes": 4459
+  },
+  "artifact": {
+    "sha256": "380d2d0599275bc21db6a9a10b25fc497000e25641170972720af4b6bce5041f",
+    "bytes": 841296
+  }
+}

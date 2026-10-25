@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "7da0a114-aecf-4248-9b7d-9d1c1f639dea",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\laudspeaker\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\laudspeaker\\laudspeaker.html",
+  "specification": {
+    "sha256": "9ea6e33eb7dd0d18d5a1e093dab4454accbf3ae49259096bd1bdaa96405597c6",
+    "bytes": 5899
+  },
+  "artifact": {
+    "sha256": "31517e1b164a9d81f56f35e59327f69b0e7769e2894404c446b4e8dfd9fecfe3",
+    "bytes": 850638
+  }
+}

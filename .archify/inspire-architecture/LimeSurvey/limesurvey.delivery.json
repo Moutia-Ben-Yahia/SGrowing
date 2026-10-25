@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "89085d00-6199-445d-88a8-9779e7cc0df4",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\LimeSurvey\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\LimeSurvey\\LimeSurvey.html",
+  "specification": {
+    "sha256": "11224d0d52726d4a5a8ff93a39167a07e3034d8b70b1d945113ceb978f19fd87",
+    "bytes": 5912
+  },
+  "artifact": {
+    "sha256": "18acb9bf85b82777e50056ab6bd5370a8d35a519dba041b6783179a97fa433b5",
+    "bytes": 850613
+  }
+}

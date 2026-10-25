@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "09b9a4ed-ae1b-412e-b00a-e34c5e5e35da",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\BillionMail\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\BillionMail\\BillionMail-erd.html",
+  "specification": {
+    "sha256": "0e2bc6e261ba7d3b2f18a3a0fe51bdee919766a4b41bc9704661ba2b2e373edf",
+    "bytes": 5311
+  },
+  "artifact": {
+    "sha256": "8872af4ac1475e770047636b992d08c3d2ab90dd4e01dbac19a3565ac04e350b",
+    "bytes": 855102
+  }
+}

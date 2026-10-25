@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "92d35d59-3714-48df-a898-5328c544ed04",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\brightbean-chat\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\brightbean-chat\\brightbean-chat-erd.html",
+  "specification": {
+    "sha256": "edaf438c8b2f0b008be4ac29dde7340e424f8bc25f49ba6f899a728159dcda8d",
+    "bytes": 5364
+  },
+  "artifact": {
+    "sha256": "4ea674a21d941fe0cba22621503d76658e0a572f252b1d5505891f2ea34e773f",
+    "bytes": 855176
+  }
+}

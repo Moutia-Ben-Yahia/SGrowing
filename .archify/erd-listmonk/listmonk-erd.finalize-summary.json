@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "erd",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Business\\Software\\MarketingStudio\\.archify\\erd-listmonk\\candidate.json",
+    "sha256": "05e182e76b90d57bc8847e379461de00d931f4fe4c37e678a4bcdd5d8a4cc98d",
+    "bytes": 4281
+  },
+  "artifact": {
+    "path": "C:\\Business\\Software\\MarketingStudio\\.archify\\erd-listmonk\\listmonk-erd.html",
+    "sha256": "221f200b0f85d57e77a259e7717945cf3fe8b21cfdcf45f078ba8fcbe38e58ae",
+    "bytes": 856000
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\erd-listmonk\\listmonk-erd.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\erd-listmonk\\listmonk-erd.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\erd-listmonk\\listmonk-erd.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-25T12:43:09.686Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 3232,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

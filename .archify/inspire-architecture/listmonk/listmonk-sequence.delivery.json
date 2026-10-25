@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "14ce25eb-d437-4f2a-b881-093ebbf98048",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\listmonk\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\listmonk\\listmonk-sequence.html",
+  "specification": {
+    "sha256": "f4aab9c83914a4a0d0b9f25eb1a84902cabcfe56af6338fd5c04da59da0c555f",
+    "bytes": 4432
+  },
+  "artifact": {
+    "sha256": "62b9d72e227674809ad385edf106ca0cc501858188affdce4b575887da63b1f7",
+    "bytes": 841131
+  }
+}

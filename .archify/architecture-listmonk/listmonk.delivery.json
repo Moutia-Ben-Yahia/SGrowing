@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "817f99b1-9472-4786-8c8a-fb1c72653408",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "C:\\Business\\Software\\MarketingStudio\\.archify\\architecture-listmonk\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\architecture-listmonk\\listmonk.html",
+  "specification": {
+    "sha256": "acdc4f7bc4ddbb859d77b6a5ed02aa2e99457e790fd50eff6d6e312843080f53",
+    "bytes": 1669
+  },
+  "artifact": {
+    "sha256": "04fa290a9e87c3c9f9aa375057b7c193c92366d812b5fd3c46f5ec9416872e38",
+    "bytes": 834585
+  }
+}

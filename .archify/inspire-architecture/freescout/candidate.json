@@ -1,0 +1,315 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "freescout System Architecture",
+    "output": ".archify/inspire-architecture/freescout/freescout.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "ingress",
+        "label": "Client Ingress & Frontends",
+        "focus": [
+          "actor",
+          "front",
+          "auth",
+          "api"
+        ],
+        "note": "Client web/mobile requests authenticate and enter through Symfony / Doctr."
+      },
+      {
+        "id": "core-processing",
+        "label": "Core Services & Workers",
+        "focus": [
+          "api",
+          "domain",
+          "queue",
+          "worker"
+        ],
+        "note": "Synchronous API routes delegate business logic to domain layers and offload heavy tasks to queues."
+      },
+      {
+        "id": "persistence-subsystem",
+        "label": "Storage & Cache Subsystem",
+        "focus": [
+          "api",
+          "domain",
+          "worker",
+          "cache",
+          "db",
+          "storage"
+        ],
+        "note": "Multi-model persistent storage combining relational data, fast caching, and object storage."
+      },
+      {
+        "id": "external-integrations",
+        "label": "External Integrations",
+        "focus": [
+          "api",
+          "worker",
+          "ext"
+        ],
+        "note": "Outbound webhooks, third-party transactional email, and partner API integrations."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "actor",
+      "type": "external",
+      "label": "Users & Clients",
+      "sublabel": "Web Browser & Mobile",
+      "pos": [
+        40,
+        50
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "front",
+      "type": "frontend",
+      "label": "Blade & Inertia",
+      "sublabel": "Vue / Tailwind UI",
+      "pos": [
+        260,
+        50
+      ],
+      "size": [
+        140,
+        60
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Symfony / Doctr",
+      "sublabel": "Doctrine ORM :3306",
+      "pos": [
+        490,
+        50
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "queue",
+      "type": "messagebus",
+      "label": "Horizon Worker",
+      "sublabel": "Redis Queue Daemon",
+      "pos": [
+        730,
+        50
+      ],
+      "size": [
+        140,
+        60
+      ]
+    },
+    {
+      "id": "ext",
+      "type": "external",
+      "label": "External APIs",
+      "sublabel": "Webhooks & SMTP",
+      "pos": [
+        970,
+        50
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "Auth Guard",
+      "sublabel": "Session & Token Auth",
+      "pos": [
+        260,
+        180
+      ],
+      "size": [
+        140,
+        60
+      ]
+    },
+    {
+      "id": "domain",
+      "type": "backend",
+      "label": "Domain Core",
+      "sublabel": "Business Logic Layer",
+      "pos": [
+        490,
+        180
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "worker",
+      "type": "backend",
+      "label": "Async Runner",
+      "sublabel": "Background Jobs",
+      "pos": [
+        730,
+        180
+      ],
+      "size": [
+        140,
+        60
+      ]
+    },
+    {
+      "id": "cache",
+      "type": "database",
+      "label": "Redis",
+      "sublabel": "Cache & Pub/Sub :637",
+      "pos": [
+        260,
+        310
+      ],
+      "size": [
+        140,
+        60
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "MySQL / Postgre",
+      "sublabel": "Eloquent ORM :3306",
+      "pos": [
+        490,
+        310
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "storage",
+      "type": "cloud",
+      "label": "S3 / MinIO Stor",
+      "sublabel": "Object Storage :9000",
+      "pos": [
+        730,
+        310
+      ],
+      "size": [
+        140,
+        60
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "freescout Runtime Cluster",
+      "wraps": [
+        "front",
+        "api",
+        "queue",
+        "auth",
+        "domain",
+        "worker",
+        "cache",
+        "db",
+        "storage"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "from": "actor",
+      "to": "front",
+      "label": "HTTPS",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c2",
+      "from": "front",
+      "to": "api",
+      "label": "REST / WS"
+    },
+    {
+      "id": "c3",
+      "from": "front",
+      "to": "auth",
+      "label": "OAuth",
+      "variant": "security"
+    },
+    {
+      "id": "c4",
+      "from": "api",
+      "to": "domain",
+      "label": "Dispatch"
+    },
+    {
+      "id": "c5",
+      "from": "api",
+      "to": "cache",
+      "label": "State"
+    },
+    {
+      "id": "c6",
+      "from": "api",
+      "to": "queue",
+      "label": "Enqueue",
+      "variant": "dashed"
+    },
+    {
+      "id": "c7",
+      "from": "api",
+      "to": "ext",
+      "label": "Webhooks",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "top"
+    },
+    {
+      "id": "c8",
+      "from": "domain",
+      "to": "db",
+      "label": "SQL Data"
+    },
+    {
+      "id": "c9",
+      "from": "queue",
+      "to": "worker",
+      "label": "Consume"
+    },
+    {
+      "id": "c10",
+      "from": "worker",
+      "to": "db",
+      "label": "Commit"
+    },
+    {
+      "id": "c11",
+      "from": "worker",
+      "to": "storage",
+      "label": "Assets",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "freescout Architectural Topology",
+      "items": [
+        "Frontend: Blade & Inertia (Vue / Tailwind UI)",
+        "Backend: Symfony / Doctr (Doctrine ORM :3306)",
+        "Storage & Queue: MySQL / Postgre paired with Redis and Horizon Worker"
+      ]
+    }
+  ]
+}

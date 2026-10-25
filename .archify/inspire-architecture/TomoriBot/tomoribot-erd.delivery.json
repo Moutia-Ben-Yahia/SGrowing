@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "9ec4f429-0fb0-4dc5-ae67-bd766bf0bd0c",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\TomoriBot\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\TomoriBot\\TomoriBot-erd.html",
+  "specification": {
+    "sha256": "40fbcbb2237a35d5ede6166b8724e1542b0a910c708ac675ea002391eb6d38d2",
+    "bytes": 5517
+  },
+  "artifact": {
+    "sha256": "aa6e3a85cfa26e0c8e381a6e042a2d0ab7fe36aebf20b72dde007195e8d7dcf4",
+    "bytes": 855273
+  }
+}

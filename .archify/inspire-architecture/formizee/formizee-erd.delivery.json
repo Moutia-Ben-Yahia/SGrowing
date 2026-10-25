@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "10a8396a-167a-4fea-9519-a70c2c4df736",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\formizee\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\formizee\\formizee-erd.html",
+  "specification": {
+    "sha256": "718369d88fb56473d230a2c968d802e560c0a5e83292822933fa773dfc175731",
+    "bytes": 5301
+  },
+  "artifact": {
+    "sha256": "aa646a3528d1e3c377ed8eb410de32bc9b984d9ab993ec4d2347a67a55942761",
+    "bytes": 855099
+  }
+}

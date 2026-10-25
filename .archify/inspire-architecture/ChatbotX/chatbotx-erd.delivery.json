@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "3fa309d4-9113-4207-908f-740e5c5eba3b",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\ChatbotX\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\ChatbotX\\ChatbotX-erd.html",
+  "specification": {
+    "sha256": "011132df53add5aa9915f3c5818384a40cf493e18a8f5d5ee213c11960d1268d",
+    "bytes": 5332
+  },
+  "artifact": {
+    "sha256": "6269d7f475df3b5e5a22d86b11eba2f15fd6d6bfca6627df2fbb0cffd196bc18",
+    "bytes": 855160
+  }
+}

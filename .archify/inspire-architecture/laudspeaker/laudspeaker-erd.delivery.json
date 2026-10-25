@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "1e5b9b8e-ad60-4b8f-ba87-7533f308dbcd",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\laudspeaker\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\laudspeaker\\laudspeaker-erd.html",
+  "specification": {
+    "sha256": "f204772d9f027ea1bafb837bc8e9d57cd38adb9c45bcb2ee5544f1c222a70950",
+    "bytes": 5348
+  },
+  "artifact": {
+    "sha256": "ea2c283f72e59d75d2bd0325458c89d3388a8c66e2c15601d48665ea6ef77838",
+    "bytes": 855160
+  }
+}

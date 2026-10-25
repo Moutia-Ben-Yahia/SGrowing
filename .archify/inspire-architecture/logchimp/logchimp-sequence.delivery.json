@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "dda3553e-1085-411b-b099-03e261e7f8ee",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\logchimp\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\logchimp\\logchimp-sequence.html",
+  "specification": {
+    "sha256": "e6856d24f18f1905e769ef14daa54e143ca35a826c419bd8ce7242c60401643b",
+    "bytes": 4428
+  },
+  "artifact": {
+    "sha256": "c57a0453d810eed66ee493ad45f79e50fc0a05e2f7198513d6ba204efe62ae9b",
+    "bytes": 841129
+  }
+}

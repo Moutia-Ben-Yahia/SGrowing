@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "213c1b40-4903-427a-b5c6-91b33768a4b5",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\parcelvoy\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\parcelvoy\\parcelvoy-sequence.html",
+  "specification": {
+    "sha256": "0fd05be43aea4fed9c1f51adc4362dded3ff06b7693d503096474de140c62a81",
+    "bytes": 4442
+  },
+  "artifact": {
+    "sha256": "ce9238cf1bddcab34aafe5aceb6753608bc79e8d1d0adfe3df6acb5feb34a2f1",
+    "bytes": 841161
+  }
+}

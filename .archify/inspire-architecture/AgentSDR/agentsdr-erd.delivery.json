@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "01265a4d-b2f7-412d-9113-bc8a0b8af29e",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\AgentSDR\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\AgentSDR\\AgentSDR-erd.html",
+  "specification": {
+    "sha256": "51d75a5e060ce401aa3dc310b8a9c25a5efd902f3f64af56d98d409a39e17623",
+    "bytes": 5396
+  },
+  "artifact": {
+    "sha256": "2d2694bf1f65a310064e3c99919731e5c8363f1fa0b9d702be072280ac93c7af",
+    "bytes": 855217
+  }
+}

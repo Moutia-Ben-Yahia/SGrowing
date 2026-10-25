@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "7482d3b7-ff2c-4473-b34e-87e5f5a3deda",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\openpost\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\openpost\\openpost-sequence.html",
+  "specification": {
+    "sha256": "6600ac62bd651521aa65d5156902238338f0f5a0515b7f59a448caab10248d29",
+    "bytes": 4415
+  },
+  "artifact": {
+    "sha256": "eb33409ef2c7ea789d806b9394fcd68a43f9942e11aac360ac6c1735ec6612da",
+    "bytes": 841066
+  }
+}

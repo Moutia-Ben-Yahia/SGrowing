@@ -1,0 +1,265 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "running",
+  "type": "sequence",
+  "quality": "showcase",
+  "startedAt": "2026-10-25T14:28:06.649Z",
+  "specification": {
+    "path": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\candidate-seq.json",
+    "sha256": "b2b1b1391326a5a220dea394fc7aec508065f7e56f8a9615992f1c8ca10697ff",
+    "bytes": 4436
+  },
+  "artifact": {
+    "path": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\aiogram-sequence.html",
+    "sha256": "bd50ca8b6ff262f192e44bb9bb15a0134be422e91db38145e22a399267d99944",
+    "bytes": 841182
+  },
+  "stages": {
+    "validate": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": null,
+      "execution": "embedded-in-deliver",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\Admin\\.gemini\\config\\skills\\archify\\archify\\bin\\archify.mjs",
+        "deliver",
+        "sequence",
+        "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\candidate-seq.json",
+        "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\aiogram-sequence.html",
+        "--quality",
+        "showcase",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": true,
+        "command": "validate",
+        "specification": {
+          "sha256": "b2b1b1391326a5a220dea394fc7aec508065f7e56f8a9615992f1c8ca10697ff",
+          "bytes": 4436
+        },
+        "validation": {
+          "checksPassed": 9,
+          "checkCount": 9,
+          "compositionProfile": "showcase",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    "deliver": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 442,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\Admin\\.gemini\\config\\skills\\archify\\archify\\bin\\archify.mjs",
+        "deliver",
+        "sequence",
+        "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\candidate-seq.json",
+        "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\aiogram-sequence.html",
+        "--quality",
+        "showcase",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "receiptId": "0554706c-1864-422b-b93e-81cf0adf52f5",
+        "ok": true,
+        "command": "deliver",
+        "type": "sequence",
+        "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\candidate-seq.json",
+        "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\aiogram-sequence.html",
+        "specification": {
+          "sha256": "b2b1b1391326a5a220dea394fc7aec508065f7e56f8a9615992f1c8ca10697ff",
+          "bytes": 4436
+        },
+        "artifact": {
+          "sha256": "bd50ca8b6ff262f192e44bb9bb15a0134be422e91db38145e22a399267d99944",
+          "bytes": 841182
+        },
+        "validation": {
+          "checksPassed": 9,
+          "checkCount": 9,
+          "compositionProfile": "showcase",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 0
+        },
+        "update": {
+          "status": "unavailable",
+          "installedVersion": null,
+          "availableVersion": null,
+          "releaseNotes": null,
+          "checkedAt": null,
+          "source": null,
+          "noticeRequired": false,
+          "noticeText": null,
+          "reason": "disabled"
+        }
+      }
+    },
+    "check": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 181,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\Admin\\.gemini\\config\\skills\\archify\\archify\\bin\\archify.mjs",
+        "check",
+        "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\aiogram-sequence.html",
+        "--require-provenance"
+      ],
+      "receipt": {
+        "ok": true,
+        "file": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\aiogram-sequence.html",
+        "artifact": {
+          "sha256": "bd50ca8b6ff262f192e44bb9bb15a0134be422e91db38145e22a399267d99944",
+          "bytes": 841182
+        },
+        "checks": [
+          {
+            "name": "single_svg",
+            "ok": true,
+            "details": [
+              "found 1 <svg> block(s)"
+            ]
+          },
+          {
+            "name": "finite_svg",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "orthogonal_arrows",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "label_route_clearance",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "relationship_crossings",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "relationship_corridors",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "container_border_runs",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "route_rhythm",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "legend_clearance",
+            "ok": true,
+            "details": []
+          }
+        ],
+        "composition": {
+          "schemaVersion": 1,
+          "profile": "showcase",
+          "status": "pass",
+          "summary": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "metrics": {
+            "properCrossings": 0,
+            "resolvedCrossovers": 0,
+            "ambiguousCorridors": 0,
+            "arrowheadCollisions": 0,
+            "containerBorderRuns": 0,
+            "labelRouteClearanceIssues": 0,
+            "labelCanvasOverflowIssues": 0,
+            "minLabelRouteClearance": 15,
+            "desktopReadabilityIssues": 0,
+            "viewportHeightIssues": 0,
+            "minProjectedNodeTextPx": 7,
+            "maxBends": 0,
+            "routesOverSuggestedBends": 0,
+            "maxStretch": 1,
+            "routesOverSuggestedStretch": 0,
+            "minSegmentPx": 107.3,
+            "minInteriorSegmentPx": null,
+            "shortSegmentCount": 0,
+            "shortEndpointSegmentCount": 0,
+            "shortInteriorSegmentCount": 0,
+            "microSegmentCount": 0
+          },
+          "suggestedLimits": {
+            "bendsPerRelationship": 2,
+            "stretch": 1.35,
+            "segmentPx": 16,
+            "microSegmentPx": 8
+          },
+          "routeReview": {
+            "crossings": [],
+            "detours": []
+          },
+          "leadingSpace": {
+            "measured": false,
+            "reviewSuggested": false
+          },
+          "sequenceColumnSpace": {
+            "measured": true,
+            "columnFit": "spread",
+            "participantCount": 7,
+            "occupiedRight": 880,
+            "viewBoxLeft": 0,
+            "canvasWidth": 920,
+            "emptyRightPx": 40,
+            "emptyRightRatio": 0.043,
+            "typicalParticipantWidth": 90,
+            "reviewSuggested": false
+          },
+          "desktopReadability": {
+            "budgetBasis": "legacy-930",
+            "readerContract": "declared-wide-v1",
+            "availableDiagramWidth": 930,
+            "actualBudgetPx": 930,
+            "limit": "legacy",
+            "requestedTargetPx": null,
+            "requestedTargetMet": null,
+            "hardFloorPx": 6,
+            "hardFloorMet": true,
+            "minimumOwner": {
+              "kind": "node",
+              "id": "user"
+            },
+            "minimumSourceTextPx": 7,
+            "minimumProjectedTextPx": 7,
+            "semanticTextCount": 26
+          },
+          "issues": []
+        },
+        "provenance": "current",
+        "deliveryReceiptId": "0554706c-1864-422b-b93e-81cf0adf52f5"
+      }
+    }
+  },
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  },
+  "diagnostics": [],
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\aiogram-sequence.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\aiogram-sequence.finalize-summary.json"
+  },
+  "visualReview": "not-requested"
+}

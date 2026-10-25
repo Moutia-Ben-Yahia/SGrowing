@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "19843127-1e20-47d8-9da3-153ca080790c",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenSign\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenSign\\OpenSign-erd.html",
+  "specification": {
+    "sha256": "06b804d570a7235ab04223666e357245234d0d68ea64b66efddb55569b27492d",
+    "bytes": 5380
+  },
+  "artifact": {
+    "sha256": "a4c09b8c2b1c96f2fad2bad50b3807f9a183e86d41a868b2b4d3c8e28745e353",
+    "bytes": 855193
+  }
+}

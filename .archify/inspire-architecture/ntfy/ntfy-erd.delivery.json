@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "bf337a9f-c098-4ced-b42e-bc3ee01cfdf2",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\ntfy\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\ntfy\\ntfy-erd.html",
+  "specification": {
+    "sha256": "8a974e06a86dc9a08d7d47db31f59aa74ffaa5d50890a23344d81dfd9c0dc6e9",
+    "bytes": 5274
+  },
+  "artifact": {
+    "sha256": "7b4609b0eea55960496ed6137c626755d8120b73666769cc85b94ef246ef7179",
+    "bytes": 855053
+  }
+}

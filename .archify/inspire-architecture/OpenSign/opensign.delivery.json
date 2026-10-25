@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "76c05954-aeba-4865-bc70-b75bc088fcd7",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenSign\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenSign\\OpenSign.html",
+  "specification": {
+    "sha256": "b8d136586f2f257a56f56c849e8d53a8dd8089fe4284d031676b67e201fcc52f",
+    "bytes": 5884
+  },
+  "artifact": {
+    "sha256": "858f3e6a48f2296826f6d07b6e0a82ac856588ab0ba76f6cb7e94e1fbe1bbb56",
+    "bytes": 850523
+  }
+}

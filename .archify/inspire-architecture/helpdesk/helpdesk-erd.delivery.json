@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "3626fe58-b5b9-4869-b1ff-be21f267ce32",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\helpdesk\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\helpdesk\\helpdesk-erd.html",
+  "specification": {
+    "sha256": "a9a08e2dddded2971f4fbe4758f9d87c4f49ce5e6634c92f5b39e06391b2102f",
+    "bytes": 5324
+  },
+  "artifact": {
+    "sha256": "6245d8b469ea692c780e2018167ed1a1401570bdf9547a4d613748a2cdc1d4bb",
+    "bytes": 855122
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "9f497173-5dff-4cc6-aa07-68583d7fbfba",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\laravel-crm\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\laravel-crm\\laravel-crm-sequence.html",
+  "specification": {
+    "sha256": "71aa0ffd7e7f2ff1ff4e7dcd9693c6b875f89fc728a8a6485f2f855eca78432c",
+    "bytes": 4447
+  },
+  "artifact": {
+    "sha256": "164cf1f51954274b475e7958c7a1c9e58d763171d6cf7e20ca68ed4c26c935cd",
+    "bytes": 841272
+  }
+}

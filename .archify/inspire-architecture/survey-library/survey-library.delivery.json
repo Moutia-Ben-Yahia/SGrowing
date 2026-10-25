@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "fafc9d7c-58e3-4eaa-a724-8ee4fda7242f",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\survey-library\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\survey-library\\survey-library.html",
+  "specification": {
+    "sha256": "b6947a9414bc34ba7dac20315f5cf63190d8a9f94359d55aff5404385ea4a292",
+    "bytes": 5928
+  },
+  "artifact": {
+    "sha256": "fff3abeb9420dea63cc7b07c08e02fd3da30896bce8a8e5c90f5902fb3fdf587",
+    "bytes": 850760
+  }
+}

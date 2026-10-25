@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "84776943-7542-4f9c-9357-b6b952055728",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Logiq\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Logiq\\Logiq.html",
+  "specification": {
+    "sha256": "b40d83a87a3d79f461c0257bf1d1a2f03f76b82a95aa84e9838658089a1feac4",
+    "bytes": 5865
+  },
+  "artifact": {
+    "sha256": "28421cfa54d5cc1d573c270b91585710a47c19b13bca20954fcd31d6aadcfd63",
+    "bytes": 850390
+  }
+}

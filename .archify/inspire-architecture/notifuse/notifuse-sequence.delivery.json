@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "caba9203-6698-4e2e-9de6-467b79707b47",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\notifuse\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\notifuse\\notifuse-sequence.html",
+  "specification": {
+    "sha256": "8d724fc37ebf5d9fe15199b38f9306fd10c5dfee8ea33ffc083b1e4f944ef1a6",
+    "bytes": 4417
+  },
+  "artifact": {
+    "sha256": "59b73b6960c632c593e5998c19281c8f7615591d11aea10ae10791a6eafc23ad",
+    "bytes": 841093
+  }
+}

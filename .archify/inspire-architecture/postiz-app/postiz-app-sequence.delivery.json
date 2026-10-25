@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "97d4a870-42f6-4a80-93d2-22ced5c860e6",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\postiz-app\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\postiz-app\\postiz-app-sequence.html",
+  "specification": {
+    "sha256": "24d1920f9d91baea6be2f91f9e24207a8e1f64436da6e3b32dc27056ac8fa19a",
+    "bytes": 4428
+  },
+  "artifact": {
+    "sha256": "98dc015e1e050466a149d2c7a91fce7a89ea22513dcf1a18aae1a65ab00ace48",
+    "bytes": 841097
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "d0f08e5f-9003-4278-9133-3587deaf461e",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\notifuse\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\notifuse\\notifuse.html",
+  "specification": {
+    "sha256": "e649e45924e5bdb0ccc94765d135b002e120d2081d6aa56a7d17b09dcda6d3a3",
+    "bytes": 5871
+  },
+  "artifact": {
+    "sha256": "5db4614aa9a5c9669a05f3361d37c3b285ab0c684715615d1bebb0f1d849eda2",
+    "bytes": 850464
+  }
+}

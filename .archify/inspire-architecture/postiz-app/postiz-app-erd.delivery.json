@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "1ecd775a-f8c4-40a1-8b55-57e4bae41798",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\postiz-app\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\postiz-app\\postiz-app-erd.html",
+  "specification": {
+    "sha256": "7f544ffce05be75dc87cf1cebf0215c8c91341c9a8d32e7fc6efbb4e395db369",
+    "bytes": 5347
+  },
+  "artifact": {
+    "sha256": "b7080eacde0a12524746ec45949753204b475fb2ad9723e8f64136be7e78a02d",
+    "bytes": 855162
+  }
+}

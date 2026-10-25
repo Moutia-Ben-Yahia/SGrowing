@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "999fe974-51d1-49c2-8a62-cae4e6b0b20e",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\dograh\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\dograh\\dograh-erd.html",
+  "specification": {
+    "sha256": "30b1cbe3c447f61e094cd3c284bf51001ce1733f54eee7f6dd2f3d5805721e62",
+    "bytes": 5308
+  },
+  "artifact": {
+    "sha256": "dea1e759cf19986e50736c9c88cf2575d39d19d126101fc23a730c1b19ab853c",
+    "bytes": 855112
+  }
+}

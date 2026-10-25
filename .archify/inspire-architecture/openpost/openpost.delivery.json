@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "588b853b-171e-4357-9ebb-edd137dbfc1a",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\openpost\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\openpost\\openpost.html",
+  "specification": {
+    "sha256": "4c18c5bc9772aa918711962575fa89169aaf42c17932d189dd6881c7b1607b5c",
+    "bytes": 5871
+  },
+  "artifact": {
+    "sha256": "cdb2d08f5e3c6c733c53407fb10e95655ff5f2504da5704d185bb4469d576d60",
+    "bytes": 850464
+  }
+}

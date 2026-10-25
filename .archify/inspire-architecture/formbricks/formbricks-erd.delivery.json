@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "ee7ee6d8-cdf0-409f-b7e7-35d90c1ebde0",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\formbricks\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\formbricks\\formbricks-erd.html",
+  "specification": {
+    "sha256": "52b295a99291cc5ed3da6083016751b21eb0be0c6e4acb4bf21937b7947f5178",
+    "bytes": 5365
+  },
+  "artifact": {
+    "sha256": "6a5d87d5c652a87ef7c9f69768f0ba52d51285539c16dd287e966b89c5b6aa71",
+    "bytes": 855205
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "82e5197e-c4f0-4289-a758-a36a49a83ebf",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\dograh\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\dograh\\dograh-sequence.html",
+  "specification": {
+    "sha256": "57efca47fa7b6c7424b3db31a1a331b1fcc24945f20f73e9ab78fd045ecc80af",
+    "bytes": 4432
+  },
+  "artifact": {
+    "sha256": "bd5128c677a239c720572f3dda5ea8af7828bb4aee9e00c36d8961372a1b42f0",
+    "bytes": 841147
+  }
+}

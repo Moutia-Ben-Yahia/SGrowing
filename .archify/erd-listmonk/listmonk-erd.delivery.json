@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "c1021b9b-d766-4659-910e-59bf988f70af",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "C:\\Business\\Software\\MarketingStudio\\.archify\\erd-listmonk\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\erd-listmonk\\listmonk-erd.html",
+  "specification": {
+    "sha256": "05e182e76b90d57bc8847e379461de00d931f4fe4c37e678a4bcdd5d8a4cc98d",
+    "bytes": 4281
+  },
+  "artifact": {
+    "sha256": "221f200b0f85d57e77a259e7717945cf3fe8b21cfdcf45f078ba8fcbe38e58ae",
+    "bytes": 856000
+  }
+}

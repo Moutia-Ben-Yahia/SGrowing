@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "0fcc18c4-4473-4885-bfdc-85eb5e22a702",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\jasmin\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\jasmin\\jasmin-sequence.html",
+  "specification": {
+    "sha256": "99206bce340db36e2000bf9641467da6b7de4b1ebabbcf1e775bfd0d2e56e82d",
+    "bytes": 4433
+  },
+  "artifact": {
+    "sha256": "7a09498676dd4325def9b098a9b76f877c4da2a3f709d01345899f294a603479",
+    "bytes": 841151
+  }
+}

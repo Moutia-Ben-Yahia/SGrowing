@@ -1,0 +1,259 @@
+{
+  "schema_version": 1,
+  "diagram_type": "erd",
+  "meta": {
+    "title": "twenty Database Schema",
+    "output": ".archify/inspire-architecture/twenty/twenty-erd.html",
+    "quality_profile": "showcase"
+  },
+  "entities": [
+    {
+      "id": "extract_defi",
+      "label": "extract_defi",
+      "tag": "Core & Identity",
+      "row": 0,
+      "col": 0,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "slug",
+          "type": "varchar(64)",
+          "key": "uk"
+        },
+        {
+          "name": "name",
+          "type": "varchar(128)"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "api_key",
+      "label": "api_key",
+      "tag": "Core & Identity",
+      "row": 1,
+      "col": 0,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "extract__id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "extract_defi.id"
+        },
+        {
+          "name": "email",
+          "type": "varchar(255)",
+          "key": "uk"
+        },
+        {
+          "name": "role",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "app_token",
+      "label": "app_token",
+      "tag": "Core & Identity",
+      "row": 2,
+      "col": 0,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "extract__id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "extract_defi.id"
+        },
+        {
+          "name": "api_key_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "api_key.id"
+        },
+        {
+          "name": "access_level",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "application",
+      "label": "application",
+      "tag": "Domain Operations",
+      "row": 0,
+      "col": 1,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "extract__id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "extract_defi.id"
+        },
+        {
+          "name": "title",
+          "type": "varchar(255)"
+        },
+        {
+          "name": "state",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "approved_acc",
+      "label": "approved_acc",
+      "tag": "Domain Operations",
+      "row": 1,
+      "col": 1,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "applicat_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "application.id"
+        },
+        {
+          "name": "payload",
+          "type": "jsonb"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "executed_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "client_confi",
+      "label": "client_confi",
+      "tag": "Domain Operations",
+      "row": 2,
+      "col": 1,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "approved_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "approved_acc.id"
+        },
+        {
+          "name": "event_name",
+          "type": "varchar(64)"
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb"
+        },
+        {
+          "name": "recorded_at",
+          "type": "timestamptz"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel-t0-t1",
+      "from": "extract_defi",
+      "to": "api_key",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t1-t2",
+      "from": "api_key",
+      "to": "app_token",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t0-d0",
+      "from": "extract_defi",
+      "to": "application",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d0-d1",
+      "from": "application",
+      "to": "approved_acc",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d1-d2",
+      "from": "approved_acc",
+      "to": "client_confi",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "twenty Relational Schema",
+      "items": [
+        "Multi-tenant isolation anchored on extract_defi.id primary key",
+        "Columnar separation between extract_defi core cluster and application operational data models",
+        "Referential integrity with cascade constraints and optimized composite indexes"
+      ]
+    }
+  ]
+}

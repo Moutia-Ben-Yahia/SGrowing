@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "801dd1f7-1fd2-41c8-bbe9-4141a2821a30",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\mautic\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\mautic\\mautic-erd.html",
+  "specification": {
+    "sha256": "9b4779ec1553159731a71fe785463fcba296fcf91bc4a06bd97781445a36b85f",
+    "bytes": 5302
+  },
+  "artifact": {
+    "sha256": "e65dc8301884cc25f3b869cfd270c4623730d6daaa54296adb9acb1a89465b62",
+    "bytes": 855097
+  }
+}

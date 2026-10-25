@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "3a9eb5de-b4b5-4cc6-bd03-275d9c20bd16",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\heyform\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\heyform\\heyform.html",
+  "specification": {
+    "sha256": "99f4e7bd92ac9ad06ad2fa836d57786ec4f8f738cf0beb4e8233e2c2b447b053",
+    "bytes": 5879
+  },
+  "artifact": {
+    "sha256": "0488169c457a0faf81664f5f42b65f829cf25722a16477240922002202645242",
+    "bytes": 850489
+  }
+}

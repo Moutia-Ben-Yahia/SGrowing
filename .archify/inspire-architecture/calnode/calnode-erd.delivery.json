@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "c2019c1f-f506-4063-b5d7-800814b4fa21",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\calnode\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\calnode\\calnode-erd.html",
+  "specification": {
+    "sha256": "73ea751c701e352c6fb610a753053c7b2d10e772e0545de9b78c33f9cb79f696",
+    "bytes": 5343
+  },
+  "artifact": {
+    "sha256": "87d1dfbf3445bab22d8562c427c112cda8079c8ab1f49cf03177330af8cb96ec",
+    "bytes": 855193
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "e81c61fb-84cb-4b5f-95a6-ceff34da967f",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\ringee-app\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\ringee-app\\ringee-app-erd.html",
+  "specification": {
+    "sha256": "1dc98b255374f5e18421632c3c0bf9be63600fd31948edca0234f2f3c49262ba",
+    "bytes": 5405
+  },
+  "artifact": {
+    "sha256": "197fe7b347d284e281c1b810c8cacbdc9168cbc6bd4558158564d243b1d5b5d2",
+    "bytes": 855125
+  }
+}

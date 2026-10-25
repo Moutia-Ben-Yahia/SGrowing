@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "b581f453-0436-42cb-a359-49c1258cccc7",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\wppconnect\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\wppconnect\\wppconnect-erd.html",
+  "specification": {
+    "sha256": "9ab5d7fa91b48bb51d06cb1d054e2a19d93c122340147bbc6df91b351a97180e",
+    "bytes": 5251
+  },
+  "artifact": {
+    "sha256": "862aa2d80b3282f9ab6d276ed83e4a68bba1aa93e741421b5155b124f14b22e7",
+    "bytes": 855014
+  }
+}

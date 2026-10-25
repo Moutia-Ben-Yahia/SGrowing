@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "8938421a-726f-4e76-83bb-e39799500581",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\mixpost\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\mixpost\\mixpost.html",
+  "specification": {
+    "sha256": "7b62adac38c6503cfd591f7af13a4675c2bd2fe153235ec1fdf57dcb74eb3b3a",
+    "bytes": 5887
+  },
+  "artifact": {
+    "sha256": "4c5bb406032c8783de40f466b28f2d3112c05991777e9b3be8c1bfaa95ab36a7",
+    "bytes": 850496
+  }
+}

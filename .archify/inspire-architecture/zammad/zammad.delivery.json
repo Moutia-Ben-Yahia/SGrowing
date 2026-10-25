@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "dd24e0a1-8084-4e24-ae5d-83c4ba6d0930",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\zammad\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\zammad\\zammad.html",
+  "specification": {
+    "sha256": "bea027692055e8d3f9f7714bf8ff736a64266fe99cfb463ee64174670a871f9c",
+    "bytes": 5869
+  },
+  "artifact": {
+    "sha256": "66b1ad8e46a4a1bea8ed7eeee938beb4e6a7b4934dcf0919dd7ebb114ed51187",
+    "bytes": 850456
+  }
+}

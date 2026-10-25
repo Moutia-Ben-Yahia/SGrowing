@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "b6c5786b-8ce6-4716-83e6-7071745eeca2",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\dsforms\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\dsforms\\dsforms-erd.html",
+  "specification": {
+    "sha256": "0554116c403899e97a2564d3ddb7cfd38c38d746509aadf22dd88507445e7b91",
+    "bytes": 5297
+  },
+  "artifact": {
+    "sha256": "d79506d62c977c5636256604ed27f2a786cf3d52584d460885e919ff60b4dae3",
+    "bytes": 855095
+  }
+}

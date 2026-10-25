@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "382abf01-af4c-4f0f-99c9-cb7a52c13a6f",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\playsms\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\playsms\\playsms-sequence.html",
+  "specification": {
+    "sha256": "ab7b278749c9ac9eb2f4c1ef9ba369ade38375905c300793a89abbb097f8a3aa",
+    "bytes": 4447
+  },
+  "artifact": {
+    "sha256": "b1ca22d3e8a51dbd48e037dda9bcdc09645c9fc61a08a890df98f4e1d33ceb52",
+    "bytes": 841211
+  }
+}

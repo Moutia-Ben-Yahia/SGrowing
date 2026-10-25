@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "68bc3518-370e-472c-ae90-d677aeb8b730",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\crm\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\crm\\crm-sequence.html",
+  "specification": {
+    "sha256": "aae5ff18052c3964fb8f3831b0df93e61e4a4ec2096445c72767db8d3a3aadf8",
+    "bytes": 4394
+  },
+  "artifact": {
+    "sha256": "083ed5c9de3b704ec32e756b26f1ef657c0aa3ec0fdaaba4e3e15d6bdd6b6e84",
+    "bytes": 841061
+  }
+}

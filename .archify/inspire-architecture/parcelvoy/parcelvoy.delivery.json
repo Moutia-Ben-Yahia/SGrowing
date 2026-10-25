@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "f9f87fa3-ef95-4a22-8d60-ff76cdb08bc1",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\parcelvoy\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\parcelvoy\\parcelvoy.html",
+  "specification": {
+    "sha256": "923093599d56aa0614e3a37fc25aa82061bb78e9fe0981184b9a5b9b682fa251",
+    "bytes": 5891
+  },
+  "artifact": {
+    "sha256": "3b5802d7269a7b620ef7fcfef85d22a824d115eb8a920c841ef471f79f7dd860",
+    "bytes": 850537
+  }
+}

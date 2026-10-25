@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "2bf18072-226b-4a41-bf57-2d941806adb7",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\survey-library\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\survey-library\\survey-library-erd.html",
+  "specification": {
+    "sha256": "d113950183bfced0311c2933607ac46ee4bd34ba9a3049099a91951f95b8be78",
+    "bytes": 5325
+  },
+  "artifact": {
+    "sha256": "6c535e020f63d42ff375a128962bd160d75d25d214604aa2a62410745bc6278a",
+    "bytes": 855123
+  }
+}

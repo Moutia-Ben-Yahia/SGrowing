@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "015b4c6c-6366-4d71-9acb-d99f6a1dd83c",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\LimeSurvey\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\LimeSurvey\\LimeSurvey-sequence.html",
+  "specification": {
+    "sha256": "96d8182106f65acb74e187a490daee952b9ee8a305c425cd45a9bfccbb431192",
+    "bytes": 4462
+  },
+  "artifact": {
+    "sha256": "8c940427b68ce1e1b8466c6befa2f95e4c2d4e55ccb7423f329a7ec452fff8cf",
+    "bytes": 841236
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "class",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Business\\Software\\MarketingStudio\\.archify\\class-listmonk\\candidate.json",
+    "sha256": "bd7a8cf748f7c5f19f1bd5304411ddcd1abea65c383e558867c97c09866f5774",
+    "bytes": 3646
+  },
+  "artifact": {
+    "path": "C:\\Business\\Software\\MarketingStudio\\.archify\\class-listmonk\\listmonk-class.html",
+    "sha256": "80d4c83b17a819e76eeb6ff27b442722eb887c11f1e7ccc899fa20217bec415a",
+    "bytes": 844353
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\class-listmonk\\listmonk-class.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\class-listmonk\\listmonk-class.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\class-listmonk\\listmonk-class.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-25T12:43:09.686Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2363,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

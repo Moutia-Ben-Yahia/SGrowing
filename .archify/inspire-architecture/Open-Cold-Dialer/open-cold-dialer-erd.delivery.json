@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "49eee9c8-2097-45c0-96a5-1e77de871757",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Open-Cold-Dialer\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Open-Cold-Dialer\\Open-Cold-Dialer-erd.html",
+  "specification": {
+    "sha256": "10cf78874869ae60be71c5da53509a0c8fead6e4b4a766b5b24d40a7b04de317",
+    "bytes": 5385
+  },
+  "artifact": {
+    "sha256": "2f4ee72037443942b380d4a1f8511200c087f8f3d48cb8cbed2c83828c36d8d4",
+    "bytes": 855203
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "a9bd25e7-44cd-4b73-925a-919971c7a66a",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\heyform\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\heyform\\heyform-erd.html",
+  "specification": {
+    "sha256": "db69a5648a37968418b2a0bafbc7709233b1414609a2d989327e51f1a96d51e2",
+    "bytes": 5297
+  },
+  "artifact": {
+    "sha256": "3d86fa7a41987248df96f9864c5a25eef5cde2a6e4609dfd63611c8cdb8cf0c6",
+    "bytes": 855095
+  }
+}

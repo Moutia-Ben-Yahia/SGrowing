@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "1eea182c-cbd3-4eda-b2e1-a2f400c41283",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\helpdesk\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\helpdesk\\helpdesk.html",
+  "specification": {
+    "sha256": "3babda8a0df1df60997d72d8288878b3a870dc1ec37f822af0e08eb6f1e34691",
+    "bytes": 5890
+  },
+  "artifact": {
+    "sha256": "4e014eddb213cc681ebcf86039395a5b45d65b6a3c8f35893e56fdc5e2ac8fe3",
+    "bytes": 850524
+  }
+}

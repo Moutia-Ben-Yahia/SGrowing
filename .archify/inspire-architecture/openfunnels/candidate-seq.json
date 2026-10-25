@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "openfunnels Request Sequence",
+    "output": ".archify/inspire-architecture/openfunnels/openfunnels-sequence.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "Client User",
+      "sublabel": "Browser / Webhook"
+    },
+    {
+      "id": "web",
+      "type": "frontend",
+      "label": "openfunnels UI",
+      "sublabel": "Blade & Inertia"
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "Auth Guard",
+      "sublabel": "JWT & Session Token"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "openfunnels API",
+      "sublabel": "Laravel API"
+    },
+    {
+      "id": "redis",
+      "type": "database",
+      "label": "Redis Cache",
+      "sublabel": "Redis"
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "Primary DB",
+      "sublabel": "MySQL / Postgre"
+    },
+    {
+      "id": "worker",
+      "type": "backend",
+      "label": "Job Worker",
+      "sublabel": "Horizon Worker"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 295,
+      "label": "Client Ingress & Security Gate"
+    },
+    {
+      "from": 300,
+      "to": 445,
+      "label": "Cache Lookup & Database Persistence"
+    },
+    {
+      "from": 450,
+      "to": 590,
+      "label": "Async Queue Dispatch & Response"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "user",
+      "to": "web",
+      "y": 170,
+      "label": "POST /api/v1/campaigns/send",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m2",
+      "from": "web",
+      "to": "api",
+      "y": 205,
+      "label": "Dispatch HTTP request",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m3",
+      "from": "api",
+      "to": "auth",
+      "y": 240,
+      "label": "Verify session & claims",
+      "variant": "security"
+    },
+    {
+      "id": "m4",
+      "from": "auth",
+      "to": "api",
+      "y": 275,
+      "label": "Claims verified (OK)",
+      "variant": "return"
+    },
+    {
+      "id": "m5",
+      "from": "api",
+      "to": "redis",
+      "y": 315,
+      "label": "GET campaign:cache_key",
+      "variant": "default"
+    },
+    {
+      "id": "m6",
+      "from": "redis",
+      "to": "api",
+      "y": 350,
+      "label": "nil (cache miss)",
+      "variant": "return"
+    },
+    {
+      "id": "m7",
+      "from": "api",
+      "to": "db",
+      "y": 390,
+      "label": "INSERT INTO campaign",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m8",
+      "from": "db",
+      "to": "api",
+      "y": 425,
+      "label": "Committed record (OK)",
+      "variant": "return"
+    },
+    {
+      "id": "m9",
+      "from": "api",
+      "to": "redis",
+      "y": 465,
+      "label": "SET campaign:cache (TTL)",
+      "variant": "dashed"
+    },
+    {
+      "id": "m10",
+      "from": "api",
+      "to": "worker",
+      "y": 500,
+      "label": "Enqueue email.broadcast",
+      "variant": "dashed"
+    },
+    {
+      "id": "m11",
+      "from": "api",
+      "to": "web",
+      "y": 535,
+      "label": "200 OK (JSON Payload)",
+      "variant": "return"
+    },
+    {
+      "id": "m12",
+      "from": "web",
+      "to": "user",
+      "y": 570,
+      "label": "Render updated UI state",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "web",
+      "from": 165,
+      "to": 575,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 200,
+      "to": 540,
+      "type": "backend"
+    },
+    {
+      "participant": "auth",
+      "from": 235,
+      "to": 280,
+      "type": "security"
+    },
+    {
+      "participant": "redis",
+      "from": 310,
+      "to": 355,
+      "type": "database"
+    },
+    {
+      "participant": "db",
+      "from": 385,
+      "to": 430,
+      "type": "database"
+    },
+    {
+      "participant": "redis",
+      "from": 460,
+      "to": 475,
+      "type": "database"
+    },
+    {
+      "participant": "worker",
+      "from": 495,
+      "to": 520,
+      "type": "backend"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "violet",
+      "title": "openfunnels End-to-End Request Lifecycle",
+      "items": [
+        "Strict multi-tenant token verification prior to database access",
+        "Low-latency cache-aside pattern on Redis reduces query load on primary database",
+        "Non-blocking async worker dispatch preserves snappy HTTP response times"
+      ]
+    }
+  ]
+}

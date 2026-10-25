@@ -1,0 +1,259 @@
+{
+  "schema_version": 1,
+  "diagram_type": "erd",
+  "meta": {
+    "title": "dittofeed Database Schema",
+    "output": ".archify/inspire-architecture/dittofeed/dittofeed-erd.html",
+    "quality_profile": "showcase"
+  },
+  "entities": [
+    {
+      "id": "profiles",
+      "label": "profiles",
+      "tag": "Core & Identity",
+      "row": 0,
+      "col": 0,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "slug",
+          "type": "varchar(64)",
+          "key": "uk"
+        },
+        {
+          "name": "name",
+          "type": "varchar(128)"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "adminapikey",
+      "label": "adminapikey",
+      "tag": "Core & Identity",
+      "row": 1,
+      "col": 0,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "profiles_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "profiles.id"
+        },
+        {
+          "name": "email",
+          "type": "varchar(255)",
+          "key": "uk"
+        },
+        {
+          "name": "role",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "broadcast",
+      "label": "broadcast",
+      "tag": "Core & Identity",
+      "row": 2,
+      "col": 0,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "profiles_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "profiles.id"
+        },
+        {
+          "name": "adminapi_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "adminapikey.id"
+        },
+        {
+          "name": "access_level",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "computedprop",
+      "label": "computedprop",
+      "tag": "Domain Operations",
+      "row": 0,
+      "col": 1,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "profiles_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "profiles.id"
+        },
+        {
+          "name": "title",
+          "type": "varchar(255)"
+        },
+        {
+          "name": "state",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "defaultemail",
+      "label": "defaultemail",
+      "tag": "Domain Operations",
+      "row": 1,
+      "col": 1,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "computed_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "computedprop.id"
+        },
+        {
+          "name": "payload",
+          "type": "jsonb"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "executed_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "defaultsmspr",
+      "label": "defaultsmspr",
+      "tag": "Domain Operations",
+      "row": 2,
+      "col": 1,
+      "width": 280,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "defaulte_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "defaultemail.id"
+        },
+        {
+          "name": "event_name",
+          "type": "varchar(64)"
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb"
+        },
+        {
+          "name": "recorded_at",
+          "type": "timestamptz"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel-t0-t1",
+      "from": "profiles",
+      "to": "adminapikey",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t1-t2",
+      "from": "adminapikey",
+      "to": "broadcast",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t0-d0",
+      "from": "profiles",
+      "to": "computedprop",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d0-d1",
+      "from": "computedprop",
+      "to": "defaultemail",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d1-d2",
+      "from": "defaultemail",
+      "to": "defaultsmspr",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "dittofeed Relational Schema",
+      "items": [
+        "Multi-tenant isolation anchored on profiles.id primary key",
+        "Columnar separation between profiles core cluster and computedprop operational data models",
+        "Referential integrity with cascade constraints and optimized composite indexes"
+      ]
+    }
+  ]
+}

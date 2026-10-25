@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "erd",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenWA\\candidate-erd.json",
+    "sha256": "19f7c681c6c6dbd36639df20ea7110d450236cb5cf133a2036aeb57f8d31f18b",
+    "bytes": 5209
+  },
+  "artifact": {
+    "path": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenWA\\OpenWA-erd.html",
+    "sha256": "eec442bab0d7fbd9db41ab405a61d83b1c75126fe8b0e95bd5506c90c73b80bc",
+    "bytes": 854878
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenWA\\openwa-erd.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenWA\\openwa-erd.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenWA\\openwa-erd.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-25T12:43:09.686Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2854,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

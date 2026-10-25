@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "1a870d58-cbd7-40e3-a6f4-ac0db3976e6e",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\wppconnect\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\wppconnect\\wppconnect.html",
+  "specification": {
+    "sha256": "06095fe9ffcb784d3af8f1264a63b9a625476cf39bf8e4d392ce426c75b58135",
+    "bytes": 5924
+  },
+  "artifact": {
+    "sha256": "e00ffc30f7787f74efeca4eb2b88dad531aadc6410e4f4901d6f3b6269cac00e",
+    "bytes": 850626
+  }
+}

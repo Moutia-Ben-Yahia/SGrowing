@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "0696a291-7d87-48b2-80a2-5d508f7e6890",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\botpress\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\botpress\\botpress-erd.html",
+  "specification": {
+    "sha256": "700ebc0c98c8f410c6fd9d4e634708c58e5a1633b85d54af608a097fa0c4e1b7",
+    "bytes": 5336
+  },
+  "artifact": {
+    "sha256": "6a627d9cea733acf245bdfcf7d8f51911fb8a226dc2f6f7e4100d9c90560632b",
+    "bytes": 855148
+  }
+}

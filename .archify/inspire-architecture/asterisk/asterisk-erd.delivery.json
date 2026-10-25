@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "19b872f1-52b8-4869-9088-d0c666576c24",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\asterisk\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\asterisk\\asterisk-erd.html",
+  "specification": {
+    "sha256": "6337505a3def8d124644ef541b8cd48d784da32b94f502f9bcf40a34865d661c",
+    "bytes": 5278
+  },
+  "artifact": {
+    "sha256": "46139963f4bbf293bc95e32d4263ad63af517806bb368b48553f41ba70c1d8c7",
+    "bytes": 855055
+  }
+}

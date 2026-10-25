@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "be3efdb2-061b-4174-83da-1a31510c0076",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\cal.diy\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\cal.diy\\cal.diy.html",
+  "specification": {
+    "sha256": "2e1404f3ee72abe9d68d90d4faa972724405e7805a4b728e107c74a32e66126e",
+    "bytes": 5887
+  },
+  "artifact": {
+    "sha256": "2731d40f192aaf15276ff9b25808c48cefdcde4fd32c223e43963f5ce2ce6a50",
+    "bytes": 850489
+  }
+}

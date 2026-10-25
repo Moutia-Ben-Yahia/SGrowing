@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "c2b43ee1-7ba9-43aa-bf30-e002b1cdd9e7",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\mixpost\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\mixpost\\mixpost-erd.html",
+  "specification": {
+    "sha256": "9b20ffc716e66d89f57b5f10d28737eea676ac42e2e8840fed004dbcd8c77a7c",
+    "bytes": 5332
+  },
+  "artifact": {
+    "sha256": "85b3732b43cf0d1290f681a0951c23dd7e9b09356cc7e6f36f106552717159e6",
+    "bytes": 855144
+  }
+}

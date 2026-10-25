@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "0aa8be1a-3525-49e5-82e7-8fb288bdcbbe",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\grammY\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\grammY\\grammY-erd.html",
+  "specification": {
+    "sha256": "fc0c5abf05503242d55f60c0fe6c3130e5c4e6e42fa6a7e12b231a6e1835372f",
+    "bytes": 5205
+  },
+  "artifact": {
+    "sha256": "75c5cc5d1dbc5a860f2868bea8368ec63abd49b587f6c1a3fa7fb9aa1ac3ce71",
+    "bytes": 854963
+  }
+}

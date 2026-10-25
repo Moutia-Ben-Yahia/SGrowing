@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "e2f0213b-05ec-40d5-9d47-727a2f95da10",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\useSend\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\useSend\\useSend.html",
+  "specification": {
+    "sha256": "a32b66ae71303cc46c0686569be0fc331883590482bc5de9cf0fe2f28f8bb85e",
+    "bytes": 5877
+  },
+  "artifact": {
+    "sha256": "b2b33edbc677813fa02de9bcdfb09744f1cee86484aedb864dc5afdf6ee014db",
+    "bytes": 850450
+  }
+}

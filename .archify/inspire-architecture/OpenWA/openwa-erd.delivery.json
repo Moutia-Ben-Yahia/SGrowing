@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "88563387-b67f-4767-ad7d-69c020dd731c",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenWA\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\OpenWA\\OpenWA-erd.html",
+  "specification": {
+    "sha256": "19f7c681c6c6dbd36639df20ea7110d450236cb5cf133a2036aeb57f8d31f18b",
+    "bytes": 5209
+  },
+  "artifact": {
+    "sha256": "eec442bab0d7fbd9db41ab405a61d83b1c75126fe8b0e95bd5506c90c73b80bc",
+    "bytes": 854878
+  }
+}

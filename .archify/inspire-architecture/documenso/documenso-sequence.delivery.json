@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "1f4ade24-bfa6-4aa8-a7f7-c996408729e1",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\documenso\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\documenso\\documenso-sequence.html",
+  "specification": {
+    "sha256": "5384a4a5cd23682d46baee55a241537e811e14cf56bf41f7a970e0fc3a3bd2cc",
+    "bytes": 4442
+  },
+  "artifact": {
+    "sha256": "3f2d5f0fb8bbf06bbdfa54acfdfae5ae900a9a0d0a21ee8c017881785cd4f5c5",
+    "bytes": 841137
+  }
+}

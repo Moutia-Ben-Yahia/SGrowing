@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "a3bab0ab-5872-4370-9919-9d93853078f5",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\VoicEra\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\VoicEra\\VoicEra-erd.html",
+  "specification": {
+    "sha256": "11c0c323790f19b27c9b0b16405e628c3e4da43f55fc006d78f6c037ac65abe4",
+    "bytes": 5312
+  },
+  "artifact": {
+    "sha256": "db8e55e113983d70a3042d2516a79117c993e1ddbb996c02313c7b96a083bf79",
+    "bytes": 855116
+  }
+}

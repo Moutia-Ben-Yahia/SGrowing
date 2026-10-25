@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "cdda19c3-cf20-4350-8e7f-d5d4e6a084d9",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chaskiq\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chaskiq\\chaskiq-erd.html",
+  "specification": {
+    "sha256": "e9d43e70c483dd4d879dd3c8853eb8607198cbb475f0da4ee0f5646153539b0f",
+    "bytes": 5433
+  },
+  "artifact": {
+    "sha256": "c86dbdf6e129c5d00cbdf5e3cf04ea1fbc449cc1476d8546242691cfd039bd8a",
+    "bytes": 855137
+  }
+}

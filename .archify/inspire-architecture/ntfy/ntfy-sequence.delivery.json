@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "7e81b8bb-e0f1-4ced-995b-8ca8dd7ff2b5",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\ntfy\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\ntfy\\ntfy-sequence.html",
+  "specification": {
+    "sha256": "faf12f9b490c8d534500e092d8843e8d6f6174f8931534dc9d6b1f34c04fa92d",
+    "bytes": 4406
+  },
+  "artifact": {
+    "sha256": "456ae4e1ebcb1d91676827d968a32244bcec278aa8133f73e28e85fdd441a9cb",
+    "bytes": 841097
+  }
+}

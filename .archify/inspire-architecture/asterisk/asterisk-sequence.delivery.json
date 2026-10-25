@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "0cd0a80a-0503-4280-b63d-2e9cb2d5dee7",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\asterisk\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\asterisk\\asterisk-sequence.html",
+  "specification": {
+    "sha256": "fbe5d21fd33f18a4c19632c14cedc4b8a6e4c3a69125fb5ebad372dccc48b186",
+    "bytes": 4458
+  },
+  "artifact": {
+    "sha256": "f124b682bf0433ba24f7170c9edce97941eccae4ce7e8e1132aca5fb234f994c",
+    "bytes": 841227
+  }
+}

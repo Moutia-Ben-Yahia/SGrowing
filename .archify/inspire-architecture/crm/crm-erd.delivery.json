@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "16c6202d-24ff-44e9-80d1-9d3259bcde7d",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\crm\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\crm\\crm-erd.html",
+  "specification": {
+    "sha256": "c5adc0963cd5dceb0525ff0b520b4b03a3600f310c9880b46aece452c365b6be",
+    "bytes": 5316
+  },
+  "artifact": {
+    "sha256": "0d00dbed853127fba1c32f979082f185a539e1ccb23312cb1ad7b2eb819210a2",
+    "bytes": 855128
+  }
+}

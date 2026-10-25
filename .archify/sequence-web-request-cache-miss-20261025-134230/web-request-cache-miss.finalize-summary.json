@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "sequence",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Business\\Software\\MarketingStudio\\.archify\\sequence-web-request-cache-miss-20261025-134230\\candidate.json",
+    "sha256": "6ad2022d4ce4da218941be123a911e4b80d1d88f896c1ed47ccd44276bab1288",
+    "bytes": 3615
+  },
+  "artifact": {
+    "path": "C:\\Business\\Software\\MarketingStudio\\.archify\\sequence-web-request-cache-miss-20261025-134230\\web-request-cache-miss.html",
+    "sha256": "e12f748c014f899f20ba91a6492af81e6bd6eedea3cf034bc812f0f399f03f52",
+    "bytes": 833734
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\sequence-web-request-cache-miss-20261025-134230\\web-request-cache-miss.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\sequence-web-request-cache-miss-20261025-134230\\web-request-cache-miss.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\sequence-web-request-cache-miss-20261025-134230\\web-request-cache-miss.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-25T12:43:09.686Z",
+    "source": "network",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2643,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

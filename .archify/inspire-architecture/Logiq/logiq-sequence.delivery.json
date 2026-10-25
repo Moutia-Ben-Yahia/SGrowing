@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "a5379d5b-9985-4dd0-b95f-ea1da7d53f42",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Logiq\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Logiq\\Logiq-sequence.html",
+  "specification": {
+    "sha256": "4858c226b84e44ac05c1699c3f6dcfe15c5e489f84af94c7894809ae2806e3c7",
+    "bytes": 4403
+  },
+  "artifact": {
+    "sha256": "b6ebf4e2b853194eb08e5922f994337098a1e4c9d78fa0a226f82949f59136f7",
+    "bytes": 841073
+  }
+}

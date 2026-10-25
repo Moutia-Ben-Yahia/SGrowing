@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "43a3f4a0-7b82-4340-8ea9-8e005dabafbe",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\cal.diy\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\cal.diy\\cal.diy-erd.html",
+  "specification": {
+    "sha256": "1267a4676f552b1e8248a662cb6a7c1ff1ec4f00f2d34ea62b23ff530a0c0cee",
+    "bytes": 5331
+  },
+  "artifact": {
+    "sha256": "ac755a17b7f12bfd28fa9fd4b5bc73ad76717ba062b83db1f3033ce8a46e8839",
+    "bytes": 855175
+  }
+}

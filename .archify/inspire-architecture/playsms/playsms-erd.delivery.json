@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "ce2460ea-0bd2-4ff0-b6b5-3abad2890e04",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\playsms\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\playsms\\playsms-erd.html",
+  "specification": {
+    "sha256": "5f6d842bb7bc0a66af3bd770f46c9ecea852623215c98c54d88eede6ec077262",
+    "bytes": 5312
+  },
+  "artifact": {
+    "sha256": "6d516a340a3eae58546728f4386b4583ea59a0690850e9236826d4df9bfe54c9",
+    "bytes": 855116
+  }
+}

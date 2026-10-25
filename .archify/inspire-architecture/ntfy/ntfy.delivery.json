@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "885089f7-5c1a-493d-a20d-00cf4c42d055",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\ntfy\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\ntfy\\ntfy.html",
+  "specification": {
+    "sha256": "30b9c10b33e9d41611a05f85231d3a611283bb93222b0733c084eea34caeedce",
+    "bytes": 5886
+  },
+  "artifact": {
+    "sha256": "ee46c2615040985778c9b03475961fc6ec1f13c5b1ae3e8813a4701dffc1d523",
+    "bytes": 850401
+  }
+}

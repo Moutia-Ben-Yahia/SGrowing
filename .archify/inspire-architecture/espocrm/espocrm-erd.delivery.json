@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "27189657-914f-4d3b-ba78-a04f55540136",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\espocrm\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\espocrm\\espocrm-erd.html",
+  "specification": {
+    "sha256": "bce17c73dc67c12e28ee1abef30fc44e693ff04eb0fbb5613b77985845175f7e",
+    "bytes": 5332
+  },
+  "artifact": {
+    "sha256": "32e845b2fb8603ccfe71de7b83ffddf3e7254228ff6ace4921b421d50c6deb27",
+    "bytes": 855144
+  }
+}

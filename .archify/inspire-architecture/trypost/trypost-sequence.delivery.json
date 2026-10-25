@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "7fc95c1f-3807-4391-a372-a9e196dfa635",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\trypost\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\trypost\\trypost-sequence.html",
+  "specification": {
+    "sha256": "30460a3c557f0f0cafc37e65b7f2953de76e39243e4f406928fac6301c680fdf",
+    "bytes": 4425
+  },
+  "artifact": {
+    "sha256": "c593a05514c875a01580ba4ff57f4b14f9b16e87d2b2227f03dfa99301faed13",
+    "bytes": 841134
+  }
+}

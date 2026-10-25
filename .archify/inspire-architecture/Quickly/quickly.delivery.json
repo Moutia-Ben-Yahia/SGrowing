@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "56729ffe-fdc1-4637-b83e-c39577c49d96",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Quickly\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Quickly\\Quickly.html",
+  "specification": {
+    "sha256": "118b2194d9c7e765aeb4fc40b50499f480ef5d90d33edbdb8aab617eb6ab1bb1",
+    "bytes": 5871
+  },
+  "artifact": {
+    "sha256": "509d7c6b28b07c7fda12c95497666bd3f5cb6ef60787aef196e14521f8e0c5fa",
+    "bytes": 850455
+  }
+}

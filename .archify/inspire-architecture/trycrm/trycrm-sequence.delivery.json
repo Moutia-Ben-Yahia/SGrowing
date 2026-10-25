@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "52fd82db-9045-4e7e-9470-461307555465",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\trycrm\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\trycrm\\trycrm-sequence.html",
+  "specification": {
+    "sha256": "5eab16c82e74da18552471995d775aabb7b193a739a20045c739dfeeecc2e124",
+    "bytes": 4411
+  },
+  "artifact": {
+    "sha256": "6592692e183216204838d29f4f124c07ce9cc1c079b132f621ed9d88f230f492",
+    "bytes": 841093
+  }
+}

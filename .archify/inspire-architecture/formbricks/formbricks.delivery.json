@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "71e44147-1460-402f-9c97-ee8e72168d81",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\formbricks\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\formbricks\\formbricks.html",
+  "specification": {
+    "sha256": "26a6b4159518af97136a3889e527bbf17381a3f6a39a900e740f40270408d3a9",
+    "bytes": 5901
+  },
+  "artifact": {
+    "sha256": "ff53267b2fe5b78e751858d8cb683feea2db0131a17e4f9df8a1eb3038eeb23c",
+    "bytes": 850587
+  }
+}

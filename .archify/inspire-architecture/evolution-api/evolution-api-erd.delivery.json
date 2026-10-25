@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "4009c81a-946b-4749-90f0-c1f851863826",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\evolution-api\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\evolution-api\\evolution-api-erd.html",
+  "specification": {
+    "sha256": "ae5f1c6ca4ba8b022ba947c06f23f58d47b7d6e55cd80d6dd8bda19f488cf7cb",
+    "bytes": 5314
+  },
+  "artifact": {
+    "sha256": "901f53fa6824c77c5a1b9b37c0cdd95d1a4f023a7c5bdf47d795bc2097473219",
+    "bytes": 855105
+  }
+}

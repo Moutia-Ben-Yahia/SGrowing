@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "90c57445-483d-4332-89b2-c829620370a9",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\ChatbotX\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\ChatbotX\\ChatbotX.html",
+  "specification": {
+    "sha256": "b7adcbfb10e2ef1417c8cfbf74d8b28b60a251309dd3919cf911cbeff1b80fd8",
+    "bytes": 5886
+  },
+  "artifact": {
+    "sha256": "306fac8f3e23cb64db56fa27dc700f06a123fbbffc141a8075121adfd712449c",
+    "bytes": 850493
+  }
+}

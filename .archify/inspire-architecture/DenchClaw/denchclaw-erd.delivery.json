@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "9b23f188-5bb0-4d15-addd-b38e151bc466",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\DenchClaw\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\DenchClaw\\DenchClaw-erd.html",
+  "specification": {
+    "sha256": "c2f6e8c859e6c18732635080ca144f71e1f8d742efe061015f700f9c68466811",
+    "bytes": 5318
+  },
+  "artifact": {
+    "sha256": "9ad3ad7356604221438be68a4af2f6269f515d1e1157bd340ff89fcbe5cb40e7",
+    "bytes": 855119
+  }
+}

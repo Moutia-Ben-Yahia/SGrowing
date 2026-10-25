@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "c25f8633-f87b-4c90-99a9-c7780d4d9306",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\jasmin\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\jasmin\\jasmin-erd.html",
+  "specification": {
+    "sha256": "de85597e010a4f9741a560502aa65cc8e0b063b3a1e9b5b0a34a486ffcce3c82",
+    "bytes": 5308
+  },
+  "artifact": {
+    "sha256": "59aee49143ffb7fc4f049e9d3edaeb9ea44888a6420b60152cfccd673d8df605",
+    "bytes": 855112
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "26deaa42-f219-4b0b-b32e-52c5c69d8bc3",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\open-seo\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\open-seo\\open-seo-erd.html",
+  "specification": {
+    "sha256": "557bc2780f52e7f0a6d0edd9d0c5ee0ea04506da6c3b6575ec726cd6e97e00e5",
+    "bytes": 5470
+  },
+  "artifact": {
+    "sha256": "27ae2088cdde1eea9499a0a466dd3b698810e25fba49e3fbcba3d1f4ef9f09af",
+    "bytes": 855187
+  }
+}

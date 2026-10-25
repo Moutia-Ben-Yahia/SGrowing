@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "1a3a8685-8730-4c02-a886-2a2b0fec1ac2",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\seonaut\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\seonaut\\seonaut.html",
+  "specification": {
+    "sha256": "ac463bfb7119835bf052d3edd65bbbf66cb9183f268fed486891dd71b573573d",
+    "bytes": 5866
+  },
+  "artifact": {
+    "sha256": "bcf513171d96588dce9344f1ef7391fedb87f68da13c42a5b679bbee2dbd4cf7",
+    "bytes": 850430
+  }
+}

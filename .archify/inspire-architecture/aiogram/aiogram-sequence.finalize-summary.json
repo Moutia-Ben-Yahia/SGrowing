@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "running",
+  "type": "sequence",
+  "quality": "showcase",
+  "specification": {
+    "path": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\candidate-seq.json",
+    "sha256": "b2b1b1391326a5a220dea394fc7aec508065f7e56f8a9615992f1c8ca10697ff",
+    "bytes": 4436
+  },
+  "artifact": {
+    "path": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\aiogram-sequence.html",
+    "sha256": "bd50ca8b6ff262f192e44bb9bb15a0134be422e91db38145e22a399267d99944",
+    "bytes": 841182
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "not-run"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\aiogram-sequence.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\aiogram\\aiogram-sequence.finalize-summary.json"
+  },
+  "visualReview": "not-requested",
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  }
+}

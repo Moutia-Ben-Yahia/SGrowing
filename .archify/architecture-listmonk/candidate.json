@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Listmonk Architecture",
+    "output": ".archify/architecture-listmonk/listmonk.html",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    { "id": "admin", "type": "external", "label": "Admin / User", "sublabel": "Web Browser", "pos": [40, 50], "size": [130, 60] },
+    { "id": "web-ui", "type": "frontend", "label": "Admin Dashboard", "sublabel": "Embedded Vue.js", "pos": [220, 50], "size": [140, 60] },
+    { "id": "app-server", "type": "backend", "label": "Listmonk Server", "sublabel": "Go HTTP :9000", "pos": [410, 50], "size": [140, 60] },
+    { "id": "db", "type": "database", "label": "PostgreSQL", "sublabel": "Storage :5432", "pos": [600, 50], "size": [140, 60] },
+    { "id": "smtp", "type": "external", "label": "SMTP / SES / Sendgrid", "sublabel": "Email Dispatch", "pos": [410, 160], "size": [140, 60] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Listmonk Host / Container", "wraps": ["web-ui", "app-server", "db"] }
+  ],
+  "connections": [
+    { "id": "admin-to-ui", "from": "admin", "to": "web-ui", "label": "HTTPS", "variant": "emphasis" },
+    { "id": "ui-to-server", "from": "web-ui", "to": "app-server", "label": "REST API" },
+    { "id": "server-to-db", "from": "app-server", "to": "db", "label": "SQL" },
+    { "id": "server-to-smtp", "from": "app-server", "to": "smtp", "label": "SMTP / API", "variant": "dashed" }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "Single Binary", "items": ["Listmonk ships as a high-performance Go binary with embedded frontend assets", "Zero external runtime dependencies besides PostgreSQL"] }
+  ]
+}

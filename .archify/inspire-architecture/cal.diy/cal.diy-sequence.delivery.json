@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "b26e2cec-6981-456b-bb9b-8b76daa24b6a",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\cal.diy\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\cal.diy\\cal.diy-sequence.html",
+  "specification": {
+    "sha256": "57bd6d77f8f45e9a2c99952b7c6e3677b78c108ea7a680e8a0f2226bad0187b3",
+    "bytes": 4417
+  },
+  "artifact": {
+    "sha256": "5399f7d250e8751fe3d19c3085b61b3d75d309dc6464e2c608ec4b5552c2377c",
+    "bytes": 841105
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "6c3e3890-3ba2-4b49-adc0-34b34e8cca78",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Red-DiscordBot\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\Red-DiscordBot\\Red-DiscordBot-sequence.html",
+  "specification": {
+    "sha256": "f011cdd6963243bb86f6c40d21b176b44bafcbdf78a6de67dba3d5e62031ab51",
+    "bytes": 4459
+  },
+  "artifact": {
+    "sha256": "2940171bd1dbc2c70c4863b9d5c103c79d299cd8fe66944324cdb406b8f35612",
+    "bytes": 841266
+  }
+}

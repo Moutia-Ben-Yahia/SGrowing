@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "891d59d0-53a7-4a71-baff-a2cc54fa1f37",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\espocrm\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\espocrm\\espocrm.html",
+  "specification": {
+    "sha256": "0eb740726ab39c9768d2f2c1aa602e4fbf5801f288fd873e16164dfecbb135ee",
+    "bytes": 5897
+  },
+  "artifact": {
+    "sha256": "6e68b3978b15eb768838deb4c654436dd256f04a1df7ec9f828009de5516e1eb",
+    "bytes": 850511
+  }
+}

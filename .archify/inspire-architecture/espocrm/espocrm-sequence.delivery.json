@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "1066e007-50f3-4c45-99d1-a955acec15cb",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\espocrm\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\espocrm\\espocrm-sequence.html",
+  "specification": {
+    "sha256": "ba032652908d0381aa6300947808520b12161d27220f5175cf3357260e767018",
+    "bytes": 4427
+  },
+  "artifact": {
+    "sha256": "b81b8cac2a1363de441a48e569dacc65168cf99185db6f26fdc6082b0b15868a",
+    "bytes": 841161
+  }
+}

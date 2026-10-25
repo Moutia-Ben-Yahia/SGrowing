@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "e9d98ab3-f548-48da-ac4f-a69da1ff6a7f",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\logchimp\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\logchimp\\logchimp.html",
+  "specification": {
+    "sha256": "d1fe6447e729528fef20ce90d6a3a96a77a670102cf9f0979475a61d51e4a76c",
+    "bytes": 5885
+  },
+  "artifact": {
+    "sha256": "bfb82544a4877186aa2836ea23349dae78ba708052a74ab6b118c8e230c6382b",
+    "bytes": 850485
+  }
+}

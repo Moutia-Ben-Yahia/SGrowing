@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "dbe89a3a-5061-4f0e-9142-79a5610b021b",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\zammad\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\zammad\\zammad-erd.html",
+  "specification": {
+    "sha256": "4f2cde98079409b6e05e0c797bf7469faf3446bb0c0395f0a4b6617f5895dfcb",
+    "bytes": 5316
+  },
+  "artifact": {
+    "sha256": "f66367b6957c358ed487a850c9bb10820200384d72a95051e736264e7a1a53d7",
+    "bytes": 855114
+  }
+}

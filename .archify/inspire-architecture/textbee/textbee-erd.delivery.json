@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "ba5e1ded-884d-4229-9dc4-b905a2d019c1",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\textbee\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\textbee\\textbee-erd.html",
+  "specification": {
+    "sha256": "994200d38710d46295b27bbb41833a5b39a9efc51370e6e9aafa5f3ea9cfe33f",
+    "bytes": 5312
+  },
+  "artifact": {
+    "sha256": "a9e1101a0ab8799ad8d4d42365737dd711bba940efdfef8423b881c3b70f8a74",
+    "bytes": 855116
+  }
+}

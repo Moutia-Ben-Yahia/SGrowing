@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "011ad400-4dd3-4cf6-90f1-f9af5b644535",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\jasmin\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\jasmin\\jasmin.html",
+  "specification": {
+    "sha256": "338ea2678462ee3a5a953628c381f8b0667fb0175030e67d56c53665fdecefc8",
+    "bytes": 5870
+  },
+  "artifact": {
+    "sha256": "f9c04f9aa30af62d74e9ce80902b0555d5ad88b5925532bca099679b23fc757b",
+    "bytes": 850411
+  }
+}

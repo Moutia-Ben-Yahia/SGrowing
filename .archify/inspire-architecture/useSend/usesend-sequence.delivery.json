@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "aee699e8-4022-47f5-b29a-21cb872320c4",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\useSend\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\useSend\\useSend-sequence.html",
+  "specification": {
+    "sha256": "b97d6474d00ac5d1dc616088489632731ded628d666ba11612b8a1a80c36d3e6",
+    "bytes": 4426
+  },
+  "artifact": {
+    "sha256": "1765b0596e3dc77e183d05ea7290c0f22dad88145fe84a27b3dc61316c842c53",
+    "bytes": 841119
+  }
+}

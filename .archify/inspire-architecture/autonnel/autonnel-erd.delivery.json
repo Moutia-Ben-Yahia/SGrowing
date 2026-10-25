@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "4329f98a-1f3f-4432-8ca2-e8b6866b4e38",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\autonnel\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\autonnel\\autonnel-erd.html",
+  "specification": {
+    "sha256": "cf5004291ac0afbe85b051cc26f356641935e08f6a3467537ddd59987f1a5a68",
+    "bytes": 5237
+  },
+  "artifact": {
+    "sha256": "350b417deb112eb5123cfadff74f60f0e331766b56c2fba1f5dd8a48996545c3",
+    "bytes": 855021
+  }
+}

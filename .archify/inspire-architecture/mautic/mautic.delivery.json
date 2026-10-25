@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "51eac97c-eeb6-4d1e-a6d1-1c9a1b334aae",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\mautic\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\mautic\\mautic.html",
+  "specification": {
+    "sha256": "9e09b69cb022eb3a8b6a0d282d1f831b1e95679de76052c9f8a2f562bc9b86f6",
+    "bytes": 5892
+  },
+  "artifact": {
+    "sha256": "1d83cc16b97411c25d864ca1114898f5b8c797805d99c2c1b313e76cd16b85ce",
+    "bytes": 850477
+  }
+}

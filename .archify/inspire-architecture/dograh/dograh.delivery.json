@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "3be82bb9-e69e-4320-a85f-7c14c48742cc",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\dograh\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\dograh\\dograh.html",
+  "specification": {
+    "sha256": "8fe9a9c3f20805646c253a20f520fed9144f876fdbd620f6809e6d8393e9b1f2",
+    "bytes": 5872
+  },
+  "artifact": {
+    "sha256": "58941a27cb2819115203a46d506cefacaab8446d9f8d59c8ac4e0343ab476d2d",
+    "bytes": 850416
+  }
+}

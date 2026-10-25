@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Chatwoot Request Lifecycle",
+    "output": ".archify/test-triplet/chatwoot-sequence.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "User / Agent",
+      "sublabel": "Web Browser"
+    },
+    {
+      "id": "web",
+      "type": "frontend",
+      "label": "Chatwoot Web",
+      "sublabel": "Vue.js Dashboard"
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "Auth Guard",
+      "sublabel": "Devise / JWT Token"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Rails Core",
+      "sublabel": "Puma HTTP Server"
+    },
+    {
+      "id": "redis",
+      "type": "database",
+      "label": "Redis Cache",
+      "sublabel": "Session & ActionCable"
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "Multi-Tenant DB"
+    },
+    {
+      "id": "worker",
+      "type": "backend",
+      "label": "Sidekiq",
+      "sublabel": "Async Task Queue"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 295,
+      "label": "Client Ingress & Auth Guard"
+    },
+    {
+      "from": 300,
+      "to": 445,
+      "label": "Cache Lookup & Database Fallback"
+    },
+    {
+      "from": 450,
+      "to": 590,
+      "label": "Cache Fill, Async Dispatch & Response"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "user",
+      "to": "web",
+      "y": 170,
+      "label": "POST /api/v1/messages",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m2",
+      "from": "web",
+      "to": "api",
+      "y": 205,
+      "label": "Dispatch HTTP request",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m3",
+      "from": "api",
+      "to": "auth",
+      "y": 240,
+      "label": "Verify auth token & tenant",
+      "variant": "security"
+    },
+    {
+      "id": "m4",
+      "from": "auth",
+      "to": "api",
+      "y": 275,
+      "label": "Agent session authenticated",
+      "variant": "return"
+    },
+    {
+      "id": "m5",
+      "from": "api",
+      "to": "redis",
+      "y": 315,
+      "label": "GET conversation:cache",
+      "variant": "default"
+    },
+    {
+      "id": "m6",
+      "from": "redis",
+      "to": "api",
+      "y": 350,
+      "label": "nil (cache miss)",
+      "variant": "return"
+    },
+    {
+      "id": "m7",
+      "from": "api",
+      "to": "db",
+      "y": 390,
+      "label": "SELECT conversation & lock",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m8",
+      "from": "db",
+      "to": "api",
+      "y": 425,
+      "label": "Conversation record rows",
+      "variant": "return"
+    },
+    {
+      "id": "m9",
+      "from": "api",
+      "to": "redis",
+      "y": 465,
+      "label": "SET conversation:cache (TTL)",
+      "variant": "dashed"
+    },
+    {
+      "id": "m10",
+      "from": "api",
+      "to": "worker",
+      "y": 500,
+      "label": "Enqueue webhook & mailer jobs",
+      "variant": "dashed"
+    },
+    {
+      "id": "m11",
+      "from": "api",
+      "to": "web",
+      "y": 535,
+      "label": "201 Created (Message JSON)",
+      "variant": "return"
+    },
+    {
+      "id": "m12",
+      "from": "web",
+      "to": "user",
+      "y": 570,
+      "label": "Update chat timeline in UI",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "web",
+      "from": 165,
+      "to": 575,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 200,
+      "to": 540,
+      "type": "backend"
+    },
+    {
+      "participant": "auth",
+      "from": 235,
+      "to": 280,
+      "type": "security"
+    },
+    {
+      "participant": "redis",
+      "from": 310,
+      "to": 355,
+      "type": "database"
+    },
+    {
+      "participant": "db",
+      "from": 385,
+      "to": 430,
+      "type": "database"
+    },
+    {
+      "participant": "redis",
+      "from": 460,
+      "to": 475,
+      "type": "database"
+    },
+    {
+      "participant": "worker",
+      "from": 495,
+      "to": 520,
+      "type": "backend"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Real-Time Message Dispatch",
+      "items": [
+        "Agent actions authenticated against tenant policies before touching persistent storage",
+        "Redis cache lookup reduces database load during active high-frequency conversations",
+        "Outbound notifications and third-party channel webhooks offloaded to Sidekiq"
+      ]
+    }
+  ]
+}

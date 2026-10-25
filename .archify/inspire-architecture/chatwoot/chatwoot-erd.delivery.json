@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "2957c164-6da2-4d9a-8387-6531cf295f42",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\chatwoot\\chatwoot-erd.html",
+  "specification": {
+    "sha256": "eefefa712d5b33a48384c6feebeccd638d648d79b23dfc48c10ba6942811abb3",
+    "bytes": 5489
+  },
+  "artifact": {
+    "sha256": "4720b3291bb9d20a81499582e454a8e61fa4145b039af9202717b563eed8172c",
+    "bytes": 855233
+  }
+}

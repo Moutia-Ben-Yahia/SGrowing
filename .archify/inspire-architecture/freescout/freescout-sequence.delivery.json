@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "044d48c0-5ebd-4a2a-9739-c48a62bb4474",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\freescout\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\freescout\\freescout-sequence.html",
+  "specification": {
+    "sha256": "6ffe1df12dcfd6d2251d6cf5e28182bd805c955d09eb1ce20da3a1fea00fe786",
+    "bytes": 4463
+  },
+  "artifact": {
+    "sha256": "0103f261e01fafdc2b331475848e4dbb546f539c22becde09ced2a202bac4c31",
+    "bytes": 841233
+  }
+}

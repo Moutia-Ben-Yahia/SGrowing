@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\twenty\\candidate.json",
+    "sha256": "fbfaa44a4d99134c47957c9f0bf07f092eb3fbbbe9e010f93e9cbda00a798c6a",
+    "bytes": 5758
+  },
+  "artifact": {
+    "path": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\twenty\\twenty.html",
+    "sha256": "1d0a16e7fade4d74bf0b140088746c3e780c07977ab85ee65a0b26712c43fe5a",
+    "bytes": 855302
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\twenty\\review-1\\twenty.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\twenty\\review-1\\twenty.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\twenty\\review-1\\twenty.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-25T12:43:09.686Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2564,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  },
+  "visualReviewRecommendation": {
+    "action": "inspect-route-readability",
+    "signals": {
+      "resolvedCrossovers": 1,
+      "routesOverSuggestedBends": 1
+    },
+    "reason": "Automated gates passed, but crossings or detours still need perceptual review before claiming visual quality.",
+    "affectedRoutes": {
+      "crossings": [
+        {
+          "left": {
+            "id": "actor-to-front",
+            "from": "actor",
+            "to": "front",
+            "label": "HTTPS",
+            "collectionIndex": 0,
+            "artifactIndex": 1
+          },
+          "right": {
+            "id": "sdk-to-api",
+            "from": "sdk_client",
+            "to": "api",
+            "label": "REST API",
+            "collectionIndex": 1,
+            "artifactIndex": 2
+          },
+          "point": [
+            183,
+            80
+          ]
+        }
+      ],
+      "detours": [
+        {
+          "relationship": {
+            "id": "sdk-to-api",
+            "from": "sdk_client",
+            "to": "api",
+            "label": "REST API",
+            "collectionIndex": 1,
+            "artifactIndex": 2
+          },
+          "bends": 4,
+          "stretch": 1.09
+        }
+      ],
+      "truncated": false
+    },
+    "hints": [
+      "actor → front crosses sdk_client → api: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor.",
+      "sdk_client → api needs 4 bends: move node sdk_client or api so they share a row or column with matching centers, or sit diagonally with a clear corner."
+    ],
+    "repair": "Trace these relationships at the desktop viewport. For Architecture, use references/architecture-layout-repair.md: reflow a blocked main path or tangled connected scene, and repair an isolated defect locally only when the surrounding composition is accepted. Preserve all semantic content and user-fixed geometry. Rerun finalize once after the edit."
+  }
+}

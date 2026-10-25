@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "613f667b-9f1d-4aa5-9764-6700669a5111",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\LimeSurvey\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\LimeSurvey\\LimeSurvey-erd.html",
+  "specification": {
+    "sha256": "db0e7e5dbd1c9678b4ecc77a702c26bb98f1cf9fbbd98b38acf69a620a5f1169",
+    "bytes": 5309
+  },
+  "artifact": {
+    "sha256": "826544e4a3f60c90a2871f951d046425c6796fa5e22c76cc6afb2b45cfe575cd",
+    "bytes": 855107
+  }
+}

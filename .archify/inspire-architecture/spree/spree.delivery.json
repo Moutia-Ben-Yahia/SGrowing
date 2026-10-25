@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "7fbbe882-8c98-4584-82c7-f87adb34367c",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\spree\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\spree\\spree.html",
+  "specification": {
+    "sha256": "2aa5b65ad0a9901ea22e698fa85260b5f6ff6980917ca103fb8dc748406346e7",
+    "bytes": 5864
+  },
+  "artifact": {
+    "sha256": "ca2e286ea0943855a6428b7dfe90d090c3e03b02631b277456cd8b20ad54897f",
+    "bytes": 850435
+  }
+}

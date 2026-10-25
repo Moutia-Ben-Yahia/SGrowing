@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "433332d9-72c5-48a6-b0a6-24b966e9b3a8",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\AgentSDR\\candidate.json",
+  "output": "C:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture\\AgentSDR\\AgentSDR.html",
+  "specification": {
+    "sha256": "c74afb0e85fdde86dda40d2c6c1df0422f90e0eaac5957491aa0e221be44103f",
+    "bytes": 5889
+  },
+  "artifact": {
+    "sha256": "802041507948d2367c4d2af5b1d3dc2f5f897732bd5eedf30aa6164445d61393",
+    "bytes": 850511
+  }
+}
