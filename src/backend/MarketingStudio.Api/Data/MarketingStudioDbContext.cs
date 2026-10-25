@@ -24,6 +24,8 @@ public class MarketingStudioDbContext : DbContext
     public DbSet<Conversation> Conversations => Set<Conversation>();
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<AiDraft> AiDrafts => Set<AiDraft>();
+    public DbSet<SenderAccount> SenderAccounts => Set<SenderAccount>();
+    public DbSet<WarmupRecord> WarmupRecords => Set<WarmupRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
