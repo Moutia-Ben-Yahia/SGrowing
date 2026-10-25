@@ -30,3 +30,9 @@ C:\Business\Software\MarketingStudio\src\backend\MarketingStudio.Api\obj\Debug\n
 C:\Business\Software\MarketingStudio\src\backend\MarketingStudio.Api\obj\Debug\net10.0\MarketingStudio.Api.pdb
 C:\Business\Software\MarketingStudio\src\backend\MarketingStudio.Api\obj\Debug\net10.0\MarketingStudio.Api.genruntimeconfig.cache
 C:\Business\Software\MarketingStudio\src\backend\MarketingStudio.Api\obj\Debug\net10.0\ref\MarketingStudio.Api.dll
+C:\Business\Software\MarketingStudio\src\backend\MarketingStudio.Api\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.dll
+C:\Business\Software\MarketingStudio\src\backend\MarketingStudio.Api\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+C:\Business\Software\MarketingStudio\src\backend\MarketingStudio.Api\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Relational.dll
+C:\Business\Software\MarketingStudio\src\backend\MarketingStudio.Api\bin\Debug\net10.0\Npgsql.dll
+C:\Business\Software\MarketingStudio\src\backend\MarketingStudio.Api\bin\Debug\net10.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
+C:\Business\Software\MarketingStudio\src\backend\MarketingStudio.Api\obj\Debug\net10.0\MarketingStudio.Api.sourcelink.json

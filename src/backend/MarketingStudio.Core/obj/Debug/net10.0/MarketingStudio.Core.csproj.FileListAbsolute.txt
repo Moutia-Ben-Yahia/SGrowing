@@ -9,3 +9,5 @@ C:\Business\Software\MarketingStudio\src\backend\MarketingStudio.Core\obj\Debug\
 C:\Business\Software\MarketingStudio\src\backend\MarketingStudio.Core\obj\Debug\net10.0\refint\MarketingStudio.Core.dll
 C:\Business\Software\MarketingStudio\src\backend\MarketingStudio.Core\obj\Debug\net10.0\MarketingStudio.Core.pdb
 C:\Business\Software\MarketingStudio\src\backend\MarketingStudio.Core\obj\Debug\net10.0\ref\MarketingStudio.Core.dll
+C:\Business\Software\MarketingStudio\src\backend\MarketingStudio.Core\obj\Debug\net10.0\MarketingStudio.Core.csproj.AssemblyReference.cache
+C:\Business\Software\MarketingStudio\src\backend\MarketingStudio.Core\obj\Debug\net10.0\MarketingStudio.Core.sourcelink.json
