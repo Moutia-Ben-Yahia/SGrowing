@@ -4,6 +4,7 @@ using MarketingStudio.Api.Modules.AI;
 using MarketingStudio.Api.Modules.Channels;
 using MarketingStudio.Api.Modules.Conversations;
 using MarketingStudio.Api.Modules.CRM;
+using MarketingStudio.Api.Modules.Outbound;
 using MarketingStudio.Api.Services;
 using MarketingStudio.Core.Channels;
 using MarketingStudio.Core.Entities;
@@ -29,18 +30,27 @@ builder.Services.AddDbContext<MarketingStudioDbContext>((sp, options) =>
     }
 });
 
-// 2. Core Services
+// 2. Core & Outbox Services
 builder.Services.AddScoped<IOutbox, OutboxService>();
 builder.Services.AddScoped<IRealtimeNotifier, RealtimeNotifier>();
 builder.Services.AddScoped<IAiCopilotService, AiCopilotService>();
 builder.Services.AddScoped<ChannelIngressService>();
 
-// 3. Channel Adapters
+// 3. Outbound AI SDR Services
+builder.Services.AddScoped<MailboxService>();
+builder.Services.AddSingleton<IAiSdrService, AiSdrService>();
+builder.Services.AddSingleton<ReplySentimentClassifier>();
+builder.Services.AddScoped<ProspectReplyHandoffService>();
+builder.Services.AddScoped<CadenceDispatcherService>();
+builder.Services.AddScoped<CreateCampaignHandler>();
+builder.Services.AddScoped<EnrollProspectsHandler>();
+
+// 4. Channel Adapters
 builder.Services.AddSingleton<WhatsAppCloudAdapter>();
 builder.Services.AddSingleton<EvolutionApiAdapter>();
 builder.Services.AddSingleton<EmailAdapter>();
 
-// 4. Slices Handlers
+// 5. Inbound Slices Handlers
 builder.Services.AddScoped<CreateContactHandler>();
 builder.Services.AddScoped<GetContactHandler>();
 builder.Services.AddScoped<SearchContactsHandler>();
@@ -49,7 +59,7 @@ builder.Services.AddScoped<ChangeStatusHandler>();
 builder.Services.AddScoped<GetConversationMessagesHandler>();
 builder.Services.AddScoped<ApproveAiDraftHandler>();
 
-// 5. SignalR & CORS
+// 6. SignalR & CORS
 builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
 {
@@ -122,13 +132,14 @@ app.MapPost("/api/ai/drafts/{id:guid}/approve", async (Guid id, [FromBody] Appro
     return res.IsSuccess ? Results.Ok(res.Value) : Results.BadRequest(new { error = res.Error });
 });
 
-// Webhook Ingress
+// Webhook Ingress (with Reply Sentiment Handoff hook)
 app.MapPost("/api/webhooks/{channel}", async (
     string channel,
     [FromQuery] Guid tenantId,
     [FromQuery] Guid inboxId,
     HttpRequest request,
     ChannelIngressService ingressService,
+    ProspectReplyHandoffService handoffService,
     WhatsAppCloudAdapter waCloud,
     EvolutionApiAdapter evoWa,
     EmailAdapter email) =>
@@ -148,7 +159,61 @@ app.MapPost("/api/webhooks/{channel}", async (
         return Results.BadRequest(new { error = $"Could not parse webhook for channel: {channel}" });
 
     var res = await ingressService.IngestAsync(inboxId, parsed);
-    return res.IsSuccess ? Results.Ok(new { status = "Ingested", messageId = res.Value.Id }) : Results.BadRequest(new { error = res.Error });
+    if (!res.IsSuccess)
+        return Results.BadRequest(new { error = res.Error });
+
+    // Evaluate prospect reply sentiment for outbound handoff
+    await handoffService.HandleReplyAsync(tenantId, res.Value.SenderId ?? Guid.Empty, res.Value.ConversationId, parsed.Content);
+
+    return Results.Ok(new { status = "Ingested", messageId = res.Value.Id });
+});
+
+// ----------------- Outbound AI SDR Endpoints -----------------
+
+// Mailboxes
+app.MapGet("/api/outbound/mailboxes", async ([FromQuery] Guid tenantId, MarketingStudioDbContext db) =>
+{
+    var mailboxes = await db.SenderAccounts.Where(s => s.TenantId == tenantId).ToListAsync();
+    return Results.Ok(mailboxes);
+});
+
+app.MapPost("/api/outbound/mailboxes", async ([FromBody] SenderAccount sender, MarketingStudioDbContext db) =>
+{
+    db.SenderAccounts.Add(sender);
+    await db.SaveChangesAsync();
+    return Results.Ok(sender);
+});
+
+// Campaigns & Cadences
+app.MapGet("/api/outbound/campaigns", async ([FromQuery] Guid tenantId, MarketingStudioDbContext db) =>
+{
+    var campaigns = await db.OutboundCampaigns.Where(c => c.TenantId == tenantId).ToListAsync();
+    return Results.Ok(campaigns);
+});
+
+app.MapPost("/api/outbound/campaigns", async ([FromBody] CreateCampaignRequest req, CreateCampaignHandler handler) =>
+{
+    var res = await handler.HandleAsync(req);
+    return res.IsSuccess ? Results.Ok(res.Value) : Results.BadRequest(new { error = res.Error });
+});
+
+app.MapPost("/api/outbound/campaigns/{id:guid}/enroll", async (Guid id, [FromBody] List<Guid> contactIds, [FromQuery] Guid tenantId, EnrollProspectsHandler handler) =>
+{
+    var res = await handler.HandleAsync(new EnrollProspectsRequest(tenantId, id, contactIds));
+    return res.IsSuccess ? Results.Ok(res.Value) : Results.BadRequest(new { error = res.Error });
+});
+
+app.MapPost("/api/outbound/dispatch", async ([FromQuery] Guid tenantId, CadenceDispatcherService dispatcher) =>
+{
+    var count = await dispatcher.ProcessDueCadencesAsync(tenantId);
+    return Results.Ok(new { processed = count });
+});
+
+// Deals / CRM Pipeline
+app.MapGet("/api/crm/deals", async ([FromQuery] Guid tenantId, MarketingStudioDbContext db) =>
+{
+    var deals = await db.Deals.Where(d => d.TenantId == tenantId).OrderByDescending(d => d.CreatedAtUtc).ToListAsync();
+    return Results.Ok(deals);
 });
 
 // Real-Time SignalR Hub
