@@ -1,4 +1,5 @@
 using MarketingStudio.Api.Data;
+using MarketingStudio.Api.Modules.Conversations;
 using MarketingStudio.Api.Services;
 using MarketingStudio.Core.Common;
 using MarketingStudio.Core.Entities;
@@ -64,6 +65,19 @@ public class ProspectReplyHandoffService
                 {
                     conversation.Priority = ConversationPriority.High;
                     conversation.Status = ConversationStatus.Open;
+
+                    await _notifier.NotifyConversationUpdatedAsync(tenantId, new ConversationDto(
+                        conversation.Id,
+                        conversation.TenantId,
+                        conversation.InboxId,
+                        conversation.ContactId,
+                        conversation.AssigneeId,
+                        conversation.Status,
+                        conversation.Priority,
+                        conversation.AiMode,
+                        conversation.LastMessageAtUtc,
+                        conversation.CreatedAtUtc
+                    ));
                 }
 
                 if (contact != null && !contact.Tags.Contains("hot-lead"))
