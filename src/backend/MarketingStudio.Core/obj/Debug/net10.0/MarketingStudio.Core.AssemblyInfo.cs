@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MarketingStudio.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f2e1c4391201b58ac11b1cba050e7e1ca09ddbbc")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f924fbb885fe8121c34af763431d80d688505ba4")]
 [assembly: System.Reflection.AssemblyProductAttribute("MarketingStudio.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MarketingStudio.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
