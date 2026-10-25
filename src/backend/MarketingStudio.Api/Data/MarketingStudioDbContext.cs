@@ -29,6 +29,7 @@ public class MarketingStudioDbContext : DbContext
     public DbSet<OutboundCampaign> OutboundCampaigns => Set<OutboundCampaign>();
     public DbSet<CadenceStep> CadenceSteps => Set<CadenceStep>();
     public DbSet<ProspectEnrollment> ProspectEnrollments => Set<ProspectEnrollment>();
+    public DbSet<Deal> Deals => Set<Deal>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
