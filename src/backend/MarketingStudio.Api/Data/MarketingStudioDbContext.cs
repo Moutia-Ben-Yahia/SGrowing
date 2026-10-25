@@ -26,6 +26,9 @@ public class MarketingStudioDbContext : DbContext
     public DbSet<AiDraft> AiDrafts => Set<AiDraft>();
     public DbSet<SenderAccount> SenderAccounts => Set<SenderAccount>();
     public DbSet<WarmupRecord> WarmupRecords => Set<WarmupRecord>();
+    public DbSet<OutboundCampaign> OutboundCampaigns => Set<OutboundCampaign>();
+    public DbSet<CadenceStep> CadenceSteps => Set<CadenceStep>();
+    public DbSet<ProspectEnrollment> ProspectEnrollments => Set<ProspectEnrollment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
