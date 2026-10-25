@@ -524,7 +524,8 @@
       },
       "MarketingStudio.Api/1.0.0": {
         "dependencies": {
-          "MarketingStudio.Core": "1.0.0"
+          "MarketingStudio.Core": "1.0.0",
+          "Microsoft.EntityFrameworkCore.InMemory": "10.0.14"
         },
         "runtime": {
           "MarketingStudio.Api.dll": {

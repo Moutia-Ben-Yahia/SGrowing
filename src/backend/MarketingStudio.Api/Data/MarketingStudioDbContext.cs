@@ -23,6 +23,7 @@ public class MarketingStudioDbContext : DbContext
     public DbSet<Inbox> Inboxes => Set<Inbox>();
     public DbSet<Conversation> Conversations => Set<Conversation>();
     public DbSet<Message> Messages => Set<Message>();
+    public DbSet<AiDraft> AiDrafts => Set<AiDraft>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -93,6 +94,12 @@ public class MarketingStudioDbContext : DbContext
             b.HasKey(m => m.Id);
             b.HasIndex(m => new { m.TenantId, m.ConversationId, m.CreatedAtUtc });
             b.HasIndex(m => new { m.TenantId, m.ExternalMessageId });
+        });
+
+        modelBuilder.Entity<AiDraft>(b =>
+        {
+            b.HasKey(d => d.Id);
+            b.HasIndex(d => new { d.TenantId, d.ConversationId, d.Status });
         });
     }
 }

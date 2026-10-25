@@ -746,7 +746,8 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
         "dependencies": {
-          "MarketingStudio.Core": "1.0.0"
+          "MarketingStudio.Core": "1.0.0",
+          "Microsoft.EntityFrameworkCore.InMemory": "10.0.14"
         },
         "compile": {
           "bin/placeholder/MarketingStudio.Api.dll": {}
