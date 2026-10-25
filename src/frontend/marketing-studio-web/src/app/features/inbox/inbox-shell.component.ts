@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { SignalRService } from '../../core/services/signalr.service';
 import { ApiService } from '../../core/services/api.service';
 import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/models/chat.models';
@@ -8,7 +9,7 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
 @Component({
   selector: 'app-inbox-shell',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="flex h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 font-sans">
       <!-- 1. Left Nav & Channels Bar -->
@@ -25,6 +26,14 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
           </div>
 
           <div class="space-y-1 mb-6">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2">Navigation</span>
+            <a
+              routerLink="/outbound"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition mb-3">
+              <span class="flex items-center gap-2">🚀 AI SDR & Outbound</span>
+              <span class="bg-amber-500/20 text-amber-300 text-[10px] px-1.5 py-0.5 rounded font-mono">NEW</span>
+            </a>
+
             <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2">Inboxes</span>
             <button
               (click)="selectedChannelFilter.set('all')"

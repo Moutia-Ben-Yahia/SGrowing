@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ContactDto, ConversationDto, MessageDto } from '../models/chat.models';
+import { SenderAccountDto, CampaignDto, DealDto } from '../models/outbound.models';
 
 @Injectable({
   providedIn: 'root'
@@ -35,5 +36,30 @@ export class ApiService {
       tenantId,
       draftId
     });
+  }
+
+  // Outbound AI SDR & Mailboxes
+  public getMailboxes(tenantId: string): Observable<SenderAccountDto[]> {
+    return this.http.get<SenderAccountDto[]>(`${this.baseUrl}/outbound/mailboxes?tenantId=${tenantId}`);
+  }
+
+  public getCampaigns(tenantId: string): Observable<CampaignDto[]> {
+    return this.http.get<CampaignDto[]>(`${this.baseUrl}/outbound/campaigns?tenantId=${tenantId}`);
+  }
+
+  public createCampaign(payload: any): Observable<CampaignDto> {
+    return this.http.post<CampaignDto>(`${this.baseUrl}/outbound/campaigns`, payload);
+  }
+
+  public enrollProspects(campaignId: string, tenantId: string, contactIds: string[]): Observable<{ enrolledCount: number }> {
+    return this.http.post<{ enrolledCount: number }>(`${this.baseUrl}/outbound/campaigns/${campaignId}/enroll?tenantId=${tenantId}`, contactIds);
+  }
+
+  public triggerDispatch(tenantId: string): Observable<{ processed: number }> {
+    return this.http.post<{ processed: number }>(`${this.baseUrl}/outbound/dispatch?tenantId=${tenantId}`, {});
+  }
+
+  public getDeals(tenantId: string): Observable<DealDto[]> {
+    return this.http.get<DealDto[]>(`${this.baseUrl}/crm/deals?tenantId=${tenantId}`);
   }
 }
