@@ -49,6 +49,11 @@ public class SGrowingDbContext : DbContext
     public DbSet<WhatsAppTemplate> WhatsAppTemplates => Set<WhatsAppTemplate>();
     public DbSet<BroadcastCampaign> BroadcastCampaigns => Set<BroadcastCampaign>();
 
+    // Booking & In-Chat Checkout (Pillar D)
+    public DbSet<AppointmentSlot> AppointmentSlots => Set<AppointmentSlot>();
+    public DbSet<AppointmentBooking> AppointmentBookings => Set<AppointmentBooking>();
+    public DbSet<CheckoutLink> CheckoutLinks => Set<CheckoutLink>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

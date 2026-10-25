@@ -19,6 +19,7 @@ public class Deal
     public decimal Amount { get; set; }
     public DealStage Stage { get; set; } = DealStage.Prospecting;
     public Guid? SourceCampaignId { get; set; }
+    public string? Notes { get; set; }
     public DateTime CreatedAtUtc { get; private set; }
 
     private Deal() { }
