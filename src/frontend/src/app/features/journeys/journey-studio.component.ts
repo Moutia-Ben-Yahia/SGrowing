@@ -85,6 +85,14 @@ import { CustomerJourneyDto } from '../../core/models/platform.models';
           </div>
         </header>
 
+        <!-- Notification Banner -->
+        @if (feedbackMessage()) {
+          <div class="bg-cyan-600/20 border-b border-cyan-500/30 px-6 py-2.5 text-xs text-cyan-300 flex items-center justify-between">
+            <span>{{ feedbackMessage() }}</span>
+            <button (click)="feedbackMessage.set(null)" class="text-slate-400 hover:text-white">✕</button>
+          </div>
+        }
+
         <!-- Main Body: Simulator + Journey Canvas -->
         <div class="flex-1 overflow-y-auto p-6 space-y-6 max-w-6xl">
           <!-- Event Ingestion Simulator Card -->
@@ -227,10 +235,12 @@ export class JourneyStudioComponent implements OnInit {
     ]);
   }
 
+  public feedbackMessage = signal<string | null>(null);
+
   public simulateEvent(eventName: string) {
     this.api.triggerEvent(this.tenantId, '00000000-0000-0000-0000-000000000002', eventName).subscribe({
-      next: () => alert(`Event '${eventName}' ingested successfully! Workflow triggered.`),
-      error: () => alert(`Event '${eventName}' simulated locally.`)
+      next: () => this.feedbackMessage.set(`🎉 Event '${eventName}' ingested successfully! Active workflows triggered.`),
+      error: () => this.feedbackMessage.set(`⚡ Event '${eventName}' simulated locally.`)
     });
   }
 
@@ -239,11 +249,11 @@ export class JourneyStudioComponent implements OnInit {
     this.api.dispatchJourneys(this.tenantId).subscribe({
       next: (res) => {
         this.isDispatching.set(false);
-        alert(`Dispatched ${res.processed} pending journey messages.`);
+        this.feedbackMessage.set(`⚡ Dispatched ${res.processed} pending journey step messages via Outbox.`);
       },
       error: () => {
         this.isDispatching.set(false);
-        alert('Simulated journey dispatch executed.');
+        this.feedbackMessage.set('⚡ Simulated journey dispatch completed.');
       }
     });
   }

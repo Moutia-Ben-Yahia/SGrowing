@@ -9,6 +9,7 @@ public record RunSeoAuditDto(Guid TenantId, string TargetUrl, List<PageAuditInpu
 public record TrackKeywordDto(Guid TenantId, string Keyword, string TargetUrl, string CountryCode = "TN", int? InitialRank = null, int SearchVolume = 1000);
 public record UpdateRankDto(Guid TenantId, int NewRank);
 public record RecordAeoDto(Guid TenantId, string BrandName, string AiEngine, string PromptQuery, bool IsMentioned, string Sentiment, string Snippet, int? CitationRank = 1);
+public record ComputeGeoScoreDto(Guid TenantId, string BrandName, string DomainUrl);
 
 public static class SeoEndpoints
 {
@@ -68,6 +69,12 @@ public static class SeoEndpoints
         {
             var mentions = await service.GetAeoMentionsAsync(tenantId);
             return Results.Ok(mentions);
+        });
+
+        group.MapPost("/geo/score", async ([FromBody] ComputeGeoScoreDto req, ISeoAuditService service) =>
+        {
+            var geoReport = await service.ComputeGeoBrandCitabilityScoreAsync(req.TenantId, req.BrandName, req.DomainUrl);
+            return Results.Ok(geoReport);
         });
 
         return endpoints;

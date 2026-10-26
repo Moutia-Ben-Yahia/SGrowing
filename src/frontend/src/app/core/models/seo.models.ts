@@ -58,3 +58,17 @@ export interface AeoBrandMentionDto {
   citationRank?: number;
   capturedAtUtc: string;
 }
+
+export interface GeoScoreReportDto {
+  tenantId: string;
+  brandName: string;
+  domainUrl: string;
+  overallScore: number;
+  citabilityRatePercent: number;
+  structuredSchemaScore: number;
+  llmsTxtReadinessScore: number;
+  passageDensityScore: number;
+  aiEnginesEvaluated: string[];
+  actionableRecommendations: string[];
+  evaluatedAtUtc: string;
+}

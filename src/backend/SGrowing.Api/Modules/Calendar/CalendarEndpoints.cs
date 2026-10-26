@@ -9,12 +9,36 @@ namespace SGrowing.Api.Modules.Calendar;
 public record CreateEventTypeDto(Guid TenantId, string Title, string Slug, string Description = "", int DurationMinutes = 30, bool IsRoundRobin = false, string ColorHex = "#6366f1", List<Guid>? HostIds = null);
 public record SetHostAvailabilityDto(Guid TenantId, Guid HostUserId, string HostName, string TimeZone, List<DayAvailability> Hours);
 public record BookAppointmentDto(Guid TenantId, Guid EventTypeId, string AttendeeName, string AttendeeEmail, string AttendeePhone, DateTime StartTimeUtc, string TimeZone = "Africa/Tunis", string Notes = "");
+public record CancelBookingDto(Guid TenantId, string Reason = "");
+public record RescheduleBookingDto(Guid TenantId, DateTime NewStartTimeUtc);
+public record BookPublicAppointmentDto(string AttendeeName, string AttendeeEmail, string AttendeePhone, DateTime StartTimeUtc, string TimeZone = "Africa/Tunis", string Notes = "");
 
 public static class CalendarEndpoints
 {
     public static IEndpointRouteBuilder MapCalendarEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/api/calendar").WithTags("Appointment Scheduling & Calendar Engine");
+
+        // Public Booker Endpoints (Inspired by Calnode / Cal.diy)
+        group.MapGet("/public/{tenantSlug}/{eventSlug}", async (string tenantSlug, string eventSlug, [FromQuery] DateTime? date, ICalendarSchedulingService service) =>
+        {
+            var targetDate = date ?? DateTime.UtcNow;
+            var result = await service.GetPublicBookingPageAsync(tenantSlug, eventSlug, targetDate);
+            return result.HasValue ? Results.Ok(new { eventType = result.Value.EventType, slots = result.Value.Slots }) : Results.NotFound(new { error = "Event or tenant not found." });
+        });
+
+        group.MapPost("/public/{tenantSlug}/{eventSlug}/book", async (string tenantSlug, string eventSlug, [FromBody] BookPublicAppointmentDto req, ICalendarSchedulingService service) =>
+        {
+            try
+            {
+                var booking = await service.BookPublicAppointmentAsync(tenantSlug, eventSlug, req.AttendeeName, req.AttendeeEmail, req.AttendeePhone, req.StartTimeUtc, req.TimeZone, req.Notes);
+                return Results.Ok(booking);
+            }
+            catch (Exception ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        });
 
         group.MapPost("/event-types", async ([FromBody] CreateEventTypeDto req, ICalendarSchedulingService service) =>
         {
@@ -42,8 +66,34 @@ public static class CalendarEndpoints
 
         group.MapPost("/bookings", async ([FromBody] BookAppointmentDto req, ICalendarSchedulingService service) =>
         {
-            var booking = await service.BookAppointmentAsync(req.TenantId, req.EventTypeId, req.AttendeeName, req.AttendeeEmail, req.AttendeePhone, req.StartTimeUtc, req.TimeZone, req.Notes);
-            return Results.Ok(booking);
+            try
+            {
+                var booking = await service.BookAppointmentAsync(req.TenantId, req.EventTypeId, req.AttendeeName, req.AttendeeEmail, req.AttendeePhone, req.StartTimeUtc, req.TimeZone, req.Notes);
+                return Results.Ok(booking);
+            }
+            catch (Exception ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        });
+
+        group.MapPost("/bookings/{id:guid}/cancel", async (Guid id, [FromBody] CancelBookingDto req, ICalendarSchedulingService service) =>
+        {
+            var cancelled = await service.CancelBookingAsync(req.TenantId, id, req.Reason);
+            return Results.Ok(cancelled);
+        });
+
+        group.MapPost("/bookings/{id:guid}/reschedule", async (Guid id, [FromBody] RescheduleBookingDto req, ICalendarSchedulingService service) =>
+        {
+            try
+            {
+                var rescheduled = await service.RescheduleBookingAsync(req.TenantId, id, req.NewStartTimeUtc);
+                return Results.Ok(rescheduled);
+            }
+            catch (Exception ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
         });
 
         group.MapGet("/bookings", async ([FromQuery] Guid tenantId, [FromQuery] DateTime? from, [FromQuery] DateTime? to, ICalendarSchedulingService service) =>

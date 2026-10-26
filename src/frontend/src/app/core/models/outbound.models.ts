@@ -40,3 +40,24 @@ export interface DealDto {
   notes?: string;
   createdAtUtc: string;
 }
+
+export interface DialerQueueItemDto {
+  contactId: string;
+  fullName: string;
+  companyName: string;
+  phoneNumber: string;
+  email: string;
+  timeZone: string;
+  stage: string;
+  touchpointStep: number;
+  notes?: string;
+}
+
+export interface CallOutcomeResultDto {
+  activityId: string;
+  contactId: string;
+  outcome: string;
+  durationSeconds: number;
+  nextActionDescription: string;
+  loggedAtUtc: string;
+}

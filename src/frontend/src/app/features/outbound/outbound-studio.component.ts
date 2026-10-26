@@ -72,6 +72,14 @@ import { SenderAccountDto, CampaignDto, DealDto } from '../../core/models/outbou
               <span class="flex items-center gap-2">💼 CRM Deal Pipeline</span>
               <span class="bg-indigo-500/20 text-indigo-400 text-xs px-2 py-0.5 rounded-full font-medium">{{ deals().length }}</span>
             </button>
+            <button
+              (click)="activeTab.set('dialer')"
+              [class.bg-slate-800]="activeTab() === 'dialer'"
+              [class.text-amber-400]="activeTab() === 'dialer'"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-slate-200 hover:bg-slate-800/60 transition">
+              <span class="flex items-center gap-2">📞 Power Calling Station</span>
+              <span class="bg-rose-500/20 text-rose-400 text-xs px-2 py-0.5 rounded-full font-medium">{{ dialerQueue().length }}</span>
+            </button>
           </nav>
 
           <!-- AI SDR Agent Status Card -->
@@ -327,6 +335,130 @@ import { SenderAccountDto, CampaignDto, DealDto } from '../../core/models/outbou
               </div>
             </div>
           }
+
+          <!-- 4. Tab 4: Power Calling Station (AgentSDR & Open-Cold-Dialer model) -->
+          @if (activeTab() === 'dialer') {
+            <div class="space-y-6">
+              <!-- Header info & Feedback -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-base font-semibold text-white flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+                    SDR Power Calling Station & Softphone Bridge
+                  </h3>
+                  <p class="text-xs text-slate-400">
+                    High-velocity outbound dialer with one-click outcome logging, meeting booking, and cadence progression.
+                  </p>
+                </div>
+              </div>
+
+              @if (dialerFeedback()) {
+                <div class="bg-indigo-600/20 border border-indigo-500/30 rounded-xl p-3 text-xs text-indigo-300 flex items-center justify-between">
+                  <span>{{ dialerFeedback() }}</span>
+                  <button (click)="dialerFeedback.set(null)" class="text-slate-400 hover:text-white">✕</button>
+                </div>
+              }
+
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Prospect Queue (7 cols) -->
+                <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl space-y-4">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Outbound Call Queue</span>
+                    <span class="text-xs text-rose-400 font-mono">{{ dialerQueue().length }} Leads Ready</span>
+                  </div>
+
+                  <div class="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+                    @for (item of dialerQueue(); track item.contactId) {
+                      <div 
+                        (click)="selectedProspect.set(item)"
+                        [class.border-rose-500]="selectedProspect()?.contactId === item.contactId"
+                        [class.bg-slate-850]="selectedProspect()?.contactId === item.contactId"
+                        class="p-4 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 cursor-pointer transition flex items-center justify-between">
+                        <div class="space-y-1">
+                          <div class="flex items-center gap-2">
+                            <span class="text-sm font-semibold text-white">{{ item.fullName }}</span>
+                            <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">{{ item.companyName }}</span>
+                          </div>
+                          <div class="text-xs text-slate-400 flex items-center gap-3">
+                            <span>📞 {{ item.phoneNumber }}</span>
+                            <span>🌍 {{ item.timeZone }}</span>
+                          </div>
+                          @if (item.notes) {
+                            <p class="text-[11px] text-slate-400 italic">"{{ item.notes }}"</p>
+                          }
+                        </div>
+                        <button 
+                          (click)="startCall(item); $event.stopPropagation()"
+                          class="px-3 py-1.5 rounded-lg text-xs bg-rose-600 hover:bg-rose-500 text-white font-medium shadow-md shadow-rose-900/30 transition">
+                          📞 Dial
+                        </button>
+                      </div>
+                    } @empty {
+                      <p class="text-xs text-slate-500 italic p-4 text-center">All queued phone calls completed for this session.</p>
+                    }
+                  </div>
+                </div>
+
+                <!-- Live Softphone Console (5 cols) -->
+                <div class="lg:col-span-5 space-y-4">
+                  <div class="bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 rounded-xl p-6 shadow-xl space-y-5">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                      <span class="text-xs font-semibold text-white flex items-center gap-1.5">
+                        <span [class.bg-emerald-500]="isCallActive()" [class.bg-slate-600]="!isCallActive()" class="w-2 h-2 rounded-full"></span>
+                        {{ isCallActive() ? 'Call in Progress...' : 'Ready to Dial' }}
+                      </span>
+                      <span class="text-xs font-mono text-slate-400">{{ formatTimer(callDuration()) }}</span>
+                    </div>
+
+                    @if (selectedProspect(); as p) {
+                      <div class="text-center py-4 space-y-2">
+                        <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center font-bold text-white text-xl shadow-lg shadow-rose-900/40">
+                          {{ p.fullName.charAt(0) }}
+                        </div>
+                        <h4 class="text-base font-semibold text-white">{{ p.fullName }}</h4>
+                        <p class="text-xs text-slate-400">{{ p.companyName }} • {{ p.phoneNumber }}</p>
+                        <span class="inline-block text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded-full">
+                          {{ p.stage }}
+                        </span>
+                      </div>
+
+                      <!-- Call Actions / Outcomes -->
+                      <div class="space-y-3 pt-2">
+                        <span class="text-xs font-medium text-slate-400 block text-center">Record Call Outcome & Advance Cadence</span>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                          <button 
+                            (click)="logOutcome('MeetingBooked')"
+                            class="p-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition text-center shadow-md shadow-emerald-900/20">
+                            🎉 Meeting Booked
+                          </button>
+                          <button 
+                            (click)="logOutcome('LeftVoicemail')"
+                            class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 font-medium transition text-center border border-slate-700">
+                            🎙️ Left Voicemail
+                          </button>
+                          <button 
+                            (click)="logOutcome('GatekeeperRefused')"
+                            class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition text-center border border-slate-700">
+                            🛑 Gatekeeper Refusal
+                          </button>
+                          <button 
+                            (click)="logOutcome('NotInterested')"
+                            class="p-2.5 rounded-lg bg-slate-850 hover:bg-rose-950/40 text-rose-400 font-medium transition text-center border border-slate-800">
+                            ✖️ Not Interested
+                          </button>
+                        </div>
+                      </div>
+                    } @else {
+                      <div class="text-center py-12 text-slate-500 space-y-2">
+                        <div class="text-3xl">🎧</div>
+                        <p class="text-xs">Select a prospect from the queue to start dialing.</p>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
         </div>
       </main>
     </div>
@@ -335,18 +467,80 @@ import { SenderAccountDto, CampaignDto, DealDto } from '../../core/models/outbou
 export class OutboundStudioComponent implements OnInit {
   private api = inject(ApiService);
 
-  public activeTab = signal<'campaigns' | 'mailboxes' | 'deals'>('campaigns');
+  public activeTab = signal<'campaigns' | 'mailboxes' | 'deals' | 'dialer'>('campaigns');
   public isDispatching = signal(false);
   public showNewCampaignModal = signal(false);
 
   public campaigns = signal<CampaignDto[]>([]);
   public mailboxes = signal<SenderAccountDto[]>([]);
   public deals = signal<DealDto[]>([]);
+  public dialerQueue = signal<any[]>([]);
+  public selectedProspect = signal<any | null>(null);
+  public callDuration = signal<number>(0);
+  public isCallActive = signal<boolean>(false);
+  public dialerFeedback = signal<string | null>(null);
 
+  private timerInterval: any = null;
   private tenantId = '00000000-0000-0000-0000-000000000001';
 
   ngOnInit() {
     this.loadData();
+    this.loadDialerQueue();
+  }
+
+  public loadDialerQueue() {
+    this.api.getDialerQueue(this.tenantId).subscribe({
+      next: (queue) => {
+        if (queue && queue.length > 0) {
+          this.dialerQueue.set(queue);
+          this.selectedProspect.set(queue[0]);
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  public startCall(prospect: any) {
+    this.selectedProspect.set(prospect);
+    this.isCallActive.set(true);
+    this.callDuration.set(0);
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    this.timerInterval = setInterval(() => {
+      this.callDuration.update(d => d + 1);
+    }, 1000);
+  }
+
+  public logOutcome(outcome: string) {
+    const prospect = this.selectedProspect();
+    if (!prospect) return;
+
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    const duration = this.callDuration() || 45;
+    this.isCallActive.set(false);
+
+    this.api.logCallOutcome({
+      tenantId: this.tenantId,
+      contactId: prospect.contactId,
+      outcome: outcome,
+      durationSeconds: duration,
+      notes: `Call with ${prospect.fullName} (${outcome})`
+    }).subscribe({
+      next: (res) => {
+        this.dialerFeedback.set(`Outcome recorded: ${res.outcome} — ${res.nextActionDescription}`);
+        this.dialerQueue.update(q => q.filter(item => item.contactId !== prospect.contactId));
+        const remaining = this.dialerQueue();
+        this.selectedProspect.set(remaining.length > 0 ? remaining[0] : null);
+      },
+      error: () => {
+        this.dialerFeedback.set('Error recording call outcome.');
+      }
+    });
+  }
+
+  public formatTimer(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 
   private loadData() {

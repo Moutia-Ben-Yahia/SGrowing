@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ContactDto, ConversationDto, MessageDto } from '../models/chat.models';
-import { SenderAccountDto, CampaignDto, DealDto } from '../models/outbound.models';
+import { SenderAccountDto, CampaignDto, DealDto, DialerQueueItemDto, CallOutcomeResultDto } from '../models/outbound.models';
 import { 
   CustomerJourneyDto, 
   SurveyFormDto, 
@@ -17,7 +17,8 @@ import {
   SlaPolicyDto,
   UnifiedCustomer360Dto
 } from '../models/platform.models';
-import { SeoAuditReportDto, PageAuditResultDto, SerpKeywordTrackingDto, AeoBrandMentionDto } from '../models/seo.models';
+import { SeoAuditReportDto, PageAuditResultDto, SerpKeywordTrackingDto, AeoBrandMentionDto, GeoScoreReportDto } from '../models/seo.models';
+import { SocialChannelMetadataDto, SocialAccountDto, SocialPostDto, DeflectCommentResultDto } from '../models/social.models';
 import { SalesFunnelDto, FunnelStepDto, OrderBumpOfferDto, OneClickUpsellOfferDto, FunnelPerformanceSummaryDto } from '../models/funnel.models';
 import { BookingEventTypeDto, CalendarBookingRecordDto, TimeSlotDto, HostAvailabilityScheduleDto } from '../models/calendar.models';
 import { DomainDnsHealthRecordDto, EmailSpamAnalysisReportDto, MailboxWarmupCadenceDto, WarmupExchangeLogDto } from '../models/deliverability.models';
@@ -856,5 +857,88 @@ export class ApiService {
 
   public replayDeveloperWebhook(attemptId: string, tenantId: string): Observable<WebhookDeliveryAttemptLogDto> {
     return this.http.post<WebhookDeliveryAttemptLogDto>(`${this.baseUrl}/developer/webhooks/replay/${attemptId}?tenantId=${tenantId}`, {});
+  }
+
+  // Social Publishing & Comments Deflector
+  public getSocialChannels(): Observable<SocialChannelMetadataDto[]> {
+    return this.http.get<SocialChannelMetadataDto[]>(`${this.baseUrl}/social/channels`);
+  }
+
+  public getSocialAccounts(tenantId: string): Observable<SocialAccountDto[]> {
+    return this.http.get<SocialAccountDto[]>(`${this.baseUrl}/social/accounts?tenantId=${tenantId}`);
+  }
+
+  public connectSocialAccount(payload: any): Observable<SocialAccountDto> {
+    return this.http.post<SocialAccountDto>(`${this.baseUrl}/social/accounts`, payload);
+  }
+
+  public getSocialPosts(tenantId: string): Observable<SocialPostDto[]> {
+    return this.http.get<SocialPostDto[]>(`${this.baseUrl}/social/posts?tenantId=${tenantId}`);
+  }
+
+  public createSocialPost(payload: any): Observable<SocialPostDto> {
+    return this.http.post<SocialPostDto>(`${this.baseUrl}/social/posts`, payload);
+  }
+
+  public publishDueSocialPosts(tenantId: string): Observable<{ count: number; publishedPosts: SocialPostDto[] }> {
+    return this.http.post<{ count: number; publishedPosts: SocialPostDto[] }>(`${this.baseUrl}/social/posts/publish-due?tenantId=${tenantId}`, {});
+  }
+
+  public publishSocialPostNow(postId: string, tenantId: string): Observable<{ success: boolean; post: SocialPostDto }> {
+    return this.http.post<{ success: boolean; post: SocialPostDto }>(`${this.baseUrl}/social/posts/${postId}/publish-now?tenantId=${tenantId}`, {});
+  }
+
+  public deflectSocialComment(payload: any): Observable<DeflectCommentResultDto> {
+    return this.http.post<DeflectCommentResultDto>(`${this.baseUrl}/social/deflect`, payload);
+  }
+
+  // Calendar Public Slug, Reschedule & Cancel
+  public getPublicBookingPage(tenantSlug: string, eventSlug: string, date?: string): Observable<{ eventType: BookingEventTypeDto; slots: TimeSlotDto[] }> {
+    let url = `${this.baseUrl}/calendar/public/${tenantSlug}/${eventSlug}`;
+    if (date) url += `?date=${date}`;
+    return this.http.get<{ eventType: BookingEventTypeDto; slots: TimeSlotDto[] }>(url);
+  }
+
+  public bookPublicAppointment(tenantSlug: string, eventSlug: string, payload: any): Observable<CalendarBookingRecordDto> {
+    return this.http.post<CalendarBookingRecordDto>(`${this.baseUrl}/calendar/public/${tenantSlug}/${eventSlug}/book`, payload);
+  }
+
+  public cancelCalendarBooking(bookingId: string, tenantId: string, reason = ''): Observable<CalendarBookingRecordDto> {
+    return this.http.post<CalendarBookingRecordDto>(`${this.baseUrl}/calendar/bookings/${bookingId}/cancel`, { tenantId, reason });
+  }
+
+  public rescheduleCalendarBooking(bookingId: string, tenantId: string, newStartTimeUtc: string): Observable<CalendarBookingRecordDto> {
+    return this.http.post<CalendarBookingRecordDto>(`${this.baseUrl}/calendar/bookings/${bookingId}/reschedule`, { tenantId, newStartTimeUtc });
+  }
+
+  // SEO & Generative Engine Optimization (GEO)
+  public computeGeoScore(tenantId: string, brandName: string, domainUrl: string): Observable<GeoScoreReportDto> {
+    return this.http.post<GeoScoreReportDto>(`${this.baseUrl}/seo/geo/score`, { tenantId, brandName, domainUrl });
+  }
+
+  // SDR Power Dialer & Outbound Calling
+  public getDialerQueue(tenantId: string): Observable<DialerQueueItemDto[]> {
+    return this.http.get<DialerQueueItemDto[]>(`${this.baseUrl}/sdr/dialer/queue?tenantId=${tenantId}`);
+  }
+
+  public logCallOutcome(payload: any): Observable<CallOutcomeResultDto> {
+    return this.http.post<CallOutcomeResultDto>(`${this.baseUrl}/sdr/dialer/call-outcome`, payload);
+  }
+
+  // Customer Journeys (dittofeed model)
+  public createCustomerJourney(payload: any): Observable<CustomerJourneyDto> {
+    return this.http.post<CustomerJourneyDto>(`${this.baseUrl}/journeys`, payload);
+  }
+
+  public getJourneySteps(journeyId: string, tenantId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/journeys/${journeyId}/steps?tenantId=${tenantId}`);
+  }
+
+  public toggleJourneyStatus(journeyId: string, tenantId: string): Observable<{ status: string; journey: CustomerJourneyDto }> {
+    return this.http.post<{ status: string; journey: CustomerJourneyDto }>(`${this.baseUrl}/journeys/${journeyId}/toggle?tenantId=${tenantId}`, {});
+  }
+
+  public simulateJourneyEvent(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/journeys/simulate`, payload);
   }
 }

@@ -17,6 +17,10 @@ public interface ICalendarSchedulingService
     Task<HostAvailabilitySchedule?> GetHostAvailabilityAsync(Guid tenantId, Guid hostUserId);
     Task<List<TimeSlotDto>> ComputeAvailableSlotsAsync(Guid tenantId, Guid eventTypeId, DateTime targetDateUtc);
     Task<CalendarBookingRecord> BookAppointmentAsync(Guid tenantId, Guid eventTypeId, string attendeeName, string attendeeEmail, string attendeePhone, DateTime startTimeUtc, string timeZone = "Africa/Tunis", string notes = "");
+    Task<CalendarBookingRecord> CancelBookingAsync(Guid tenantId, Guid bookingId, string reason = "");
+    Task<CalendarBookingRecord> RescheduleBookingAsync(Guid tenantId, Guid bookingId, DateTime newStartTimeUtc);
+    Task<(BookingEventType EventType, List<TimeSlotDto> Slots)?> GetPublicBookingPageAsync(string tenantSlug, string eventSlug, DateTime dateUtc);
+    Task<CalendarBookingRecord> BookPublicAppointmentAsync(string tenantSlug, string eventSlug, string attendeeName, string attendeeEmail, string attendeePhone, DateTime startTimeUtc, string timeZone = "Africa/Tunis", string notes = "");
     Task<List<CalendarBookingRecord>> GetBookingsAsync(Guid tenantId, DateTime? fromUtc = null, DateTime? toUtc = null);
     Task<string> GenerateIcsContentAsync(Guid tenantId, Guid bookingId);
 }
@@ -184,6 +188,21 @@ public class CalendarSchedulingService : ICalendarSchedulingService
         }
 
         var endTimeUtc = startTimeUtc.AddMinutes(eventType.DurationMinutes);
+
+        // Double-booking conflict guard
+        var hasConflict = await _db.CalendarBookingRecords
+            .AnyAsync(b => b.TenantId == tenantId &&
+                           b.HostUserId == selectedHostId &&
+                           b.Status == CalendarBookingStatus.Scheduled &&
+                           ((startTimeUtc >= b.StartTimeUtc && startTimeUtc < b.EndTimeUtc) ||
+                            (endTimeUtc > b.StartTimeUtc && endTimeUtc <= b.EndTimeUtc) ||
+                            (startTimeUtc <= b.StartTimeUtc && endTimeUtc >= b.EndTimeUtc)));
+
+        if (hasConflict)
+        {
+            throw new InvalidOperationException("The selected time slot is already booked for this host. Please choose another slot.");
+        }
+
         var booking = CalendarBookingRecord.Create(
             tenantId,
             eventTypeId,
@@ -201,6 +220,79 @@ public class CalendarSchedulingService : ICalendarSchedulingService
         _db.CalendarBookingRecords.Add(booking);
         await _db.SaveChangesAsync();
         return booking;
+    }
+
+    public async Task<CalendarBookingRecord> CancelBookingAsync(Guid tenantId, Guid bookingId, string reason = "")
+    {
+        var booking = await _db.CalendarBookingRecords
+            .FirstOrDefaultAsync(b => b.TenantId == tenantId && b.Id == bookingId);
+
+        if (booking == null)
+            throw new KeyNotFoundException($"Booking {bookingId} not found.");
+
+        booking.Status = CalendarBookingStatus.Cancelled;
+        if (!string.IsNullOrWhiteSpace(reason))
+        {
+            booking.Notes = string.IsNullOrWhiteSpace(booking.Notes) ? $"Cancelled: {reason}" : $"{booking.Notes} | Cancelled: {reason}";
+        }
+
+        await _db.SaveChangesAsync();
+        return booking;
+    }
+
+    public async Task<CalendarBookingRecord> RescheduleBookingAsync(Guid tenantId, Guid bookingId, DateTime newStartTimeUtc)
+    {
+        var booking = await _db.CalendarBookingRecords
+            .FirstOrDefaultAsync(b => b.TenantId == tenantId && b.Id == bookingId);
+
+        if (booking == null)
+            throw new KeyNotFoundException($"Booking {bookingId} not found.");
+
+        var eventType = await _db.BookingEventTypes.FirstOrDefaultAsync(e => e.Id == booking.EventTypeId);
+        var durationMinutes = eventType?.DurationMinutes ?? 30;
+        var newEndTimeUtc = newStartTimeUtc.AddMinutes(durationMinutes);
+
+        // Verify conflict
+        var hasConflict = await _db.CalendarBookingRecords
+            .AnyAsync(b => b.TenantId == tenantId &&
+                           b.Id != bookingId &&
+                           b.HostUserId == booking.HostUserId &&
+                           b.Status == CalendarBookingStatus.Scheduled &&
+                           ((newStartTimeUtc >= b.StartTimeUtc && newStartTimeUtc < b.EndTimeUtc) ||
+                            (newEndTimeUtc > b.StartTimeUtc && newEndTimeUtc <= b.EndTimeUtc) ||
+                            (newStartTimeUtc <= b.StartTimeUtc && newEndTimeUtc >= b.EndTimeUtc)));
+
+        if (hasConflict)
+            throw new InvalidOperationException("New slot has a scheduling conflict with an existing booking.");
+
+        booking.StartTimeUtc = newStartTimeUtc;
+        booking.EndTimeUtc = newEndTimeUtc;
+        booking.Status = CalendarBookingStatus.Scheduled;
+        await _db.SaveChangesAsync();
+        return booking;
+    }
+
+    public async Task<(BookingEventType EventType, List<TimeSlotDto> Slots)?> GetPublicBookingPageAsync(string tenantSlug, string eventSlug, DateTime dateUtc)
+    {
+        var tenant = await _db.Tenants.FirstOrDefaultAsync(t => t.Slug == tenantSlug.ToLower().Trim());
+        if (tenant == null) return null;
+
+        var eventType = await GetEventTypeBySlugAsync(tenant.Id, eventSlug);
+        if (eventType == null) return null;
+
+        var slots = await ComputeAvailableSlotsAsync(tenant.Id, eventType.Id, dateUtc);
+        return (eventType, slots);
+    }
+
+    public async Task<CalendarBookingRecord> BookPublicAppointmentAsync(string tenantSlug, string eventSlug, string attendeeName, string attendeeEmail, string attendeePhone, DateTime startTimeUtc, string timeZone = "Africa/Tunis", string notes = "")
+    {
+        var tenant = await _db.Tenants.FirstOrDefaultAsync(t => t.Slug == tenantSlug.ToLower().Trim());
+        if (tenant == null) throw new KeyNotFoundException($"Tenant {tenantSlug} not found.");
+
+        var eventType = await GetEventTypeBySlugAsync(tenant.Id, eventSlug);
+        if (eventType == null) throw new KeyNotFoundException($"Event type {eventSlug} not found.");
+
+        return await BookAppointmentAsync(tenant.Id, eventType.Id, attendeeName, attendeeEmail, attendeePhone, startTimeUtc, timeZone, notes);
     }
 
     public async Task<List<CalendarBookingRecord>> GetBookingsAsync(Guid tenantId, DateTime? fromUtc = null, DateTime? toUtc = null)

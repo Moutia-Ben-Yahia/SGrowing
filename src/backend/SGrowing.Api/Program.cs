@@ -73,6 +73,7 @@ builder.Services.AddScoped<ProspectReplyHandoffService>();
 builder.Services.AddScoped<CadenceDispatcherService>();
 builder.Services.AddScoped<CreateCampaignHandler>();
 builder.Services.AddScoped<EnrollProspectsHandler>();
+builder.Services.AddScoped<IPowerDialerService, PowerDialerService>();
 
 // 4. Journeys, Feedback & Knowledge Base
 builder.Services.AddScoped<JourneyExecutionService>();
@@ -308,6 +309,8 @@ app.MapBillingEndpoints();
 app.MapDigitalGoodsEndpoints();
 app.MapDynamicFormEndpoints();
 app.MapDeveloperWebhookEndpoints();
+app.MapSocialEndpoints();
+app.MapPowerDialerEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", framework = ".NET 10", timestamp = DateTime.UtcNow }));
 app.MapGet("/healthz/live", () => Results.Ok(new { status = "Healthy", timestampUtc = DateTime.UtcNow }));
@@ -468,17 +471,7 @@ app.MapPost("/api/events", async ([FromQuery] Guid tenantId, [FromBody] IngestEv
     return res.IsSuccess ? Results.Ok(res.Value) : Results.BadRequest(new { error = res.Error });
 });
 
-app.MapGet("/api/journeys", async ([FromQuery] Guid tenantId, SGrowingDbContext db) =>
-{
-    var journeys = await db.CustomerJourneys.Where(j => j.TenantId == tenantId).ToListAsync();
-    return Results.Ok(journeys);
-});
-
-app.MapPost("/api/journeys/dispatch", async ([FromQuery] Guid tenantId, JourneyExecutionService service) =>
-{
-    var count = await service.ProcessDueStepsAsync(tenantId);
-    return Results.Ok(new { processed = count });
-});
+app.MapJourneyEndpoints();
 
 // ----------------- Feedback & CSAT Endpoints -----------------
 app.MapGet("/api/feedback/surveys", async ([FromQuery] Guid tenantId, SGrowingDbContext db) =>
