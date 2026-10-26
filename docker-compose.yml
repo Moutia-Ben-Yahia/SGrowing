@@ -46,7 +46,7 @@ services:
 
   web:
     build:
-      context: src/frontend/marketing-studio-web
+      context: src/frontend
       dockerfile: Dockerfile
     container_name: sgrowing_web
     restart: always
