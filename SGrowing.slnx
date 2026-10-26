@@ -3,6 +3,7 @@
   <Folder Name="/src/backend/">
     <Project Path="src/backend/SGrowing.Api/SGrowing.Api.csproj" />
     <Project Path="src/backend/SGrowing.Core/SGrowing.Core.csproj" />
+    <Project Path="src/backend/SGrowing.Worker/SGrowing.Worker.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SGrowing.Tests/SGrowing.Tests.csproj" />

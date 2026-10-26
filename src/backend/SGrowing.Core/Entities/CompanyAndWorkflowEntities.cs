@@ -7,6 +7,7 @@ public class Company
     public string Name { get; set; } = string.Empty;
     public string Domain { get; set; } = string.Empty;
     public string? Industry { get; set; }
+    public int EmployeeCount { get; set; }
     public decimal AnnualRevenue { get; set; }
     public Guid? ParentCompanyId { get; set; }
     public string CustomFieldsJson { get; set; } = "{}";

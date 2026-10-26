@@ -72,6 +72,13 @@ public class SGrowingDbContext : DbContext
     public DbSet<WorkflowGraph> WorkflowGraphs => Set<WorkflowGraph>();
     public DbSet<WorkflowExecution> WorkflowExecutions => Set<WorkflowExecution>();
 
+    // Enterprise Horizons (Voice Streaming, OAuth Vault, pgvector RAG, Contracts & Enrichment)
+    public DbSet<StreamingVoiceCallSession> StreamingVoiceCallSessions => Set<StreamingVoiceCallSession>();
+    public DbSet<ChannelCredential> ChannelCredentials => Set<ChannelCredential>();
+    public DbSet<DocumentChunk> DocumentChunks => Set<DocumentChunk>();
+    public DbSet<DigitalContract> DigitalContracts => Set<DigitalContract>();
+    public DbSet<LeadEnrichmentProfile> LeadEnrichmentProfiles => Set<LeadEnrichmentProfile>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

@@ -10,6 +10,7 @@ using SGrowing.Api.Modules.KnowledgeBase;
 using SGrowing.Api.Modules.Outbound;
 using SGrowing.Api.Modules.Automation;
 using SGrowing.Api.Modules.Marketing;
+using SGrowing.Api.Modules.Security;
 using SGrowing.Api.Modules.Voice;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
@@ -103,7 +104,16 @@ builder.Services.AddScoped<MultiTouchCadenceOrchestrator>();
 builder.Services.AddScoped<CompanyAccountService>();
 builder.Services.AddScoped<WorkflowEngineService>();
 
-// 11. SignalR & CORS
+// 11. Enterprise Horizons: Voice WebSocket Streaming, OAuth Vault, pgvector RAG, Contracts & Enrichment
+builder.Services.AddSingleton<BargeInInterruptionService>();
+builder.Services.AddSingleton<StreamingVoiceWebSocketHandler>();
+builder.Services.AddSingleton<AesEncryptionService>();
+builder.Services.AddSingleton<DocumentChunkingService>();
+builder.Services.AddScoped<VectorRagRetrievalService>();
+builder.Services.AddScoped<LeadEnrichmentService>();
+builder.Services.AddScoped<ContractSigningService>();
+
+// 12. SignalR & CORS
 builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
 {
@@ -519,6 +529,85 @@ app.MapPost("/api/workflows/{id:guid}/trigger", async (Guid id, [FromQuery] Guid
     return Results.Ok(execution);
 });
 
+// ----------------- Real-Time Streaming Voice Pipeline -----------------
+app.MapPost("/api/voice/streaming/frame", ([FromBody] StreamAudioChunkDto req, StreamingVoiceWebSocketHandler handler, SGrowingDbContext db) =>
+{
+    var session = db.StreamingVoiceCallSessions.FirstOrDefault(s => s.TenantId == req.TenantId && s.Id == req.SessionId)
+                  ?? StreamingVoiceCallSession.Create(req.TenantId, req.CallSid, req.StreamSid);
+
+    if (!db.StreamingVoiceCallSessions.Contains(session))
+    {
+        db.StreamingVoiceCallSessions.Add(session);
+    }
+
+    var result = handler.ProcessInboundAudioChunk(session, req.PayloadBase64, req.SequenceNumber);
+    db.SaveChanges();
+
+    return Results.Ok(result);
+});
+
+app.MapPost("/api/voice/streaming/transfer", ([FromBody] WarmTransferDto req, BargeInInterruptionService transferService, SGrowingDbContext db) =>
+{
+    var session = db.StreamingVoiceCallSessions.FirstOrDefault(s => s.TenantId == req.TenantId && s.Id == req.SessionId)
+                  ?? StreamingVoiceCallSession.Create(req.TenantId, "CA_MOCK", "MZ_MOCK");
+
+    var result = transferService.InitiateWarmSipTransfer(session, req.TargetSipUri, req.Reason, req.Summary);
+    db.SaveChanges();
+
+    return Results.Ok(result);
+});
+
+// ----------------- PostgreSQL pgvector RAG & Hybrid Search -----------------
+app.MapPost("/api/rag/documents/index", async ([FromBody] IndexDocumentDto req, VectorRagRetrievalService ragService) =>
+{
+    var chunks = await ragService.IndexDocumentAsync(req.TenantId, req.DocumentId, req.Title, req.Content, req.SourceUrl);
+    return Results.Ok(new { indexedChunks = chunks.Count, documentId = req.DocumentId });
+});
+
+app.MapPost("/api/rag/search", async ([FromBody] SearchRagDto req, VectorRagRetrievalService ragService) =>
+{
+    var results = await ragService.HybridSearchAsync(req.TenantId, req.Query, req.TopK);
+    return Results.Ok(results);
+});
+
+app.MapPost("/api/rag/grounded-context", async ([FromBody] SearchRagDto req, VectorRagRetrievalService ragService) =>
+{
+    var context = await ragService.GenerateGroundedContextAsync(req.TenantId, req.Query, req.TopK);
+    return Results.Ok(context);
+});
+
+// ----------------- B2B Lead Enrichment & In-Chat E-Signatures -----------------
+app.MapPost("/api/crm/leads/enrich", async ([FromBody] EnrichLeadDto req, LeadEnrichmentService enrichmentService) =>
+{
+    var profile = await enrichmentService.EnrichLeadAsync(req.TenantId, req.DomainOrEmail);
+    return Results.Ok(profile);
+});
+
+app.MapPost("/api/crm/contracts", async ([FromBody] CreateContractDto req, ContractSigningService contractService) =>
+{
+    var contract = await contractService.CreateContractAsync(
+        req.TenantId, req.Title, req.ContractType, req.SignerName, req.SignerEmail, req.ContractValue, req.CompanyId, req.DealId);
+    return Results.Ok(contract);
+});
+
+app.MapPost("/api/crm/contracts/{id:guid}/dispatch", async (Guid id, [FromQuery] Guid tenantId, ContractSigningService contractService) =>
+{
+    var dispatch = await contractService.DispatchInChatContractAsync(tenantId, id);
+    return Results.Ok(dispatch);
+});
+
+app.MapGet("/api/crm/contracts/sign/{token}", async (string token, ContractSigningService contractService) =>
+{
+    var contract = await contractService.GetAndMarkViewedAsync(token);
+    return contract != null ? Results.Ok(contract) : Results.NotFound();
+});
+
+app.MapPost("/api/crm/contracts/sign/{token}", async (string token, [FromBody] SignContractDto req, ContractSigningService contractService) =>
+{
+    var result = await contractService.CompleteSigningAsync(token, req.SignerSignatureName, req.SignedPdfUrl);
+    return Results.Ok(result);
+});
+
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
 
@@ -537,6 +626,14 @@ public record DeflectCommentDto(SocialPlatform Platform, string PostExternalId, 
 public record CreateCompanyDto(string Name, string Domain, string? Industry = null, decimal Revenue = 0, Guid? ParentCompanyId = null);
 public record AssociateCompanyDto(Guid ContactId, string ContactEmail);
 public record TriggerWorkflowDto(string InputPayloadJson);
+
+public record StreamAudioChunkDto(Guid TenantId, Guid SessionId, string CallSid, string StreamSid, string PayloadBase64, long SequenceNumber);
+public record WarmTransferDto(Guid TenantId, Guid SessionId, string TargetSipUri, string Reason, string Summary);
+public record IndexDocumentDto(Guid TenantId, Guid DocumentId, string Title, string Content, string? SourceUrl = null);
+public record SearchRagDto(Guid TenantId, string Query, int TopK = 3);
+public record EnrichLeadDto(Guid TenantId, string DomainOrEmail);
+public record CreateContractDto(Guid TenantId, string Title, string ContractType, string SignerName, string SignerEmail, decimal ContractValue, Guid? CompanyId = null, Guid? DealId = null);
+public record SignContractDto(string SignerSignatureName, string? SignedPdfUrl = null);
 
 // Required for WebApplicationFactory in integration tests
 public partial class Program { }

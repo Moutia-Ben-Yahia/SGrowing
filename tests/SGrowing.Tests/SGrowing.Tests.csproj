@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\backend\SGrowing.Core\SGrowing.Core.csproj" />
     <ProjectReference Include="..\..\src\backend\SGrowing.Api\SGrowing.Api.csproj" />
+    <ProjectReference Include="..\..\src\backend\SGrowing.Worker\SGrowing.Worker.csproj" />
   </ItemGroup>
 
 </Project>

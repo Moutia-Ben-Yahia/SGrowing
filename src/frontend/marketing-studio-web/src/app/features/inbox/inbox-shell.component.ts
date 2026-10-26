@@ -54,6 +54,16 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
                 <span class="flex items-center gap-2">⚡ Node Workflows</span>
               </a>
               <a
+                routerLink="/contracts"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
+                <span class="flex items-center gap-2">✍️ E-Signatures & Deals</span>
+              </a>
+              <a
+                routerLink="/rag"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-purple-400 hover:bg-purple-500/10 border border-purple-500/20 transition">
+                <span class="flex items-center gap-2">🧠 Vector RAG pgvector</span>
+              </a>
+              <a
                 routerLink="/broadcasts"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-teal-400 hover:bg-teal-500/10 border border-teal-500/20 transition">
                 <span class="flex items-center gap-2">📢 WA Broadcasts</span>

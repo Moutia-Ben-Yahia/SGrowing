@@ -1,0 +1,121 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: sgrowing-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sgrowing_db
+      POSTGRES_USER: sgrowing_admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-SGrowingSecurePostgres2026!}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sgrowing_admin -d sgrowing_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sgrowing-internal
+
+  redis:
+    image: redis:7-alpine
+    container_name: sgrowing-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sgrowing-internal
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    container_name: sgrowing-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: sgrowing_rabbit
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD:-RabbitSecureCluster2026!}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sgrowing-internal
+
+  api:
+    build:
+      context: .
+      dockerfile: src/backend/SGrowing.Api/Dockerfile
+    container_name: sgrowing-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=sgrowing_db;Username=sgrowing_admin;Password=${DB_PASSWORD:-SGrowingSecurePostgres2026!}"
+      Redis__ConnectionString: "redis:6379"
+      RabbitMQ__Host: "rabbitmq"
+    ports:
+      - "5000:8080"
+    networks:
+      - sgrowing-internal
+
+  worker:
+    build:
+      context: .
+      dockerfile: src/backend/SGrowing.Worker/Dockerfile
+    container_name: sgrowing-worker
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      DOTNET_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=sgrowing_db;Username=sgrowing_admin;Password=${DB_PASSWORD:-SGrowingSecurePostgres2026!}"
+    networks:
+      - sgrowing-internal
+
+  web:
+    build:
+      context: src/frontend/marketing-studio-web
+      dockerfile: Dockerfile
+    container_name: sgrowing-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - sgrowing-internal
+
+networks:
+  sgrowing-internal:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:

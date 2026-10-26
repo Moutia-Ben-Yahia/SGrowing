@@ -10,6 +10,8 @@ import { SocialStudioComponent } from './features/social/social-studio.component
 import { VoiceStudioComponent } from './features/voice/voice-studio.component';
 import { AccountsStudioComponent } from './features/accounts/accounts-studio.component';
 import { WorkflowStudioComponent } from './features/workflows/workflow-studio.component';
+import { ContractsStudioComponent } from './features/contracts/contracts-studio.component';
+import { RagStudioComponent } from './features/rag/rag-studio.component';
 
 export const routes: Routes = [
   { path: '', component: InboxShellComponent },
@@ -20,6 +22,8 @@ export const routes: Routes = [
   { path: 'voice', component: VoiceStudioComponent },
   { path: 'accounts', component: AccountsStudioComponent },
   { path: 'workflows', component: WorkflowStudioComponent },
+  { path: 'contracts', component: ContractsStudioComponent },
+  { path: 'rag', component: RagStudioComponent },
   { path: 'journeys', component: JourneyStudioComponent },
   { path: 'feedback', component: FeedbackStudioComponent },
   { path: 'help', component: KnowledgeStudioComponent },
