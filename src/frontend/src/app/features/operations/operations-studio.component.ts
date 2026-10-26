@@ -184,6 +184,30 @@ export interface RmaRequestUi {
               <span class="flex items-center gap-2">📈 Demand & Supplier Restock</span>
               <span class="bg-emerald-500/20 text-emerald-300 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Auto-PO</span>
             </button>
+            <button
+              (click)="activeTab.set('fleet')"
+              [class.bg-slate-800]="activeTab() === 'fleet'"
+              [class.text-amber-400]="activeTab() === 'fleet'"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition">
+              <span class="flex items-center gap-2">🛵 In-House Driver Fleet</span>
+              <span class="bg-amber-500/20 text-amber-300 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Fleet</span>
+            </button>
+            <button
+              (click)="activeTab.set('flows')"
+              [class.bg-slate-800]="activeTab() === 'flows'"
+              [class.text-emerald-400]="activeTab() === 'flows'"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition">
+              <span class="flex items-center gap-2">💬 WhatsApp Flow Engine</span>
+              <span class="bg-emerald-500/20 text-emerald-300 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Tree</span>
+            </button>
+            <button
+              (click)="activeTab.set('liquidation')"
+              [class.bg-slate-800]="activeTab() === 'liquidation'"
+              [class.text-rose-400]="activeTab() === 'liquidation'"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition">
+              <span class="flex items-center gap-2">🏷️ Aging Inventory & Bundles</span>
+              <span class="bg-rose-500/20 text-rose-300 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Markdown</span>
+            </button>
           </div>
         </div>
 
@@ -1261,6 +1285,193 @@ export interface RmaRequestUi {
               </div>
             </div>
           }
+
+          <!-- 16. In-House Fleet & Driver Run-Sheets Tab -->
+          @if (activeTab() === 'fleet') {
+            <div class="space-y-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-base font-semibold text-slate-100">🛵 In-House Driver Fleet & Delivery Run-Sheets</h3>
+                  <p class="text-xs text-slate-400">Metropolitan driver dispatch, doorstep proof of delivery (POD), and cash drawer reconciliation.</p>
+                </div>
+                <button
+                  (click)="simulateRunSheetBatch()"
+                  class="px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-medium hover:bg-amber-500/30 transition">
+                  + Dispatch New Zone Run-Sheet
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @for (d of drivers(); track d.id) {
+                  <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <span class="text-lg">🚚</span>
+                        <div>
+                          <h4 class="text-sm font-bold text-white">{{ d.name }}</h4>
+                          <span class="text-xs text-slate-400">{{ d.vehicle }} ({{ d.plate }})</span>
+                        </div>
+                      </div>
+                      <span class="text-xs font-mono px-2 py-0.5 rounded font-bold"
+                            [class.bg-emerald-500/20]="d.status === 'Available'"
+                            [class.text-emerald-400]="d.status === 'Available'"
+                            [class.bg-amber-500/20]="d.status === 'OnRoute'"
+                            [class.text-amber-400]="d.status === 'OnRoute'">
+                        {{ d.status }}
+                      </span>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 text-xs font-mono pt-2 border-t border-slate-800">
+                      <div>
+                        <span class="text-[10px] text-slate-500 uppercase block">Cash in Hand</span>
+                        <span class="text-amber-400 font-bold">{{ d.cashInHand }} TND</span>
+                      </div>
+                      <div>
+                        <span class="text-[10px] text-slate-500 uppercase block">Completed Stops</span>
+                        <span class="text-white">{{ d.completedStops }} / {{ d.totalStops }}</span>
+                      </div>
+                      <div>
+                        <span class="text-[10px] text-slate-500 uppercase block">Delivery Rate</span>
+                        <span class="text-emerald-400 font-bold">{{ d.deliveryRate }}%</span>
+                      </div>
+                    </div>
+
+                    <div class="flex gap-2 pt-1">
+                      <button
+                        (click)="recordPodDoorstep(d)"
+                        class="flex-1 py-1.5 rounded bg-emerald-600/30 text-emerald-300 hover:bg-emerald-600/50 border border-emerald-500/30 text-xs font-medium transition">
+                        📸 Record POD (Photo & Sign)
+                      </button>
+                      <button
+                        (click)="reconcileCashDrawer(d)"
+                        class="px-3 py-1.5 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-medium transition">
+                        💵 Reconcile Drawer
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- 17. Visual WhatsApp Interactive Flow State Machine Tab -->
+          @if (activeTab() === 'flows') {
+            <div class="space-y-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-base font-semibold text-slate-100">💬 Visual WhatsApp Flow Engine & Multi-Dialect Classifier</h3>
+                  <p class="text-xs text-slate-400">Interactive decision nodes, language switching (Darija / Arabic / French), and sentiment guardrails.</p>
+                </div>
+                <button
+                  (click)="createNewFlow()"
+                  class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition">
+                  + Create Interactive Flow
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                @for (f of flowDefinitions(); track f.id) {
+                  <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-bold text-white">{{ f.name }}</span>
+                      <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-400">
+                        {{ f.nodesCount }} nodes
+                      </span>
+                    </div>
+                    <div class="text-xs text-slate-400 space-y-1">
+                      <div>Trigger: <strong class="text-cyan-400 font-mono">{{ f.triggerKeyword }}</strong></div>
+                      <div>Languages: <span class="text-slate-300">{{ f.supportedLanguages }}</span></div>
+                    </div>
+                    <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs space-y-1.5">
+                      <div class="flex justify-between text-[11px]">
+                        <span class="text-slate-400">Completion Rate</span>
+                        <span class="text-emerald-400 font-bold font-mono">{{ f.completionRate }}%</span>
+                      </div>
+                      <div class="flex justify-between text-[11px]">
+                        <span class="text-slate-400">Frustration Auto-Escalation</span>
+                        <span class="text-amber-400 font-bold font-mono">{{ f.escalationRate }}%</span>
+                      </div>
+                    </div>
+                    <button
+                      (click)="simulateFlowTurn(f)"
+                      class="w-full py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 font-medium transition">
+                      ⚡ Test Flow Simulator
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- 18. Aging Inventory Liquidation & Markdown Matrix Tab -->
+          @if (activeTab() === 'liquidation') {
+            <div class="space-y-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-base font-semibold text-slate-100">🏷️ Aging Inventory Liquidation & Dynamic Markdowns</h3>
+                  <p class="text-xs text-slate-400">Automated price reductions (30/60/90 days) with cost+5% margin floor protection & CPQ bundle engine.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="px-3 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 text-xs font-mono font-bold">
+                    Dead Stock Tied: 14,250 TND
+                  </span>
+                </div>
+              </div>
+
+              <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-950 text-slate-400 border-b border-slate-800 font-mono">
+                    <tr>
+                      <th class="p-3">Product / SKU</th>
+                      <th class="p-3">Days In Warehouse</th>
+                      <th class="p-3">Stock Tier</th>
+                      <th class="p-3">Cost Floor</th>
+                      <th class="p-3">Retail / Effective Price</th>
+                      <th class="p-3">Markdown %</th>
+                      <th class="p-3 text-right">Liquidation Action</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800 text-slate-200">
+                    @for (item of agingStock(); track item.sku) {
+                      <tr class="hover:bg-slate-800/40 transition">
+                        <td class="p-3">
+                          <div class="font-bold text-white">{{ item.name }}</div>
+                          <div class="text-[11px] text-slate-400 font-mono">{{ item.sku }} ({{ item.quantity }} units)</div>
+                        </td>
+                        <td class="p-3 font-mono font-bold">{{ item.days }} days</td>
+                        <td class="p-3">
+                          <span class="px-2 py-0.5 rounded text-[10px] font-bold"
+                            [ngClass]="{
+                              'bg-emerald-500/20 text-emerald-400': item.tier === 'Fresh',
+                              'bg-blue-500/20 text-blue-400': item.tier === 'Mature',
+                              'bg-amber-500/20 text-amber-400': item.tier === 'Stagnant',
+                              'bg-rose-500/20 text-rose-400': item.tier === 'DeadStock'
+                            }">
+                            {{ item.tier }}
+                          </span>
+                        </td>
+                        <td class="p-3 font-mono text-slate-400">{{ item.costPrice }} TND</td>
+                        <td class="p-3 font-mono">
+                          <span class="line-through text-slate-500 mr-1" *ngIf="item.markdown > 0">{{ item.retailPrice }}</span>
+                          <strong class="text-white">{{ item.effectivePrice }} TND</strong>
+                        </td>
+                        <td class="p-3 font-mono font-bold" [class.text-rose-400]="item.markdown > 0">
+                          -{{ item.markdown }}%
+                        </td>
+                        <td class="p-3 text-right">
+                          <button
+                            (click)="generateBundleForAgingItem(item)"
+                            class="px-2.5 py-1 rounded bg-rose-600/30 text-rose-300 hover:bg-rose-600/50 border border-rose-500/30 text-xs font-medium transition">
+                            🎁 Generate CPQ Bundle
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
         </div>
       </main>
     </div>
@@ -1748,5 +1959,115 @@ export class OperationsStudioComponent {
   placeSupplierPoUi(alertItem: any) {
     alertItem.poPlaced = true;
     alert(`Automated Purchase Order generated for ${alertItem.recommendedUnits} units of ${alertItem.sku} placed with ${alertItem.preferredSupplier}. Expected delivery in ${alertItem.supplierLeadDays} days.`);
+  }
+
+  // 16. In-House Driver Fleet Signals & Actions
+  drivers = signal([
+    {
+      id: 'DRV-001',
+      name: 'Walid Mansour',
+      vehicle: 'Motorcycle (Express)',
+      plate: '215 TN 4821',
+      status: 'OnRoute',
+      cashInHand: 680,
+      completedStops: 8,
+      totalStops: 12,
+      deliveryRate: 91.5
+    },
+    {
+      id: 'DRV-002',
+      name: 'Firas Chahed',
+      vehicle: 'Van (Cargo)',
+      plate: '198 TN 9032',
+      status: 'Available',
+      cashInHand: 0,
+      completedStops: 15,
+      totalStops: 15,
+      deliveryRate: 93.3
+    }
+  ]);
+
+  simulateRunSheetBatch() {
+    alert('Zone Run-Sheet generated for Grand Tunis (18 stops). Driver Walid Mansour dispatched with real-time waypoint routing.');
+  }
+
+  recordPodDoorstep(driver: any) {
+    alert(`Doorstep Proof-of-Delivery recorded for Driver ${driver.name}: Customer signature verified + timestamped parcel photo uploaded. Cash collected logged.`);
+  }
+
+  reconcileCashDrawer(driver: any) {
+    alert(`End-of-day Cash Reconciliation completed for ${driver.name}: ${driver.cashInHand} TND deposited into central vault. Variance: 0.000 TND.`);
+    driver.cashInHand = 0;
+  }
+
+  // 17. WhatsApp Flow Engine Signals & Actions
+  flowDefinitions = signal([
+    {
+      id: 'FLOW-CONFIRM-COD',
+      name: 'COD Order Address & Time Confirmation',
+      triggerKeyword: 'ORDER_PLACED',
+      supportedLanguages: 'Darija, FR, AR',
+      nodesCount: 7,
+      completionRate: 88.4,
+      escalationRate: 4.2
+    },
+    {
+      id: 'FLOW-SIZE-EXCHANGE',
+      name: 'Drop-and-Swap Size Exchange Self-Service',
+      triggerKeyword: 'SWAP_REQUEST',
+      supportedLanguages: 'Darija, FR',
+      nodesCount: 5,
+      completionRate: 92.1,
+      escalationRate: 2.1
+    }
+  ]);
+
+  createNewFlow() {
+    alert('Visual WhatsApp Flow Editor opened. New state machine canvas initialized with Darija/Arabic sentiment classifier.');
+  }
+
+  simulateFlowTurn(flow: any) {
+    alert(`Flow Simulator [${flow.name}]: Executed turn with detected language 'Darija' (Confidence 0.96). Multi-choice interactive buttons rendered.`);
+  }
+
+  // 18. Aging Inventory Liquidation Signals & Actions
+  agingStock = signal([
+    {
+      sku: 'PERFUME-ROYAL-OUD-50ML',
+      name: 'Royal Oud Eau De Parfum 50ml',
+      quantity: 120,
+      costPrice: 40,
+      retailPrice: 120,
+      effectivePrice: 120,
+      markdown: 0,
+      days: 15,
+      tier: 'Fresh'
+    },
+    {
+      sku: 'JACKET-WINTER-LASTYEAR',
+      name: 'Winter Puffer Jacket 2025',
+      quantity: 35,
+      costPrice: 50,
+      retailPrice: 150,
+      effectivePrice: 82.5,
+      markdown: 45,
+      days: 110,
+      tier: 'DeadStock'
+    },
+    {
+      sku: 'CREAM-FACE-AGING',
+      name: 'Hydrating Face Cream 50ml',
+      quantity: 40,
+      costPrice: 15,
+      retailPrice: 50,
+      effectivePrice: 37.5,
+      markdown: 25,
+      days: 70,
+      tier: 'Stagnant'
+    }
+  ]);
+
+  generateBundleForAgingItem(item: any) {
+    alert(`Liquidation Bundle created! Combined winning Royal Oud (120 TND) with aging ${item.name} at 30% bundle discount. Bundle live in In-Chat CPQ.`);
   }
 }
