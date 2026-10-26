@@ -1,0 +1,23 @@
+# Stage 1: Build .NET 10 Background Worker Daemon
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy project files and restore dependencies
+COPY ["SGrowing.slnx", "./"]
+COPY ["src/backend/SGrowing.Core/SGrowing.Core.csproj", "src/backend/SGrowing.Core/"]
+COPY ["src/backend/SGrowing.Api/SGrowing.Api.csproj", "src/backend/SGrowing.Api/"]
+COPY ["src/backend/SGrowing.Worker/SGrowing.Worker.csproj", "src/backend/SGrowing.Worker/"]
+COPY ["tests/SGrowing.Tests/SGrowing.Tests.csproj", "tests/SGrowing.Tests/"]
+
+RUN dotnet restore "src/backend/SGrowing.Worker/SGrowing.Worker.csproj"
+
+# Copy source code and publish
+COPY . .
+WORKDIR "/src/src/backend/SGrowing.Worker"
+RUN dotnet publish "SGrowing.Worker.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# Stage 2: .NET 10 Runtime
+FROM mcr.microsoft.com/dotnet/runtime:10.0 AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "SGrowing.Worker.dll"]

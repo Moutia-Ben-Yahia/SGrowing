@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg17
     container_name: sgrowing_postgres
     restart: always
     environment:
@@ -29,7 +29,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: src/backend/Dockerfile
+      dockerfile: src/backend/SGrowing.Api/Dockerfile
     container_name: sgrowing_api
     restart: always
     environment:
@@ -38,6 +38,22 @@ services:
       - Redis__ConnectionString=redis:6379
     ports:
       - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  worker:
+    build:
+      context: .
+      dockerfile: src/backend/SGrowing.Worker/Dockerfile
+    container_name: sgrowing_worker
+    restart: always
+    environment:
+      - DOTNET_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=sgrowing_db;Username=sgrowing_user;Password=sgrowing_password
+      - Redis__ConnectionString=redis:6379
     depends_on:
       postgres:
         condition: service_healthy

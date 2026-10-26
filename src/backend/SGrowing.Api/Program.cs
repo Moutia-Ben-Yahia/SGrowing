@@ -33,6 +33,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using SGrowing.Api.Services;
+using SGrowing.Core.Events;
+using SGrowing.Core.Diagnostics;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Entities;
 using SGrowing.Core.Outbox;
@@ -202,6 +204,20 @@ builder.Services.AddScoped<IEmailDeliverabilityService, EmailDeliverabilityServi
 builder.Services.AddScoped<IProductTelemetryService, ProductTelemetryService>();
 builder.Services.AddScoped<ISaasBillingService, SaasBillingService>();
 
+// 22. Frontiers 2-4: Digital Goods & PIM Matrix, Dynamic Forms & Developer Webhooks
+builder.Services.AddScoped<IDigitalGoodsService, DigitalGoodsService>();
+builder.Services.AddScoped<IDynamicFormService, DynamicFormService>();
+builder.Services.AddScoped<IDeveloperWebhookService, DeveloperWebhookService>();
+
+// 23. Strategic Horizons 1-4: Courier Companion, COD Checkout, UGC Creative Generator, Competitor Radar, B2B Credit & Developer Gateway
+builder.Services.AddSingleton<IEventStreamBroker, InMemoryEventStreamBroker>();
+builder.Services.AddScoped<ICourierCompanionService, CourierCompanionService>();
+builder.Services.AddScoped<ICodCheckoutService, CodCheckoutService>();
+builder.Services.AddScoped<IUgcCreativeGeneratorService, UgcCreativeGeneratorService>();
+builder.Services.AddScoped<ICompetitorIntelligenceService, CompetitorIntelligenceService>();
+builder.Services.AddScoped<IB2BCreditAndFactoringService, B2BCreditAndFactoringService>();
+builder.Services.AddScoped<IDeveloperGatewayService, DeveloperGatewayService>();
+
 // 16. Authentication, Security & Tenant Context
 var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "SGrowing_SuperSecretEnterpriseMasterKey_998877665544332211!!";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "SGrowing.Api";
@@ -289,8 +305,19 @@ app.MapCalendarEndpoints();
 app.MapDeliverabilityEndpoints();
 app.MapTelemetryEndpoints();
 app.MapBillingEndpoints();
+app.MapDigitalGoodsEndpoints();
+app.MapDynamicFormEndpoints();
+app.MapDeveloperWebhookEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", framework = ".NET 10", timestamp = DateTime.UtcNow }));
+app.MapGet("/healthz/live", () => Results.Ok(new { status = "Healthy", timestampUtc = DateTime.UtcNow }));
+app.MapGet("/healthz/ready", async (SGrowingDbContext db) =>
+{
+    var canConnect = await db.Database.CanConnectAsync();
+    return canConnect 
+        ? Results.Ok(new { status = "Ready", database = "Connected", timestampUtc = DateTime.UtcNow }) 
+        : Results.Problem("Database unavailable", statusCode: 503);
+});
 
 // CRM Contacts
 app.MapPost("/api/crm/contacts", async ([FromBody] CreateContactRequest req, CreateContactHandler handler) =>
@@ -1626,6 +1653,194 @@ app.MapGet("/api/commerce/liquidation/bundles", async ([FromQuery] Guid tenantId
 });
 
 // Real-Time SignalR Hub
+// --- Health & Readiness Probes ---
+app.MapGet("/healthz", () => Results.Ok(new { status = "Healthy", timestamp = DateTime.UtcNow }));
+app.MapGet("/readyz", () => Results.Ok(new { status = "Ready", timestamp = DateTime.UtcNow }));
+
+// --- Courier Companion Mobile PWA Endpoints ---
+app.MapPost("/api/commerce/courier/session", async ([FromBody] StartDriverSessionDto req, ICourierCompanionService courierService) =>
+{
+    var sess = await courierService.StartDriverSessionAsync(req.TenantId, req.DriverId, req.DriverName, req.DeviceModel ?? "Android PWA");
+    return Results.Ok(sess);
+});
+
+app.MapGet("/api/commerce/courier/run-sheet", async ([FromQuery] Guid tenantId, [FromQuery] Guid driverId, ICourierCompanionService courierService) =>
+{
+    var sheet = await courierService.GetActiveRunSheetAsync(tenantId, driverId);
+    return Results.Ok(sheet);
+});
+
+app.MapGet("/api/commerce/courier/run-sheets/{runSheetId}/stops", async (Guid runSheetId, [FromQuery] Guid tenantId, ICourierCompanionService courierService) =>
+{
+    var stops = await courierService.GetRunSheetStopsAsync(tenantId, runSheetId);
+    return Results.Ok(stops);
+});
+
+app.MapPost("/api/commerce/courier/pod", async ([FromBody] SubmitPodDto req, ICourierCompanionService courierService) =>
+{
+    var pod = await courierService.SubmitDoorstepProofOfDeliveryAsync(
+        req.TenantId, req.StopId, req.OrderId, req.OrderNumber, req.DriverId,
+        req.SignatureBase64, req.PhotoUrl, req.CashCollected, req.RecipientName,
+        req.RecipientRelation ?? "Self", req.Lat ?? 36.8065, req.Lng ?? 10.1815, req.PaymentMethod ?? "CashOnDelivery"
+    );
+    return Results.Ok(pod);
+});
+
+app.MapGet("/api/commerce/courier/cash-summary", async ([FromQuery] Guid tenantId, [FromQuery] Guid driverId, ICourierCompanionService courierService) =>
+{
+    var summary = await courierService.GetDriverCashSummaryAsync(tenantId, driverId);
+    return Results.Ok(summary);
+});
+
+app.MapPost("/api/commerce/courier/gps-heartbeat", async ([FromBody] DriverGpsHeartbeatDto req, ICourierCompanionService courierService) =>
+{
+    var ok = await courierService.PingDriverGpsHeartbeatAsync(req.TenantId, req.DriverId, req.Latitude, req.Longitude, req.BatteryPercent);
+    return Results.Ok(new { success = ok });
+});
+
+// --- Headless 1-Page COD Checkout Endpoints ---
+app.MapPost("/api/commerce/checkout/session", async ([FromBody] CreateCheckoutSessionDto req, ICodCheckoutService checkoutService) =>
+{
+    var sess = await checkoutService.CreateSessionAsync(req.TenantId, req.CartItemsJson, req.Subtotal);
+    return Results.Ok(sess);
+});
+
+app.MapGet("/api/commerce/checkout/wilayas", async ([FromQuery] string countryCode, ICodCheckoutService checkoutService) =>
+{
+    var wilayas = await checkoutService.GetWilayasAsync(string.IsNullOrWhiteSpace(countryCode) ? "TN" : countryCode);
+    return Results.Ok(wilayas);
+});
+
+app.MapPost("/api/commerce/checkout/details", async ([FromBody] UpdateCheckoutDetailsDto req, ICodCheckoutService checkoutService) =>
+{
+    var sess = await checkoutService.UpdateCustomerDetailsAsync(req.TenantId, req.SessionKey, req.CustomerName, req.CustomerPhone, req.WilayaCode, req.DelegationName, req.StreetAddress);
+    return Results.Ok(sess);
+});
+
+app.MapPost("/api/commerce/checkout/send-otp", async ([FromBody] SendOtpDto req, ICodCheckoutService checkoutService) =>
+{
+    var code = await checkoutService.SendPhoneOtpAsync(req.TenantId, req.SessionKey);
+    return Results.Ok(new { success = true, simulatedOtp = code });
+});
+
+app.MapPost("/api/commerce/checkout/verify-otp", async ([FromBody] VerifyOtpDto req, ICodCheckoutService checkoutService) =>
+{
+    var ok = await checkoutService.VerifyPhoneOtpAsync(req.TenantId, req.SessionKey, req.OtpInput);
+    return Results.Ok(new { verified = ok });
+});
+
+app.MapPost("/api/commerce/checkout/apply-upsell", async ([FromBody] ApplyUpsellDto req, ICodCheckoutService checkoutService) =>
+{
+    var sess = await checkoutService.ApplyUpsellOfferAsync(req.TenantId, req.SessionKey, req.UpsellSku, req.UpsellAmount);
+    return Results.Ok(sess);
+});
+
+app.MapPost("/api/commerce/checkout/complete", async ([FromBody] CompleteCheckoutDto req, ICodCheckoutService checkoutService) =>
+{
+    var confirmation = await checkoutService.CompleteCodOrderAsync(req.TenantId, req.SessionKey);
+    return Results.Ok(confirmation);
+});
+
+// --- Autonomous UGC Creative Script Engine Endpoints ---
+app.MapPost("/api/marketing/ugc/generate-scripts", async ([FromBody] GenerateUgcScriptsDto req, IUgcCreativeGeneratorService ugcService) =>
+{
+    var scripts = await ugcService.GenerateScriptsForProductAsync(req.TenantId, req.Sku, req.ProductName, req.Language ?? "Darija", req.TargetAudience ?? "Shoppers 18-35");
+    return Results.Ok(scripts);
+});
+
+app.MapGet("/api/marketing/ugc/scripts", async ([FromQuery] Guid tenantId, [FromQuery] string sku, IUgcCreativeGeneratorService ugcService) =>
+{
+    var scripts = await ugcService.GetScriptsByProductAsync(tenantId, sku);
+    return Results.Ok(scripts);
+});
+
+// --- Competitor Ad & Price Intelligence Radar Endpoints ---
+app.MapPost("/api/marketing/competitor/ad", async ([FromBody] IngestCompetitorAdDto req, ICompetitorIntelligenceService compService) =>
+{
+    var ad = await compService.IngestCompetitorAdAsync(req.TenantId, req.CompetitorName, req.Platform, req.HookSnippet, req.OfferDetails, req.EstimatedDailySpend, req.ThreatLevel ?? "Medium");
+    return Results.Ok(ad);
+});
+
+app.MapPost("/api/marketing/competitor/price", async ([FromBody] TrackCompetitorPriceDto req, ICompetitorIntelligenceService compService) =>
+{
+    var tracker = await compService.TrackPriceDisparityAsync(req.TenantId, req.Sku, req.CompetitorName, req.Url, req.CompetitorPrice, req.OurPrice);
+    return Results.Ok(tracker);
+});
+
+app.MapGet("/api/marketing/competitor/radar", async ([FromQuery] Guid tenantId, ICompetitorIntelligenceService compService) =>
+{
+    var summary = await compService.GetRadarSummaryAsync(tenantId);
+    return Results.Ok(summary);
+});
+
+// --- Enterprise B2B Financials & Factoring Endpoints ---
+app.MapPost("/api/billing/b2b-credit/accounts", async ([FromBody] EstablishCreditDto req, IB2BCreditAndFactoringService b2bService) =>
+{
+    var account = await b2bService.EstablishCreditAccountAsync(req.TenantId, req.CompanyId, req.CompanyName, req.CreditLimit, req.PaymentTermsDays, req.CreditScoreRating ?? "AA");
+    return Results.Ok(account);
+});
+
+app.MapPost("/api/billing/b2b-credit/invoice-drawdown", async ([FromBody] InvoiceDrawdownDto req, IB2BCreditAndFactoringService b2bService) =>
+{
+    var account = await b2bService.RecordInvoiceDrawdownAsync(req.TenantId, req.CompanyId, req.InvoiceAmount);
+    return Results.Ok(account);
+});
+
+app.MapPost("/api/billing/b2b-credit/settlement", async ([FromBody] PaymentSettlementDto req, IB2BCreditAndFactoringService b2bService) =>
+{
+    var account = await b2bService.RecordPaymentSettlementAsync(req.TenantId, req.CompanyId, req.PaymentAmount);
+    return Results.Ok(account);
+});
+
+app.MapPost("/api/billing/factoring/request", async ([FromBody] RequestFactoringDto req, IB2BCreditAndFactoringService b2bService) =>
+{
+    var record = await b2bService.RequestCourierCashFactoringAsync(req.TenantId, req.CourierId, req.CourierName, req.InTransitFloat, req.DeliveredFloat, req.DiscountRate);
+    return Results.Ok(record);
+});
+
+app.MapPost("/api/billing/factoring/fund/{factoringId}", async (Guid factoringId, [FromQuery] Guid tenantId, IB2BCreditAndFactoringService b2bService) =>
+{
+    var funded = await b2bService.FundFactoringAdvanceAsync(tenantId, factoringId);
+    return Results.Ok(funded);
+});
+
+app.MapGet("/api/billing/b2b-financials/summary", async ([FromQuery] Guid tenantId, IB2BCreditAndFactoringService b2bService) =>
+{
+    var summary = await b2bService.GetFinancialSummaryAsync(tenantId);
+    return Results.Ok(summary);
+});
+
+// --- Public Developer Gateway Endpoints ---
+app.MapPost("/api/developer/api-keys", async ([FromBody] CreateApiKeyDto req, IDeveloperGatewayService devService) =>
+{
+    var (apiKey, plainKey) = await devService.CreateApiKeyAsync(req.TenantId, req.Name, req.Scopes, req.IsLive, req.RateLimit);
+    return Results.Ok(new { apiKey, secretKey = plainKey });
+});
+
+app.MapPost("/api/developer/api-keys/validate", async ([FromBody] ValidateKeyDto req, IDeveloperGatewayService devService) =>
+{
+    var res = await devService.ValidateApiKeyAsync(req.SecretKey);
+    return Results.Ok(res);
+});
+
+app.MapPost("/api/developer/webhooks", async ([FromBody] RegisterWebhookDto req, IDeveloperGatewayService devService) =>
+{
+    var sub = await devService.RegisterWebhookAsync(req.TenantId, req.TargetUrl, req.Events);
+    return Results.Ok(sub);
+});
+
+app.MapPost("/api/developer/webhooks/dispatch", async ([FromBody] DispatchWebhookDto req, IDeveloperGatewayService devService) =>
+{
+    var logs = await devService.DispatchWebhookEventAsync(req.TenantId, req.EventType, req.Payload);
+    return Results.Ok(logs);
+});
+
+app.MapPost("/api/developer/webhooks/replay/{attemptId}", async (Guid attemptId, [FromQuery] Guid tenantId, IDeveloperGatewayService devService) =>
+{
+    var log = await devService.ReplayWebhookAttemptAsync(tenantId, attemptId);
+    return Results.Ok(log);
+});
+
 app.MapHub<OmniHub>("/hubs/omni");
 
 app.Run();
@@ -1750,6 +1965,29 @@ public record ReconcileCashDto(Guid TenantId, decimal ActualCashTurnedIn, string
 public record ExecuteFlowTurnDto(Guid TenantId, Guid FlowId, string CustomerPhone, string Message);
 public record IntakeAgingDto(Guid TenantId, Guid ProductId, string Sku, string ProductName, Guid WarehouseId, int Quantity, decimal CostPrice, decimal RetailPrice, int DaysInWarehouse);
 public record GenerateBundleDto(Guid TenantId, string WinningSku, string AgingSku, string BundleName, decimal BundleDiscountPct = 30m);
+
+
+// Horizon 1-4 Strategic DTOs
+public record StartDriverSessionDto(Guid TenantId, Guid DriverId, string DriverName, string? DeviceModel);
+public record SubmitPodDto(Guid TenantId, Guid StopId, Guid OrderId, string OrderNumber, Guid DriverId, string SignatureBase64, string PhotoUrl, decimal CashCollected, string RecipientName, string? RecipientRelation, double? Lat, double? Lng, string? PaymentMethod);
+public record DriverGpsHeartbeatDto(Guid TenantId, Guid DriverId, double Latitude, double Longitude, int BatteryPercent);
+public record CreateCheckoutSessionDto(Guid TenantId, string CartItemsJson, decimal Subtotal);
+public record UpdateCheckoutDetailsDto(Guid TenantId, string SessionKey, string CustomerName, string CustomerPhone, string WilayaCode, string DelegationName, string StreetAddress);
+public record SendOtpDto(Guid TenantId, string SessionKey);
+public record VerifyOtpDto(Guid TenantId, string SessionKey, string OtpInput);
+public record ApplyUpsellDto(Guid TenantId, string SessionKey, string UpsellSku, decimal UpsellAmount);
+public record CompleteCheckoutDto(Guid TenantId, string SessionKey);
+public record GenerateUgcScriptsDto(Guid TenantId, string Sku, string ProductName, string? Language, string? TargetAudience);
+public record IngestCompetitorAdDto(Guid TenantId, string CompetitorName, string Platform, string HookSnippet, string OfferDetails, decimal EstimatedDailySpend, string? ThreatLevel);
+public record TrackCompetitorPriceDto(Guid TenantId, string Sku, string CompetitorName, string Url, decimal CompetitorPrice, decimal OurPrice);
+public record EstablishCreditDto(Guid TenantId, Guid CompanyId, string CompanyName, decimal CreditLimit, int PaymentTermsDays, string? CreditScoreRating);
+public record InvoiceDrawdownDto(Guid TenantId, Guid CompanyId, decimal InvoiceAmount);
+public record PaymentSettlementDto(Guid TenantId, Guid CompanyId, decimal PaymentAmount);
+public record RequestFactoringDto(Guid TenantId, string CourierId, string CourierName, decimal InTransitFloat, decimal DeliveredFloat, decimal DiscountRate = 2.5m);
+public record CreateApiKeyDto(Guid TenantId, string Name, List<string> Scopes, bool IsLive = true, int RateLimit = 120);
+public record ValidateKeyDto(string SecretKey);
+public record RegisterWebhookDto(Guid TenantId, string TargetUrl, List<string> Events);
+public record DispatchWebhookDto(Guid TenantId, string EventType, object Payload);
 
 // Required for WebApplicationFactory in integration tests
 public partial class Program { }

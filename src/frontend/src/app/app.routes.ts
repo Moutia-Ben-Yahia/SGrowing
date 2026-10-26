@@ -23,10 +23,16 @@ import { CalendarStudioComponent } from './features/calendar/calendar-studio.com
 import { DeliverabilityStudioComponent } from './features/deliverability/deliverability-studio.component';
 import { TelemetryStudioComponent } from './features/telemetry/telemetry-studio.component';
 import { BillingStudioComponent } from './features/billing/billing-studio.component';
+import { DigitalGoodsStudioComponent } from './features/digital-goods/digital-goods-studio.component';
+import { FormsStudioComponent } from './features/forms/forms-studio.component';
+import { DeveloperStudioComponent } from './features/developer/developer-studio.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', component: InboxShellComponent, canActivate: [authGuard] },
+  { path: 'digital-goods', component: DigitalGoodsStudioComponent, canActivate: [authGuard] },
+  { path: 'forms', component: FormsStudioComponent, canActivate: [authGuard] },
+  { path: 'developer', component: DeveloperStudioComponent, canActivate: [authGuard] },
   { path: 'calendar', component: CalendarStudioComponent, canActivate: [authGuard] },
   { path: 'deliverability', component: DeliverabilityStudioComponent, canActivate: [authGuard] },
   { path: 'telemetry', component: TelemetryStudioComponent, canActivate: [authGuard] },

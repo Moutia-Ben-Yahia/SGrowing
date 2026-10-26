@@ -23,6 +23,9 @@ import { BookingEventTypeDto, CalendarBookingRecordDto, TimeSlotDto, HostAvailab
 import { DomainDnsHealthRecordDto, EmailSpamAnalysisReportDto, MailboxWarmupCadenceDto, WarmupExchangeLogDto } from '../models/deliverability.models';
 import { LiveTelemetrySummaryDto, TelemetryEventDto } from '../models/telemetry.models';
 import { SubscriptionDetailsDto, BillingInvoiceRecordDto } from '../models/billing.models';
+import { DigitalAssetDto, DigitalDownloadTokenDto, ProductLicenseKeyDto, PimVariantMatrixDto } from '../models/digital-goods.models';
+import { DynamicFormDefinitionDto, DynamicFormSubmissionDto, CryptographicPdfRecordDto } from '../models/dynamic-forms.models';
+import { TenantApiKeyDto, WebhookSubscriptionRecordDto, WebhookDeliveryAttemptLogDto } from '../models/developer-webhooks.models';
 
 @Injectable({
   providedIn: 'root'
@@ -638,5 +641,108 @@ export class ApiService {
 
   public createCheckoutSession(payload: any): Observable<{ checkoutUrl: string }> {
     return this.http.post<{ checkoutUrl: string }>(`${this.baseUrl}/billing/checkout-session`, payload);
+  }
+
+  // Frontier 2: Digital Goods, Downloads, Licenses & PIM Variant Matrix
+  public getDigitalAssets(tenantId: string): Observable<DigitalAssetDto[]> {
+    return this.http.get<DigitalAssetDto[]>(`${this.baseUrl}/digital/assets?tenantId=${tenantId}`);
+  }
+
+  public createDigitalAsset(payload: any): Observable<DigitalAssetDto> {
+    return this.http.post<DigitalAssetDto>(`${this.baseUrl}/digital/assets`, payload);
+  }
+
+  public issueDownloadToken(payload: any): Observable<DigitalDownloadTokenDto> {
+    return this.http.post<DigitalDownloadTokenDto>(`${this.baseUrl}/digital/tokens/issue`, payload);
+  }
+
+  public getLicenseKeys(tenantId: string, sku?: string): Observable<ProductLicenseKeyDto[]> {
+    let url = `${this.baseUrl}/digital/licenses?tenantId=${tenantId}`;
+    if (sku) url += `&sku=${encodeURIComponent(sku)}`;
+    return this.http.get<ProductLicenseKeyDto[]>(url);
+  }
+
+  public generateLicenseKeys(payload: any): Observable<ProductLicenseKeyDto[]> {
+    return this.http.post<ProductLicenseKeyDto[]>(`${this.baseUrl}/digital/licenses`, payload);
+  }
+
+  public generateVariantMatrix(payload: any): Observable<PimVariantMatrixDto[]> {
+    return this.http.post<PimVariantMatrixDto[]>(`${this.baseUrl}/digital/variants/matrix-generate`, payload);
+  }
+
+  public getVariantMatrix(tenantId: string, baseSku: string): Observable<PimVariantMatrixDto[]> {
+    return this.http.get<PimVariantMatrixDto[]>(`${this.baseUrl}/digital/variants/matrix?tenantId=${tenantId}&baseSku=${encodeURIComponent(baseSku)}`);
+  }
+
+  // Frontier 3: Dynamic Forms & Cryptographic PDF Seal Registry
+  public getForms(tenantId: string): Observable<DynamicFormDefinitionDto[]> {
+    return this.http.get<DynamicFormDefinitionDto[]>(`${this.baseUrl}/forms?tenantId=${tenantId}`);
+  }
+
+  public createForm(payload: any): Observable<DynamicFormDefinitionDto> {
+    return this.http.post<DynamicFormDefinitionDto>(`${this.baseUrl}/forms`, payload);
+  }
+
+  public getFormBySlug(tenantId: string, slug: string): Observable<DynamicFormDefinitionDto> {
+    return this.http.get<DynamicFormDefinitionDto>(`${this.baseUrl}/forms/${slug}/public?tenantId=${tenantId}`);
+  }
+
+  public submitFormAnswers(slug: string, payload: any): Observable<DynamicFormSubmissionDto> {
+    return this.http.post<DynamicFormSubmissionDto>(`${this.baseUrl}/forms/${slug}/submit`, payload);
+  }
+
+  public getSubmissions(tenantId: string, formId: string): Observable<DynamicFormSubmissionDto[]> {
+    return this.http.get<DynamicFormSubmissionDto[]>(`${this.baseUrl}/forms/${formId}/submissions?tenantId=${tenantId}`);
+  }
+
+  public createDocument(payload: any): Observable<CryptographicPdfRecordDto> {
+    return this.http.post<CryptographicPdfRecordDto>(`${this.baseUrl}/documents/create`, payload);
+  }
+
+  public sealDocument(payload: any): Observable<CryptographicPdfRecordDto> {
+    return this.http.post<CryptographicPdfRecordDto>(`${this.baseUrl}/documents/seal`, payload);
+  }
+
+  public verifyDocumentAuditChain(tenantId: string, documentId: string): Observable<{ isTamperFree: boolean; summary: string }> {
+    return this.http.get<{ isTamperFree: boolean; summary: string }>(`${this.baseUrl}/documents/${documentId}/verify-audit-chain?tenantId=${tenantId}`);
+  }
+
+  // Frontier 4: Developer API Keys & Outbound Webhooks Mesh
+  public getApiKeys(tenantId: string): Observable<TenantApiKeyDto[]> {
+    return this.http.get<TenantApiKeyDto[]>(`${this.baseUrl}/developer/api-keys?tenantId=${tenantId}`);
+  }
+
+  public createApiKey(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/developer/api-keys`, payload);
+  }
+
+  public revokeApiKey(tenantId: string, keyId: string): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/developer/api-keys/${keyId}?tenantId=${tenantId}`);
+  }
+
+  public getWebhookSubscriptions(tenantId: string): Observable<WebhookSubscriptionRecordDto[]> {
+    return this.http.get<WebhookSubscriptionRecordDto[]>(`${this.baseUrl}/developer/webhooks/subscriptions?tenantId=${tenantId}`);
+  }
+
+  public createWebhookSubscription(payload: any): Observable<WebhookSubscriptionRecordDto> {
+    return this.http.post<WebhookSubscriptionRecordDto>(`${this.baseUrl}/developer/webhooks/subscriptions`, payload);
+  }
+
+  public toggleWebhookSubscription(tenantId: string, subId: string, isActive: boolean): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/developer/webhooks/subscriptions/${subId}/toggle`, { tenantId, isActive });
+  }
+
+  public getWebhookLogs(tenantId: string, subscriptionId?: string, limit = 50): Observable<WebhookDeliveryAttemptLogDto[]> {
+    let url = `${this.baseUrl}/developer/webhooks/logs?tenantId=${tenantId}&limit=${limit}`;
+    if (subscriptionId) url += `&subscriptionId=${subscriptionId}`;
+    return this.http.get<WebhookDeliveryAttemptLogDto[]>(url);
+  }
+
+  public testDispatchWebhook(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/developer/webhooks/test-dispatch`, payload);
+  }
+
+  public retryWebhookDelivery(tenantId: string, logId: string): Observable<WebhookDeliveryAttemptLogDto> {
+    return this.http.post<WebhookDeliveryAttemptLogDto>(`${this.baseUrl}/developer/webhooks/logs/${logId}/retry?tenantId=${tenantId}`, {});
   }
 }

@@ -100,8 +100,11 @@ public class RunSheetStop
     public decimal AmountToCollect { get; set; }
     public string PaymentMethodAtDoorstep { get; set; } = "CashOnDelivery"; // CashOnDelivery, FlouciQr, D17
     public StopDeliveryStatus Status { get; set; } = StopDeliveryStatus.Scheduled;
+    public decimal ActualPaymentCollected { get; set; }
+    public Guid? ProofOfDeliveryId { get; set; }
     public string? FailureReason { get; set; }
     public DateTime? DeliveredAtUtc { get; set; }
+    public DateTime? CompletedAtUtc { get; set; }
 }
 
 public class ProofOfDeliveryRecord

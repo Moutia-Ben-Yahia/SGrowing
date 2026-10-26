@@ -237,6 +237,35 @@ public class SGrowingDbContext : DbContext
     // SaaS Subscription Billing & Quota Enforcement (Section 11)
     public DbSet<BillingInvoiceRecord> BillingInvoiceRecords => Set<BillingInvoiceRecord>();
 
+    // Horizon 1: Mobile Courier Companion & Headless COD Checkout
+    public DbSet<DriverMobileSession> DriverMobileSessions => Set<DriverMobileSession>();
+    public DbSet<DoorstepProofOfDelivery> DoorstepProofOfDeliveries => Set<DoorstepProofOfDelivery>();
+    public DbSet<CodCheckoutSession> CodCheckoutSessions => Set<CodCheckoutSession>();
+    public DbSet<WilayaZone> WilayaZones => Set<WilayaZone>();
+
+    // Horizon 3: Autonomous UGC Creative Engine & Competitor Intelligence Radar
+    public DbSet<UgcVideoScript> UgcVideoScripts => Set<UgcVideoScript>();
+    public DbSet<CompetitorAdRecord> CompetitorAdRecords => Set<CompetitorAdRecord>();
+    public DbSet<CompetitorPriceTracker> CompetitorPriceTrackers => Set<CompetitorPriceTracker>();
+
+    // Horizon 4: Enterprise B2B Financials & Developer Gateway
+    public DbSet<B2BCreditAccount> B2BCreditAccounts => Set<B2BCreditAccount>();
+    public DbSet<FactoringReceivableRecord> FactoringReceivableRecords => Set<FactoringReceivableRecord>();
+    public DbSet<TenantApiKey> TenantApiKeys => Set<TenantApiKey>();
+    public DbSet<WebhookSubscriptionRecord> WebhookSubscriptionRecords => Set<WebhookSubscriptionRecord>();
+    public DbSet<WebhookDeliveryAttemptLog> WebhookDeliveryAttemptLogs => Set<WebhookDeliveryAttemptLog>();
+
+    // Digital Goods, Expiring Download Tokens & PIM Variant Matrix (Frontier 2)
+    public DbSet<DigitalAsset> DigitalAssets => Set<DigitalAsset>();
+    public DbSet<DigitalDownloadToken> DigitalDownloadTokens => Set<DigitalDownloadToken>();
+    public DbSet<ProductLicenseKey> ProductLicenseKeys => Set<ProductLicenseKey>();
+    public DbSet<PimVariantMatrix> PimVariantMatrices => Set<PimVariantMatrix>();
+
+    // Dynamic Form Builder & Cryptographic PDF Seal Registry (Frontier 3)
+    public DbSet<DynamicFormDefinition> DynamicFormDefinitions => Set<DynamicFormDefinition>();
+    public DbSet<DynamicFormSubmission> DynamicFormSubmissions => Set<DynamicFormSubmission>();
+    public DbSet<CryptographicPdfRecord> CryptographicPdfRecords => Set<CryptographicPdfRecord>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
