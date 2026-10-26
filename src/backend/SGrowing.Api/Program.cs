@@ -165,6 +165,13 @@ builder.Services.AddScoped<IMultiWarehouseService, MultiWarehouseService>();
 builder.Services.AddScoped<ILiveCommerceOverlayService, LiveCommerceOverlayService>();
 builder.Services.AddScoped<ITreasuryFloatService, TreasuryFloatService>();
 
+// 18. Enterprise Scale: Creator Affiliate Escrow, Reverse Exchanges, Cross-Border Trade, Demand Forecasting & RBAC Security
+builder.Services.AddScoped<ICreatorAffiliateService, CreatorAffiliateService>();
+builder.Services.AddScoped<IReverseExchangeService, ReverseExchangeService>();
+builder.Services.AddScoped<ICrossBorderTradeService, CrossBorderTradeService>();
+builder.Services.AddScoped<IDemandForecastingService, DemandForecastingService>();
+builder.Services.AddScoped<ISecurityAuditAndRbacService, SecurityAuditAndRbacService>();
+
 // 16. SignalR & CORS
 builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
@@ -1301,6 +1308,119 @@ app.MapGet("/api/finance/treasury/forecast-14day", async ([FromQuery] Guid tenan
     return Results.Ok(forecast);
 });
 
+// --- Creator Affiliate Escrow Endpoints ---
+app.MapGet("/api/marketing/creators", async ([FromQuery] Guid tenantId, ICreatorAffiliateService affiliateService) =>
+{
+    var creators = await affiliateService.ListCreatorsAsync(tenantId);
+    return Results.Ok(creators);
+});
+
+app.MapPost("/api/marketing/creators", async ([FromBody] CreatorProfile profile, ICreatorAffiliateService affiliateService) =>
+{
+    var created = await affiliateService.RegisterCreatorAsync(profile.TenantId, profile);
+    return Results.Ok(created);
+});
+
+app.MapGet("/api/marketing/creators/{creatorId}/summary", async (Guid creatorId, [FromQuery] Guid tenantId, ICreatorAffiliateService affiliateService) =>
+{
+    var summary = await affiliateService.GetCreatorSummaryAsync(tenantId, creatorId);
+    return Results.Ok(summary);
+});
+
+app.MapPost("/api/marketing/creators/payouts/batch", async ([FromBody] TenantActionDto req, ICreatorAffiliateService affiliateService) =>
+{
+    var payouts = await affiliateService.GeneratePayoutBatchAsync(req.TenantId);
+    return Results.Ok(payouts);
+});
+
+// --- Reverse Logistics & Drop-and-Swap Endpoints ---
+app.MapGet("/api/commerce/exchanges", async ([FromQuery] Guid tenantId, [FromQuery] ExchangeStatus? status, IReverseExchangeService reverseService) =>
+{
+    var list = await reverseService.ListExchangeRequestsAsync(tenantId, status);
+    return Results.Ok(list);
+});
+
+app.MapPost("/api/commerce/exchanges/request", async ([FromBody] RequestExchangeDto req, IReverseExchangeService reverseService) =>
+{
+    var result = await reverseService.RequestExchangeAsync(req.TenantId, req.OrderId, req.OriginalSku, req.ReplacementSku, req.ReplacementDesc, req.Reason, req.CashAdjustment);
+    return Results.Ok(result);
+});
+
+app.MapPost("/api/commerce/exchanges/manifest", async ([FromBody] DispatchSwapManifestDto req, IReverseExchangeService reverseService) =>
+{
+    var manifest = await reverseService.ApproveAndDispatchSwapManifestAsync(req.TenantId, req.ExchangeRequestId, req.CourierProviderId, req.CourierName, req.SwapDeliveryFee);
+    return Results.Ok(manifest);
+});
+
+app.MapPost("/api/commerce/exchanges/doorstep-confirm", async ([FromBody] ConfirmDoorstepSwapDto req, IReverseExchangeService reverseService) =>
+{
+    var result = await reverseService.ConfirmDoorstepSwapAsync(req.TenantId, req.ManifestId, req.HandoverNewParcel, req.ReturnParcelCollected);
+    return Results.Ok(result);
+});
+
+app.MapPost("/api/commerce/exchanges/intake-inspect", async ([FromBody] ReturnIntakeInspectDto req, IReverseExchangeService reverseService) =>
+{
+    var inspection = await reverseService.ProcessWarehouseReturnIntakeAsync(req.TenantId, req.ExchangeRequestId, req.Grade, req.Notes);
+    return Results.Ok(inspection);
+});
+
+// --- Cross-Border Trade & Customs Invoices Endpoints ---
+app.MapGet("/api/commerce/cross-border/countries", async ([FromQuery] Guid tenantId, ICrossBorderTradeService tradeService) =>
+{
+    var countries = await tradeService.ListSupportedCountriesAsync(tenantId);
+    return Results.Ok(countries);
+});
+
+app.MapPost("/api/commerce/cross-border/countries", async ([FromBody] CountryTradeConfig config, ICrossBorderTradeService tradeService) =>
+{
+    var result = await tradeService.ConfigureCountryAsync(config.TenantId, config);
+    return Results.Ok(result);
+});
+
+app.MapGet("/api/commerce/cross-border/invoices", async ([FromQuery] Guid tenantId, ICrossBorderTradeService tradeService) =>
+{
+    var invoices = await tradeService.ListCommercialInvoicesAsync(tenantId);
+    return Results.Ok(invoices);
+});
+
+// --- Demand Forecasting & Restock Endpoints ---
+app.MapGet("/api/commerce/forecasting/alerts", async ([FromQuery] Guid tenantId, [FromQuery] RestockPriority? minPriority, IDemandForecastingService forecastService) =>
+{
+    var alerts = await forecastService.ListStockoutAlertsAsync(tenantId, minPriority);
+    return Results.Ok(alerts);
+});
+
+app.MapGet("/api/commerce/forecasting/suppliers", async ([FromQuery] Guid tenantId, IDemandForecastingService forecastService) =>
+{
+    var suppliers = await forecastService.ListSuppliersAsync(tenantId);
+    return Results.Ok(suppliers);
+});
+
+app.MapGet("/api/commerce/forecasting/restock-orders", async ([FromQuery] Guid tenantId, IDemandForecastingService forecastService) =>
+{
+    var orders = await forecastService.ListRestockOrdersAsync(tenantId);
+    return Results.Ok(orders);
+});
+
+app.MapPost("/api/commerce/forecasting/restock-orders", async ([FromBody] GenerateRestockOrderDto req, IDemandForecastingService forecastService) =>
+{
+    var order = await forecastService.GenerateAutomatedRestockOrderAsync(req.TenantId, req.AlertId, req.SupplierId, req.UnitCost);
+    return Results.Ok(order);
+});
+
+// --- RBAC & Security Audit Log Endpoints ---
+app.MapGet("/api/security/audit-logs", async ([FromQuery] Guid tenantId, [FromQuery] string? resource, ISecurityAuditAndRbacService secService) =>
+{
+    var logs = await secService.ListAuditLogsAsync(tenantId, resource);
+    return Results.Ok(logs);
+});
+
+app.MapGet("/api/security/orders/{orderId}/masked", async (Guid orderId, [FromQuery] Guid tenantId, [FromQuery] UserSystemRole userRole, ISecurityAuditAndRbacService secService) =>
+{
+    var view = await secService.GetMaskedCustomerOrderAsync(tenantId, orderId, userRole);
+    return Results.Ok(view);
+});
+
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
 
@@ -1409,6 +1529,14 @@ public record CreateTransferDto(Guid TenantId, Guid SourceWarehouseId, Guid Dest
 public record ActionTransferDto(Guid TenantId, Guid TransferId);
 public record EvaluateRopDto(Guid TenantId, Guid WarehouseId, string Sku, int DailyDemand = 5, int LeadDays = 7, decimal UnitCost = 25.0m);
 public record ProcessLiveCommentDto(Guid TenantId, Guid SessionId, string CommenterUsername, string CommentText, string? CustomerPhone = null, string? Governorate = null);
+
+// Enterprise Scale Expansion DTOs
+public record TenantActionDto(Guid TenantId);
+public record RequestExchangeDto(Guid TenantId, Guid OrderId, string OriginalSku, string ReplacementSku, string ReplacementDesc, string Reason, decimal CashAdjustment = 0m);
+public record DispatchSwapManifestDto(Guid TenantId, Guid ExchangeRequestId, Guid CourierProviderId, string CourierName, decimal SwapDeliveryFee = 9.5m);
+public record ConfirmDoorstepSwapDto(Guid TenantId, Guid ManifestId, bool HandoverNewParcel = true, bool ReturnParcelCollected = true);
+public record ReturnIntakeInspectDto(Guid TenantId, Guid ExchangeRequestId, SwapInspectionResult Grade, string Notes = "");
+public record GenerateRestockOrderDto(Guid TenantId, Guid AlertId, Guid SupplierId, decimal UnitCost);
 
 // Required for WebApplicationFactory in integration tests
 public partial class Program { }

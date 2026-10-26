@@ -160,6 +160,30 @@ export interface RmaRequestUi {
               <span class="flex items-center gap-2">🔴 Live Social Commerce</span>
               <span class="bg-rose-500/20 text-rose-300 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Live</span>
             </button>
+            <button
+              (click)="activeTab.set('exchanges')"
+              [class.bg-slate-800]="activeTab() === 'exchanges'"
+              [class.text-amber-400]="activeTab() === 'exchanges'"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition">
+              <span class="flex items-center gap-2">🔄 Drop-and-Swap Exchanges</span>
+              <span class="bg-amber-500/20 text-amber-300 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Swap</span>
+            </button>
+            <button
+              (click)="activeTab.set('crossborder')"
+              [class.bg-slate-800]="activeTab() === 'crossborder'"
+              [class.text-blue-400]="activeTab() === 'crossborder'"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition">
+              <span class="flex items-center gap-2">🌐 Cross-Border Trade Hub</span>
+              <span class="bg-blue-500/20 text-blue-300 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Maghreb/GCC</span>
+            </button>
+            <button
+              (click)="activeTab.set('forecasting')"
+              [class.bg-slate-800]="activeTab() === 'forecasting'"
+              [class.text-emerald-400]="activeTab() === 'forecasting'"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition">
+              <span class="flex items-center gap-2">📈 Demand & Supplier Restock</span>
+              <span class="bg-emerald-500/20 text-emerald-300 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Auto-PO</span>
+            </button>
           </div>
         </div>
 
@@ -185,6 +209,11 @@ export interface RmaRequestUi {
               @if (activeTab() === 'rma') { Customer 360 Identity Graph & Self-Service RMA }
               @if (activeTab() === 'remittance') { Courier Cash Remittance & Financial Clearing House }
               @if (activeTab() === 'conversions') { Server-Side Conversion Mesh & In-Chat Commerce }
+              @if (activeTab() === 'routing') { Smart Multi-Carrier Rate & Delivery Success Routing }
+              @if (activeTab() === 'livecommerce') { Live Social Commerce & Stream Overlay }
+              @if (activeTab() === 'exchanges') { Drop-and-Swap 1-Stop Reverse Logistics }
+              @if (activeTab() === 'crossborder') { Cross-Border Maghreb / GCC Trade & Customs Desk }
+              @if (activeTab() === 'forecasting') { Predictive Demand Runway & Supplier Restock Matrix }
             </h2>
             <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
               Live Engine Active
@@ -1041,13 +1070,201 @@ export interface RmaRequestUi {
               </div>
             </div>
           }
+
+          <!-- 13. Drop-and-Swap Reverse Logistics Tab -->
+          @if (activeTab() === 'exchanges') {
+            <div class="space-y-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-base font-semibold text-slate-100">🔄 Automated Reverse Logistics & "Drop-and-Swap" Express Exchanges</h3>
+                  <p class="text-xs text-slate-400">1-stop doorstep replacement: courier delivers correct size/color and collects old parcel in one visit, cutting return freight by 40%.</p>
+                </div>
+                <button
+                  (click)="simulateRequestExchange()"
+                  class="px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-medium hover:bg-amber-500/30 transition">
+                  + Create Exchange Request
+                </button>
+              </div>
+
+              <div class="space-y-3">
+                @for (ex of exchanges(); track ex.id) {
+                  <div class="p-4 rounded-xl border bg-slate-900/40 border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold text-sm text-white font-mono">{{ ex.originalOrderNumber }}</span>
+                        <span class="text-xs px-2 py-0.5 rounded font-medium bg-amber-500/20 text-amber-400">
+                          {{ ex.status }}
+                        </span>
+                        <span class="text-xs text-slate-400">Reason: <strong class="text-slate-300">{{ ex.reason }}</strong></span>
+                      </div>
+                      <span class="text-xs font-mono font-bold text-amber-400">Swap Barcode: {{ ex.swapBarcode }}</span>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3 text-xs bg-slate-950 p-3 rounded-lg border border-slate-800/80">
+                      <div>
+                        <span class="text-[10px] text-slate-500 uppercase font-mono">Original Item</span>
+                        <p class="text-rose-400 font-medium">{{ ex.originalSku }} ({{ ex.originalDesc }})</p>
+                      </div>
+                      <div>
+                        <span class="text-[10px] text-slate-500 uppercase font-mono">Replacement Item (Reserved)</span>
+                        <p class="text-emerald-400 font-medium">{{ ex.replacementSku }} ({{ ex.replacementDesc }})</p>
+                      </div>
+                      <div>
+                        <span class="text-[10px] text-slate-500 uppercase font-mono">Customer & Stop</span>
+                        <p class="text-slate-300">{{ ex.customerName }} • {{ ex.phone }} ({{ ex.city }})</p>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800/60">
+                      @if (ex.status === 'Requested') {
+                        <button
+                          (click)="dispatchSwapManifestUi(ex)"
+                          class="px-3 py-1 rounded bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-medium transition">
+                          🚚 Dispatch Swap Manifest
+                        </button>
+                      }
+                      @if (ex.status === 'DispatchedForSwap') {
+                        <button
+                          (click)="confirmDoorstepSwapUi(ex)"
+                          class="px-3 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium transition">
+                          🤝 Confirm Doorstep Swap (1-Stop)
+                        </button>
+                      }
+                      @if (ex.status === 'SwapCompletedAtDoorstep') {
+                        <button
+                          (click)="inspectReturnIntakeUi(ex)"
+                          class="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition">
+                          📦 QA Inspect & Restock Grade A
+                        </button>
+                      }
+                      @if (ex.status === 'RestockedSellable') {
+                        <span class="text-xs font-bold text-emerald-400">✓ Returned Unit Restocked to Physical WMS</span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- 14. Cross-Border Trade & Customs Invoices Tab -->
+          @if (activeTab() === 'crossborder') {
+            <div class="space-y-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-base font-semibold text-slate-100">🌐 Multi-Currency & Cross-Border Maghreb / GCC Trade Hub</h3>
+                  <p class="text-xs text-slate-400">Real-time FX conversions, E.164 phone formatting, and automated HS-code customs commercial invoices.</p>
+                </div>
+              </div>
+
+              <!-- Supported Regional Hubs Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                @for (country of tradeCountries(); track country.code) {
+                  <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <span class="text-lg">{{ country.flag }}</span>
+                        <h4 class="text-sm font-bold text-white">{{ country.name }}</h4>
+                      </div>
+                      <span class="text-xs font-mono font-bold text-cyan-400">{{ country.currency }}</span>
+                    </div>
+                    <div class="text-xs text-slate-400 space-y-1">
+                      <div>Dial Prefix: <strong class="text-slate-300 font-mono">{{ country.prefix }}</strong></div>
+                      <div>VAT Rate: <strong class="text-slate-300">{{ country.vat }}%</strong></div>
+                      <div>COD Enabled: <span class="text-emerald-400 font-bold">Yes</span></div>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <!-- Commercial Customs Invoices Table -->
+              <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-4 space-y-3">
+                <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Export Customs Commercial Invoices (DAP Incoterm)</h4>
+                <div class="space-y-2">
+                  @for (inv of customsInvoices(); track inv.invoiceNumber) {
+                    <div class="flex items-center justify-between p-3 rounded-lg bg-slate-950 border border-slate-800 text-xs">
+                      <div class="flex items-center gap-4">
+                        <span class="text-cyan-400 font-mono font-bold">{{ inv.invoiceNumber }}</span>
+                        <span class="text-slate-300">{{ inv.consignee }} ({{ inv.country }})</span>
+                        <span class="text-[11px] text-slate-500 font-mono">HS: {{ inv.hsCode }}</span>
+                      </div>
+                      <div class="flex items-center gap-4">
+                        <span class="text-emerald-400 font-mono font-bold">{{ inv.declaredValue }} {{ inv.currency }}</span>
+                        <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono text-[10px]">Customs Cleared</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- 15. Demand Forecasting & Supplier Restock Matrix Tab -->
+          @if (activeTab() === 'forecasting') {
+            <div class="space-y-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-base font-semibold text-slate-100">📈 Predictive Demand Forecasting & Supplier Restock Matrix</h3>
+                  <p class="text-xs text-slate-400">Ad-velocity aware stockout runway estimator and automated supplier purchase order generation.</p>
+                </div>
+              </div>
+
+              <!-- Stockout Alerts Grid -->
+              <div class="space-y-3">
+                @for (alert of stockoutAlerts(); track alert.sku) {
+                  <div class="p-4 rounded-xl border bg-slate-900/60 space-y-3"
+                       [class.border-rose-500/50]="alert.priority === 'Critical'"
+                       [class.border-amber-500/40]="alert.priority === 'Elevated'">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold text-sm text-white">{{ alert.name }}</span>
+                        <span class="text-xs font-mono px-2 py-0.5 rounded text-rose-400 bg-rose-500/20 font-bold">
+                          {{ alert.priority }} Stockout Alert
+                        </span>
+                      </div>
+                      <span class="text-sm font-bold font-mono text-rose-400">Runway: {{ alert.daysLeft }} Days</span>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-3 text-xs bg-slate-950 p-3 rounded-lg border border-slate-800">
+                      <div>
+                        <span class="text-[10px] text-slate-500 uppercase font-mono">Available Stock</span>
+                        <p class="text-white font-mono font-bold">{{ alert.availableStock }} units</p>
+                      </div>
+                      <div>
+                        <span class="text-[10px] text-slate-500 uppercase font-mono">Daily Demand Velocity</span>
+                        <p class="text-cyan-400 font-mono font-bold">{{ alert.dailyVelocity }} units/day ({{ alert.adMultiplier }}x Ad Scaling)</p>
+                      </div>
+                      <div>
+                        <span class="text-[10px] text-slate-500 uppercase font-mono">Supplier Lead Time</span>
+                        <p class="text-slate-300 font-mono">{{ alert.supplierLeadDays }} days</p>
+                      </div>
+                      <div>
+                        <span class="text-[10px] text-slate-500 uppercase font-mono">Recommended Reorder</span>
+                        <p class="text-emerald-400 font-mono font-bold">{{ alert.recommendedUnits }} units</p>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-800/80">
+                      <span class="text-xs text-slate-400">Preferred Supplier: <strong class="text-slate-200">{{ alert.preferredSupplier }}</strong></span>
+                      <button
+                        (click)="placeSupplierPoUi(alert)"
+                        [disabled]="alert.poPlaced"
+                        class="px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-medium transition">
+                        {{ alert.poPlaced ? '✓ Purchase Order Placed with Factory' : '⚡ 1-Click Generate Supplier PO' }}
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
         </div>
       </main>
     </div>
   `
 })
 export class OperationsStudioComponent {
-  activeTab = signal<'confirmation' | 'logistics' | 'wms' | 'cadences' | 'rma' | 'remittance' | 'conversions' | 'scanner' | 'dialer' | 'reputation' | 'routing' | 'livecommerce'>('confirmation');
+  activeTab = signal<'confirmation' | 'logistics' | 'wms' | 'cadences' | 'rma' | 'remittance' | 'conversions' | 'scanner' | 'dialer' | 'reputation' | 'routing' | 'livecommerce' | 'exchanges' | 'crossborder' | 'forecasting'>('confirmation');
   audioAlertsEnabled = signal<boolean>(true);
 
   // Barcode Fulfillment Desk Signals
@@ -1416,5 +1633,117 @@ export class OperationsStudioComponent {
     } else {
       alert(`Flash deal for ${deal.name} is SOLD OUT!`);
     }
+  }
+
+  // 13. Drop-and-Swap Reverse Logistics Signals & Actions
+  exchanges = signal([
+    {
+      id: 'ex-1',
+      originalOrderNumber: 'ORD-TN-7701',
+      originalSku: 'SNEAKER-LEATHER-42',
+      originalDesc: 'Size 42',
+      replacementSku: 'SNEAKER-LEATHER-43',
+      replacementDesc: 'Size 43',
+      reason: 'Too tight around toes',
+      customerName: 'Mohamed Salah Trabelsi',
+      phone: '+21698112233',
+      city: 'Tunis',
+      status: 'Requested',
+      swapBarcode: 'SWAP-20261026-001'
+    },
+    {
+      id: 'ex-2',
+      originalOrderNumber: 'ORD-TN-7703',
+      originalSku: 'SLIM-JACKET-BLACK-M',
+      originalDesc: 'Size M',
+      replacementSku: 'SLIM-JACKET-BLACK-L',
+      replacementDesc: 'Size L',
+      reason: 'Sleeve length too short',
+      customerName: 'Sarra Ben Ahmed',
+      phone: '+21650998877',
+      city: 'Sousse',
+      status: 'DispatchedForSwap',
+      swapBarcode: 'SWAP-20261026-002'
+    }
+  ]);
+
+  simulateRequestExchange() {
+    alert('New exchange request initiated from WhatsApp self-service bot. Replacement variant defensively reserved in WMS.');
+  }
+
+  dispatchSwapManifestUi(ex: any) {
+    ex.status = 'DispatchedForSwap';
+    alert(`Drop-and-Swap courier manifest dispatched for ${ex.originalOrderNumber}. Courier instructed to swap parcels at doorstep in single visit.`);
+  }
+
+  confirmDoorstepSwapUi(ex: any) {
+    ex.status = 'SwapCompletedAtDoorstep';
+    alert(`Doorstep swap confirmed! Courier handed over ${ex.replacementSku} and collected return parcel.`);
+  }
+
+  inspectReturnIntakeUi(ex: any) {
+    ex.status = 'RestockedSellable';
+    alert(`QA Inspection passed (Grade A pristine condition). ${ex.originalSku} successfully restocked to physical sellable WMS inventory!`);
+  }
+
+  // 14. Cross-Border Trade & Customs Signals
+  tradeCountries = signal([
+    { code: 'TN', name: 'Tunisia', flag: '🇹🇳', currency: 'TND', prefix: '+216', vat: 19 },
+    { code: 'DZ', name: 'Algeria', flag: '🇩🇿', currency: 'DZD', prefix: '+213', vat: 19 },
+    { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦', currency: 'SAR', prefix: '+966', vat: 15 }
+  ]);
+
+  customsInvoices = signal([
+    {
+      invoiceNumber: 'EXP-202610-DZ001',
+      consignee: 'Yacine Brahimi',
+      country: 'Algeria',
+      hsCode: '6403.99 (Leather Footwear)',
+      declaredValue: 45,
+      currency: 'EUR'
+    },
+    {
+      invoiceNumber: 'EXP-202610-SA002',
+      consignee: 'Fahad Al-Otaibi',
+      country: 'Saudi Arabia',
+      hsCode: '3303.00 (Perfumes & Essences)',
+      declaredValue: 80,
+      currency: 'USD'
+    }
+  ]);
+
+  // 15. Demand Forecasting & Restock Signals
+  stockoutAlerts = signal([
+    {
+      sku: 'PERFUME-ROYAL-AMBER-100ML',
+      name: 'Royal Amber Eau De Parfum 100ml',
+      availableStock: 54,
+      dailyVelocity: 18,
+      adMultiplier: 1.8,
+      daysLeft: 3.0,
+      supplierLeadDays: 5,
+      recommendedUnits: 300,
+      priority: 'Critical',
+      preferredSupplier: 'Sousse Fragrance Labs',
+      poPlaced: false
+    },
+    {
+      sku: 'SNEAKER-LEATHER-43',
+      name: 'Sahara White Sneaker Size 43',
+      availableStock: 14,
+      dailyVelocity: 4,
+      adMultiplier: 1.2,
+      daysLeft: 3.5,
+      supplierLeadDays: 4,
+      recommendedUnits: 80,
+      priority: 'Elevated',
+      preferredSupplier: 'Kairouan Leatherworks',
+      poPlaced: false
+    }
+  ]);
+
+  placeSupplierPoUi(alertItem: any) {
+    alertItem.poPlaced = true;
+    alert(`Automated Purchase Order generated for ${alertItem.recommendedUnits} units of ${alertItem.sku} placed with ${alertItem.preferredSupplier}. Expected delivery in ${alertItem.supplierLeadDays} days.`);
   }
 }

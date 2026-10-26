@@ -313,4 +313,86 @@ export class ApiService {
   public get14DayCashForecast(tenantId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/finance/treasury/forecast-14day?tenantId=${tenantId}`);
   }
+
+  // Creator & Affiliate Escrow
+  public getCreators(tenantId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/marketing/creators?tenantId=${tenantId}`);
+  }
+
+  public registerCreator(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/marketing/creators`, payload);
+  }
+
+  public getCreatorSummary(tenantId: string, creatorId: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/marketing/creators/${creatorId}/summary?tenantId=${tenantId}`);
+  }
+
+  public generatePayoutBatch(payload: any): Observable<any[]> {
+    return this.http.post<any[]>(`${this.baseUrl}/marketing/creators/payouts/batch`, payload);
+  }
+
+  // Reverse Logistics & Drop-and-Swap
+  public getExchangeRequests(tenantId: string, status?: number): Observable<any[]> {
+    const url = status !== undefined
+      ? `${this.baseUrl}/commerce/exchanges?tenantId=${tenantId}&status=${status}`
+      : `${this.baseUrl}/commerce/exchanges?tenantId=${tenantId}`;
+    return this.http.get<any[]>(url);
+  }
+
+  public requestExchange(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/commerce/exchanges/request`, payload);
+  }
+
+  public dispatchSwapManifest(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/commerce/exchanges/manifest`, payload);
+  }
+
+  public confirmDoorstepSwap(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/commerce/exchanges/doorstep-confirm`, payload);
+  }
+
+  public inspectReturnIntake(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/commerce/exchanges/intake-inspect`, payload);
+  }
+
+  // Cross-Border Trade & Customs
+  public getTradeCountries(tenantId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/commerce/cross-border/countries?tenantId=${tenantId}`);
+  }
+
+  public getCommercialInvoices(tenantId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/commerce/cross-border/invoices?tenantId=${tenantId}`);
+  }
+
+  // Demand Forecasting & Restock Matrix
+  public getStockoutAlerts(tenantId: string, minPriority?: number): Observable<any[]> {
+    const url = minPriority !== undefined
+      ? `${this.baseUrl}/commerce/forecasting/alerts?tenantId=${tenantId}&minPriority=${minPriority}`
+      : `${this.baseUrl}/commerce/forecasting/alerts?tenantId=${tenantId}`;
+    return this.http.get<any[]>(url);
+  }
+
+  public getSuppliers(tenantId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/commerce/forecasting/suppliers?tenantId=${tenantId}`);
+  }
+
+  public getRestockOrders(tenantId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/commerce/forecasting/restock-orders?tenantId=${tenantId}`);
+  }
+
+  public generateRestockOrder(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/commerce/forecasting/restock-orders`, payload);
+  }
+
+  // RBAC & Security Audit Logs
+  public getSecurityAuditLogs(tenantId: string, resource?: string): Observable<any[]> {
+    const url = resource
+      ? `${this.baseUrl}/security/audit-logs?tenantId=${tenantId}&resource=${encodeURIComponent(resource)}`
+      : `${this.baseUrl}/security/audit-logs?tenantId=${tenantId}`;
+    return this.http.get<any[]>(url);
+  }
+
+  public getMaskedOrderView(tenantId: string, orderId: string, userRole: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/security/orders/${orderId}/masked?tenantId=${tenantId}&userRole=${userRole}`);
+  }
 }

@@ -157,6 +157,33 @@ public class SGrowingDbContext : DbContext
     public DbSet<CarrierRemittanceScheduleConfig> CarrierRemittanceScheduleConfigs => Set<CarrierRemittanceScheduleConfig>();
     public DbSet<CourierFloatValuation> CourierFloatValuations => Set<CourierFloatValuation>();
 
+    // Creator & Influencer Commission Settlement Mesh (Frontier 1)
+    public DbSet<CreatorProfile> CreatorProfiles => Set<CreatorProfile>();
+    public DbSet<AffiliateReferralCode> AffiliateReferralCodes => Set<AffiliateReferralCode>();
+    public DbSet<CommissionEscrowLedger> CommissionEscrowLedgers => Set<CommissionEscrowLedger>();
+    public DbSet<CreatorPayoutRecord> CreatorPayoutRecords => Set<CreatorPayoutRecord>();
+
+    // Automated Reverse Logistics & Drop-and-Swap (Frontier 2)
+    public DbSet<OrderExchangeRequest> OrderExchangeRequests => Set<OrderExchangeRequest>();
+    public DbSet<ExchangeCourierSwapManifest> ExchangeCourierSwapManifests => Set<ExchangeCourierSwapManifest>();
+    public DbSet<ItemReturnInspection> ItemReturnInspections => Set<ItemReturnInspection>();
+
+    // Cross-Border Trade & Customs Invoices (Frontier 3)
+    public DbSet<CountryTradeConfig> CountryTradeConfigs => Set<CountryTradeConfig>();
+    public DbSet<FxExchangeRate> FxExchangeRates => Set<FxExchangeRate>();
+    public DbSet<CustomsCommercialInvoice> CustomsCommercialInvoices => Set<CustomsCommercialInvoice>();
+
+    // Predictive Demand Forecasting & Supplier Restock (Frontier 4)
+    public DbSet<ProductSalesVelocity> ProductSalesVelocities => Set<ProductSalesVelocity>();
+    public DbSet<StockoutProjectionAlert> StockoutProjectionAlerts => Set<StockoutProjectionAlert>();
+    public DbSet<SupplierScorecard> SupplierScorecards => Set<SupplierScorecard>();
+    public DbSet<AutomatedRestockOrder> AutomatedRestockOrders => Set<AutomatedRestockOrder>();
+
+    // RBAC & Security Audit Trail (Frontier 5)
+    public DbSet<SystemRole> SystemRoles => Set<SystemRole>();
+    public DbSet<RolePermissionClaim> RolePermissionClaims => Set<RolePermissionClaim>();
+    public DbSet<SecurityAuditLogEntry> SecurityAuditLogEntries => Set<SecurityAuditLogEntry>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

@@ -251,6 +251,93 @@ export interface ChannelAttributionUi {
               </div>
             </div>
           </div>
+
+          <!-- Creator & Influencer COD Escrow Settlement Mesh -->
+          <div class="p-6 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                  <span>👑</span> Creator & Influencer Commission Settlement Mesh (COD Safety Escrow)
+                </h3>
+                <p class="text-xs text-slate-400">Zero-loss affiliate escrow: commissions clear only when parcels are confirmed delivered by courier.</p>
+              </div>
+              <button
+                (click)="simulatePayoutBatch()"
+                class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition">
+                ⚡ Process Cleared Wire Payouts
+              </button>
+            </div>
+
+            <div class="grid grid-cols-4 gap-3">
+              <div class="p-3 bg-slate-950 rounded-lg border border-slate-800">
+                <span class="text-[10px] text-slate-400 uppercase font-mono">Gross Referred GMV</span>
+                <p class="text-base font-bold text-white font-mono mt-1">{{ creatorStats().grossGmv | number:'1.0-0' }} TND</p>
+              </div>
+              <div class="p-3 bg-slate-950 rounded-lg border border-slate-800">
+                <span class="text-[10px] text-slate-400 uppercase font-mono">Delivered Net GMV</span>
+                <p class="text-base font-bold text-emerald-400 font-mono mt-1">{{ creatorStats().netGmv | number:'1.0-0' }} TND</p>
+              </div>
+              <div class="p-3 bg-slate-950 rounded-lg border border-amber-500/30">
+                <span class="text-[10px] text-amber-400 uppercase font-mono">Pending COD Escrow</span>
+                <p class="text-base font-bold text-amber-400 font-mono mt-1">{{ creatorStats().pendingEscrow | number:'1.0-0' }} TND</p>
+              </div>
+              <div class="p-3 bg-slate-950 rounded-lg border border-emerald-500/30">
+                <span class="text-[10px] text-emerald-400 uppercase font-mono">Available for Payout</span>
+                <p class="text-base font-bold text-emerald-400 font-mono mt-1">{{ creatorStats().clearedPayout | number:'1.0-0' }} TND</p>
+              </div>
+            </div>
+
+            <!-- Creator Leaderboard -->
+            <div class="space-y-2 pt-2">
+              @for (c of creators(); track c.handle) {
+                <div class="flex items-center justify-between p-3 rounded-lg bg-slate-950/80 border border-slate-800 text-xs">
+                  <div class="flex items-center gap-3">
+                    <span class="font-bold text-white">{{ c.name }}</span>
+                    <span class="text-cyan-400 font-mono">{{ c.handle }}</span>
+                    <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">{{ c.code }}</span>
+                  </div>
+                  <div class="flex items-center gap-4 font-mono">
+                    <span class="text-slate-400">Delivery: <strong class="text-emerald-400">{{ c.deliveryRate }}%</strong></span>
+                    <span class="text-amber-400">Escrow: {{ c.escrow }} TND</span>
+                    <span class="text-emerald-400 font-bold">Cleared: {{ c.cleared }} TND</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- RBAC & Immutable Security Audit Trail -->
+          <div class="p-6 bg-slate-900/60 border border-slate-800 rounded-xl space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                  <span>🔒</span> Granular RBAC, PII Masking & Immutable Security Audit Trail
+                </h3>
+                <p class="text-xs text-slate-400">Call center agents dial via ephemeral tokens (+216 98 **** 56) with zero raw PII export capability.</p>
+              </div>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                Tamper-Evident SHA256 Log Active
+              </span>
+            </div>
+
+            <!-- Audit Logs Table -->
+            <div class="space-y-2">
+              @for (log of auditLogs(); track log.id) {
+                <div class="flex items-center justify-between p-3 rounded-lg bg-slate-950 border border-slate-800 text-xs">
+                  <div class="flex items-center gap-3 font-mono">
+                    <span class="text-slate-500 text-[11px]">{{ log.timestamp }}</span>
+                    <span class="text-slate-300 font-sans font-medium">{{ log.user }}</span>
+                    <span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">{{ log.role }}</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span class="text-cyan-400 font-mono">{{ log.action }}</span>
+                    <span class="text-slate-400 font-mono text-[11px]">{{ log.details }}</span>
+                    <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono">{{ log.status }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
         </div>
       </main>
     </div>
@@ -375,4 +462,66 @@ export class AnalyticsStudioComponent {
       ]);
     }
   }
+
+  // Creator Affiliate Escrow Signals
+  creatorStats = signal({
+    grossGmv: 42500,
+    netGmv: 36200,
+    pendingEscrow: 1420,
+    clearedPayout: 3200
+  });
+
+  creators = signal([
+    {
+      name: 'Amira Ben Salem',
+      handle: '@amirabeauty',
+      code: 'AMIRA10',
+      deliveryRate: 91.2,
+      escrow: 480,
+      cleared: 1820
+    },
+    {
+      name: 'Karim Fit Life',
+      handle: '@karimfit',
+      code: 'KARIM_VIP',
+      deliveryRate: 85.0,
+      escrow: 940,
+      cleared: 1380
+    }
+  ]);
+
+  simulatePayoutBatch() {
+    alert('Cleared Affiliate Escrow Payout Batch generated for 3,200 TND across 2 creators. Bank transfer instructions dispatched.');
+  }
+
+  // Security & Audit Log Signals
+  auditLogs = signal([
+    {
+      id: 'log-1',
+      timestamp: '14:22:05 UTC',
+      user: 'Sarah CallCenter',
+      role: 'CallCenterAgent',
+      action: 'ClickToDial',
+      details: 'Token DIAL-9A2B4F (Customer phone masked)',
+      status: 'Allowed'
+    },
+    {
+      id: 'log-2',
+      timestamp: '13:58:12 UTC',
+      user: 'Tarak Picker',
+      role: 'WarehousePicker',
+      action: 'ExportCsvCustomerPii',
+      details: 'Access Denied: Missing ExportData claim',
+      status: 'Blocked'
+    },
+    {
+      id: 'log-3',
+      timestamp: '11:45:00 UTC',
+      user: 'Admin SGrowing',
+      role: 'SuperAdmin',
+      action: 'ReleaseEscrowPayout',
+      details: 'Disbursed batch PAY-202610-01 (3,200 TND)',
+      status: 'Audited'
+    }
+  ]);
 }
