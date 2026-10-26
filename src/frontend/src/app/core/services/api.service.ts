@@ -244,4 +244,73 @@ export class ApiService {
   public settleDeposit(payload: any): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/commerce/reputation/settle-deposit`, payload);
   }
+
+  // Smart Courier Routing
+  public getSmartRoutingRanking(tenantId: string, governorate: string, weight = 1.0, codAmount = 100): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/commerce/routing/rank?tenantId=${tenantId}&governorate=${encodeURIComponent(governorate)}&weight=${weight}&codAmount=${codAmount}`);
+  }
+
+  public autoAssignCarrier(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/commerce/routing/auto-assign`, payload);
+  }
+
+  public slaBreachFallback(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/commerce/routing/sla-breach-fallback`, payload);
+  }
+
+  // Post-Purchase Retention & Replenishment
+  public scheduleRetention(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/marketing/retention/schedule`, payload);
+  }
+
+  public submitSurvey(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/marketing/retention/survey-response`, payload);
+  }
+
+  public processReplenishments(payload: any): Observable<any[]> {
+    return this.http.post<any[]>(`${this.baseUrl}/marketing/retention/process-replenishments`, payload);
+  }
+
+  public getWinBackCampaign(tenantId: string, inactiveDays = 90): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/marketing/retention/win-back?tenantId=${tenantId}&inactiveDays=${inactiveDays}`);
+  }
+
+  // Multi-Warehouse Hubs & Transfers
+  public allocateProximityWarehouse(tenantId: string, governorate: string, sku: string, quantity = 1): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/warehouses/proximity-allocate?tenantId=${tenantId}&governorate=${encodeURIComponent(governorate)}&sku=${encodeURIComponent(sku)}&quantity=${quantity}`);
+  }
+
+  public createTransfer(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/warehouses/transfers`, payload);
+  }
+
+  public dispatchTransfer(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/warehouses/transfers/dispatch`, payload);
+  }
+
+  public receiveTransfer(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/warehouses/transfers/receive`, payload);
+  }
+
+  public evaluateRop(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/warehouses/evaluate-rop`, payload);
+  }
+
+  // Live Social Commerce
+  public processLiveComment(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/channels/live/process-comment`, payload);
+  }
+
+  public getLiveOverlay(tenantId: string, sessionId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/channels/live/${sessionId}/overlay?tenantId=${tenantId}`);
+  }
+
+  // Treasury Float & Cash Flow
+  public getFloatValuation(tenantId: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/finance/treasury/float?tenantId=${tenantId}`);
+  }
+
+  public get14DayCashForecast(tenantId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/finance/treasury/forecast-14day?tenantId=${tenantId}`);
+  }
 }

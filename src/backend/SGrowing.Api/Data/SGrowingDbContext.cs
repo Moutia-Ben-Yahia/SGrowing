@@ -143,6 +143,20 @@ public class SGrowingDbContext : DbContext
     public DbSet<CustomerReputationScorecard> CustomerReputationScorecards => Set<CustomerReputationScorecard>();
     public DbSet<MicroDepositPaymentLink> MicroDepositPaymentLinks => Set<MicroDepositPaymentLink>();
 
+    // Enterprise Operations: Smart Routing, Retention LTV, Multi-Hub WMS, Live Commerce & Float
+    public DbSet<CarrierPerformanceMetric> CarrierPerformanceMetrics => Set<CarrierPerformanceMetric>();
+    public DbSet<CarrierRateCard> CarrierRateCards => Set<CarrierRateCard>();
+    public DbSet<PostPurchaseSurvey> PostPurchaseSurveys => Set<PostPurchaseSurvey>();
+    public DbSet<ProductBurnRateConfig> ProductBurnRateConfigs => Set<ProductBurnRateConfig>();
+    public DbSet<ReplenishmentSchedule> ReplenishmentSchedules => Set<ReplenishmentSchedule>();
+    public DbSet<RegionalHubProximityRule> RegionalHubProximityRules => Set<RegionalHubProximityRule>();
+    public DbSet<InterHubStockTransfer> InterHubStockTransfers => Set<InterHubStockTransfer>();
+    public DbSet<SupplierPurchaseOrder> SupplierPurchaseOrders => Set<SupplierPurchaseOrder>();
+    public DbSet<LiveStreamSession> LiveStreamSessions => Set<LiveStreamSession>();
+    public DbSet<LiveFlashDeal> LiveFlashDeals => Set<LiveFlashDeal>();
+    public DbSet<CarrierRemittanceScheduleConfig> CarrierRemittanceScheduleConfigs => Set<CarrierRemittanceScheduleConfig>();
+    public DbSet<CourierFloatValuation> CourierFloatValuations => Set<CourierFloatValuation>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

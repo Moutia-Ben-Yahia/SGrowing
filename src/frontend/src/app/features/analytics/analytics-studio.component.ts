@@ -192,6 +192,65 @@ export interface ChannelAttributionUi {
               </tbody>
             </table>
           </div>
+
+          <!-- Courier Cash Float & Working Capital Treasury Forecast -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                  <span>💰</span> Courier Cash Float & Working Capital Forecast
+                </h3>
+                <p class="text-xs text-slate-400">Valuation of trapped cash in courier pipelines and projected 14-day wire transfers.</p>
+              </div>
+              <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono font-bold">
+                DSO: {{ dso() }} Days
+              </span>
+            </div>
+
+            <!-- Float KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div class="p-4 rounded-xl bg-slate-950 border border-slate-800">
+                <span class="text-[10px] text-slate-400 uppercase font-mono">In-Transit Float</span>
+                <div class="text-xl font-bold text-amber-400 font-mono mt-1">{{ inTransitFloat() | number:'1.0-0' }} TND</div>
+                <span class="text-[10px] text-slate-500">Parcels on delivery trucks</span>
+              </div>
+              <div class="p-4 rounded-xl bg-slate-950 border border-slate-800">
+                <span class="text-[10px] text-slate-400 uppercase font-mono">Delivered Unremitted</span>
+                <div class="text-xl font-bold text-cyan-400 font-mono mt-1">{{ deliveredFloat() | number:'1.0-0' }} TND</div>
+                <span class="text-[10px] text-slate-500">Cash collected, pending wire</span>
+              </div>
+              <div class="p-4 rounded-xl bg-slate-950 border border-slate-800">
+                <span class="text-[10px] text-slate-400 uppercase font-mono">Courier Deductions</span>
+                <div class="text-xl font-bold text-rose-400 font-mono mt-1">-{{ courierFees() | number:'1.0-0' }} TND</div>
+                <span class="text-[10px] text-slate-500">Contractual shipping fees</span>
+              </div>
+              <div class="p-4 rounded-xl bg-slate-950 border border-emerald-500/30">
+                <span class="text-[10px] text-emerald-400 uppercase font-mono">Net Receivable Float</span>
+                <div class="text-xl font-bold text-emerald-400 font-mono mt-1">{{ netReceivable() | number:'1.0-0' }} TND</div>
+                <span class="text-[10px] text-slate-500">Working capital available</span>
+              </div>
+            </div>
+
+            <!-- 14-Day Inflow Projection Table -->
+            <div class="border-t border-slate-800/80 pt-4">
+              <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3">Projected Wire Transfers (Next 14 Days)</h4>
+              <div class="space-y-2">
+                @for (day of forecastDays(); track day.date) {
+                  <div class="flex items-center justify-between p-3 rounded-lg bg-slate-950/70 border border-slate-800 text-xs font-mono">
+                    <div class="flex items-center gap-3">
+                      <span class="text-cyan-400 font-bold">{{ day.date }}</span>
+                      <span class="text-slate-300 font-sans font-medium">{{ day.courier }}</span>
+                      <span class="text-[11px] text-slate-500">({{ day.parcels }} parcels)</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                      <span class="text-emerald-400 font-bold">+{{ day.netAmount | number:'1.0-0' }} TND</span>
+                      <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">{{ day.confidence }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </div>
@@ -204,6 +263,30 @@ export class AnalyticsStudioComponent {
   totalSpend = signal(12000);
   roas = signal(10.4);
   cac = signal(1200);
+
+  // Treasury Cash Float & Working Capital Signals
+  inTransitFloat = signal(12450);
+  deliveredFloat = signal(18600);
+  courierFees = signal(1820);
+  netReceivable = signal(29230);
+  dso = signal(7.8);
+
+  forecastDays = signal([
+    {
+      date: 'Next Tuesday (Oct 28)',
+      courier: 'Yalidine Express',
+      parcels: 142,
+      netAmount: 12850,
+      confidence: 'High (Confirmed Deliveries)'
+    },
+    {
+      date: 'Following Tuesday (Nov 4)',
+      courier: 'Yalidine Express',
+      parcels: 180,
+      netAmount: 16380,
+      confidence: 'Medium (Projected Deliveries)'
+    }
+  ]);
 
   channels = signal<ChannelAttributionUi[]>([
     {

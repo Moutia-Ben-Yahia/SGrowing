@@ -144,6 +144,22 @@ export interface RmaRequestUi {
               class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition">
               <span class="flex items-center gap-2">🛡️ Customer Reputation</span>
             </button>
+            <button
+              (click)="activeTab.set('routing')"
+              [class.bg-slate-800]="activeTab() === 'routing'"
+              [class.text-cyan-400]="activeTab() === 'routing'"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition">
+              <span class="flex items-center gap-2">🎯 Smart Carrier Routing</span>
+              <span class="bg-cyan-500/20 text-cyan-300 text-[10px] px-1.5 py-0.5 rounded-full font-bold">AI</span>
+            </button>
+            <button
+              (click)="activeTab.set('livecommerce')"
+              [class.bg-slate-800]="activeTab() === 'livecommerce'"
+              [class.text-rose-400]="activeTab() === 'livecommerce'"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition">
+              <span class="flex items-center gap-2">🔴 Live Social Commerce</span>
+              <span class="bg-rose-500/20 text-rose-300 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Live</span>
+            </button>
           </div>
         </div>
 
@@ -907,13 +923,131 @@ export interface RmaRequestUi {
               </div>
             </div>
           }
+
+          <!-- 11. Smart Carrier Routing Tab -->
+          @if (activeTab() === 'routing') {
+            <div class="space-y-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-base font-semibold text-slate-100">🎯 Smart Multi-Carrier Rate & Delivery Success Routing</h3>
+                  <p class="text-xs text-slate-400">Algorithmic carrier ranking maximizing delivery success rate and net profit margin per governorate.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 rounded-full">
+                    Active Zone: Tunis & Sousse
+                  </span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @for (rec of carrierRankings(); track rec.courierName) {
+                  <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/40 space-y-3">
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <h4 class="text-sm font-semibold text-slate-100">{{ rec.courierName }}</h4>
+                        <span class="text-xs font-mono text-slate-400">Base Shipping: {{ rec.shippingCost }} TND</span>
+                      </div>
+                      <span
+                        [class.bg-emerald-500/20]="rec.isRecommended"
+                        [class.text-emerald-400]="rec.isRecommended"
+                        [class.bg-slate-800]="!rec.isRecommended"
+                        [class.text-slate-400]="!rec.isRecommended"
+                        class="px-2.5 py-1 rounded-full text-xs font-bold">
+                        {{ rec.isRecommended ? '★ Recommended (#1)' : 'Alternative' }}
+                      </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 py-2 border-y border-slate-800/80 font-mono text-xs">
+                      <div>
+                        <span class="text-[10px] text-slate-400 uppercase">Historical Delivery</span>
+                        <div class="text-emerald-400 font-bold">{{ rec.deliveryRate }}%</div>
+                      </div>
+                      <div>
+                        <span class="text-[10px] text-slate-400 uppercase">Expected Net Margin</span>
+                        <div class="text-cyan-400 font-bold">+{{ rec.expectedNetMargin }} TND</div>
+                      </div>
+                    </div>
+
+                    <p class="text-xs text-slate-400 font-sans italic">{{ rec.reasoning }}</p>
+
+                    <button
+                      (click)="autoAssignCarrierUi(rec)"
+                      class="w-full py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-xs font-semibold text-white transition">
+                      Auto-Assign {{ rec.courierName }} to Pending Orders
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- 12. Live Social Commerce Tab -->
+          @if (activeTab() === 'livecommerce') {
+            <div class="space-y-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-base font-semibold text-slate-100">🔴 Live Social Commerce & Stream Overlay (TikTok & FB Live)</h3>
+                  <p class="text-xs text-slate-400">Comment keyword-to-cart parser with real-time OBS browser source overlay.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                    <span class="h-2 w-2 rounded-full bg-rose-500 animate-ping"></span>
+                    ON AIR (TikTok Live)
+                  </span>
+                </div>
+              </div>
+
+              <!-- OBS Browser Overlay Preview Widget -->
+              <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-5 space-y-4">
+                <div class="flex items-center justify-between">
+                  <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Live Stream Broadcast Overlay (OBS Browser Source)</h4>
+                  <span class="text-xs font-mono text-slate-500">Overlay URL: /api/channels/live/session-1/overlay</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  @for (deal of liveDeals(); track deal.sku) {
+                    <div class="p-4 rounded-xl bg-slate-950 border border-rose-500/30 flex items-center justify-between relative overflow-hidden">
+                      <div class="space-y-1">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-rose-400 font-mono">FLASH DEAL • COMMENT "{{ deal.keyword }}"</span>
+                        <h4 class="text-sm font-bold text-white">{{ deal.name }}</h4>
+                        <div class="flex items-baseline gap-2 font-mono">
+                          <span class="text-base font-black text-emerald-400">{{ deal.flashPrice }} TND</span>
+                          <span class="text-xs text-slate-500 line-through">{{ deal.originalPrice }} TND</span>
+                        </div>
+                      </div>
+
+                      <div class="text-right">
+                        <span class="text-[10px] text-slate-400 uppercase font-mono">Stock Remaining</span>
+                        <div class="text-xl font-black text-rose-400 font-mono">{{ deal.remaining }} / {{ deal.max }}</div>
+                        <span class="text-[10px] text-amber-400 font-bold">🔥 1-Click DM Card</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <div class="flex items-center gap-2 pt-2 border-t border-slate-800/80">
+                  <span class="text-xs text-slate-400">Simulate Viewer Comment:</span>
+                  <button
+                    (click)="simulateLiveComment('ACHETER')"
+                    class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white transition">
+                    💬 Comment "ACHETER"
+                  </button>
+                  <button
+                    (click)="simulateLiveComment('PROMO50')"
+                    class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-xs font-semibold text-white transition">
+                    💬 Comment "PROMO50"
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
         </div>
       </main>
     </div>
   `
 })
 export class OperationsStudioComponent {
-  activeTab = signal<'confirmation' | 'logistics' | 'wms' | 'cadences' | 'rma' | 'remittance' | 'conversions' | 'scanner' | 'dialer' | 'reputation'>('confirmation');
+  activeTab = signal<'confirmation' | 'logistics' | 'wms' | 'cadences' | 'rma' | 'remittance' | 'conversions' | 'scanner' | 'dialer' | 'reputation' | 'routing' | 'livecommerce'>('confirmation');
   audioAlertsEnabled = signal<boolean>(true);
 
   // Barcode Fulfillment Desk Signals
@@ -1224,5 +1358,63 @@ export class OperationsStudioComponent {
     c.depositPaid = true;
     c.tier = 'Standard';
     alert(`Micro-Deposit of 10 TND settled via Flouci for ${c.name}. Remaining COD reduced by 10 TND. Order auto-confirmed.`);
+  }
+
+  // Smart Carrier Routing Signals & Actions
+  carrierRankings = signal([
+    {
+      courierName: 'Yalidine Express',
+      shippingCost: 7.0,
+      deliveryRate: 95.0,
+      expectedNetMargin: 87.8,
+      isRecommended: true,
+      reasoning: 'Highest delivery success (95.0%) and fastest transit (1.2 days) in Greater Tunis.'
+    },
+    {
+      courierName: 'Aramex Tunisia',
+      shippingCost: 8.0,
+      deliveryRate: 88.0,
+      expectedNetMargin: 79.4,
+      isRecommended: false,
+      reasoning: 'Alternative carrier with strong coastal reach, but higher return rate in Tunis.'
+    }
+  ]);
+
+  autoAssignCarrierUi(rec: any) {
+    alert(`Smart Routing applied: ${rec.courierName} assigned to all eligible pending orders. Expected net margin: +${rec.expectedNetMargin} TND.`);
+  }
+
+  // Live Social Commerce Signals & Actions
+  liveDeals = signal([
+    {
+      sku: 'FLASH-SERUM-VITC',
+      name: 'Sérum Éclat Vitamine C 30ml',
+      keyword: 'ACHETER',
+      flashPrice: 65,
+      originalPrice: 95,
+      max: 20,
+      remaining: 14
+    },
+    {
+      sku: 'FLASH-PARFUM-OUD',
+      name: 'Oud Carthage Extrait 50ml',
+      keyword: 'PROMO50',
+      flashPrice: 85,
+      originalPrice: 120,
+      max: 15,
+      remaining: 8
+    }
+  ]);
+
+  simulateLiveComment(keyword: string) {
+    const deal = this.liveDeals().find(d => d.keyword === keyword);
+    if (!deal) return;
+
+    if (deal.remaining > 0) {
+      this.liveDeals.update(list => list.map(d => d.keyword === keyword ? { ...d, remaining: d.remaining - 1 } : d));
+      alert(`Live comment detected ("${keyword}")! Stock reserved. 1-Click DM checkout dispatched to @viewer_tunisie!`);
+    } else {
+      alert(`Flash deal for ${deal.name} is SOLD OUT!`);
+    }
   }
 }

@@ -17,6 +17,7 @@ using SGrowing.Api.Modules.Marketing;
 using SGrowing.Api.Modules.Security;
 using SGrowing.Api.Modules.Tenancy;
 using SGrowing.Api.Modules.Voice;
+using SGrowing.Api.Modules.Finance;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Entities;
@@ -156,6 +157,13 @@ builder.Services.AddScoped<IBarcodeFulfillmentService, BarcodeFulfillmentService
 builder.Services.AddScoped<IWhatsAppCatalogEngine, WhatsAppCatalogEngine>();
 builder.Services.AddScoped<IStorefrontDomainService, StorefrontDomainService>();
 builder.Services.AddScoped<ICustomerReputationService, CustomerReputationService>();
+
+// 17. Enterprise Operations: Smart Routing, Retention LTV, Multi-Hub WMS, Live Commerce & Float
+builder.Services.AddScoped<ISmartCourierRoutingService, SmartCourierRoutingService>();
+builder.Services.AddScoped<IPostPurchaseRetentionService, PostPurchaseRetentionService>();
+builder.Services.AddScoped<IMultiWarehouseService, MultiWarehouseService>();
+builder.Services.AddScoped<ILiveCommerceOverlayService, LiveCommerceOverlayService>();
+builder.Services.AddScoped<ITreasuryFloatService, TreasuryFloatService>();
 
 // 16. SignalR & CORS
 builder.Services.AddSignalR();
@@ -1192,6 +1200,107 @@ app.MapPost("/api/commerce/reputation/settle-deposit", async ([FromBody] SettleD
     return Results.Ok(order);
 });
 
+// --- Smart Courier Routing Endpoints ---
+app.MapGet("/api/commerce/routing/rank", async ([FromQuery] Guid tenantId, [FromQuery] string governorate, [FromQuery] decimal weight, [FromQuery] decimal codAmount, ISmartCourierRoutingService routingService) =>
+{
+    var recommendations = await routingService.RankCarriersForOrderAsync(tenantId, governorate, weight, codAmount);
+    return Results.Ok(recommendations);
+});
+
+app.MapPost("/api/commerce/routing/auto-assign", async ([FromBody] AutoAssignCarrierDto req, ISmartCourierRoutingService routingService) =>
+{
+    var optimal = await routingService.AutoAssignOptimalCarrierAsync(req.TenantId, req.OrderId, req.PackageWeightKg);
+    return Results.Ok(optimal);
+});
+
+app.MapPost("/api/commerce/routing/sla-breach-fallback", async ([FromBody] SlaBreachFallbackDto req, ISmartCourierRoutingService routingService) =>
+{
+    var order = await routingService.HandlePickupSlaBreachFallbackAsync(req.TenantId, req.CurrentTrackingNumber);
+    return Results.Ok(order);
+});
+
+// --- Post-Purchase Retention & Replenishment Endpoints ---
+app.MapPost("/api/marketing/retention/schedule", async ([FromBody] ScheduleRetentionDto req, IPostPurchaseRetentionService retentionService) =>
+{
+    var schedule = await retentionService.SchedulePostPurchaseRetentionAsync(req.TenantId, req.OrderId);
+    return Results.Ok(schedule);
+});
+
+app.MapPost("/api/marketing/retention/survey-response", async ([FromBody] SubmitRetentionSurveyDto req, IPostPurchaseRetentionService retentionService) =>
+{
+    var survey = await retentionService.RecordSurveyResponseAsync(req.TenantId, req.SurveyId, req.Rating, req.Notes);
+    return Results.Ok(survey);
+});
+
+app.MapPost("/api/marketing/retention/process-replenishments", async ([FromBody] ProcessReplenishmentsDto req, IPostPurchaseRetentionService retentionService) =>
+{
+    var results = await retentionService.ProcessDueReplenishmentRemindersAsync(req.TenantId, req.CurrentTimeUtc);
+    return Results.Ok(results);
+});
+
+app.MapGet("/api/marketing/retention/win-back", async ([FromQuery] Guid tenantId, [FromQuery] int inactiveDays, IPostPurchaseRetentionService retentionService) =>
+{
+    var results = await retentionService.ProcessWinBackCampaignAsync(tenantId, inactiveDays);
+    return Results.Ok(results);
+});
+
+// --- Multi-Warehouse Proximity & Inter-Hub Transfers Endpoints ---
+app.MapGet("/api/warehouses/proximity-allocate", async ([FromQuery] Guid tenantId, [FromQuery] string governorate, [FromQuery] string sku, [FromQuery] int quantity, IMultiWarehouseService whService) =>
+{
+    var allocation = await whService.AllocateOrderToOptimalWarehouseAsync(tenantId, governorate, sku, quantity);
+    return Results.Ok(allocation);
+});
+
+app.MapPost("/api/warehouses/transfers", async ([FromBody] CreateTransferDto req, IMultiWarehouseService whService) =>
+{
+    var transfer = await whService.CreateInterHubTransferAsync(req.TenantId, req.SourceWarehouseId, req.DestinationWarehouseId, req.Sku, req.Quantity);
+    return Results.Ok(transfer);
+});
+
+app.MapPost("/api/warehouses/transfers/dispatch", async ([FromBody] ActionTransferDto req, IMultiWarehouseService whService) =>
+{
+    var transfer = await whService.DispatchInterHubTransferAsync(req.TenantId, req.TransferId);
+    return Results.Ok(transfer);
+});
+
+app.MapPost("/api/warehouses/transfers/receive", async ([FromBody] ActionTransferDto req, IMultiWarehouseService whService) =>
+{
+    var transfer = await whService.ReceiveInterHubTransferAsync(req.TenantId, req.TransferId);
+    return Results.Ok(transfer);
+});
+
+app.MapPost("/api/warehouses/evaluate-rop", async ([FromBody] EvaluateRopDto req, IMultiWarehouseService whService) =>
+{
+    var po = await whService.EvaluateReorderPointAndGeneratePoAsync(req.TenantId, req.WarehouseId, req.Sku, req.DailyDemand, req.LeadDays, req.UnitCost);
+    return Results.Ok(po);
+});
+
+// --- Live Social Commerce Endpoints ---
+app.MapPost("/api/channels/live/process-comment", async ([FromBody] ProcessLiveCommentDto req, ILiveCommerceOverlayService liveService) =>
+{
+    var result = await liveService.ProcessLiveCommentAsync(req.TenantId, req.SessionId, req.CommenterUsername, req.CommentText, req.CustomerPhone, req.Governorate);
+    return Results.Ok(result);
+});
+
+app.MapGet("/api/channels/live/{sessionId}/overlay", async (Guid sessionId, [FromQuery] Guid tenantId, ILiveCommerceOverlayService liveService) =>
+{
+    var overlay = await liveService.GetLiveOverlayStockFeedAsync(tenantId, sessionId);
+    return Results.Ok(overlay);
+});
+
+// --- Treasury Cash Float & Forecasting Endpoints ---
+app.MapGet("/api/finance/treasury/float", async ([FromQuery] Guid tenantId, ITreasuryFloatService treasuryService) =>
+{
+    var valuation = await treasuryService.CalculateFloatValuationAsync(tenantId);
+    return Results.Ok(valuation);
+});
+
+app.MapGet("/api/finance/treasury/forecast-14day", async ([FromQuery] Guid tenantId, ITreasuryFloatService treasuryService) =>
+{
+    var forecast = await treasuryService.Generate14DayCashFlowForecastAsync(tenantId, DateTime.UtcNow);
+    return Results.Ok(forecast);
+});
+
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
 
@@ -1289,6 +1398,17 @@ public record VerifyDomainDnsDto(Guid TenantId, Guid DomainId, bool SimulateVali
 public record UpsertBrandTokensDto(Guid TenantId, string StorefrontSlug, string BrandName, string PrimaryColorHex, string SecondaryColorHex, string FontFamily, string LogoUrl, string FaviconUrl, string SupportEmail, string SupportPhone, string SmsSenderId, string WhatsAppSenderPhone);
 public record GenerateDepositLinkDto(Guid TenantId, Guid OrderId, string CustomerPhone, decimal DepositAmount = 10.0m, string Provider = "Flouci");
 public record SettleDepositDto(Guid TenantId, Guid LinkId);
+
+// Enterprise Operations Expansion DTOs
+public record AutoAssignCarrierDto(Guid TenantId, Guid OrderId, decimal PackageWeightKg = 1.0m);
+public record SlaBreachFallbackDto(Guid TenantId, string CurrentTrackingNumber);
+public record ScheduleRetentionDto(Guid TenantId, Guid OrderId);
+public record SubmitRetentionSurveyDto(Guid TenantId, Guid SurveyId, int Rating, string? Notes = null);
+public record ProcessReplenishmentsDto(Guid TenantId, DateTime CurrentTimeUtc);
+public record CreateTransferDto(Guid TenantId, Guid SourceWarehouseId, Guid DestinationWarehouseId, string Sku, int Quantity);
+public record ActionTransferDto(Guid TenantId, Guid TransferId);
+public record EvaluateRopDto(Guid TenantId, Guid WarehouseId, string Sku, int DailyDemand = 5, int LeadDays = 7, decimal UnitCost = 25.0m);
+public record ProcessLiveCommentDto(Guid TenantId, Guid SessionId, string CommenterUsername, string CommentText, string? CustomerPhone = null, string? Governorate = null);
 
 // Required for WebApplicationFactory in integration tests
 public partial class Program { }
