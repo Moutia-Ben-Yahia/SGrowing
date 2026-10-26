@@ -17,10 +17,14 @@ import { RagStudioComponent } from './features/rag/rag-studio.component';
 import { CommerceStudioComponent } from './features/commerce/commerce-studio.component';
 import { AnalyticsStudioComponent } from './features/analytics/analytics-studio.component';
 import { OperationsStudioComponent } from './features/operations/operations-studio.component';
+import { SeoStudioComponent } from './features/seo/seo-studio.component';
+import { FunnelsStudioComponent } from './features/funnels/funnels-studio.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', component: InboxShellComponent, canActivate: [authGuard] },
+  { path: 'seo', component: SeoStudioComponent, canActivate: [authGuard] },
+  { path: 'funnels', component: FunnelsStudioComponent, canActivate: [authGuard] },
   { path: 'operations', component: OperationsStudioComponent, canActivate: [authGuard] },
   { path: 'analytics', component: AnalyticsStudioComponent, canActivate: [authGuard] },
   { path: 'commerce', component: CommerceStudioComponent, canActivate: [authGuard] },

@@ -20,6 +20,10 @@ using SGrowing.Api.Modules.Voice;
 using SGrowing.Api.Modules.Finance;
 using SGrowing.Api.Modules.Auth;
 using SGrowing.Api.Modules.Messaging;
+using SGrowing.Api.Modules.Dev;
+using SGrowing.Api.Modules.SEO;
+using SGrowing.Api.Modules.Funnels;
+using Scalar.AspNetCore;
 using SGrowing.Core.Messaging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -178,6 +182,10 @@ builder.Services.AddScoped<ICrossBorderTradeService, CrossBorderTradeService>();
 builder.Services.AddScoped<IDemandForecastingService, DemandForecastingService>();
 builder.Services.AddScoped<ISecurityAuditAndRbacService, SecurityAuditAndRbacService>();
 
+// 19. Technical SEO, SERP Rank Tracking & AI Funnels
+builder.Services.AddScoped<ISeoAuditService, SeoAuditService>();
+builder.Services.AddScoped<ISalesFunnelService, SalesFunnelService>();
+
 // 16. Authentication, Security & Tenant Context
 var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "SGrowing_SuperSecretEnterpriseMasterKey_998877665544332211!!";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "SGrowing.Api";
@@ -203,6 +211,8 @@ builder.Services.AddAuthorization();
 builder.Services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
 builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<DatabaseSeeder>();
+builder.Services.AddOpenApi();
 
 // 17. Durable Redis Stream Broker
 var redisConn = builder.Configuration.GetConnectionString("Redis")
@@ -253,7 +263,12 @@ using (var scope = app.Services.CreateScope())
 
 // ----------------- API Endpoints -----------------
 
+app.MapOpenApi();
+app.MapScalarApiReference();
 app.MapAuthEndpoints();
+app.MapDevEndpoints();
+app.MapSeoEndpoints();
+app.MapFunnelEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", framework = ".NET 10", timestamp = DateTime.UtcNow }));
 

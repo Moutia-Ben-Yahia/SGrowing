@@ -184,6 +184,19 @@ public class SGrowingDbContext : DbContext
     public DbSet<RolePermissionClaim> RolePermissionClaims => Set<RolePermissionClaim>();
     public DbSet<SecurityAuditLogEntry> SecurityAuditLogEntries => Set<SecurityAuditLogEntry>();
 
+    // Technical SEO & SERP Rank Tracking Hub (Domain 11)
+    public DbSet<SeoAuditReport> SeoAuditReports => Set<SeoAuditReport>();
+    public DbSet<PageAuditResult> PageAuditResults => Set<PageAuditResult>();
+    public DbSet<SerpKeywordTracking> SerpKeywordTrackings => Set<SerpKeywordTracking>();
+    public DbSet<AeoBrandMention> AeoBrandMentions => Set<AeoBrandMention>();
+
+    // AI Sales Funnel Builder & 1-Click Upsells (Domain 15)
+    public DbSet<SalesFunnel> SalesFunnels => Set<SalesFunnel>();
+    public DbSet<FunnelStep> FunnelSteps => Set<FunnelStep>();
+    public DbSet<OrderBumpOffer> OrderBumpOffers => Set<OrderBumpOffer>();
+    public DbSet<OneClickUpsellOffer> OneClickUpsellOffers => Set<OneClickUpsellOffer>();
+    public DbSet<FunnelConversionEvent> FunnelConversionEvents => Set<FunnelConversionEvent>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

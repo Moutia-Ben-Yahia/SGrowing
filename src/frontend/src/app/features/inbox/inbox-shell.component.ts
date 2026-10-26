@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { SignalRService } from '../../core/services/signalr.service';
 import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
 import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/models/chat.models';
 
 @Component({
@@ -42,6 +43,16 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
                 routerLink="/commerce"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
                 <span class="flex items-center gap-2">🛒 Commerce & CPQ</span>
+              </a>
+              <a
+                routerLink="/funnels"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-orange-400 hover:bg-orange-500/10 border border-orange-500/20 transition">
+                <span class="flex items-center gap-2">⚡ AI Funnel & Upsell Studio</span>
+              </a>
+              <a
+                routerLink="/seo"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-lime-400 hover:bg-lime-500/10 border border-lime-500/20 transition">
+                <span class="flex items-center gap-2">🔍 Technical SEO & SERP Hub</span>
               </a>
               <a
                 routerLink="/outbound"
@@ -135,13 +146,44 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
           </div>
         </div>
 
-        <div class="border-t border-slate-800 pt-4">
+        <div class="border-t border-slate-800 pt-3 space-y-2">
+          <!-- User Profile & Tenant Sandbox Card -->
+          <div class="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[11px] font-semibold text-slate-200 truncate flex items-center gap-1">
+                🏢 {{ auth.currentTenant()?.name || 'SGrowing Labs' }}
+              </span>
+              <span class="px-1.5 py-0.5 rounded text-[9px] font-mono uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                {{ auth.currentUser()?.role || 'Admin' }}
+              </span>
+            </div>
+            <p class="text-[10px] text-slate-400 truncate mb-2">{{ auth.currentUser()?.email || 'admin@sgrowing.io' }}</p>
+            <div class="flex items-center gap-1.5">
+              <button
+                (click)="onSeedDemo()"
+                [disabled]="seeding()"
+                class="flex-1 px-2 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-[10px] font-medium transition disabled:opacity-50">
+                {{ seeding() ? 'Seeding...' : '🌱 Seed Sandbox' }}
+              </button>
+              <button
+                (click)="auth.logout()"
+                class="px-2 py-1 bg-slate-800 hover:bg-rose-900/60 hover:text-rose-200 text-slate-300 rounded text-[10px] font-medium transition">
+                🚪 Exit
+              </button>
+            </div>
+            @if (seedMessage()) {
+              <p class="text-[10px] text-emerald-400 mt-1.5 text-center">{{ seedMessage() }}</p>
+            }
+          </div>
+
           <div class="flex items-center justify-between text-xs text-slate-400">
             <span class="flex items-center gap-1.5">
               <span class="h-2 w-2 rounded-full" [class.bg-emerald-400]="signalR.isConnected()" [class.bg-amber-400]="!signalR.isConnected()"></span>
               {{ signalR.isConnected() ? 'Real-Time Connected' : 'Local Mock Mode' }}
             </span>
-            <span class="bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded text-[10px]">.NET 10</span>
+            <a href="http://localhost:5000/scalar/v1" target="_blank" class="bg-indigo-500/20 text-indigo-300 hover:text-white px-1.5 py-0.5 rounded text-[10px] flex items-center gap-1 transition">
+              Scalar API ↗
+            </a>
           </div>
         </div>
       </aside>
@@ -403,6 +445,7 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
 })
 export class InboxShellComponent implements OnInit {
   public signalR = inject(SignalRService);
+  public auth = inject(AuthService);
   private api = inject(ApiService);
 
   public selectedChannelFilter = signal<string>('all');
@@ -413,6 +456,8 @@ export class InboxShellComponent implements OnInit {
   public lockedByAgent = signal<string | null>(null);
   public activeComposerChannel = signal<'whatsapp' | 'email'>('whatsapp');
   public composerText = '';
+  public seeding = signal<boolean>(false);
+  public seedMessage = signal<string | null>(null);
 
   private currentTenantId = '00000000-0000-0000-0000-000000000001';
 
@@ -569,5 +614,23 @@ export class InboxShellComponent implements OnInit {
 
   public getChannelIcon(inboxId: string): string {
     return inboxId.includes('wa') ? 'WA' : 'MAIL';
+  }
+
+  public onSeedDemo(): void {
+    this.seeding.set(true);
+    this.seedMessage.set(null);
+    const tenantId = this.auth.currentTenant()?.id;
+    this.api.seedDemoData(tenantId).subscribe({
+      next: (res) => {
+        this.seeding.set(false);
+        this.seedMessage.set('✅ Demo sandbox seeded!');
+        setTimeout(() => this.seedMessage.set(null), 4000);
+      },
+      error: () => {
+        this.seeding.set(false);
+        this.seedMessage.set('❌ Seeding failed');
+        setTimeout(() => this.seedMessage.set(null), 4000);
+      }
+    });
   }
 }

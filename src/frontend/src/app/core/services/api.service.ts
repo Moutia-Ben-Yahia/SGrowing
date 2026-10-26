@@ -17,6 +17,8 @@ import {
   SlaPolicyDto,
   UnifiedCustomer360Dto
 } from '../models/platform.models';
+import { SeoAuditReportDto, PageAuditResultDto, SerpKeywordTrackingDto, AeoBrandMentionDto } from '../models/seo.models';
+import { SalesFunnelDto, FunnelStepDto, OrderBumpOfferDto, OneClickUpsellOfferDto, FunnelPerformanceSummaryDto } from '../models/funnel.models';
 
 @Injectable({
   providedIn: 'root'
@@ -394,5 +396,85 @@ export class ApiService {
 
   public getMaskedOrderView(tenantId: string, orderId: string, userRole: number): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/security/orders/${orderId}/masked?tenantId=${tenantId}&userRole=${userRole}`);
+  }
+
+  // Developer & Demo Sandbox
+  public seedDemoData(tenantId?: string): Observable<any> {
+    const url = tenantId ? `${this.baseUrl}/dev/seed-demo?tenantId=${tenantId}` : `${this.baseUrl}/dev/seed-demo`;
+    return this.http.post<any>(url, {});
+  }
+
+  // Technical SEO & SERP Rank Tracking Hub
+  public runSeoAudit(payload: any): Observable<{ report: SeoAuditReportDto; pages: PageAuditResultDto[] }> {
+    return this.http.post<{ report: SeoAuditReportDto; pages: PageAuditResultDto[] }>(`${this.baseUrl}/seo/audits/run`, payload);
+  }
+
+  public getLatestSeoAudit(tenantId: string): Observable<{ report: SeoAuditReportDto; pages: PageAuditResultDto[] }> {
+    return this.http.get<{ report: SeoAuditReportDto; pages: PageAuditResultDto[] }>(`${this.baseUrl}/seo/audits/latest?tenantId=${tenantId}`);
+  }
+
+  public trackSeoKeyword(payload: any): Observable<SerpKeywordTrackingDto> {
+    return this.http.post<SerpKeywordTrackingDto>(`${this.baseUrl}/seo/keywords`, payload);
+  }
+
+  public updateKeywordRank(id: string, payload: any): Observable<SerpKeywordTrackingDto> {
+    return this.http.post<SerpKeywordTrackingDto>(`${this.baseUrl}/seo/keywords/${id}/rank`, payload);
+  }
+
+  public getTrackedKeywords(tenantId: string): Observable<SerpKeywordTrackingDto[]> {
+    return this.http.get<SerpKeywordTrackingDto[]>(`${this.baseUrl}/seo/keywords?tenantId=${tenantId}`);
+  }
+
+  public recordAeoMention(payload: any): Observable<AeoBrandMentionDto> {
+    return this.http.post<AeoBrandMentionDto>(`${this.baseUrl}/seo/aeo/check`, payload);
+  }
+
+  public getAeoMentions(tenantId: string): Observable<AeoBrandMentionDto[]> {
+    return this.http.get<AeoBrandMentionDto[]>(`${this.baseUrl}/seo/aeo/mentions?tenantId=${tenantId}`);
+  }
+
+  // AI Sales Funnel Builder & 1-Click Upsells
+  public getFunnels(tenantId: string): Observable<SalesFunnelDto[]> {
+    return this.http.get<SalesFunnelDto[]>(`${this.baseUrl}/funnels?tenantId=${tenantId}`);
+  }
+
+  public getFunnel(id: string, tenantId: string): Observable<SalesFunnelDto> {
+    return this.http.get<SalesFunnelDto>(`${this.baseUrl}/funnels/${id}?tenantId=${tenantId}`);
+  }
+
+  public createFunnel(payload: any): Observable<SalesFunnelDto> {
+    return this.http.post<SalesFunnelDto>(`${this.baseUrl}/funnels`, payload);
+  }
+
+  public getFunnelSteps(funnelId: string, tenantId: string): Observable<FunnelStepDto[]> {
+    return this.http.get<FunnelStepDto[]>(`${this.baseUrl}/funnels/${funnelId}/steps?tenantId=${tenantId}`);
+  }
+
+  public addFunnelStep(funnelId: string, payload: any): Observable<FunnelStepDto> {
+    return this.http.post<FunnelStepDto>(`${this.baseUrl}/funnels/${funnelId}/steps`, payload);
+  }
+
+  public getOrderBumps(funnelId: string, tenantId: string): Observable<OrderBumpOfferDto[]> {
+    return this.http.get<OrderBumpOfferDto[]>(`${this.baseUrl}/funnels/${funnelId}/order-bumps?tenantId=${tenantId}`);
+  }
+
+  public createOrderBump(funnelId: string, payload: any): Observable<OrderBumpOfferDto> {
+    return this.http.post<OrderBumpOfferDto>(`${this.baseUrl}/funnels/${funnelId}/order-bumps`, payload);
+  }
+
+  public getOneClickUpsells(funnelId: string, tenantId: string): Observable<OneClickUpsellOfferDto[]> {
+    return this.http.get<OneClickUpsellOfferDto[]>(`${this.baseUrl}/funnels/${funnelId}/upsells?tenantId=${tenantId}`);
+  }
+
+  public createOneClickUpsell(funnelId: string, payload: any): Observable<OneClickUpsellOfferDto> {
+    return this.http.post<OneClickUpsellOfferDto>(`${this.baseUrl}/funnels/${funnelId}/upsells`, payload);
+  }
+
+  public getFunnelPerformance(funnelId: string, tenantId: string): Observable<FunnelPerformanceSummaryDto> {
+    return this.http.get<FunnelPerformanceSummaryDto>(`${this.baseUrl}/funnels/${funnelId}/performance?tenantId=${tenantId}`);
+  }
+
+  public recordFunnelEvent(funnelId: string, payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/funnels/${funnelId}/events`, payload);
   }
 }
