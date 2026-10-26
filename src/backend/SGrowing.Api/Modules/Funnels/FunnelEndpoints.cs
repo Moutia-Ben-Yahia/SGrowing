@@ -11,6 +11,8 @@ public record AddFunnelStepDto(Guid TenantId, string StepName, FunnelStepType St
 public record CreateOrderBumpDto(Guid TenantId, Guid StepId, string Title, string Headline, string Sku, decimal OriginalPrice, decimal DiscountedPrice, string BadgeText = "SPECIAL IN-CHECKOUT BUMP");
 public record CreateUpsellDto(Guid TenantId, Guid StepId, string Title, string Sku, string Headline, decimal OriginalPrice, decimal UpsellPrice, string ImageUrl = "");
 public record RecordFunnelEventDto(Guid TenantId, FunnelEventType EventType, decimal Value = 0m, Guid? StepId = null, Guid? OrderId = null, string? CustomerPhone = null);
+public record ResolveVariantRequest(Guid TenantId, Guid StepId, string VisitorCookieId, int VariantAWeight = 50);
+public record OneClickUpsellRequest(Guid TenantId, Guid OrderId, Guid UpsellOfferId, string VaultToken);
 
 public static class FunnelEndpoints
 {
@@ -82,6 +84,18 @@ public static class FunnelEndpoints
         {
             var perf = await service.GetFunnelPerformanceAsync(tenantId, id);
             return Results.Ok(perf);
+        });
+
+        group.MapPost("/{id:guid}/resolve-variant", async (Guid id, [FromBody] ResolveVariantRequest req, ISalesFunnelService service) =>
+        {
+            var result = await service.ResolveFunnelVariantAsync(req.TenantId, id, req.StepId, req.VisitorCookieId, req.VariantAWeight);
+            return Results.Ok(result);
+        });
+
+        group.MapPost("/orders/{orderId:guid}/one-click-upsell", async (Guid orderId, [FromBody] OneClickUpsellRequest req, ISalesFunnelService service) =>
+        {
+            var result = await service.ProcessOneClickUpsellChargeAsync(req.TenantId, orderId, req.UpsellOfferId, req.VaultToken);
+            return Results.Ok(result);
         });
 
         return endpoints;

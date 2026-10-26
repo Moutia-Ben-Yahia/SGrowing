@@ -19,6 +19,8 @@ public class Deal
     public decimal Amount { get; set; }
     public DealStage Stage { get; set; } = DealStage.Prospecting;
     public Guid? SourceCampaignId { get; set; }
+    public Guid? OwnerId { get; set; }
+    public DateTime? ExpectedCloseDate { get; set; }
     public string? Notes { get; set; }
     public DateTime CreatedAtUtc { get; private set; }
 
@@ -31,7 +33,9 @@ public class Deal
         decimal amount,
         DealStage stage = DealStage.Qualified,
         Guid? companyId = null,
-        Guid? sourceCampaignId = null)
+        Guid? sourceCampaignId = null,
+        Guid? ownerId = null,
+        DateTime? expectedCloseDate = null)
     {
         return new Deal
         {
@@ -43,6 +47,8 @@ public class Deal
             Amount = amount,
             Stage = stage,
             SourceCampaignId = sourceCampaignId,
+            OwnerId = ownerId,
+            ExpectedCloseDate = expectedCloseDate ?? DateTime.UtcNow.AddDays(30),
             CreatedAtUtc = DateTime.UtcNow
         };
     }

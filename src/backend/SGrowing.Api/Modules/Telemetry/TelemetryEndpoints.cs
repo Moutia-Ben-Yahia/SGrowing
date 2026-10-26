@@ -19,6 +19,13 @@ public record IngestEventDto(
     string? PropertiesJson = "{}"
 );
 
+public record FunnelDropoffRequest(
+    Guid TenantId,
+    List<string> OrderedStepEvents,
+    DateTime? FromUtc = null,
+    DateTime? ToUtc = null
+);
+
 public static class TelemetryEndpoints
 {
     public static IEndpointRouteBuilder MapTelemetryEndpoints(this IEndpointRouteBuilder endpoints)
@@ -53,6 +60,14 @@ public static class TelemetryEndpoints
         {
             var events = await service.GetRecentEventsAsync(tenantId, limit ?? 50);
             return Results.Ok(events);
+        });
+
+        group.MapPost("/funnels/dropoff", async ([FromBody] FunnelDropoffRequest req, IProductTelemetryService service) =>
+        {
+            var from = req.FromUtc ?? DateTime.UtcNow.AddDays(-30);
+            var to = req.ToUtc ?? DateTime.UtcNow;
+            var dropoff = await service.ComputeFunnelDropoffAsync(req.TenantId, req.OrderedStepEvents, from, to);
+            return Results.Ok(dropoff);
         });
 
         return endpoints;

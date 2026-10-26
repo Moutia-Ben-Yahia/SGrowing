@@ -219,6 +219,12 @@ builder.Services.AddScoped<ICompetitorIntelligenceService, CompetitorIntelligenc
 builder.Services.AddScoped<IB2BCreditAndFactoringService, B2BCreditAndFactoringService>();
 builder.Services.AddScoped<IDeveloperGatewayService, DeveloperGatewayService>();
 
+// 24. Strategic Competitor Convergence: Document Tracking, Headless CMS, Sales Forecasting & Public Roadmap
+builder.Services.AddScoped<IDocumentTrackingService, DocumentTrackingService>();
+builder.Services.AddScoped<IPublicationCmsService, PublicationCmsService>();
+builder.Services.AddScoped<ISalesForecastingService, SalesForecastingService>();
+builder.Services.AddScoped<IFeatureFeedbackService, FeatureFeedbackService>();
+
 // 16. Authentication, Security & Tenant Context
 var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "SGrowing_SuperSecretEnterpriseMasterKey_998877665544332211!!";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "SGrowing.Api";
@@ -311,6 +317,10 @@ app.MapDynamicFormEndpoints();
 app.MapDeveloperWebhookEndpoints();
 app.MapSocialEndpoints();
 app.MapPowerDialerEndpoints();
+app.MapDocumentTrackingEndpoints();
+app.MapPublicationCmsEndpoints();
+app.MapSalesForecastingEndpoints();
+app.MapFeatureFeedbackEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", framework = ".NET 10", timestamp = DateTime.UtcNow }));
 app.MapGet("/healthz/live", () => Results.Ok(new { status = "Healthy", timestampUtc = DateTime.UtcNow }));

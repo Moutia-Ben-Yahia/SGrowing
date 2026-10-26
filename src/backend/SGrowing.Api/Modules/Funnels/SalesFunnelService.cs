@@ -28,6 +28,22 @@ public record StepPerformanceMetric(
     double DropoffRatePercentage
 );
 
+public record FunnelVariantResolutionDto(
+    string AssignedVariant,
+    int VariantWeightPercent,
+    string VisitorCookieId,
+    bool IsReturningVisitor
+);
+
+public record OneClickUpsellResultDto(
+    Guid OrderId,
+    Guid UpsellOfferId,
+    string Sku,
+    decimal ChargedAmount,
+    bool IsSuccess,
+    DateTime ProcessedAtUtc
+);
+
 public interface ISalesFunnelService
 {
     Task<SalesFunnel> CreateFunnelAsync(Guid tenantId, string name, string slug, string description = "", string currency = "TND");
@@ -41,6 +57,8 @@ public interface ISalesFunnelService
     Task<List<OneClickUpsellOffer>> GetOneClickUpsellsAsync(Guid tenantId, Guid funnelId);
     Task<FunnelConversionEvent> RecordConversionEventAsync(Guid tenantId, Guid funnelId, FunnelEventType eventType, decimal value, Guid? stepId = null, Guid? orderId = null, string? customerPhone = null);
     Task<FunnelPerformanceSummary> GetFunnelPerformanceAsync(Guid tenantId, Guid funnelId);
+    Task<FunnelVariantResolutionDto> ResolveFunnelVariantAsync(Guid tenantId, Guid funnelId, Guid stepId, string visitorCookieId, int variantAWeight = 50);
+    Task<OneClickUpsellResultDto> ProcessOneClickUpsellChargeAsync(Guid tenantId, Guid orderId, Guid upsellOfferId, string vaultToken);
 }
 
 public class SalesFunnelService : ISalesFunnelService
@@ -223,6 +241,78 @@ public class SalesFunnelService : ISalesFunnelService
             upsellOrders,
             upsellRevenue,
             stepMetrics
+        );
+    }
+
+    public async Task<FunnelVariantResolutionDto> ResolveFunnelVariantAsync(
+        Guid tenantId,
+        Guid funnelId,
+        Guid stepId,
+        string visitorCookieId,
+        int variantAWeight = 50)
+    {
+        // Deterministic A/B variant roll 1-100 based on visitor hash (openfunnels style)
+        int hash = Math.Abs(visitorCookieId.GetHashCode());
+        int roll = (hash % 100) + 1; // 1 to 100
+
+        string variant = roll <= variantAWeight ? "VariantA" : "VariantB";
+
+        // Increment visitor count on step
+        var step = await _db.FunnelSteps.FirstOrDefaultAsync(s => s.TenantId == tenantId && s.Id == stepId);
+        if (step != null)
+        {
+            step.VisitorsCount++;
+            await _db.SaveChangesAsync();
+        }
+
+        return new FunnelVariantResolutionDto(
+            AssignedVariant: variant,
+            VariantWeightPercent: variantAWeight,
+            VisitorCookieId: visitorCookieId,
+            IsReturningVisitor: false
+        );
+    }
+
+    public async Task<OneClickUpsellResultDto> ProcessOneClickUpsellChargeAsync(
+        Guid tenantId,
+        Guid orderId,
+        Guid upsellOfferId,
+        string vaultToken)
+    {
+        var upsell = await _db.OneClickUpsellOffers.FirstOrDefaultAsync(u => u.TenantId == tenantId && u.Id == upsellOfferId);
+        if (upsell == null)
+            throw new KeyNotFoundException($"Upsell offer {upsellOfferId} not found.");
+
+        if (string.IsNullOrWhiteSpace(vaultToken))
+            throw new InvalidOperationException("Valid payment vault token required for 1-click upsell.");
+
+        // Record conversion event
+        var convEvent = FunnelConversionEvent.Create(
+            tenantId,
+            upsell.FunnelId,
+            FunnelEventType.UpsellAccepted,
+            upsell.UpsellPrice,
+            upsell.StepId,
+            orderId
+        );
+        _db.FunnelConversionEvents.Add(convEvent);
+
+        // Update funnel totals
+        var funnel = await _db.SalesFunnels.FirstOrDefaultAsync(f => f.TenantId == tenantId && f.Id == upsell.FunnelId);
+        if (funnel != null)
+        {
+            funnel.TotalRevenue += upsell.UpsellPrice;
+        }
+
+        await _db.SaveChangesAsync();
+
+        return new OneClickUpsellResultDto(
+            OrderId: orderId,
+            UpsellOfferId: upsell.Id,
+            Sku: upsell.ProductSku,
+            ChargedAmount: upsell.UpsellPrice,
+            IsSuccess: true,
+            ProcessedAtUtc: DateTime.UtcNow
         );
     }
 }

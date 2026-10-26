@@ -141,4 +141,68 @@ public class SalesFunnelTests
         Assert.Equal(2, perf.UpsellOrdersCount);
         Assert.Equal(80.0m, perf.UpsellRevenue);
     }
+
+    [Fact]
+    public async Task ResolveFunnelVariant_IsDeterministicForSameVisitor()
+    {
+        using var db = CreateDbContext();
+        var service = new SalesFunnelService(db);
+        var tenantId = Guid.NewGuid();
+
+        var funnel = await service.CreateFunnelAsync(tenantId, "Variant Test Funnel", "var-test");
+        var step = await service.AddFunnelStepAsync(tenantId, funnel.Id, "Hero Step", FunnelStepType.LandingPage, 1);
+
+        var cookie = "vis_cookie_abcdef_12345";
+        var res1 = await service.ResolveFunnelVariantAsync(tenantId, funnel.Id, step.Id, cookie, variantAWeight: 50);
+        var res2 = await service.ResolveFunnelVariantAsync(tenantId, funnel.Id, step.Id, cookie, variantAWeight: 50);
+
+        Assert.Equal(res1.AssignedVariant, res2.AssignedVariant);
+        Assert.Contains(res1.AssignedVariant, new[] { "VariantA", "VariantB" });
+
+        // Step visitors count incremented twice
+        var stepRecord = await db.FunnelSteps.FindAsync(step.Id);
+        Assert.Equal(2, stepRecord!.VisitorsCount);
+    }
+
+    [Fact]
+    public async Task ProcessOneClickUpsellCharge_RecordsEventAndUpdatesFunnelRevenue()
+    {
+        using var db = CreateDbContext();
+        var service = new SalesFunnelService(db);
+        var tenantId = Guid.NewGuid();
+
+        var funnel = await service.CreateFunnelAsync(tenantId, "Upsell Funnel", "upsell-fn");
+        var step = await service.AddFunnelStepAsync(tenantId, funnel.Id, "Checkout", FunnelStepType.Checkout, 1);
+
+        var upsell = await service.CreateOneClickUpsellAsync(
+            tenantId,
+            funnel.Id,
+            step.Id,
+            "VIP Warranty Protection",
+            "SKU-WARRANTY-LIFETIME",
+            "One click lifetime protection",
+            originalPrice: 99.0m,
+            upsellPrice: 49.0m
+        );
+
+        var orderId = Guid.NewGuid();
+        var vaultToken = "pm_vault_tok_card_visa_4242";
+
+        var result = await service.ProcessOneClickUpsellChargeAsync(tenantId, orderId, upsell.Id, vaultToken);
+
+        Assert.NotNull(result);
+        Assert.Equal(orderId, result.OrderId);
+        Assert.Equal(49.0m, result.ChargedAmount);
+        Assert.True(result.IsSuccess);
+        Assert.Equal("SKU-WARRANTY-LIFETIME", result.Sku);
+
+        // Verify conversion event logged in DB
+        var convEvent = await db.FunnelConversionEvents.FirstOrDefaultAsync(e => e.OrderId == orderId && e.EventType == FunnelEventType.UpsellAccepted);
+        Assert.NotNull(convEvent);
+        Assert.Equal(49.0m, convEvent.EventValue);
+
+        // Funnel total revenue updated
+        var refreshedFunnel = await db.SalesFunnels.FindAsync(funnel.Id);
+        Assert.Equal(49.0m, refreshedFunnel!.TotalRevenue);
+    }
 }

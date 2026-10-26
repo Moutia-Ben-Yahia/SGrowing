@@ -266,6 +266,26 @@ public class SGrowingDbContext : DbContext
     public DbSet<DynamicFormSubmission> DynamicFormSubmissions => Set<DynamicFormSubmission>();
     public DbSet<CryptographicPdfRecord> CryptographicPdfRecords => Set<CryptographicPdfRecord>();
 
+    // Document Tracking & Multi-Signer Envelope Engine (Category 12: documenso & papermark)
+    public DbSet<DocumentEnvelope> DocumentEnvelopes => Set<DocumentEnvelope>();
+    public DbSet<EnvelopeSigner> EnvelopeSigners => Set<EnvelopeSigner>();
+    public DbSet<DocumentDwellTelemetry> DocumentDwellTelemetries => Set<DocumentDwellTelemetry>();
+    public DbSet<DocumentAccessGate> DocumentAccessGates => Set<DocumentAccessGate>();
+
+    // Headless Publication CMS & MEGA Newsletter Engine (Category 13: Ghost & Beehiiv)
+    public DbSet<PublicationArticle> PublicationArticles => Set<PublicationArticle>();
+    public DbSet<NewsletterBroadcast> NewsletterBroadcasts => Set<NewsletterBroadcast>();
+
+    // Enterprise Sales Forecasting, Quota Attainment & Commissions (PRD Section 4.13)
+    public DbSet<SalesForecastPeriod> SalesForecastPeriods => Set<SalesForecastPeriod>();
+    public DbSet<SalesForecastRepQuota> SalesForecastRepQuotas => Set<SalesForecastRepQuota>();
+    public DbSet<SalesCommissionPlan> SalesCommissionPlans => Set<SalesCommissionPlan>();
+    public DbSet<SalesCommissionStatement> SalesCommissionStatements => Set<SalesCommissionStatement>();
+
+    // In-App Feedback & Public Feature Voting Board (Category 10: fider, formbricks, Canny)
+    public DbSet<FeatureFeedbackPost> FeatureFeedbackPosts => Set<FeatureFeedbackPost>();
+    public DbSet<FeatureFeedbackVote> FeatureFeedbackVotes => Set<FeatureFeedbackVote>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

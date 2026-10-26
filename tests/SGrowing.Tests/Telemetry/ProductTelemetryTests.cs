@@ -113,4 +113,62 @@ public class ProductTelemetryTests
         Assert.Equal(10, recent.Count);
         Assert.All(recent, e => Assert.Equal(tenantId, e.TenantId));
     }
+
+    [Fact]
+    public async Task ComputeFunnelDropoff_CalculatesStepConversionAndDropoffs()
+    {
+        var tenantId = Guid.NewGuid();
+
+        // 100 visitors do pageview
+        for (int i = 0; i < 100; i++)
+        {
+            var vis = $"visitor_{i}";
+            await _service.IngestTelemetryEventAsync(tenantId, $"sess_{i}", vis, "pageview", "/store");
+
+            if (i < 50)
+            {
+                // 50 visitors add to cart
+                await _service.IngestTelemetryEventAsync(tenantId, $"sess_{i}", vis, "add_to_cart", "/cart");
+            }
+            if (i < 25)
+            {
+                // 25 visitors checkout
+                await _service.IngestTelemetryEventAsync(tenantId, $"sess_{i}", vis, "begin_checkout", "/checkout");
+            }
+            if (i < 10)
+            {
+                // 10 visitors purchase
+                await _service.IngestTelemetryEventAsync(tenantId, $"sess_{i}", vis, "purchase", "/thank-you");
+            }
+        }
+
+        var funnelSteps = new List<string> { "pageview", "add_to_cart", "begin_checkout", "purchase" };
+        var dropoff = await _service.ComputeFunnelDropoffAsync(tenantId, funnelSteps);
+
+        Assert.NotNull(dropoff);
+        Assert.Equal(100, dropoff.TotalInitialVisitors);
+        Assert.Equal(10, dropoff.TotalCompletedVisitors);
+        Assert.Equal(10.0, dropoff.OverallConversionRatePercent);
+        Assert.Equal(4, dropoff.StepMetrics.Count);
+
+        // Step 1: pageview
+        Assert.Equal(100, dropoff.StepMetrics[0].ReachedCount);
+        Assert.Equal(0, dropoff.StepMetrics[0].DroppedCount);
+        Assert.Equal(100.0, dropoff.StepMetrics[0].ConversionRateFromPreviousPercent);
+
+        // Step 2: add_to_cart
+        Assert.Equal(50, dropoff.StepMetrics[1].ReachedCount);
+        Assert.Equal(50, dropoff.StepMetrics[1].DroppedCount);
+        Assert.Equal(50.0, dropoff.StepMetrics[1].ConversionRateFromPreviousPercent);
+
+        // Step 3: begin_checkout
+        Assert.Equal(25, dropoff.StepMetrics[2].ReachedCount);
+        Assert.Equal(25, dropoff.StepMetrics[2].DroppedCount);
+        Assert.Equal(50.0, dropoff.StepMetrics[2].ConversionRateFromPreviousPercent);
+
+        // Step 4: purchase
+        Assert.Equal(10, dropoff.StepMetrics[3].ReachedCount);
+        Assert.Equal(15, dropoff.StepMetrics[3].DroppedCount);
+        Assert.Equal(40.0, dropoff.StepMetrics[3].ConversionRateFromPreviousPercent);
+    }
 }
