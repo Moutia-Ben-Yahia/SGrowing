@@ -197,6 +197,46 @@ public class SGrowingDbContext : DbContext
     public DbSet<OneClickUpsellOffer> OneClickUpsellOffers => Set<OneClickUpsellOffer>();
     public DbSet<FunnelConversionEvent> FunnelConversionEvents => Set<FunnelConversionEvent>();
 
+    // Closed-Loop Delivered ROAS & Autonomous Ad Spend Optimizer (Next-Gen Frontier 1)
+    public DbSet<CampaignAdSpendRecord> CampaignAdSpendRecords => Set<CampaignAdSpendRecord>();
+    public DbSet<AdSetDeliveredRoasMetric> AdSetDeliveredRoasMetrics => Set<AdSetDeliveredRoasMetric>();
+    public DbSet<AdOptimizationRule> AdOptimizationRules => Set<AdOptimizationRule>();
+    public DbSet<AdPlatformExecutionLog> AdPlatformExecutionLogs => Set<AdPlatformExecutionLog>();
+
+    // In-House Fleet Dispatcher & Mobile Courier Driver Delivery Engine (Next-Gen Frontier 2)
+    public DbSet<DeliveryDriver> DeliveryDrivers => Set<DeliveryDriver>();
+    public DbSet<DriverRunSheet> DriverRunSheets => Set<DriverRunSheet>();
+    public DbSet<RunSheetStop> RunSheetStops => Set<RunSheetStop>();
+    public DbSet<ProofOfDeliveryRecord> ProofOfDeliveryRecords => Set<ProofOfDeliveryRecord>();
+    public DbSet<DriverCashReconciliation> DriverCashReconciliations => Set<DriverCashReconciliation>();
+
+    // Visual WhatsApp Interactive Flow Engine & State Machine (Next-Gen Frontier 3)
+    public DbSet<FlowDefinition> FlowDefinitions => Set<FlowDefinition>();
+    public DbSet<FlowExecutionSession> FlowExecutionSessions => Set<FlowExecutionSession>();
+
+    // Intelligent Dynamic Pricing & Aging Inventory Liquidation Matrix (Next-Gen Frontier 4)
+    public DbSet<StockAgingLedger> StockAgingLedgers => Set<StockAgingLedger>();
+    public DbSet<DynamicMarkdownPolicy> DynamicMarkdownPolicies => Set<DynamicMarkdownPolicy>();
+    public DbSet<LiquidationBundleOffer> LiquidationBundleOffers => Set<LiquidationBundleOffer>();
+
+    // Autonomous Appointment Scheduling & Multi-Host Calendar Engine (Category 16)
+    public DbSet<BookingEventType> BookingEventTypes => Set<BookingEventType>();
+    public DbSet<HostAvailabilitySchedule> HostAvailabilitySchedules => Set<HostAvailabilitySchedule>();
+    public DbSet<CalendarBookingRecord> CalendarBookingRecords => Set<CalendarBookingRecord>();
+
+    // In-House Email Deliverability Guardian & Mailbox Warmup (Category 01)
+    public DbSet<DomainDnsHealthRecord> DomainDnsHealthRecords => Set<DomainDnsHealthRecord>();
+    public DbSet<EmailSpamAnalysisReport> EmailSpamAnalysisReports => Set<EmailSpamAnalysisReport>();
+    public DbSet<MailboxWarmupCadence> MailboxWarmupCadences => Set<MailboxWarmupCadence>();
+    public DbSet<WarmupExchangeLog> WarmupExchangeLogs => Set<WarmupExchangeLog>();
+
+    // Real-Time Product Telemetry & Sovereign Analytics (Category 14)
+    public DbSet<TelemetryEvent> TelemetryEvents => Set<TelemetryEvent>();
+    public DbSet<VisitorSession> VisitorSessions => Set<VisitorSession>();
+
+    // SaaS Subscription Billing & Quota Enforcement (Section 11)
+    public DbSet<BillingInvoiceRecord> BillingInvoiceRecords => Set<BillingInvoiceRecord>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

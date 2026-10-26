@@ -309,3 +309,130 @@ export interface MaskedCustomerOrderViewDto {
   totalAmount: number;
   status: string;
 }
+
+// 6. Closed-Loop Real Delivered ROAS & Ad Optimizer
+export interface AdSetDeliveredRoasMetricDto {
+  id: string;
+  tenantId: string;
+  platform: number; // 0=Meta, 1=TikTok, 2=Google, 3=Snapchat
+  adSetId: string;
+  adSetName: string;
+  dateUtc: string;
+  totalAdSpend: number;
+  totalOrdersAttributed: number;
+  deliveredOrdersCount: number;
+  returnedOrdersCount: number;
+  deliveryRatePercentage: number;
+  grossAttributedGmv: number;
+  deliveredNetCashRemitted: number;
+  totalCogs: number;
+  totalCourierShippingFees: number;
+  netContributionMargin: number;
+  realDeliveredRoas: number;
+  standardPixelRoas: number;
+  roasLeakagePercentage: number;
+}
+
+export interface AdPlatformExecutionLogDto {
+  id: string;
+  tenantId: string;
+  platform: number;
+  adSetId: string;
+  action: number; // 0=NoAction, 1=PauseAdSet, 2=ScaleBudget, 3=AlertMediaBuyer
+  reason: string;
+  currentDailyBudget: number;
+  newDailyBudget?: number;
+  executedAtUtc: string;
+}
+
+// 7. In-House Fleet & Driver Run-Sheets
+export interface DeliveryDriverDto {
+  id: string;
+  tenantId: string;
+  fullName: string;
+  phoneNumber: string;
+  vehicleType: string;
+  licensePlate: string;
+  hubWarehouseId: string;
+  status: number; // 0=Available, 1=OnRoute, 2=OffDuty
+  cashInHandBalance: number;
+  totalDeliveriesCompleted: number;
+  isActive: boolean;
+}
+
+export interface DriverRunSheetDto {
+  id: string;
+  tenantId: string;
+  driverId: string;
+  sheetNumber: string;
+  dateUtc: string;
+  status: number; // 0=Draft, 1=Dispatched, 2=Completed
+  totalParcels: number;
+  deliveredParcels: number;
+  refusedParcels: number;
+  totalCashToCollect: number;
+  totalCashActuallyCollected: number;
+  startedAtUtc?: string;
+  completedAtUtc?: string;
+}
+
+export interface RunSheetStopDto {
+  id: string;
+  tenantId: string;
+  runSheetId: string;
+  orderId: string;
+  orderNumber: string;
+  stopSequence: number;
+  customerName: string;
+  customerPhone: string;
+  shippingAddress: string;
+  amountToCollect: number;
+  paymentMethodAtDoorstep: string;
+  status: number; // 0=Scheduled, 1=Arrived, 2=DeliveredPaidCash, 3=DeliveredPaidOnline, 4=Rescheduled, 5=Refused
+}
+
+// 8. Visual WhatsApp Flow Engine
+export interface FlowDefinitionDto {
+  id: string;
+  tenantId: string;
+  name: string;
+  triggerKeyword: string;
+  description: string;
+  isActive: boolean;
+}
+
+export interface FlowTurnResultDto {
+  nextNodeKey: string;
+  responseMessage: string;
+  buttons: string[];
+  isEscalated: boolean;
+  detectedLanguage: string;
+  executedAction?: string;
+}
+
+// 9. Intelligent Aging Inventory Liquidation
+export interface StockAgingLedgerDto {
+  id: string;
+  tenantId: string;
+  sku: string;
+  productName: string;
+  quantity: number;
+  unitCostPrice: number;
+  originalRetailPrice: number;
+  daysInWarehouse: number;
+  tier: number; // 0=Fresh, 1=Mature, 2=Stagnant, 3=DeadStock
+  currentEffectivePrice: number;
+  currentMarkdownPercentage: number;
+}
+
+export interface LiquidationBundleOfferDto {
+  id: string;
+  tenantId: string;
+  bundleName: string;
+  winningProductSku: string;
+  agingProductSku: string;
+  originalCombinedPrice: number;
+  discountedBundlePrice: number;
+  incentiveDiscountPercentage: number;
+  activeInChatCpq: boolean;
+}

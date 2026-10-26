@@ -19,6 +19,10 @@ import {
 } from '../models/platform.models';
 import { SeoAuditReportDto, PageAuditResultDto, SerpKeywordTrackingDto, AeoBrandMentionDto } from '../models/seo.models';
 import { SalesFunnelDto, FunnelStepDto, OrderBumpOfferDto, OneClickUpsellOfferDto, FunnelPerformanceSummaryDto } from '../models/funnel.models';
+import { BookingEventTypeDto, CalendarBookingRecordDto, TimeSlotDto, HostAvailabilityScheduleDto } from '../models/calendar.models';
+import { DomainDnsHealthRecordDto, EmailSpamAnalysisReportDto, MailboxWarmupCadenceDto, WarmupExchangeLogDto } from '../models/deliverability.models';
+import { LiveTelemetrySummaryDto, TelemetryEventDto } from '../models/telemetry.models';
+import { SubscriptionDetailsDto, BillingInvoiceRecordDto } from '../models/billing.models';
 
 @Injectable({
   providedIn: 'root'
@@ -476,5 +480,163 @@ export class ApiService {
 
   public recordFunnelEvent(funnelId: string, payload: any): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/funnels/${funnelId}/events`, payload);
+  }
+
+  // Next-Gen Strategic Frontiers:
+  // 1. Closed-Loop Delivered ROAS & Ad Optimizer
+  public getAdOptimizerMetrics(tenantId: string, platform?: number): Observable<any[]> {
+    const url = platform !== undefined
+      ? `${this.baseUrl}/marketing/ad-optimizer/metrics?tenantId=${tenantId}&platform=${platform}`
+      : `${this.baseUrl}/marketing/ad-optimizer/metrics?tenantId=${tenantId}`;
+    return this.http.get<any[]>(url);
+  }
+
+  public calculateDeliveredRoas(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/marketing/ad-optimizer/calculate-roas`, payload);
+  }
+
+  public evaluateAdRules(metricId: string, tenantId: string, dailyBudget: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/marketing/ad-optimizer/evaluate/${metricId}?tenantId=${tenantId}&dailyBudget=${dailyBudget}`, {});
+  }
+
+  public getAdExecutionLogs(tenantId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/marketing/ad-optimizer/logs?tenantId=${tenantId}`);
+  }
+
+  // 2. In-House Fleet & Driver Run-Sheets
+  public getDrivers(tenantId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/commerce/fleet/drivers?tenantId=${tenantId}`);
+  }
+
+  public registerDriver(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/commerce/fleet/drivers`, payload);
+  }
+
+  public generateRunSheet(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/commerce/fleet/run-sheets`, payload);
+  }
+
+  public deliverRunSheetStop(stopId: string, payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/commerce/fleet/stops/${stopId}/deliver`, payload);
+  }
+
+  public reconcileDriverCash(runSheetId: string, payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/commerce/fleet/run-sheets/${runSheetId}/reconcile`, payload);
+  }
+
+  // 3. Visual WhatsApp Flow Engine
+  public getFlows(tenantId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/channels/flows?tenantId=${tenantId}`);
+  }
+
+  public createFlow(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/channels/flows`, payload);
+  }
+
+  public executeFlowTurn(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/channels/flows/execute-turn`, payload);
+  }
+
+  // 4. Aging Inventory Liquidation & Markdown Matrix
+  public getStockAging(tenantId: string, tier?: number): Observable<any[]> {
+    const url = tier !== undefined
+      ? `${this.baseUrl}/commerce/liquidation/aging?tenantId=${tenantId}&tier=${tier}`
+      : `${this.baseUrl}/commerce/liquidation/aging?tenantId=${tenantId}`;
+    return this.http.get<any[]>(url);
+  }
+
+  public recordStockAging(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/commerce/liquidation/intake-aging`, payload);
+  }
+
+  public generateLiquidationBundle(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/commerce/liquidation/bundles`, payload);
+  }
+
+  public getLiquidationBundles(tenantId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/commerce/liquidation/bundles?tenantId=${tenantId}`);
+  }
+
+  // Appointment Scheduling & Calendar Engine (Category 16)
+  public getEventTypes(tenantId: string): Observable<BookingEventTypeDto[]> {
+    return this.http.get<BookingEventTypeDto[]>(`${this.baseUrl}/calendar/event-types?tenantId=${tenantId}`);
+  }
+
+  public createEventType(payload: any): Observable<BookingEventTypeDto> {
+    return this.http.post<BookingEventTypeDto>(`${this.baseUrl}/calendar/event-types`, payload);
+  }
+
+  public getAvailableSlots(tenantId: string, eventTypeId: string, date: string): Observable<TimeSlotDto[]> {
+    return this.http.get<TimeSlotDto[]>(`${this.baseUrl}/calendar/availability/slots?tenantId=${tenantId}&eventTypeId=${eventTypeId}&date=${date}`);
+  }
+
+  public createCalendarBooking(payload: any): Observable<CalendarBookingRecordDto> {
+    return this.http.post<CalendarBookingRecordDto>(`${this.baseUrl}/calendar/bookings`, payload);
+  }
+
+  public getBookings(tenantId: string, from?: string, to?: string): Observable<CalendarBookingRecordDto[]> {
+    let url = `${this.baseUrl}/calendar/bookings?tenantId=${tenantId}`;
+    if (from) url += `&from=${from}`;
+    if (to) url += `&to=${to}`;
+    return this.http.get<CalendarBookingRecordDto[]>(url);
+  }
+
+  // Email Deliverability Guardian & Mailbox Warmup (Category 01)
+  public checkDomainDns(payload: any): Observable<DomainDnsHealthRecordDto> {
+    return this.http.post<DomainDnsHealthRecordDto>(`${this.baseUrl}/deliverability/dns-check`, payload);
+  }
+
+  public analyzeSpamRisk(payload: any): Observable<EmailSpamAnalysisReportDto> {
+    return this.http.post<EmailSpamAnalysisReportDto>(`${this.baseUrl}/deliverability/spam-analyze`, payload);
+  }
+
+  public startWarmup(payload: any): Observable<MailboxWarmupCadenceDto> {
+    return this.http.post<MailboxWarmupCadenceDto>(`${this.baseUrl}/deliverability/warmup/start`, payload);
+  }
+
+  public getWarmup(tenantId: string, senderEmail: string): Observable<MailboxWarmupCadenceDto> {
+    return this.http.get<MailboxWarmupCadenceDto>(`${this.baseUrl}/deliverability/warmup?tenantId=${tenantId}&senderEmail=${encodeURIComponent(senderEmail)}`);
+  }
+
+  public simulateWarmupStep(cadenceId: string, tenantId: string): Observable<MailboxWarmupCadenceDto> {
+    return this.http.post<MailboxWarmupCadenceDto>(`${this.baseUrl}/deliverability/warmup/${cadenceId}/simulate-step?tenantId=${tenantId}`, {});
+  }
+
+  public getWarmupLogs(cadenceId: string, tenantId: string): Observable<WarmupExchangeLogDto[]> {
+    return this.http.get<WarmupExchangeLogDto[]>(`${this.baseUrl}/deliverability/warmup/${cadenceId}/logs?tenantId=${tenantId}`);
+  }
+
+  // Product Telemetry & Live Visitor Analytics (Category 14)
+  public ingestTelemetry(payload: any): Observable<TelemetryEventDto> {
+    return this.http.post<TelemetryEventDto>(`${this.baseUrl}/telemetry/events`, payload);
+  }
+
+  public getLiveTelemetry(tenantId: string, windowMinutes = 15): Observable<LiveTelemetrySummaryDto> {
+    return this.http.get<LiveTelemetrySummaryDto>(`${this.baseUrl}/telemetry/live?tenantId=${tenantId}&windowMinutes=${windowMinutes}`);
+  }
+
+  public getRecentTelemetryEvents(tenantId: string, limit = 50): Observable<TelemetryEventDto[]> {
+    return this.http.get<TelemetryEventDto[]>(`${this.baseUrl}/telemetry/events/recent?tenantId=${tenantId}&limit=${limit}`);
+  }
+
+  // SaaS Subscription Billing & Plan Quotas (Section 11)
+  public getSubscriptionDetails(tenantId: string): Observable<SubscriptionDetailsDto> {
+    return this.http.get<SubscriptionDetailsDto>(`${this.baseUrl}/billing/subscription?tenantId=${tenantId}`);
+  }
+
+  public upgradePlan(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/billing/upgrade`, payload);
+  }
+
+  public checkQuota(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/billing/quota-check`, payload);
+  }
+
+  public getInvoices(tenantId: string): Observable<BillingInvoiceRecordDto[]> {
+    return this.http.get<BillingInvoiceRecordDto[]>(`${this.baseUrl}/billing/invoices?tenantId=${tenantId}`);
+  }
+
+  public createCheckoutSession(payload: any): Observable<{ checkoutUrl: string }> {
+    return this.http.post<{ checkoutUrl: string }>(`${this.baseUrl}/billing/checkout-session`, payload);
   }
 }

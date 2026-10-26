@@ -193,6 +193,109 @@ export interface ChannelAttributionUi {
             </table>
           </div>
 
+          <!-- Closed-Loop Real Delivered ROAS & Autonomous Ad Spend Optimizer -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                  <span>🎯</span> Closed-Loop Real Delivered ROAS & Ad Optimizer (Meta / TikTok / Google)
+                </h3>
+                <p class="text-xs text-slate-400">Combat COD return leakage: Auto-Kill ad sets with delivery &lt; 55% and auto-scale high delivered margin winners (+15%).</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-3 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 text-xs font-mono font-bold">
+                  Pixel Leakage: {{ roasLeakage() }}%
+                </span>
+                <button
+                  (click)="triggerOptimizerRun()"
+                  class="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-medium transition shadow-lg shadow-cyan-600/20">
+                  ⚡ Run Autonomous Optimizer Guard
+                </button>
+              </div>
+            </div>
+
+            <!-- Delivered ROAS KPI Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div class="p-4 rounded-xl bg-slate-950 border border-slate-800">
+                <span class="text-[10px] text-slate-400 uppercase font-mono">Standard Pixel ROAS</span>
+                <div class="text-xl font-bold text-slate-300 font-mono mt-1">{{ standardPixelRoas() }}x</div>
+                <span class="text-[10px] text-amber-500">Gross checkout pixel claim</span>
+              </div>
+              <div class="p-4 rounded-xl bg-slate-950 border border-emerald-500/30">
+                <span class="text-[10px] text-emerald-400 uppercase font-mono">Real Delivered Cash ROAS</span>
+                <div class="text-xl font-bold text-emerald-400 font-mono mt-1">{{ realDeliveredRoas() }}x</div>
+                <span class="text-[10px] text-slate-500">Net remitted cash / spend</span>
+              </div>
+              <div class="p-4 rounded-xl bg-slate-950 border border-slate-800">
+                <span class="text-[10px] text-slate-400 uppercase font-mono">Delivered Cash Remitted</span>
+                <div class="text-xl font-bold text-cyan-400 font-mono mt-1">{{ deliveredNetCash() | number:'1.0-0' }} TND</div>
+                <span class="text-[10px] text-slate-500">Excludes returned/canceled COD</span>
+              </div>
+              <div class="p-4 rounded-xl bg-slate-950 border border-slate-800">
+                <span class="text-[10px] text-purple-400 uppercase font-mono">Net Contribution Margin</span>
+                <div class="text-xl font-bold text-purple-400 font-mono mt-1">{{ netContributionMargin() | number:'1.0-0' }} TND</div>
+                <span class="text-[10px] text-slate-500">After COGS & return shipping</span>
+              </div>
+            </div>
+
+            <!-- Ad Sets Delivery & Action Table -->
+            <div class="border-t border-slate-800/80 pt-4">
+              <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3">Active Campaign Ad Sets & Autonomous Guard Status</h4>
+              <div class="space-y-2">
+                @for (adSet of adSets(); track adSet.adSetId) {
+                  <div class="flex items-center justify-between p-3.5 rounded-lg bg-slate-950/80 border border-slate-800 text-xs">
+                    <div class="flex items-center gap-3">
+                      <span class="px-2 py-0.5 rounded text-[10px] font-bold"
+                        [ngClass]="{
+                          'bg-blue-500/20 text-blue-400 border border-blue-500/30': adSet.platform === 'Meta',
+                          'bg-pink-500/20 text-pink-400 border border-pink-500/30': adSet.platform === 'TikTok',
+                          'bg-amber-500/20 text-amber-400 border border-amber-500/30': adSet.platform === 'Google'
+                        }">
+                        {{ adSet.platform }}
+                      </span>
+                      <div>
+                        <span class="font-bold text-white">{{ adSet.adSetName }}</span>
+                        <div class="text-[11px] text-slate-400 font-mono">ID: {{ adSet.adSetId }} | Spend: {{ adSet.adSpend }} TND</div>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center gap-5 font-mono">
+                      <div class="text-right">
+                        <span class="text-[10px] text-slate-500 block">Delivery Rate</span>
+                        <span class="font-bold" [ngClass]="adSet.deliveryRate >= 70 ? 'text-emerald-400' : (adSet.deliveryRate >= 55 ? 'text-amber-400' : 'text-rose-400')">
+                          {{ adSet.deliveryRate }}%
+                        </span>
+                      </div>
+                      <div class="text-right">
+                        <span class="text-[10px] text-slate-500 block">Pixel vs Real ROAS</span>
+                        <span>
+                          <span class="text-slate-400">{{ adSet.pixelRoas }}x</span>
+                          <span class="text-slate-600 mx-1">→</span>
+                          <strong [ngClass]="adSet.realRoas >= 2.0 ? 'text-emerald-400' : 'text-rose-400'">{{ adSet.realRoas }}x</strong>
+                        </span>
+                      </div>
+                      <div>
+                        @if (adSet.actionStatus === 'Scaled') {
+                          <span class="px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-sans font-medium text-[11px] flex items-center gap-1">
+                            <span>🚀</span> Auto-Scaled (+15%)
+                          </span>
+                        } @else if (adSet.actionStatus === 'Paused') {
+                          <span class="px-2.5 py-1 rounded-md bg-rose-500/10 text-rose-400 border border-rose-500/20 font-sans font-medium text-[11px] flex items-center gap-1">
+                            <span>🛑</span> Auto-Paused (&lt; 55%)
+                          </span>
+                        } @else {
+                          <span class="px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700 font-sans text-[11px]">
+                            ✅ Stable
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
           <!-- Courier Cash Float & Working Capital Treasury Forecast -->
           <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6">
             <div class="flex items-center justify-between">
@@ -489,6 +592,50 @@ export class AnalyticsStudioComponent {
       cleared: 1380
     }
   ]);
+
+  // Ad Spend Optimizer Signals
+  standardPixelRoas = signal(4.2);
+  realDeliveredRoas = signal(2.15);
+  roasLeakage = signal(48.8);
+  deliveredNetCash = signal(18400);
+  netContributionMargin = signal(8950);
+
+  adSets = signal([
+    {
+      adSetId: 'META-ADSET-701',
+      adSetName: 'Tunis-Grand-HighIntent-Retargeting',
+      platform: 'Meta',
+      adSpend: 1500,
+      deliveryRate: 84.5,
+      pixelRoas: 4.8,
+      realRoas: 3.65,
+      actionStatus: 'Scaled'
+    },
+    {
+      adSetId: 'TT-ADSET-302',
+      adSetName: 'Broad-Teens-Footwear-Trend',
+      platform: 'TikTok',
+      adSpend: 2200,
+      deliveryRate: 42.0,
+      pixelRoas: 4.1,
+      realRoas: 1.15,
+      actionStatus: 'Paused'
+    },
+    {
+      adSetId: 'GG-ADSET-109',
+      adSetName: 'Search-Commercial-LeatherBags',
+      platform: 'Google',
+      adSpend: 1100,
+      deliveryRate: 78.0,
+      pixelRoas: 3.6,
+      realRoas: 2.75,
+      actionStatus: 'Stable'
+    }
+  ]);
+
+  triggerOptimizerRun() {
+    alert('Autonomous Ad Spend Optimizer evaluated active campaigns: 1 Underperforming ad set auto-paused (<55% delivery killswitch), 1 Winner scaled (+15% budget). Real cash ROAS secured!');
+  }
 
   simulatePayoutBatch() {
     alert('Cleared Affiliate Escrow Payout Batch generated for 3,200 TND across 2 creators. Bank transfer instructions dispatched.');

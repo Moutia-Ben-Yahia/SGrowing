@@ -46,11 +46,14 @@ public class FeatureEntitlement
     public Guid TenantId { get; set; }
     public PlanTier PlanTier { get; set; }
     public int MaxTeamSeats { get; set; } = 10;
-    public long MonthlyIncludedAiTokens { get; set; } = 5_000_000;
-    public int MonthlyIncludedVoiceMinutes { get; set; } = 1_000;
+    public long MonthlyIncludedAiTokens { get; set; } = 2_000_000;
+    public int MonthlyIncludedVoiceMinutes { get; set; } = 500;
     public int MonthlyIncludedMessages { get; set; } = 10_000;
     public bool IsCustomDomainEnabled { get; set; } = true;
     public bool IsSlaEscalationEnabled { get; set; } = true;
+
+    public long MaxAiTokensPerMonth { get => MonthlyIncludedAiTokens; set => MonthlyIncludedAiTokens = value; }
+    public int MaxVoiceMinutesPerMonth { get => MonthlyIncludedVoiceMinutes; set => MonthlyIncludedVoiceMinutes = value; }
 
     public static FeatureEntitlement CreateDefault(Guid tenantId, PlanTier tier)
     {
@@ -74,8 +77,8 @@ public class FeatureEntitlement
                 TenantId = tenantId,
                 PlanTier = tier,
                 MaxTeamSeats = 100,
-                MonthlyIncludedAiTokens = 50_000_000,
-                MonthlyIncludedVoiceMinutes = 10_000,
+                MonthlyIncludedAiTokens = 5_000_000,
+                MonthlyIncludedVoiceMinutes = 2_500,
                 MonthlyIncludedMessages = 100_000,
                 IsCustomDomainEnabled = true,
                 IsSlaEscalationEnabled = true
@@ -86,8 +89,8 @@ public class FeatureEntitlement
                 TenantId = tenantId,
                 PlanTier = PlanTier.Growth,
                 MaxTeamSeats = 10,
-                MonthlyIncludedAiTokens = 5_000_000,
-                MonthlyIncludedVoiceMinutes = 1_000,
+                MonthlyIncludedAiTokens = 2_000_000,
+                MonthlyIncludedVoiceMinutes = 500,
                 MonthlyIncludedMessages = 10_000,
                 IsCustomDomainEnabled = true,
                 IsSlaEscalationEnabled = true
@@ -140,4 +143,41 @@ public class EntitlementCheckResult
     public long CurrentUsage { get; set; }
     public long QuotaLimit { get; set; }
     public string Message { get; set; } = string.Empty;
+}
+
+public class BillingInvoiceRecord
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid TenantId { get; set; }
+    public string InvoiceNumber { get; set; } = string.Empty;
+    public decimal AmountDue { get; set; }
+    public decimal Amount { get => AmountDue; set => AmountDue = value; }
+    public string Currency { get; set; } = "USD";
+    public string Status { get; set; } = "Paid"; // Paid, Open, Void, Uncollectible
+    public string StripeInvoiceId { get; set; } = string.Empty;
+    public string HostedInvoiceUrl { get; set; } = string.Empty;
+    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+
+    public static BillingInvoiceRecord Create(
+        Guid tenantId,
+        string invoiceNumber,
+        decimal amountDue,
+        string currency = "USD",
+        string status = "Paid",
+        string stripeInvoiceId = "",
+        string hostedUrl = "")
+    {
+        return new BillingInvoiceRecord
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            InvoiceNumber = invoiceNumber.Trim(),
+            AmountDue = amountDue,
+            Currency = currency.Trim().ToUpperInvariant(),
+            Status = status.Trim(),
+            StripeInvoiceId = stripeInvoiceId.Trim(),
+            HostedInvoiceUrl = hostedUrl.Trim(),
+            CreatedAtUtc = DateTime.UtcNow
+        };
+    }
 }

@@ -214,6 +214,9 @@ export interface RmaRequestUi {
               @if (activeTab() === 'exchanges') { Drop-and-Swap 1-Stop Reverse Logistics }
               @if (activeTab() === 'crossborder') { Cross-Border Maghreb / GCC Trade & Customs Desk }
               @if (activeTab() === 'forecasting') { Predictive Demand Runway & Supplier Restock Matrix }
+              @if (activeTab() === 'fleet') { In-House Driver Fleet & Delivery Run-Sheets }
+              @if (activeTab() === 'flows') { Visual WhatsApp Interactive Flow State Machine }
+              @if (activeTab() === 'liquidation') { Aging Inventory Liquidation & Dynamic Markdowns }
             </h2>
             <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
               Live Engine Active
@@ -1264,7 +1267,7 @@ export interface RmaRequestUi {
   `
 })
 export class OperationsStudioComponent {
-  activeTab = signal<'confirmation' | 'logistics' | 'wms' | 'cadences' | 'rma' | 'remittance' | 'conversions' | 'scanner' | 'dialer' | 'reputation' | 'routing' | 'livecommerce' | 'exchanges' | 'crossborder' | 'forecasting'>('confirmation');
+  activeTab = signal<'confirmation' | 'logistics' | 'wms' | 'cadences' | 'rma' | 'remittance' | 'conversions' | 'scanner' | 'dialer' | 'reputation' | 'routing' | 'livecommerce' | 'exchanges' | 'crossborder' | 'forecasting' | 'fleet' | 'flows' | 'liquidation'>('confirmation');
   audioAlertsEnabled = signal<boolean>(true);
 
   // Barcode Fulfillment Desk Signals

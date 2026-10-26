@@ -30,6 +30,26 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
             <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2">Navigation</span>
             <div class="space-y-1 mb-4">
               <a
+                routerLink="/calendar"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-indigo-400 hover:bg-indigo-500/10 border border-indigo-500/20 transition">
+                <span class="flex items-center gap-2">📅 Appointment Calendar</span>
+              </a>
+              <a
+                routerLink="/deliverability"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
+                <span class="flex items-center gap-2">🛡️ Email Deliverability</span>
+              </a>
+              <a
+                routerLink="/telemetry"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
+                <span class="flex items-center gap-2">📡 Live Product Telemetry</span>
+              </a>
+              <a
+                routerLink="/billing"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
+                <span class="flex items-center gap-2">💳 SaaS Billing & Plans</span>
+              </a>
+              <a
                 routerLink="/operations"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
                 <span class="flex items-center gap-2">⚡ COD Ops & Logistics Hub</span>

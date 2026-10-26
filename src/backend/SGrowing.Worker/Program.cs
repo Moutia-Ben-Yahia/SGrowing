@@ -45,9 +45,12 @@ else
 }
 
 // Hosted background daemons
+builder.Services.AddScoped<AdvancedWorkflowSchedulerService>();
+builder.Services.AddScoped<OutboundWebhookDispatcherService>();
 builder.Services.AddHostedService<OutboxProcessorDaemon>();
 builder.Services.AddHostedService<RedisStreamConsumerDaemon>();
 builder.Services.AddHostedService<SlaWatchdogDaemon>();
+builder.Services.AddHostedService<ResilientDlqDaemon>();
 
 var host = builder.Build();
 host.Run();

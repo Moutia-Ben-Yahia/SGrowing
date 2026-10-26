@@ -23,6 +23,10 @@ using SGrowing.Api.Modules.Messaging;
 using SGrowing.Api.Modules.Dev;
 using SGrowing.Api.Modules.SEO;
 using SGrowing.Api.Modules.Funnels;
+using SGrowing.Api.Modules.Calendar;
+using SGrowing.Api.Modules.Deliverability;
+using SGrowing.Api.Modules.Telemetry;
+using SGrowing.Api.Modules.Billing;
 using Scalar.AspNetCore;
 using SGrowing.Core.Messaging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -186,6 +190,18 @@ builder.Services.AddScoped<ISecurityAuditAndRbacService, SecurityAuditAndRbacSer
 builder.Services.AddScoped<ISeoAuditService, SeoAuditService>();
 builder.Services.AddScoped<ISalesFunnelService, SalesFunnelService>();
 
+// 20. Next-Gen Frontiers: Delivered ROAS Optimizer, Fleet Dispatcher, WhatsApp Flow Engine, Dynamic Liquidation
+builder.Services.AddScoped<IAdSpendOptimizerService, AdSpendOptimizerService>();
+builder.Services.AddScoped<IInHouseFleetService, InHouseFleetService>();
+builder.Services.AddScoped<IWhatsAppFlowEngineService, WhatsAppFlowEngineService>();
+builder.Services.AddScoped<IInventoryLiquidationService, InventoryLiquidationService>();
+
+// 21. Strategic Horizons: Calendar Scheduling, Deliverability Guardian, Telemetry & SaaS Billing
+builder.Services.AddScoped<ICalendarSchedulingService, CalendarSchedulingService>();
+builder.Services.AddScoped<IEmailDeliverabilityService, EmailDeliverabilityService>();
+builder.Services.AddScoped<IProductTelemetryService, ProductTelemetryService>();
+builder.Services.AddScoped<ISaasBillingService, SaasBillingService>();
+
 // 16. Authentication, Security & Tenant Context
 var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "SGrowing_SuperSecretEnterpriseMasterKey_998877665544332211!!";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "SGrowing.Api";
@@ -269,6 +285,10 @@ app.MapAuthEndpoints();
 app.MapDevEndpoints();
 app.MapSeoEndpoints();
 app.MapFunnelEndpoints();
+app.MapCalendarEndpoints();
+app.MapDeliverabilityEndpoints();
+app.MapTelemetryEndpoints();
+app.MapBillingEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", framework = ".NET 10", timestamp = DateTime.UtcNow }));
 
@@ -1493,6 +1513,118 @@ app.MapGet("/api/security/orders/{orderId}/masked", async (Guid orderId, [FromQu
     return Results.Ok(view);
 });
 
+// --- Closed-Loop Delivered ROAS & Ad Optimizer Endpoints ---
+app.MapGet("/api/marketing/ad-optimizer/metrics", async ([FromQuery] Guid tenantId, [FromQuery] AdPlatformType? platform, IAdSpendOptimizerService optimizerService) =>
+{
+    var metrics = await optimizerService.ListRoasMetricsAsync(tenantId, platform);
+    return Results.Ok(metrics);
+});
+
+app.MapPost("/api/marketing/ad-optimizer/ingest", async ([FromBody] CampaignAdSpendRecord record, IAdSpendOptimizerService optimizerService) =>
+{
+    var result = await optimizerService.IngestAdSpendAsync(record.TenantId, record);
+    return Results.Ok(result);
+});
+
+app.MapPost("/api/marketing/ad-optimizer/calculate-roas", async ([FromBody] CalculateRoasDto req, IAdSpendOptimizerService optimizerService) =>
+{
+    var metric = await optimizerService.CalculateDeliveredRoasAsync(req.TenantId, req.Platform, req.AdSetId, req.AdSetName, req.Date, req.AdSpend, req.AttributedOrderIds);
+    return Results.Ok(metric);
+});
+
+app.MapPost("/api/marketing/ad-optimizer/rules", async ([FromBody] AdOptimizationRule rule, IAdSpendOptimizerService optimizerService) =>
+{
+    var result = await optimizerService.ConfigureRuleAsync(rule.TenantId, rule);
+    return Results.Ok(result);
+});
+
+app.MapPost("/api/marketing/ad-optimizer/evaluate/{metricId}", async (Guid metricId, [FromQuery] Guid tenantId, [FromQuery] decimal dailyBudget, IAdSpendOptimizerService optimizerService) =>
+{
+    var log = await optimizerService.EvaluateAndApplyRulesAsync(tenantId, metricId, dailyBudget);
+    return Results.Ok(log);
+});
+
+app.MapGet("/api/marketing/ad-optimizer/logs", async ([FromQuery] Guid tenantId, IAdSpendOptimizerService optimizerService) =>
+{
+    var logs = await optimizerService.ListExecutionLogsAsync(tenantId);
+    return Results.Ok(logs);
+});
+
+// --- In-House Fleet & Driver Endpoints ---
+app.MapGet("/api/commerce/fleet/drivers", async ([FromQuery] Guid tenantId, IInHouseFleetService fleetService) =>
+{
+    var drivers = await fleetService.ListDriversAsync(tenantId);
+    return Results.Ok(drivers);
+});
+
+app.MapPost("/api/commerce/fleet/drivers", async ([FromBody] DeliveryDriver driver, IInHouseFleetService fleetService) =>
+{
+    var result = await fleetService.RegisterDriverAsync(driver.TenantId, driver);
+    return Results.Ok(result);
+});
+
+app.MapPost("/api/commerce/fleet/run-sheets", async ([FromBody] GenerateRunSheetDto req, IInHouseFleetService fleetService) =>
+{
+    var sheet = await fleetService.GenerateRunSheetAsync(req.TenantId, req.DriverId, req.HubWarehouseId, req.OrderIds);
+    return Results.Ok(sheet);
+});
+
+app.MapPost("/api/commerce/fleet/stops/{stopId}/deliver", async (Guid stopId, [FromBody] DeliverStopDto req, IInHouseFleetService fleetService) =>
+{
+    var result = await fleetService.RecordStopDeliveryAsync(req.TenantId, stopId, req.Status, req.PaymentMethod, req.FailureReason, req.SignatureData, req.PhotoUrl, req.Lat, req.Lon);
+    return Results.Ok(result);
+});
+
+app.MapPost("/api/commerce/fleet/run-sheets/{runSheetId}/reconcile", async (Guid runSheetId, [FromBody] ReconcileCashDto req, IInHouseFleetService fleetService) =>
+{
+    var recon = await fleetService.ReconcileDriverCashAsync(req.TenantId, runSheetId, req.ActualCashTurnedIn, req.ReconciledBy, req.Notes);
+    return Results.Ok(recon);
+});
+
+// --- WhatsApp Flow Engine Endpoints ---
+app.MapGet("/api/channels/flows", async ([FromQuery] Guid tenantId, IWhatsAppFlowEngineService flowService) =>
+{
+    var flows = await flowService.ListFlowsAsync(tenantId);
+    return Results.Ok(flows);
+});
+
+app.MapPost("/api/channels/flows", async ([FromBody] FlowDefinition flow, IWhatsAppFlowEngineService flowService) =>
+{
+    var created = await flowService.CreateFlowDefinitionAsync(flow.TenantId, flow);
+    return Results.Ok(created);
+});
+
+app.MapPost("/api/channels/flows/execute-turn", async ([FromBody] ExecuteFlowTurnDto req, IWhatsAppFlowEngineService flowService) =>
+{
+    var turn = await flowService.ExecuteFlowTurnAsync(req.TenantId, req.FlowId, req.CustomerPhone, req.Message);
+    return Results.Ok(turn);
+});
+
+// --- Inventory Liquidation & Markdown Endpoints ---
+app.MapGet("/api/commerce/liquidation/aging", async ([FromQuery] Guid tenantId, [FromQuery] StockAgeTier? tier, IInventoryLiquidationService liquidationService) =>
+{
+    var list = await liquidationService.ListAgingLedgerAsync(tenantId, tier);
+    return Results.Ok(list);
+});
+
+app.MapPost("/api/commerce/liquidation/intake-aging", async ([FromBody] IntakeAgingDto req, IInventoryLiquidationService liquidationService) =>
+{
+    var ledger = await liquidationService.RecordStockIntakeAgingAsync(req.TenantId, req.ProductId, req.Sku, req.ProductName, req.WarehouseId, req.Quantity, req.CostPrice, req.RetailPrice, req.DaysInWarehouse);
+    return Results.Ok(ledger);
+});
+
+app.MapPost("/api/commerce/liquidation/bundles", async ([FromBody] GenerateBundleDto req, IInventoryLiquidationService liquidationService) =>
+{
+    var bundle = await liquidationService.GenerateLiquidationBundleAsync(req.TenantId, req.WinningSku, req.AgingSku, req.BundleName, req.BundleDiscountPct);
+    return Results.Ok(bundle);
+});
+
+app.MapGet("/api/commerce/liquidation/bundles", async ([FromQuery] Guid tenantId, IInventoryLiquidationService liquidationService) =>
+{
+    var bundles = await liquidationService.ListActiveBundleOffersAsync(tenantId);
+    return Results.Ok(bundles);
+});
+
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
 
@@ -1609,6 +1741,15 @@ public record DispatchSwapManifestDto(Guid TenantId, Guid ExchangeRequestId, Gui
 public record ConfirmDoorstepSwapDto(Guid TenantId, Guid ManifestId, bool HandoverNewParcel = true, bool ReturnParcelCollected = true);
 public record ReturnIntakeInspectDto(Guid TenantId, Guid ExchangeRequestId, SwapInspectionResult Grade, string Notes = "");
 public record GenerateRestockOrderDto(Guid TenantId, Guid AlertId, Guid SupplierId, decimal UnitCost);
+
+// Next-Gen Strategic Frontiers DTOs
+public record CalculateRoasDto(Guid TenantId, AdPlatformType Platform, string AdSetId, string AdSetName, DateTime Date, decimal AdSpend, List<Guid> AttributedOrderIds);
+public record GenerateRunSheetDto(Guid TenantId, Guid DriverId, Guid HubWarehouseId, List<Guid> OrderIds);
+public record DeliverStopDto(Guid TenantId, StopDeliveryStatus Status, string PaymentMethod = "CashOnDelivery", string? FailureReason = null, string SignatureData = "", string PhotoUrl = "", double? Lat = null, double? Lon = null);
+public record ReconcileCashDto(Guid TenantId, decimal ActualCashTurnedIn, string ReconciledBy, string Notes = "");
+public record ExecuteFlowTurnDto(Guid TenantId, Guid FlowId, string CustomerPhone, string Message);
+public record IntakeAgingDto(Guid TenantId, Guid ProductId, string Sku, string ProductName, Guid WarehouseId, int Quantity, decimal CostPrice, decimal RetailPrice, int DaysInWarehouse);
+public record GenerateBundleDto(Guid TenantId, string WinningSku, string AgingSku, string BundleName, decimal BundleDiscountPct = 30m);
 
 // Required for WebApplicationFactory in integration tests
 public partial class Program { }

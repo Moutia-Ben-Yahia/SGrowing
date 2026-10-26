@@ -19,10 +19,18 @@ import { AnalyticsStudioComponent } from './features/analytics/analytics-studio.
 import { OperationsStudioComponent } from './features/operations/operations-studio.component';
 import { SeoStudioComponent } from './features/seo/seo-studio.component';
 import { FunnelsStudioComponent } from './features/funnels/funnels-studio.component';
+import { CalendarStudioComponent } from './features/calendar/calendar-studio.component';
+import { DeliverabilityStudioComponent } from './features/deliverability/deliverability-studio.component';
+import { TelemetryStudioComponent } from './features/telemetry/telemetry-studio.component';
+import { BillingStudioComponent } from './features/billing/billing-studio.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', component: InboxShellComponent, canActivate: [authGuard] },
+  { path: 'calendar', component: CalendarStudioComponent, canActivate: [authGuard] },
+  { path: 'deliverability', component: DeliverabilityStudioComponent, canActivate: [authGuard] },
+  { path: 'telemetry', component: TelemetryStudioComponent, canActivate: [authGuard] },
+  { path: 'billing', component: BillingStudioComponent, canActivate: [authGuard] },
   { path: 'seo', component: SeoStudioComponent, canActivate: [authGuard] },
   { path: 'funnels', component: FunnelsStudioComponent, canActivate: [authGuard] },
   { path: 'operations', component: OperationsStudioComponent, canActivate: [authGuard] },
