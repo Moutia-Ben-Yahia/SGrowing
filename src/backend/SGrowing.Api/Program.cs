@@ -136,7 +136,15 @@ builder.Services.AddSingleton<PromptFirewallService>();
 builder.Services.AddSingleton<AiModelRouterService>();
 builder.Services.AddScoped<DynamicAgentToolRegistry>();
 
-// 14. SignalR & CORS
+// 14. Omnichannel Commerce, Logistics, Defensive WMS, Identity & Cadences
+builder.Services.AddScoped<ICodConfirmationService, CodConfirmationService>();
+builder.Services.AddScoped<ICourierLogisticsHubService, CourierLogisticsHubService>();
+builder.Services.AddScoped<IDefensiveWmsService, DefensiveWmsService>();
+builder.Services.AddScoped<ISalesCadenceEngine, SalesCadenceEngine>();
+builder.Services.AddScoped<ICustomerIdentityGraphService, CustomerIdentityGraphService>();
+builder.Services.AddScoped<ICustomerSelfServicePortalService, CustomerSelfServicePortalService>();
+
+// 15. SignalR & CORS
 builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
 {
@@ -803,6 +811,182 @@ app.MapPost("/api/ai/tools/execute", async ([FromBody] ExecuteToolDto req, Dynam
     return Results.Ok(result);
 });
 
+// --- COD Order Confirmation & Anti-Fraud Endpoints ---
+app.MapPost("/api/cod/orders", async ([FromBody] CreateCodOrderDto req, SGrowingDbContext db, ICodConfirmationService codService) =>
+{
+    var order = CodOrder.Create(req.TenantId, req.OrderNumber, req.CustomerName, req.PhoneNumber, req.ShippingAddress, req.GovernorateOrWilaya, req.DelegationOrCommune, req.TotalAmount, req.CountryCode ?? "TN", req.CodCurrency ?? "TND", req.ShippingFee, req.AlternatePhone, req.ItemsJson ?? "[]", req.Notes);
+    db.CodOrders.Add(order);
+    await db.SaveChangesAsync();
+    var risk = await codService.EvaluateRiskAsync(req.TenantId, order);
+    return Results.Ok(new { Order = order, Risk = risk });
+});
+
+app.MapGet("/api/cod/orders", async ([FromQuery] Guid tenantId, SGrowingDbContext db) =>
+{
+    var orders = await db.CodOrders.Where(o => o.TenantId == tenantId).OrderByDescending(o => o.CreatedAtUtc).ToListAsync();
+    return Results.Ok(orders);
+});
+
+app.MapPost("/api/cod/orders/lock", async ([FromBody] AcquireLockDto req, ICodConfirmationService codService) =>
+{
+    var result = await codService.AcquireLockAsync(req.TenantId, req.OrderId, req.AgentId, req.AgentName, req.LeaseMinutes <= 0 ? 3 : req.LeaseMinutes);
+    return Results.Ok(result);
+});
+
+app.MapPost("/api/cod/orders/release-lock", async ([FromBody] ReleaseLockDto req, ICodConfirmationService codService) =>
+{
+    var success = await codService.ReleaseLockAsync(req.TenantId, req.OrderId, req.AgentId);
+    return Results.Ok(new { Success = success });
+});
+
+app.MapPost("/api/cod/orders/call-outcome", async ([FromBody] RecordOutcomeDto req, ICodConfirmationService codService) =>
+{
+    var order = await codService.RecordCallOutcomeAsync(req.TenantId, req.OrderId, req.AgentId, req.AgentName, req.Outcome, req.Notes, req.ScheduledCallbackUtc);
+    return Results.Ok(order);
+});
+
+app.MapPost("/api/cod/orders/interactive-wa", async ([FromBody] SendWaInteractiveDto req, ICodConfirmationService codService) =>
+{
+    var payload = await codService.GenerateInteractiveWhatsAppPayloadAsync(req.TenantId, req.OrderId);
+    return Results.Ok(new { Payload = payload });
+});
+
+app.MapPost("/api/cod/orders/interactive-response", async ([FromBody] HandleWaResponseDto req, ICodConfirmationService codService) =>
+{
+    var order = await codService.HandleCustomerInteractiveResponseAsync(req.TenantId, req.OrderId, req.Action);
+    return Results.Ok(order);
+});
+
+// --- Logistics & Manifests Endpoints ---
+app.MapPost("/api/logistics/dispatch", async ([FromBody] DispatchShipmentDto req, ICourierLogisticsHubService logisticsHub) =>
+{
+    var shipment = await logisticsHub.DispatchOrderAsync(req.TenantId, req.OrderId, req.CourierProviderId);
+    return Results.Ok(shipment);
+});
+
+app.MapPost("/api/logistics/manifests", async ([FromBody] GenerateManifestDto req, ICourierLogisticsHubService logisticsHub) =>
+{
+    var manifest = await logisticsHub.GenerateBordereauManifestAsync(req.TenantId, req.CourierProviderId, req.OrderIds);
+    return Results.Ok(manifest);
+});
+
+app.MapPost("/api/logistics/webhooks/tracking", async ([FromBody] IngestCourierWebhookDto req, ICourierLogisticsHubService logisticsHub) =>
+{
+    var shipment = await logisticsHub.ProcessTrackingWebhookAsync(req.TenantId, req.TrackingNumber, req.Status, req.CashRemitted, req.Notes);
+    return Results.Ok(shipment);
+});
+
+// --- Defensive WMS Endpoints ---
+app.MapGet("/api/wms/inventory", async ([FromQuery] Guid tenantId, [FromQuery] Guid warehouseId, [FromQuery] string sku, IDefensiveWmsService wmsService) =>
+{
+    var summary = await wmsService.GetStockSummaryAsync(tenantId, warehouseId, sku);
+    return Results.Ok(summary);
+});
+
+app.MapPost("/api/wms/reserve", async ([FromBody] WmsStockActionDto req, IDefensiveWmsService wmsService) =>
+{
+    var inv = await wmsService.ReserveStockOnCheckoutAsync(req.TenantId, req.WarehouseId, req.Sku, req.Quantity, req.OrderId, req.PerformedBy ?? "Checkout");
+    return Results.Ok(inv);
+});
+
+app.MapPost("/api/wms/commit", async ([FromBody] WmsStockActionDto req, IDefensiveWmsService wmsService) =>
+{
+    var inv = await wmsService.CommitStockOnConfirmationAsync(req.TenantId, req.WarehouseId, req.Sku, req.Quantity, req.OrderId, req.PerformedBy ?? "ConfirmationAgent");
+    return Results.Ok(inv);
+});
+
+app.MapPost("/api/wms/dispatch", async ([FromBody] WmsStockActionDto req, IDefensiveWmsService wmsService) =>
+{
+    var inv = await wmsService.DispatchStockAsync(req.TenantId, req.WarehouseId, req.Sku, req.Quantity, req.OrderId, req.PerformedBy ?? "LogisticsCourier");
+    return Results.Ok(inv);
+});
+
+app.MapPost("/api/wms/quarantine/restock", async ([FromBody] WmsQuarantineRestockDto req, IDefensiveWmsService wmsService) =>
+{
+    var inv = await wmsService.ScanAndRestockQuarantineItemAsync(req.TenantId, req.WarehouseId, req.Sku, req.Quantity, req.IsDamaged, req.InspectorId ?? "WarehouseInspector");
+    return Results.Ok(inv);
+});
+
+// --- Sales Cadences & Stop-on-Reply Endpoints ---
+app.MapPost("/api/cadences", async ([FromBody] CreateCadenceDto req, ISalesCadenceEngine cadenceEngine) =>
+{
+    var cadence = await cadenceEngine.CreateCadenceAsync(req.TenantId, req.Name, req.Description, req.TargetAudience);
+    return Results.Ok(cadence);
+});
+
+app.MapPost("/api/cadences/{id:guid}/steps", async (Guid id, [FromBody] AddCadenceStepDto req, ISalesCadenceEngine cadenceEngine) =>
+{
+    var step = await cadenceEngine.AddCadenceStepAsync(id, req.StepNumber, req.DayOffset, req.Channel, req.SubjectTemplate, req.BodyTemplate);
+    return Results.Ok(step);
+});
+
+app.MapPost("/api/cadences/enroll", async ([FromBody] EnrollCadenceLeadDto req, ISalesCadenceEngine cadenceEngine) =>
+{
+    var enrollment = await cadenceEngine.EnrollLeadAsync(req.TenantId, req.CadenceId, req.LeadName, req.Email, req.PhoneNumber, req.Company);
+    return Results.Ok(enrollment);
+});
+
+app.MapPost("/api/cadences/process-due", async ([FromBody] ProcessDueStepsDto req, ISalesCadenceEngine cadenceEngine) =>
+{
+    var count = await cadenceEngine.ProcessDueCadenceStepsAsync(req.TenantId);
+    return Results.Ok(new { ProcessedCount = count });
+});
+
+app.MapPost("/api/cadences/reply-stop", async ([FromBody] CadenceReplyStopDto req, ISalesCadenceEngine cadenceEngine) =>
+{
+    var stopped = await cadenceEngine.HandleProspectReplyAsync(req.TenantId, req.EmailOrPhone, req.Channel, req.ReplyText);
+    return Results.Ok(new { Stopped = stopped });
+});
+
+app.MapGet("/api/cadences/sdr-tasks", async ([FromQuery] Guid tenantId, ISalesCadenceEngine cadenceEngine) =>
+{
+    var tasks = await cadenceEngine.GetPendingSdrTasksAsync(tenantId);
+    return Results.Ok(tasks);
+});
+
+app.MapPost("/api/cadences/sdr-tasks/{id:guid}/complete", async (Guid id, [FromBody] CompleteTaskDto req, ISalesCadenceEngine cadenceEngine) =>
+{
+    var task = await cadenceEngine.CompleteSdrTaskAsync(req.TenantId, id, req.Outcome);
+    return Results.Ok(task);
+});
+
+// --- Customer 360 & RMA Endpoints ---
+app.MapPost("/api/crm/customers/resolve", async ([FromBody] ResolveCustomerDto req, ICustomerIdentityGraphService idGraph) =>
+{
+    var profile = await idGraph.ResolveCustomerAsync(req.TenantId, req.Name, req.Phone, req.Email, req.ChannelType, req.ChannelValue);
+    return Results.Ok(profile);
+});
+
+app.MapGet("/api/crm/customers/{id:guid}/360", async (Guid id, [FromQuery] Guid tenantId, ICustomerIdentityGraphService idGraph) =>
+{
+    var detail = await idGraph.GetCustomer360Async(tenantId, id);
+    return Results.Ok(detail);
+});
+
+app.MapPost("/api/crm/customers/merge", async ([FromBody] MergeCustomersDto req, ICustomerIdentityGraphService idGraph) =>
+{
+    var merged = await idGraph.MergeCustomerProfilesAsync(req.TenantId, req.PrimaryCustomerId, req.DuplicateCustomerId, req.PerformedBy ?? "Admin");
+    return Results.Ok(merged);
+});
+
+app.MapPost("/api/portal/tracking", async ([FromBody] PublicTrackingDto req, ICustomerSelfServicePortalService portalService) =>
+{
+    var tracking = await portalService.LookupTrackingAsync(req.OrderNumber, req.Phone);
+    return Results.Ok(tracking);
+});
+
+app.MapPost("/api/portal/rma/submit", async ([FromBody] SubmitRmaDto req, ICustomerSelfServicePortalService portalService) =>
+{
+    var rma = await portalService.SubmitRmaRequestAsync(req.TenantId, req.OrderNumber, req.Phone, req.Reason, req.Notes, req.PhotoUrls);
+    return Results.Ok(rma);
+});
+
+app.MapPost("/api/portal/rma/review", async ([FromBody] ReviewRmaDto req, ICustomerSelfServicePortalService portalService) =>
+{
+    var rma = await portalService.ReviewRmaRequestAsync(req.TenantId, req.RmaId, req.IsApproved, req.ResolutionNotes, req.DispatchReverseCourier, req.CourierId);
+    return Results.Ok(rma);
+});
+
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
 
@@ -845,6 +1029,35 @@ public record InspectPromptDto(string UserPrompt);
 public record RouteModelDto(AiTaskComplexity Complexity, string? TaskHint = null);
 public record RegisterToolDto(Guid TenantId, string Name, string Description, string SchemaJson, string TargetUrl, string? HttpMethod = "POST");
 public record ExecuteToolDto(Guid TenantId, string ToolName, string ArgumentsJson);
+
+// Omnichannel COD, Logistics, WMS, Cadences, CRM 360 & Portal DTOs
+public record CreateCodOrderDto(Guid TenantId, string OrderNumber, string CustomerName, string PhoneNumber, string ShippingAddress, string GovernorateOrWilaya, string DelegationOrCommune, decimal TotalAmount, string? CountryCode = "TN", string? CodCurrency = "TND", decimal ShippingFee = 7.0m, string? AlternatePhone = null, string? ItemsJson = "[]", string? Notes = null);
+public record AcquireLockDto(Guid TenantId, Guid OrderId, string AgentId, string AgentName, int LeaseMinutes = 3);
+public record ReleaseLockDto(Guid TenantId, Guid OrderId, string AgentId);
+public record RecordOutcomeDto(Guid TenantId, Guid OrderId, string AgentId, string AgentName, CallOutcome Outcome, string? Notes = null, DateTime? ScheduledCallbackUtc = null);
+public record SendWaInteractiveDto(Guid TenantId, Guid OrderId);
+public record HandleWaResponseDto(Guid TenantId, Guid OrderId, string Action);
+
+public record DispatchShipmentDto(Guid TenantId, Guid OrderId, Guid CourierProviderId);
+public record GenerateManifestDto(Guid TenantId, Guid CourierProviderId, List<Guid> OrderIds);
+public record IngestCourierWebhookDto(Guid TenantId, string TrackingNumber, CourierShipmentStatus Status, decimal? CashRemitted = null, string? Notes = null);
+
+public record WmsStockActionDto(Guid TenantId, Guid WarehouseId, string Sku, int Quantity, Guid OrderId, string? PerformedBy = null);
+public record WmsQuarantineRestockDto(Guid TenantId, Guid WarehouseId, string Sku, int Quantity, bool IsDamaged, string? InspectorId = null);
+
+public record CreateCadenceDto(Guid TenantId, string Name, string Description, string TargetAudience);
+public record AddCadenceStepDto(int StepNumber, int DayOffset, CadenceChannel Channel, string? SubjectTemplate, string BodyTemplate);
+public record EnrollCadenceLeadDto(Guid TenantId, Guid CadenceId, string LeadName, string Email, string PhoneNumber, string? Company = null);
+public record ProcessDueStepsDto(Guid TenantId);
+public record CadenceReplyStopDto(Guid TenantId, string EmailOrPhone, string Channel, string ReplyText);
+public record CompleteTaskDto(Guid TenantId, string Outcome);
+
+public record ResolveCustomerDto(Guid TenantId, string Name, string Phone, string? Email = null, CustomerChannelIdentityType? ChannelType = null, string? ChannelValue = null);
+public record MergeCustomersDto(Guid TenantId, Guid PrimaryCustomerId, Guid DuplicateCustomerId, string? PerformedBy = null);
+
+public record PublicTrackingDto(string OrderNumber, string Phone);
+public record SubmitRmaDto(Guid TenantId, string OrderNumber, string Phone, RmaReason Reason, string? Notes = null, List<string>? PhotoUrls = null);
+public record ReviewRmaDto(Guid TenantId, Guid RmaId, bool IsApproved, string ResolutionNotes, bool DispatchReverseCourier = false, Guid? CourierId = null);
 
 // Required for WebApplicationFactory in integration tests
 public partial class Program { }

@@ -99,6 +99,26 @@ public class SGrowingDbContext : DbContext
     public DbSet<WorkflowDeadLetterLog> WorkflowDeadLetterLogs => Set<WorkflowDeadLetterLog>();
     public DbSet<DynamicAgentTool> DynamicAgentTools => Set<DynamicAgentTool>();
 
+    // Omnichannel Commerce, Logistics, Defensive WMS, Identity & Cadences
+    public DbSet<CodOrder> CodOrders => Set<CodOrder>();
+    public DbSet<OrderCollisionLock> OrderCollisionLocks => Set<OrderCollisionLock>();
+    public DbSet<CallOutcomeRecord> CallOutcomeRecords => Set<CallOutcomeRecord>();
+    public DbSet<CourierProvider> CourierProviders => Set<CourierProvider>();
+    public DbSet<ShipmentRecord> ShipmentRecords => Set<ShipmentRecord>();
+    public DbSet<ShippingManifest> ShippingManifests => Set<ShippingManifest>();
+    public DbSet<BlacklistEntry> BlacklistEntries => Set<BlacklistEntry>();
+    public DbSet<Warehouse> Warehouses => Set<Warehouse>();
+    public DbSet<WarehouseInventory> WarehouseInventories => Set<WarehouseInventory>();
+    public DbSet<StockMovement> StockMovements => Set<StockMovement>();
+    public DbSet<UnifiedCustomerProfile> UnifiedCustomerProfiles => Set<UnifiedCustomerProfile>();
+    public DbSet<CustomerIdentityLink> CustomerIdentityLinks => Set<CustomerIdentityLink>();
+    public DbSet<CustomerTimelineEvent> CustomerTimelineEvents => Set<CustomerTimelineEvent>();
+    public DbSet<ReturnMerchandiseAuthorization> ReturnMerchandiseAuthorizations => Set<ReturnMerchandiseAuthorization>();
+    public DbSet<SalesOutreachCadence> SalesOutreachCadences => Set<SalesOutreachCadence>();
+    public DbSet<SalesCadenceStepItem> SalesCadenceStepItems => Set<SalesCadenceStepItem>();
+    public DbSet<SalesCadenceLeadEnrollment> SalesCadenceLeadEnrollments => Set<SalesCadenceLeadEnrollment>();
+    public DbSet<SdrTaskItem> SdrTaskItems => Set<SdrTaskItem>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
