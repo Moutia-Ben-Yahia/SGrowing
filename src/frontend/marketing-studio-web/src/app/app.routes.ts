@@ -12,9 +12,11 @@ import { AccountsStudioComponent } from './features/accounts/accounts-studio.com
 import { WorkflowStudioComponent } from './features/workflows/workflow-studio.component';
 import { ContractsStudioComponent } from './features/contracts/contracts-studio.component';
 import { RagStudioComponent } from './features/rag/rag-studio.component';
+import { CommerceStudioComponent } from './features/commerce/commerce-studio.component';
 
 export const routes: Routes = [
   { path: '', component: InboxShellComponent },
+  { path: 'commerce', component: CommerceStudioComponent },
   { path: 'outbound', component: OutboundStudioComponent },
   { path: 'broadcasts', component: BroadcastStudioComponent },
   { path: 'sla', component: SlaStudioComponent },

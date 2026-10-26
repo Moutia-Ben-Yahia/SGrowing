@@ -1,3 +1,4 @@
+using System.Text.Json;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.AI;
@@ -9,6 +10,8 @@ using SGrowing.Api.Modules.Journeys;
 using SGrowing.Api.Modules.KnowledgeBase;
 using SGrowing.Api.Modules.Outbound;
 using SGrowing.Api.Modules.Automation;
+using SGrowing.Api.Modules.Commerce;
+using SGrowing.Api.Modules.Integrations;
 using SGrowing.Api.Modules.Marketing;
 using SGrowing.Api.Modules.Security;
 using SGrowing.Api.Modules.Voice;
@@ -113,7 +116,17 @@ builder.Services.AddScoped<VectorRagRetrievalService>();
 builder.Services.AddScoped<LeadEnrichmentService>();
 builder.Services.AddScoped<ContractSigningService>();
 
-// 12. SignalR & CORS
+// 12. Commercial Supremacy: PIM Catalog, CPQ, Storefront Mesh, Realtime Voice Bridge, Privacy
+builder.Services.AddScoped<ProductCatalogService>();
+builder.Services.AddScoped<InChatCpqService>();
+builder.Services.AddScoped<StripePaymentWebhookHandler>();
+builder.Services.AddScoped<ShopifyWebhookReceiver>();
+builder.Services.AddScoped<AbandonedCartRecoveryService>();
+builder.Services.AddSingleton<OpenAiRealtimeBridgeService>();
+builder.Services.AddSingleton<BrowserSoftphoneSignalingService>();
+builder.Services.AddScoped<CustomerPrivacyService>();
+
+// 13. SignalR & CORS
 builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
 {
@@ -608,6 +621,96 @@ app.MapPost("/api/crm/contracts/sign/{token}", async (string token, [FromBody] S
     return Results.Ok(result);
 });
 
+// ----------------- PIM Catalog & In-Chat CPQ Engine -----------------
+app.MapPost("/api/commerce/products", async ([FromBody] CreateProductDto req, ProductCatalogService catalog) =>
+{
+    var product = await catalog.CreateProductAsync(req.TenantId, req.Name, req.Slug, req.Description, req.ProductType, req.BasePrice, req.Currency ?? "USD");
+    return Results.Ok(product);
+});
+
+app.MapGet("/api/commerce/products", async ([FromQuery] Guid tenantId, ProductCatalogService catalog) =>
+{
+    var products = await catalog.GetProductsAsync(tenantId);
+    return Results.Ok(products);
+});
+
+app.MapPost("/api/commerce/products/{id:guid}/variants", async (Guid id, [FromBody] CreateVariantDto req, ProductCatalogService catalog) =>
+{
+    var variant = await catalog.AddVariantAsync(req.TenantId, id, req.Sku, req.Name, req.Price, req.InventoryStock, req.AttributesJson ?? "{}");
+    return Results.Ok(variant);
+});
+
+app.MapPost("/api/commerce/quotes", async ([FromBody] CreateQuoteDto req, InChatCpqService cpq) =>
+{
+    var quote = await cpq.CreateQuoteAsync(req.TenantId, req.ContactId, req.Items, req.CompanyId, req.DealId, req.DiscountPercent, req.TaxPercent, req.Currency ?? "USD", req.Notes);
+    return Results.Ok(quote);
+});
+
+app.MapPost("/api/commerce/quotes/{id:guid}/message", async (Guid id, [FromQuery] Guid tenantId, InChatCpqService cpq) =>
+{
+    var message = await cpq.GenerateInChatQuoteMessageAsync(tenantId, id);
+    return Results.Ok(new { formattedMessage = message });
+});
+
+app.MapPost("/api/commerce/quotes/{id:guid}/accept", async (Guid id, [FromQuery] Guid tenantId, InChatCpqService cpq) =>
+{
+    var quote = await cpq.AcceptQuoteAsync(tenantId, id);
+    return Results.Ok(quote);
+});
+
+app.MapPost("/api/webhooks/stripe", async ([FromQuery] Guid tenantId, [FromBody] JsonElement payload, StripePaymentWebhookHandler stripeHandler) =>
+{
+    var result = await stripeHandler.ProcessStripeEventAsync(tenantId, payload.ToString());
+    return Results.Ok(result);
+});
+
+// ----------------- Storefront Mesh & Abandoned Cart Recovery -----------------
+app.MapPost("/api/integrations/shopify/webhook", async ([FromQuery] Guid tenantId, [FromHeader(Name = "X-Shopify-Topic")] string? topic, [FromBody] JsonElement payload, ShopifyWebhookReceiver receiver) =>
+{
+    var result = await receiver.ProcessWebhookAsync(tenantId, topic ?? "checkouts/create", payload.ToString());
+    return Results.Ok(result);
+});
+
+app.MapPost("/api/integrations/carts/abandoned/scan", async ([FromQuery] Guid tenantId, AbandonedCartRecoveryService recoveryService) =>
+{
+    var results = await recoveryService.TriggerRecoveryScanAsync(tenantId);
+    return Results.Ok(results);
+});
+
+// ----------------- Voice Realtime Bridge & Softphone -----------------
+app.MapPost("/api/voice/realtime/session-config", ([FromBody] RealtimeSessionConfig config, OpenAiRealtimeBridgeService bridge) =>
+{
+    var sessionCmd = bridge.BuildSessionUpdateCommand(config);
+    return Results.Ok(new { commandJson = sessionCmd });
+});
+
+app.MapGet("/api/voice/softphone/config", ([FromQuery] Guid tenantId, [FromQuery] Guid userId, BrowserSoftphoneSignalingService softphone) =>
+{
+    var config = softphone.CreateSessionConfig(tenantId, userId);
+    return Results.Ok(config);
+});
+
+// ----------------- Developer Webhooks & GDPR Privacy -----------------
+app.MapPost("/api/developer/webhooks/subscriptions", async ([FromBody] CreateWebhookSubscriptionDto req, SGrowingDbContext db) =>
+{
+    var sub = WebhookSubscription.Create(req.TenantId, req.TargetUrl, req.SecretToken, req.SubscribedEvents ?? "*");
+    await db.WebhookSubscriptions.AddAsync(sub);
+    await db.SaveChangesAsync();
+    return Results.Ok(sub);
+});
+
+app.MapGet("/api/developer/webhooks/subscriptions", async ([FromQuery] Guid tenantId, SGrowingDbContext db) =>
+{
+    var subs = await db.WebhookSubscriptions.Where(s => s.TenantId == tenantId).ToListAsync();
+    return Results.Ok(subs);
+});
+
+app.MapPost("/api/privacy/erasure", async ([FromBody] PrivacyErasureDto req, CustomerPrivacyService privacyService) =>
+{
+    var result = await privacyService.ExecuteRightToBeForgottenAsync(req.TenantId, req.ContactEmail);
+    return Results.Ok(result);
+});
+
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
 
@@ -634,6 +737,12 @@ public record SearchRagDto(Guid TenantId, string Query, int TopK = 3);
 public record EnrichLeadDto(Guid TenantId, string DomainOrEmail);
 public record CreateContractDto(Guid TenantId, string Title, string ContractType, string SignerName, string SignerEmail, decimal ContractValue, Guid? CompanyId = null, Guid? DealId = null);
 public record SignContractDto(string SignerSignatureName, string? SignedPdfUrl = null);
+
+public record CreateProductDto(Guid TenantId, string Name, string Slug, string Description, ProductType ProductType, decimal BasePrice, string? Currency = "USD");
+public record CreateVariantDto(Guid TenantId, string Sku, string Name, decimal Price, int InventoryStock = 100, string? AttributesJson = "{}");
+public record CreateQuoteDto(Guid TenantId, Guid ContactId, List<CreateQuoteLineItemRequest> Items, Guid? CompanyId = null, Guid? DealId = null, decimal DiscountPercent = 0, decimal TaxPercent = 0, string? Currency = "USD", string? Notes = null);
+public record CreateWebhookSubscriptionDto(Guid TenantId, string TargetUrl, string SecretToken, string? SubscribedEvents = "*");
+public record PrivacyErasureDto(Guid TenantId, string ContactEmail);
 
 // Required for WebApplicationFactory in integration tests
 public partial class Program { }

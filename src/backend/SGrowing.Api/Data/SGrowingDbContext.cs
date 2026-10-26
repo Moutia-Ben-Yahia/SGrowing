@@ -79,6 +79,17 @@ public class SGrowingDbContext : DbContext
     public DbSet<DigitalContract> DigitalContracts => Set<DigitalContract>();
     public DbSet<LeadEnrichmentProfile> LeadEnrichmentProfiles => Set<LeadEnrichmentProfile>();
 
+    // Global Commercial Supremacy (PIM Catalog, CPQ, Storefront Mesh, Webhook Mesh, Privacy)
+    public DbSet<Product> Products => Set<Product>();
+    public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
+    public DbSet<QuoteProposal> QuoteProposals => Set<QuoteProposal>();
+    public DbSet<QuoteLineItem> QuoteLineItems => Set<QuoteLineItem>();
+    public DbSet<StorefrontConnection> StorefrontConnections => Set<StorefrontConnection>();
+    public DbSet<AbandonedCartRecord> AbandonedCartRecords => Set<AbandonedCartRecord>();
+    public DbSet<WebhookSubscription> WebhookSubscriptions => Set<WebhookSubscription>();
+    public DbSet<WebhookDeliveryLog> WebhookDeliveryLogs => Set<WebhookDeliveryLog>();
+    public DbSet<PrivacyErasureRequest> PrivacyErasureRequests => Set<PrivacyErasureRequest>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
