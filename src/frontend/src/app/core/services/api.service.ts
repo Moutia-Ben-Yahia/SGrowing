@@ -182,4 +182,66 @@ export class ApiService {
   public getCustomerTimeline(contactId: string, tenantId: string): Observable<UnifiedCustomer360Dto> {
     return this.http.get<UnifiedCustomer360Dto>(`${this.baseUrl}/crm/contacts/${contactId}/timeline?tenantId=${tenantId}`);
   }
+
+  // Autonomous Fulfillment & Operations Expansion
+  public queueVoiceDialer(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/voice/dialer/queue`, payload);
+  }
+
+  public processVoiceTurn(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/voice/dialer/process-turn`, payload);
+  }
+
+  public createPickSlip(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/fulfillment/pickslips`, payload);
+  }
+
+  public scanPickItem(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/fulfillment/pickslips/scan`, payload);
+  }
+
+  public completePack(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/fulfillment/pickslips/complete-pack`, payload);
+  }
+
+  public scanManifestParcel(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/fulfillment/manifests/scan`, payload);
+  }
+
+  public closeManifest(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/fulfillment/manifests/close-sign`, payload);
+  }
+
+  public inspectRma(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/fulfillment/rma/inspect`, payload);
+  }
+
+  public syncMetaCatalog(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/channels/whatsapp/catalog/sync`, payload);
+  }
+
+  public registerDomain(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/storefronts/domains/register`, payload);
+  }
+
+  public verifyDomain(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/storefronts/domains/verify-dns`, payload);
+  }
+
+  public upsertBrandTheme(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/storefronts/branding/tokens`, payload);
+  }
+
+  public evaluateReputation(tenantId: string, phone: string, email?: string): Observable<any> {
+    const q = email ? `&email=${encodeURIComponent(email)}` : '';
+    return this.http.get<any>(`${this.baseUrl}/commerce/reputation/evaluate?tenantId=${tenantId}&phone=${encodeURIComponent(phone)}${q}`);
+  }
+
+  public generateDepositLink(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/commerce/reputation/deposit-link`, payload);
+  }
+
+  public settleDeposit(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/commerce/reputation/settle-deposit`, payload);
+  }
 }

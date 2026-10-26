@@ -107,6 +107,65 @@ export interface CompanyUI {
             </div>
           </div>
 
+          <!-- White-Label Storefronts & Custom Domains Studio -->
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-base font-semibold text-white flex items-center gap-2">
+                  <span>🌐</span> White-Label Storefronts & Custom Domains
+                </h3>
+                <p class="text-xs text-slate-400">Manage custom domain SSL bindings, CNAME routing, and multi-tenant brand theme tokens.</p>
+              </div>
+              <button
+                (click)="simulateRegisterDomain()"
+                class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition">
+                + Connect Custom Domain
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              @for (domain of storefrontDomains(); track domain.hostname) {
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-950/60 space-y-3">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h4 class="text-sm font-semibold text-slate-100 font-mono">{{ domain.hostname }}</h4>
+                      <p class="text-[11px] text-slate-400">Target: <span class="font-mono text-indigo-400">{{ domain.targetCname }}</span></p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span
+                        [class.bg-emerald-500/20]="domain.status === 'Active'"
+                        [class.text-emerald-400]="domain.status === 'Active'"
+                        [class.bg-amber-500/20]="domain.status === 'PendingDns'"
+                        [class.text-amber-400]="domain.status === 'PendingDns'"
+                        class="text-[10px] font-bold px-2 py-0.5 rounded font-mono">
+                        {{ domain.status }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-2 text-xs border-t border-slate-800/80 pt-2 font-mono">
+                    <div>
+                      <span class="text-[10px] text-slate-500 uppercase">SSL Certificate</span>
+                      <div class="text-slate-300">{{ domain.ssl }}</div>
+                    </div>
+                    <div>
+                      <span class="text-[10px] text-slate-500 uppercase">Brand Theme</span>
+                      <div class="text-cyan-400 font-sans">{{ domain.brand }}</div>
+                    </div>
+                  </div>
+
+                  @if (domain.status === 'PendingDns') {
+                    <button
+                      (click)="verifyDomainUi(domain)"
+                      class="w-full py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-[11px] font-semibold text-white transition">
+                      ⚡ Check DNS CNAME & Issue SSL Certificate
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
           <!-- Modal: Create Company -->
           @if (showCreateModal) {
             <div class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -159,6 +218,44 @@ export class AccountsStudioComponent implements OnInit {
     { id: '2', name: 'Wayne Enterprises', domain: 'wayne.corp', industry: 'Aerospace & Tech', annualRevenue: 8500000, contactsCount: 12, dealsValue: 48000 },
     { id: '3', name: 'Star Labs Research', domain: 'star-labs.com', industry: 'Biotechnology', annualRevenue: 1200000, contactsCount: 4, dealsValue: 8400 }
   ]);
+
+  public storefrontDomains = signal([
+    {
+      hostname: 'store.carthage-parfums.tn',
+      targetCname: 'cname.sgrowing.com',
+      status: 'Active',
+      ssl: 'Issued (Let\'s Encrypt)',
+      brand: 'Carthage Prestige'
+    },
+    {
+      hostname: 'boutique.elissar-couture.com',
+      targetCname: 'cname.sgrowing.com',
+      status: 'PendingDns',
+      ssl: 'Provisioning',
+      brand: 'Elissar Couture'
+    }
+  ]);
+
+  public simulateRegisterDomain(): void {
+    const host = prompt('Enter custom storefront domain (e.g. shop.mybrand.tn):');
+    if (!host) return;
+    this.storefrontDomains.update(list => [
+      ...list,
+      {
+        hostname: host.trim().toLowerCase(),
+        targetCname: 'cname.sgrowing.com',
+        status: 'PendingDns',
+        ssl: 'Provisioning',
+        brand: 'New Storefront'
+      }
+    ]);
+  }
+
+  public verifyDomainUi(domain: any): void {
+    domain.status = 'Active';
+    domain.ssl = 'Issued (Let\'s Encrypt)';
+    alert(`CNAME record verified for ${domain.hostname}! SSL certificate issued and routed.`);
+  }
 
   ngOnInit(): void {}
 

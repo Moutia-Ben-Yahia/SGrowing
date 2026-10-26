@@ -121,6 +121,29 @@ export interface RmaRequestUi {
               class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition">
               <span class="flex items-center gap-2">📡 Ad Tracking & CAPI Mesh</span>
             </button>
+            <button
+              (click)="activeTab.set('scanner')"
+              [class.bg-slate-800]="activeTab() === 'scanner'"
+              [class.text-amber-400]="activeTab() === 'scanner'"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition">
+              <span class="flex items-center gap-2">📱 Barcode Fulfillment Desk</span>
+              <span class="bg-amber-500/20 text-amber-300 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Live</span>
+            </button>
+            <button
+              (click)="activeTab.set('dialer')"
+              [class.bg-slate-800]="activeTab() === 'dialer'"
+              [class.text-emerald-400]="activeTab() === 'dialer'"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition">
+              <span class="flex items-center gap-2">🤖 Voice AI Confirmation</span>
+              <span class="bg-emerald-500/20 text-emerald-300 text-[10px] px-1.5 py-0.5 rounded-full font-bold">IVR</span>
+            </button>
+            <button
+              (click)="activeTab.set('reputation')"
+              [class.bg-slate-800]="activeTab() === 'reputation'"
+              [class.text-indigo-400]="activeTab() === 'reputation'"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition">
+              <span class="flex items-center gap-2">🛡️ Customer Reputation</span>
+            </button>
           </div>
         </div>
 
@@ -634,14 +657,328 @@ export interface RmaRequestUi {
               </div>
             </div>
           }
+
+          <!-- 8. Mobile Barcode Fulfillment Desk Tab -->
+          @if (activeTab() === 'scanner') {
+            <div class="space-y-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-base font-semibold text-slate-100">📱 Mobile Barcode Fulfillment Desk</h3>
+                  <p class="text-xs text-slate-400">High-speed camera viewfinder, handheld laser wedge, Pick-Pack-Ship validation and RMA returns.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Laser Wedge Active
+                  </span>
+                </div>
+              </div>
+
+              <!-- Barcode Scanner Viewfinder & Laser Box -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-1 rounded-xl border border-slate-800 bg-slate-900/40 p-4 flex flex-col items-center justify-center text-center relative overflow-hidden group">
+                  <div class="w-full h-48 rounded-lg bg-slate-950 border border-slate-700/60 relative flex items-center justify-center overflow-hidden">
+                    <!-- Scanner Laser Line Animation -->
+                    <div class="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent shadow-[0_0_12px_#ef4444] animate-bounce"></div>
+                    <div class="absolute inset-4 border-2 border-dashed border-red-500/30 rounded flex items-center justify-center pointer-events-none">
+                      <span class="text-[10px] text-red-400/80 tracking-widest uppercase font-mono">Align Barcode / QR</span>
+                    </div>
+                    <span class="text-4xl text-slate-700">📷</span>
+                  </div>
+                  <p class="text-xs text-slate-400 mt-3">Camera Viewfinder Active (Code128 / EAN13 / QR)</p>
+                </div>
+
+                <div class="md:col-span-2 rounded-xl border border-slate-800 bg-slate-900/40 p-5 space-y-4">
+                  <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Fast Scan Input (Laser Scanner / Keyboard Wedge)</h4>
+                  <div class="flex gap-2">
+                    <input
+                      #barcodeInput
+                      type="text"
+                      placeholder="Scan SKU barcode or paste tracking (Press Enter)..."
+                      (keydown.enter)="handleBarcodeScan(barcodeInput.value); barcodeInput.value = ''"
+                      class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-500 font-mono focus:border-amber-500 outline-none" />
+                    <button
+                      (click)="handleBarcodeScan(barcodeInput.value); barcodeInput.value = ''"
+                      class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-xs font-semibold text-white transition">
+                      Scan
+                    </button>
+                  </div>
+
+                  @if (scanFeedback()) {
+                    <div
+                      [class.bg-emerald-500/10]="scanFeedback()!.success"
+                      [class.border-emerald-500/30]="scanFeedback()!.success"
+                      [class.text-emerald-400]="scanFeedback()!.success"
+                      [class.bg-rose-500/10]="!scanFeedback()!.success"
+                      [class.border-rose-500/30]="!scanFeedback()!.success"
+                      [class.text-rose-400]="!scanFeedback()!.success"
+                      class="p-3 rounded-lg border text-xs font-mono flex items-center justify-between">
+                      <span>{{ scanFeedback()!.message }}</span>
+                      <span class="text-[10px] font-sans font-bold px-2 py-0.5 rounded bg-slate-950/60">
+                        {{ scanFeedback()!.success ? 'VERIFIED' : 'MISMATCH' }}
+                      </span>
+                    </div>
+                  }
+
+                  <!-- Active Pick Slip Summary -->
+                  <div class="border-t border-slate-800/80 pt-4">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-xs font-medium text-slate-200">Pick Slip #{{ activePickSlip().pickSlipNumber }} (Order: {{ activePickSlip().orderNumber }})</span>
+                      <span class="text-xs text-amber-400 font-bold">{{ pickedCount() }}/{{ activePickSlip().items.length }} Items Picked</span>
+                    </div>
+                    <div class="space-y-2">
+                      @for (item of activePickSlip().items; track item.sku) {
+                        <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
+                          <div class="flex items-center gap-2">
+                            <span class="text-xs font-mono text-slate-400">{{ item.sku }}</span>
+                            <span class="text-xs text-slate-200 font-medium">({{ item.productName }})</span>
+                          </div>
+                          <div class="flex items-center gap-3">
+                            <span class="text-xs font-mono text-slate-400">Barcode: {{ item.barcode }}</span>
+                            <span
+                              [class.bg-emerald-500/20]="item.isVerified"
+                              [class.text-emerald-400]="item.isVerified"
+                              [class.bg-slate-800]="!item.isVerified"
+                              [class.text-slate-400]="!item.isVerified"
+                              class="text-[10px] px-2 py-0.5 rounded font-bold">
+                              {{ item.isVerified ? '✓ Picked' : 'Pending' }}
+                            </span>
+                          </div>
+                        </div>
+                      }
+                    </div>
+
+                    <button
+                      (click)="completeFulfillmentPack()"
+                      [disabled]="pickedCount() < activePickSlip().items.length"
+                      class="w-full mt-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:pointer-events-none text-xs font-semibold text-white transition flex items-center justify-center gap-2">
+                      📦 Pack Box, Assign AWB & Dispatch to WMS In-Transit
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- 9. Autonomous Voice AI Confirmation Tab -->
+          @if (activeTab() === 'dialer') {
+            <div class="space-y-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-base font-semibold text-slate-100">🤖 Autonomous Voice AI Confirmation Dialer</h3>
+                  <p class="text-xs text-slate-400">Outbound conversational IVR with Tunisian Derja, French & Arabic speech intent recognition.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-xs text-slate-400 font-mono">Active Campaign: <strong class="text-emerald-400">Tunisia COD Fast Confirm (ar-TN)</strong></span>
+                  <button
+                    (click)="triggerVoiceDialerCall()"
+                    class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition flex items-center gap-1.5">
+                    📞 Queue Auto Call
+                  </button>
+                </div>
+              </div>
+
+              <!-- Live Call Detail Records (CDR) Table -->
+              <div class="rounded-xl border border-slate-800 bg-slate-900/40 overflow-hidden">
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr class="border-b border-slate-800 bg-slate-900/80 text-slate-400 uppercase tracking-wider text-[10px]">
+                      <th class="p-3">Order</th>
+                      <th class="p-3">Customer & Phone</th>
+                      <th class="p-3">Spoken Transcript</th>
+                      <th class="p-3">DTMF</th>
+                      <th class="p-3">Call State</th>
+                      <th class="p-3">WMS Stock Sync</th>
+                      <th class="p-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60 font-mono">
+                    @for (call of dialerAttempts(); track call.id) {
+                      <tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-3 font-semibold text-slate-200">{{ call.orderNumber }}</td>
+                        <td class="p-3 font-sans">
+                          <div class="text-slate-100 font-medium">{{ call.customerName }}</div>
+                          <div class="text-slate-400 text-[10px] font-mono">{{ call.customerPhone }}</div>
+                        </td>
+                        <td class="p-3 font-sans text-slate-300 italic">"{{ call.speechTranscript }}"</td>
+                        <td class="p-3 text-slate-400">{{ call.dtmfDigit || '-' }}</td>
+                        <td class="p-3">
+                          <span
+                            [class.bg-emerald-500/20]="call.state === 'Confirmed'"
+                            [class.text-emerald-400]="call.state === 'Confirmed'"
+                            [class.bg-rose-500/20]="call.state === 'Cancelled'"
+                            [class.text-rose-400]="call.state === 'Cancelled'"
+                            [class.bg-amber-500/20]="call.state === 'Queued'"
+                            [class.text-amber-400]="call.state === 'Queued'"
+                            class="px-2 py-0.5 rounded text-[10px] font-sans font-bold">
+                            {{ call.state }}
+                          </span>
+                        </td>
+                        <td class="p-3 font-sans">
+                          <span class="text-xs text-cyan-400">{{ call.wmsEffect }}</span>
+                        </td>
+                        <td class="p-3 text-right font-sans">
+                          @if (call.state === 'Queued') {
+                            <button
+                              (click)="simulateSpeechResponse(call.id, 'نعم نأكد')"
+                              class="px-2.5 py-1 rounded bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 text-[10px] font-semibold transition mr-1">
+                              Simulate 'نعم نأكد'
+                            </button>
+                            <button
+                              (click)="simulateSpeechResponse(call.id, 'Annuler')"
+                              class="px-2.5 py-1 rounded bg-rose-600/30 hover:bg-rose-600/50 text-rose-300 text-[10px] font-semibold transition">
+                              Simulate 'Annuler'
+                            </button>
+                          } @else {
+                            <span class="text-[10px] text-slate-500">Processed</span>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+
+          <!-- 10. Customer Anti-Fraud Reputation Tab -->
+          @if (activeTab() === 'reputation') {
+            <div class="space-y-6">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-base font-semibold text-slate-100">🛡️ Customer Reputation & Anti-Fraud Scorecard</h3>
+                  <p class="text-xs text-slate-400">Cross-storefront delivery trust scorecard, return risk detection, and smart micro-deposit guarantees.</p>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @for (c of customerScorecards(); track c.phone) {
+                  <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/40 space-y-3">
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <h4 class="text-sm font-semibold text-slate-100">{{ c.name }}</h4>
+                        <span class="text-xs font-mono text-slate-400">{{ c.phone }}</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span
+                          [class.bg-emerald-500/20]="c.tier === 'Trusted'"
+                          [class.text-emerald-400]="c.tier === 'Trusted'"
+                          [class.bg-sky-500/20]="c.tier === 'Standard'"
+                          [class.text-sky-400]="c.tier === 'Standard'"
+                          [class.bg-amber-500/20]="c.tier === 'HighRisk'"
+                          [class.text-amber-400]="c.tier === 'HighRisk'"
+                          [class.bg-rose-500/20]="c.tier === 'Blacklisted'"
+                          [class.text-rose-400]="c.tier === 'Blacklisted'"
+                          class="px-2.5 py-1 rounded-full text-xs font-bold">
+                          {{ c.tier }} (Trust: {{ c.score }}/100)
+                        </span>
+                      </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 py-2 border-y border-slate-800/80 text-center font-mono">
+                      <div>
+                        <span class="text-[10px] text-slate-400 uppercase">Delivered</span>
+                        <div class="text-xs font-bold text-emerald-400">{{ c.delivered }}</div>
+                      </div>
+                      <div>
+                        <span class="text-[10px] text-slate-400 uppercase">Returns</span>
+                        <div class="text-xs font-bold text-rose-400">{{ c.returns }}</div>
+                      </div>
+                      <div>
+                        <span class="text-[10px] text-slate-400 uppercase">Success Rate</span>
+                        <div class="text-xs font-bold text-cyan-400">{{ c.successRate }}%</div>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-1">
+                      <span class="text-xs text-slate-400">{{ c.recommendation }}</span>
+                      @if (c.requiresDeposit && !c.depositPaid) {
+                        <button
+                          (click)="settleDepositUi(c)"
+                          class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-xs font-semibold text-white transition">
+                          💳 Pay 10 DT Micro-Deposit
+                        </button>
+                      } @else if (c.depositPaid) {
+                        <span class="text-xs text-emerald-400 font-semibold font-mono">✓ 10 DT Deposit Deducted</span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
         </div>
       </main>
     </div>
   `
 })
 export class OperationsStudioComponent {
-  activeTab = signal<'confirmation' | 'logistics' | 'wms' | 'cadences' | 'rma' | 'remittance' | 'conversions'>('confirmation');
+  activeTab = signal<'confirmation' | 'logistics' | 'wms' | 'cadences' | 'rma' | 'remittance' | 'conversions' | 'scanner' | 'dialer' | 'reputation'>('confirmation');
   audioAlertsEnabled = signal<boolean>(true);
+
+  // Barcode Fulfillment Desk Signals
+  scanFeedback = signal<{ success: boolean; message: string } | null>(null);
+  activePickSlip = signal({
+    pickSlipNumber: 'PICK-20261026-9901',
+    orderNumber: 'ORD-TN-7701',
+    items: [
+      { sku: 'SLIM-JACKET-BLACK-XL', productName: 'Men Slim Leather Jacket', barcode: '6191234567890', isVerified: false },
+      { sku: 'PERFUME-OUD-100ML', productName: 'Royal Oud Fragrance', barcode: '6199876543210', isVerified: false }
+    ]
+  });
+  pickedCount = signal(0);
+
+  // Voice AI Dialer Signals
+  dialerAttempts = signal([
+    {
+      id: 'call-1',
+      orderNumber: 'ORD-TN-7701',
+      customerName: 'Mohamed Salah Trabelsi',
+      customerPhone: '+21698112233',
+      speechTranscript: 'نعم نأكد الطلب',
+      dtmfDigit: '1',
+      state: 'Confirmed',
+      wmsEffect: '✓ Reserved ➔ Committed'
+    },
+    {
+      id: 'call-2',
+      orderNumber: 'ORD-TN-7702',
+      customerName: 'Aymen Gharbi',
+      customerPhone: '+21622334455',
+      speechTranscript: 'Awaiting customer response...',
+      dtmfDigit: '',
+      state: 'Queued',
+      wmsEffect: 'Stock in Reserved state'
+    }
+  ]);
+
+  // Anti-Fraud Customer Reputation Scorecards
+  customerScorecards = signal([
+    {
+      phone: '+21698112233',
+      name: 'Mohamed Salah Trabelsi',
+      score: 95,
+      tier: 'Trusted',
+      delivered: 12,
+      returns: 0,
+      successRate: 100,
+      requiresDeposit: false,
+      depositPaid: false,
+      recommendation: 'Auto-approve without call'
+    },
+    {
+      phone: '+21622334455',
+      name: 'Aymen Gharbi',
+      score: 35,
+      tier: 'HighRisk',
+      delivered: 2,
+      returns: 3,
+      successRate: 40,
+      requiresDeposit: true,
+      depositPaid: false,
+      recommendation: 'Requires 10 TND Micro-Deposit'
+    }
+  ]);
 
   orders = signal<CodOrderUi[]>([
     {
@@ -820,5 +1157,72 @@ export class OperationsStudioComponent {
 
   simulateChatOrder() {
     alert('Order #CHAT-261026-8821 generated for Sousse (167 TND). Stock reserved in WMS. WhatsApp interactive button card dispatched.');
+  }
+
+  handleBarcodeScan(input: string) {
+    if (!input || !input.trim()) return;
+    const clean = input.trim();
+    const item = this.activePickSlip().items.find(i => i.barcode === clean || i.sku === clean);
+
+    if (item) {
+      item.isVerified = true;
+      const count = this.activePickSlip().items.filter(i => i.isVerified).length;
+      this.pickedCount.set(count);
+      this.scanFeedback.set({
+        success: true,
+        message: `✓ Scanned item '${item.productName}'. (${count}/${this.activePickSlip().items.length})`
+      });
+    } else {
+      this.scanFeedback.set({
+        success: false,
+        message: `❌ Mismatch! Barcode '${clean}' is not in Pick Slip #${this.activePickSlip().pickSlipNumber}.`
+      });
+    }
+  }
+
+  completeFulfillmentPack() {
+    alert(`Pick Slip #${this.activePickSlip().pickSlipNumber} packed! Assigned Courier Tracking #YAL-TN-${Date.now().toString().slice(-6)}. Defensive WMS updated to InTransit.`);
+    this.wmsStock.update(list => list.map(item => ({
+      ...item,
+      committed: Math.max(0, item.committed - 1),
+      inTransit: item.inTransit + 1
+    })));
+  }
+
+  triggerVoiceDialerCall() {
+    const newCall = {
+      id: `call-${Date.now()}`,
+      orderNumber: 'ORD-TN-7703',
+      customerName: 'Sarra Ben Ahmed',
+      customerPhone: '+21650998877',
+      speechTranscript: 'Calling customer via SIP...',
+      dtmfDigit: '',
+      state: 'Queued',
+      wmsEffect: 'Stock in Reserved state'
+    };
+    this.dialerAttempts.update(list => [newCall, ...list]);
+    alert('Outbound Voice AI call queued for Sarra Ben Ahmed (+21650998877).');
+  }
+
+  simulateSpeechResponse(callId: string, speech: string) {
+    const isConfirm = speech.includes('نعم') || speech.toLowerCase().includes('oui');
+    this.dialerAttempts.update(list => list.map(c => {
+      if (c.id === callId) {
+        return {
+          ...c,
+          speechTranscript: speech,
+          dtmfDigit: isConfirm ? '1' : '3',
+          state: isConfirm ? 'Confirmed' : 'Cancelled',
+          wmsEffect: isConfirm ? '✓ Promoted to Committed' : 'Released back to Available'
+        };
+      }
+      return c;
+    }));
+  }
+
+  settleDepositUi(c: any) {
+    c.depositPaid = true;
+    c.tier = 'Standard';
+    alert(`Micro-Deposit of 10 TND settled via Flouci for ${c.name}. Remaining COD reduced by 10 TND. Order auto-confirmed.`);
   }
 }

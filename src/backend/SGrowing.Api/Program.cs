@@ -150,6 +150,13 @@ builder.Services.AddScoped<ICourierRemittanceClearingService, CourierRemittanceC
 builder.Services.AddScoped<IConversationalCartEngine, ConversationalCartEngine>();
 builder.Services.AddScoped<IExternalStoreAndSheetsService, ExternalStoreAndSheetsService>();
 
+// 16. Autonomous Operations: Voice Dialer, Barcode Fulfillment, WhatsApp Catalog, White-Labeling & Reputation
+builder.Services.AddScoped<IAutomatedVoiceDialerService, AutomatedVoiceDialerService>();
+builder.Services.AddScoped<IBarcodeFulfillmentService, BarcodeFulfillmentService>();
+builder.Services.AddScoped<IWhatsAppCatalogEngine, WhatsAppCatalogEngine>();
+builder.Services.AddScoped<IStorefrontDomainService, StorefrontDomainService>();
+builder.Services.AddScoped<ICustomerReputationService, CustomerReputationService>();
+
 // 16. SignalR & CORS
 builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
@@ -1058,6 +1065,133 @@ app.MapPost("/api/storefront/sheets/row", async ([FromBody] GenerateSheetsRowDto
     return Results.Ok(new { Row = row });
 });
 
+// --- Autonomous Voice AI Dialer Endpoints ---
+app.MapPost("/api/voice/dialer/queue", async ([FromBody] QueueVoiceOrderDto req, IAutomatedVoiceDialerService dialerService) =>
+{
+    var attempt = await dialerService.QueueOrderForVoiceConfirmationAsync(req.TenantId, req.OrderId, req.CampaignId);
+    return Results.Ok(attempt);
+});
+
+app.MapPost("/api/voice/dialer/process-turn", async ([FromBody] ProcessVoiceTurnDto req, IAutomatedVoiceDialerService dialerService) =>
+{
+    var attempt = await dialerService.ProcessIvrCustomerResponseAsync(req.TenantId, req.AttemptId, req.SpeechText, req.DtmfDigit);
+    return Results.Ok(attempt);
+});
+
+// --- Barcode Fulfillment Desk Endpoints ---
+app.MapPost("/api/fulfillment/pickslips", async ([FromBody] CreatePickSlipDto req, IBarcodeFulfillmentService fulfillmentService) =>
+{
+    var slip = await fulfillmentService.CreatePickSlipAsync(req.TenantId, req.OrderId, req.WarehouseId);
+    return Results.Ok(slip);
+});
+
+app.MapPost("/api/fulfillment/pickslips/scan", async ([FromBody] ScanPickItemDto req, IBarcodeFulfillmentService fulfillmentService) =>
+{
+    var result = await fulfillmentService.ScanItemToPickSlipAsync(req.TenantId, req.PickSlipId, req.ScannedBarcodeOrSku);
+    return Results.Ok(result);
+});
+
+app.MapPost("/api/fulfillment/pickslips/complete-pack", async ([FromBody] CompletePackDto req, IBarcodeFulfillmentService fulfillmentService) =>
+{
+    var slip = await fulfillmentService.CompletePackAndAssignAwbAsync(req.TenantId, req.PickSlipId, req.TrackingNumber, req.CourierName);
+    return Results.Ok(slip);
+});
+
+app.MapPost("/api/fulfillment/manifests/scan", async ([FromBody] ScanManifestParcelDto req, IBarcodeFulfillmentService fulfillmentService) =>
+{
+    var manifest = await fulfillmentService.ScanParcelToManifestAsync(req.TenantId, req.ManifestId, req.TrackingNumber);
+    return Results.Ok(manifest);
+});
+
+app.MapPost("/api/fulfillment/manifests/close-sign", async ([FromBody] CloseManifestDto req, IBarcodeFulfillmentService fulfillmentService) =>
+{
+    var manifest = await fulfillmentService.CloseAndSignManifestAsync(req.TenantId, req.ManifestId, req.DriverName, req.DriverPhone, req.DriverSignature);
+    return Results.Ok(manifest);
+});
+
+app.MapPost("/api/fulfillment/rma/inspect", async ([FromBody] InspectRmaParcelDto req, IBarcodeFulfillmentService fulfillmentService) =>
+{
+    var rma = await fulfillmentService.InspectAndRestockRmaParcelAsync(req.TenantId, req.TrackingNumber, req.InspectorId, req.Condition, req.Notes, req.WarehouseId);
+    return Results.Ok(rma);
+});
+
+// --- WhatsApp Interactive Catalog & Inbound Cart Endpoints ---
+app.MapPost("/api/channels/whatsapp/catalog/sync", async ([FromBody] SyncMetaCatalogDto req, IWhatsAppCatalogEngine catalogEngine) =>
+{
+    var feed = await catalogEngine.SyncProductsToMetaCatalogAsync(req.TenantId, req.CatalogId);
+    return Results.Ok(feed);
+});
+
+app.MapGet("/api/channels/whatsapp/catalog/feed", async ([FromQuery] Guid tenantId, IWhatsAppCatalogEngine catalogEngine) =>
+{
+    var feedJson = await catalogEngine.GenerateMetaCatalogFeedJsonAsync(tenantId);
+    return Results.Content(feedJson, "application/json");
+});
+
+app.MapPost("/api/channels/whatsapp/catalog/order-webhook", async ([FromBody] WhatsAppInboundOrderWebhookDto req, IWhatsAppCatalogEngine catalogEngine) =>
+{
+    var order = await catalogEngine.ProcessInboundWhatsAppOrderWebhookAsync(req.TenantId, req.CustomerPhone, req.CustomerName, req.CatalogId, req.Items, req.ShippingAddress, req.ShippingGovernorate);
+    return Results.Ok(order);
+});
+
+// --- Storefront White-Labeling & Custom Domains Endpoints ---
+app.MapPost("/api/storefronts/domains/register", async ([FromBody] RegisterDomainDto req, IStorefrontDomainService domainService) =>
+{
+    var domain = await domainService.RegisterCustomDomainAsync(req.TenantId, req.Hostname, req.IsPrimary);
+    return Results.Ok(domain);
+});
+
+app.MapPost("/api/storefronts/domains/verify-dns", async ([FromBody] VerifyDomainDnsDto req, IStorefrontDomainService domainService) =>
+{
+    var domain = await domainService.VerifyDomainDnsAsync(req.TenantId, req.DomainId, req.SimulateValidDns);
+    return Results.Ok(domain);
+});
+
+app.MapPost("/api/storefronts/branding/tokens", async ([FromBody] UpsertBrandTokensDto req, IStorefrontDomainService domainService) =>
+{
+    var tokens = new BrandThemeTokens
+    {
+        StorefrontSlug = req.StorefrontSlug,
+        BrandName = req.BrandName,
+        PrimaryColorHex = req.PrimaryColorHex,
+        SecondaryColorHex = req.SecondaryColorHex,
+        FontFamily = req.FontFamily,
+        LogoUrl = req.LogoUrl,
+        FaviconUrl = req.FaviconUrl,
+        SupportEmail = req.SupportEmail,
+        SupportPhone = req.SupportPhone,
+        SmsSenderId = req.SmsSenderId,
+        WhatsAppSenderPhone = req.WhatsAppSenderPhone
+    };
+    var result = await domainService.UpsertBrandThemeTokensAsync(req.TenantId, tokens);
+    return Results.Ok(result);
+});
+
+app.MapGet("/api/v1/public/storefront/{slugOrDomain}", async (string slugOrDomain, IStorefrontDomainService domainService) =>
+{
+    var config = await domainService.GetPublicStorefrontConfigAsync(slugOrDomain);
+    return config != null ? Results.Ok(config) : Results.NotFound();
+});
+
+// --- Customer Reputation & Micro-Deposit Gateway Endpoints ---
+app.MapGet("/api/commerce/reputation/evaluate", async ([FromQuery] Guid tenantId, [FromQuery] string phone, [FromQuery] string? email, ICustomerReputationService repService) =>
+{
+    var result = await repService.EvaluateCustomerReputationAsync(tenantId, phone, email);
+    return Results.Ok(result);
+});
+
+app.MapPost("/api/commerce/reputation/deposit-link", async ([FromBody] GenerateDepositLinkDto req, ICustomerReputationService repService) =>
+{
+    var link = await repService.GenerateMicroDepositLinkAsync(req.TenantId, req.OrderId, req.CustomerPhone, req.DepositAmount, req.Provider);
+    return Results.Ok(link);
+});
+
+app.MapPost("/api/commerce/reputation/settle-deposit", async ([FromBody] SettleDepositDto req, ICustomerReputationService repService) =>
+{
+    var order = await repService.RecordMicroDepositSettlementAsync(req.TenantId, req.LinkId);
+    return Results.Ok(order);
+});
+
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
 
@@ -1138,6 +1272,23 @@ public record ParseChatCartDto(string MessageText, decimal DefaultUnitPrice = 65
 public record CreateChatOrderDto(Guid TenantId, Guid ConversationId, InChatCartIntent Intent, Guid? WarehouseId = null);
 public record PushFulfillmentDto(Guid TenantId, Guid OrderId, string CourierName, string TrackingNumber);
 public record GenerateSheetsRowDto(Guid TenantId, Guid OrderId);
+
+// Autonomous Fulfillment & Operations Expansion DTOs
+public record QueueVoiceOrderDto(Guid TenantId, Guid OrderId, Guid? CampaignId = null);
+public record ProcessVoiceTurnDto(Guid TenantId, Guid AttemptId, string? SpeechText, string? DtmfDigit);
+public record CreatePickSlipDto(Guid TenantId, Guid OrderId, Guid WarehouseId);
+public record ScanPickItemDto(Guid TenantId, Guid PickSlipId, string ScannedBarcodeOrSku);
+public record CompletePackDto(Guid TenantId, Guid PickSlipId, string TrackingNumber, string CourierName);
+public record ScanManifestParcelDto(Guid TenantId, Guid ManifestId, string TrackingNumber);
+public record CloseManifestDto(Guid TenantId, Guid ManifestId, string DriverName, string DriverPhone, string DriverSignature);
+public record InspectRmaParcelDto(Guid TenantId, string TrackingNumber, string InspectorId, RmaItemCondition Condition, string? Notes, Guid WarehouseId);
+public record SyncMetaCatalogDto(Guid TenantId, string CatalogId);
+public record WhatsAppInboundOrderWebhookDto(Guid TenantId, string CustomerPhone, string CustomerName, string CatalogId, List<WhatsAppInboundOrderItem> Items, string? ShippingAddress = null, string? ShippingGovernorate = null);
+public record RegisterDomainDto(Guid TenantId, string Hostname, bool IsPrimary = true);
+public record VerifyDomainDnsDto(Guid TenantId, Guid DomainId, bool SimulateValidDns = true);
+public record UpsertBrandTokensDto(Guid TenantId, string StorefrontSlug, string BrandName, string PrimaryColorHex, string SecondaryColorHex, string FontFamily, string LogoUrl, string FaviconUrl, string SupportEmail, string SupportPhone, string SmsSenderId, string WhatsAppSenderPhone);
+public record GenerateDepositLinkDto(Guid TenantId, Guid OrderId, string CustomerPhone, decimal DepositAmount = 10.0m, string Provider = "Flouci");
+public record SettleDepositDto(Guid TenantId, Guid LinkId);
 
 // Required for WebApplicationFactory in integration tests
 public partial class Program { }

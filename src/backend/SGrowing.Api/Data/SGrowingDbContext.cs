@@ -128,6 +128,21 @@ public class SGrowingDbContext : DbContext
     public DbSet<ExternalStoreSyncRecord> ExternalStoreSyncRecords => Set<ExternalStoreSyncRecord>();
     public DbSet<GoogleSheetsSyncConfig> GoogleSheetsSyncConfigs => Set<GoogleSheetsSyncConfig>();
 
+    // Autonomous Fulfillment & Operations Expansion
+    public DbSet<VoiceConfirmationCampaign> VoiceConfirmationCampaigns => Set<VoiceConfirmationCampaign>();
+    public DbSet<OutboundCallAttempt> OutboundCallAttempts => Set<OutboundCallAttempt>();
+    public DbSet<WarehousePickSlip> WarehousePickSlips => Set<WarehousePickSlip>();
+    public DbSet<PickSlipItem> PickSlipItems => Set<PickSlipItem>();
+    public DbSet<CourierManifestRunSheet> CourierManifestRunSheets => Set<CourierManifestRunSheet>();
+    public DbSet<ManifestParcelItem> ManifestParcelItems => Set<ManifestParcelItem>();
+    public DbSet<WarehouseRmaInspection> WarehouseRmaInspections => Set<WarehouseRmaInspection>();
+    public DbSet<MetaCatalogItem> MetaCatalogItems => Set<MetaCatalogItem>();
+    public DbSet<MetaCatalogSyncFeed> MetaCatalogSyncFeeds => Set<MetaCatalogSyncFeed>();
+    public DbSet<StorefrontDomain> StorefrontDomains => Set<StorefrontDomain>();
+    public DbSet<BrandThemeTokens> BrandThemeTokens => Set<BrandThemeTokens>();
+    public DbSet<CustomerReputationScorecard> CustomerReputationScorecards => Set<CustomerReputationScorecard>();
+    public DbSet<MicroDepositPaymentLink> MicroDepositPaymentLinks => Set<MicroDepositPaymentLink>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
