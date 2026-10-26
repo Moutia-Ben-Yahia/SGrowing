@@ -26,10 +26,16 @@ import { BillingStudioComponent } from './features/billing/billing-studio.compon
 import { DigitalGoodsStudioComponent } from './features/digital-goods/digital-goods-studio.component';
 import { FormsStudioComponent } from './features/forms/forms-studio.component';
 import { DeveloperStudioComponent } from './features/developer/developer-studio.component';
+import { CourierCompanionComponent } from './features/courier/courier-companion.component';
+import { CheckoutWidgetComponent } from './features/checkout/checkout-widget.component';
+import { CreativeRadarStudioComponent } from './features/marketing/creative-radar-studio.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', component: InboxShellComponent, canActivate: [authGuard] },
+  { path: 'courier', component: CourierCompanionComponent, canActivate: [authGuard] },
+  { path: 'checkout', component: CheckoutWidgetComponent },
+  { path: 'creatives', component: CreativeRadarStudioComponent, canActivate: [authGuard] },
   { path: 'digital-goods', component: DigitalGoodsStudioComponent, canActivate: [authGuard] },
   { path: 'forms', component: FormsStudioComponent, canActivate: [authGuard] },
   { path: 'developer', component: DeveloperStudioComponent, canActivate: [authGuard] },

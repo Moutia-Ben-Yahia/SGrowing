@@ -26,6 +26,19 @@ import { SubscriptionDetailsDto, BillingInvoiceRecordDto } from '../models/billi
 import { DigitalAssetDto, DigitalDownloadTokenDto, ProductLicenseKeyDto, PimVariantMatrixDto } from '../models/digital-goods.models';
 import { DynamicFormDefinitionDto, DynamicFormSubmissionDto, CryptographicPdfRecordDto } from '../models/dynamic-forms.models';
 import { TenantApiKeyDto, WebhookSubscriptionRecordDto, WebhookDeliveryAttemptLogDto } from '../models/developer-webhooks.models';
+import {
+  DriverMobileSessionDto,
+  DoorstepPodDto,
+  DriverCashSummaryDto,
+  WilayaZoneDto,
+  CodCheckoutSessionDto,
+  UgcVideoScriptDto,
+  CompetitorAdRecordDto,
+  CompetitorPriceTrackerDto,
+  CompetitorRadarSummaryDto,
+  B2BCreditAccountDto,
+  FactoringReceivableRecordDto
+} from '../models/horizons-advanced.models';
 
 @Injectable({
   providedIn: 'root'
@@ -744,5 +757,104 @@ export class ApiService {
 
   public retryWebhookDelivery(tenantId: string, logId: string): Observable<WebhookDeliveryAttemptLogDto> {
     return this.http.post<WebhookDeliveryAttemptLogDto>(`${this.baseUrl}/developer/webhooks/logs/${logId}/retry?tenantId=${tenantId}`, {});
+  }
+
+  // Horizon 1: Mobile Courier Companion & Headless COD Checkout
+  public startDriverSession(payload: any): Observable<DriverMobileSessionDto> {
+    return this.http.post<DriverMobileSessionDto>(`${this.baseUrl}/commerce/courier/session`, payload);
+  }
+
+  public getRunSheetStops(runSheetId: string, tenantId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/commerce/courier/run-sheets/${runSheetId}/stops?tenantId=${tenantId}`);
+  }
+
+  public submitDoorstepPod(payload: any): Observable<DoorstepPodDto> {
+    return this.http.post<DoorstepPodDto>(`${this.baseUrl}/commerce/courier/pod`, payload);
+  }
+
+  public getDriverCashSummary(tenantId: string, driverId: string): Observable<DriverCashSummaryDto> {
+    return this.http.get<DriverCashSummaryDto>(`${this.baseUrl}/commerce/courier/cash-summary?tenantId=${tenantId}&driverId=${driverId}`);
+  }
+
+  public pingDriverGps(payload: any): Observable<{ success: boolean }> {
+    return this.http.post<{ success: boolean }>(`${this.baseUrl}/commerce/courier/gps-heartbeat`, payload);
+  }
+
+  public createCodCheckoutSession(payload: any): Observable<CodCheckoutSessionDto> {
+    return this.http.post<CodCheckoutSessionDto>(`${this.baseUrl}/commerce/checkout/session`, payload);
+  }
+
+  public getCheckoutWilayas(countryCode = 'TN'): Observable<WilayaZoneDto[]> {
+    return this.http.get<WilayaZoneDto[]>(`${this.baseUrl}/commerce/checkout/wilayas?countryCode=${countryCode}`);
+  }
+
+  public updateCheckoutDetails(payload: any): Observable<CodCheckoutSessionDto> {
+    return this.http.post<CodCheckoutSessionDto>(`${this.baseUrl}/commerce/checkout/details`, payload);
+  }
+
+  public sendCheckoutOtp(payload: any): Observable<{ success: boolean; simulatedOtp: string }> {
+    return this.http.post<{ success: boolean; simulatedOtp: string }>(`${this.baseUrl}/commerce/checkout/send-otp`, payload);
+  }
+
+  public verifyCheckoutOtp(payload: any): Observable<{ verified: boolean }> {
+    return this.http.post<{ verified: boolean }>(`${this.baseUrl}/commerce/checkout/verify-otp`, payload);
+  }
+
+  public applyCheckoutUpsell(payload: any): Observable<CodCheckoutSessionDto> {
+    return this.http.post<CodCheckoutSessionDto>(`${this.baseUrl}/commerce/checkout/apply-upsell`, payload);
+  }
+
+  public completeCheckout(payload: any): Observable<{ success: boolean; orderId: string; orderNumber: string; totalAmount: number; message: string }> {
+    return this.http.post<{ success: boolean; orderId: string; orderNumber: string; totalAmount: number; message: string }>(`${this.baseUrl}/commerce/checkout/complete`, payload);
+  }
+
+  // Horizon 3: UGC Creative Generator & Competitor Intelligence Radar
+  public generateUgcScripts(payload: any): Observable<UgcVideoScriptDto[]> {
+    return this.http.post<UgcVideoScriptDto[]>(`${this.baseUrl}/marketing/ugc/generate-scripts`, payload);
+  }
+
+  public getUgcScripts(tenantId: string, sku: string): Observable<UgcVideoScriptDto[]> {
+    return this.http.get<UgcVideoScriptDto[]>(`${this.baseUrl}/marketing/ugc/scripts?tenantId=${tenantId}&sku=${sku}`);
+  }
+
+  public ingestCompetitorAd(payload: any): Observable<CompetitorAdRecordDto> {
+    return this.http.post<CompetitorAdRecordDto>(`${this.baseUrl}/marketing/competitor/ad`, payload);
+  }
+
+  public trackCompetitorPrice(payload: any): Observable<CompetitorPriceTrackerDto> {
+    return this.http.post<CompetitorPriceTrackerDto>(`${this.baseUrl}/marketing/competitor/price`, payload);
+  }
+
+  public getCompetitorRadar(tenantId: string): Observable<CompetitorRadarSummaryDto> {
+    return this.http.get<CompetitorRadarSummaryDto>(`${this.baseUrl}/marketing/competitor/radar?tenantId=${tenantId}`);
+  }
+
+  // Horizon 4: Enterprise B2B Financials & Factoring
+  public establishB2BCredit(payload: any): Observable<B2BCreditAccountDto> {
+    return this.http.post<B2BCreditAccountDto>(`${this.baseUrl}/billing/b2b-credit/accounts`, payload);
+  }
+
+  public recordInvoiceDrawdown(payload: any): Observable<B2BCreditAccountDto> {
+    return this.http.post<B2BCreditAccountDto>(`${this.baseUrl}/billing/b2b-credit/invoice-drawdown`, payload);
+  }
+
+  public recordPaymentSettlement(payload: any): Observable<B2BCreditAccountDto> {
+    return this.http.post<B2BCreditAccountDto>(`${this.baseUrl}/billing/b2b-credit/settlement`, payload);
+  }
+
+  public requestCourierFactoring(payload: any): Observable<FactoringReceivableRecordDto> {
+    return this.http.post<FactoringReceivableRecordDto>(`${this.baseUrl}/billing/factoring/request`, payload);
+  }
+
+  public fundFactoringAdvance(factoringId: string, tenantId: string): Observable<FactoringReceivableRecordDto> {
+    return this.http.post<FactoringReceivableRecordDto>(`${this.baseUrl}/billing/factoring/fund/${factoringId}?tenantId=${tenantId}`, {});
+  }
+
+  public getB2BFinancialSummary(tenantId: string): Observable<{ creditAccounts: B2BCreditAccountDto[]; factoringReceivables: FactoringReceivableRecordDto[]; totalFactoringAvailable: number; totalCreditExposure: number }> {
+    return this.http.get<{ creditAccounts: B2BCreditAccountDto[]; factoringReceivables: FactoringReceivableRecordDto[]; totalFactoringAvailable: number; totalCreditExposure: number }>(`${this.baseUrl}/billing/b2b-financials/summary?tenantId=${tenantId}`);
+  }
+
+  public replayDeveloperWebhook(attemptId: string, tenantId: string): Observable<WebhookDeliveryAttemptLogDto> {
+    return this.http.post<WebhookDeliveryAttemptLogDto>(`${this.baseUrl}/developer/webhooks/replay/${attemptId}?tenantId=${tenantId}`, {});
   }
 }
