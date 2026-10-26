@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import { LoginComponent } from './features/auth/login.component';
+import { authGuard } from './core/guards/auth.guard';
 import { InboxShellComponent } from './features/inbox/inbox-shell.component';
 import { OutboundStudioComponent } from './features/outbound/outbound-studio.component';
 import { JourneyStudioComponent } from './features/journeys/journey-studio.component';
@@ -17,21 +19,22 @@ import { AnalyticsStudioComponent } from './features/analytics/analytics-studio.
 import { OperationsStudioComponent } from './features/operations/operations-studio.component';
 
 export const routes: Routes = [
-  { path: '', component: InboxShellComponent },
-  { path: 'operations', component: OperationsStudioComponent },
-  { path: 'analytics', component: AnalyticsStudioComponent },
-  { path: 'commerce', component: CommerceStudioComponent },
-  { path: 'outbound', component: OutboundStudioComponent },
-  { path: 'broadcasts', component: BroadcastStudioComponent },
-  { path: 'sla', component: SlaStudioComponent },
-  { path: 'social', component: SocialStudioComponent },
-  { path: 'voice', component: VoiceStudioComponent },
-  { path: 'accounts', component: AccountsStudioComponent },
-  { path: 'workflows', component: WorkflowStudioComponent },
-  { path: 'contracts', component: ContractsStudioComponent },
-  { path: 'rag', component: RagStudioComponent },
-  { path: 'journeys', component: JourneyStudioComponent },
-  { path: 'feedback', component: FeedbackStudioComponent },
-  { path: 'help', component: KnowledgeStudioComponent },
+  { path: 'login', component: LoginComponent },
+  { path: '', component: InboxShellComponent, canActivate: [authGuard] },
+  { path: 'operations', component: OperationsStudioComponent, canActivate: [authGuard] },
+  { path: 'analytics', component: AnalyticsStudioComponent, canActivate: [authGuard] },
+  { path: 'commerce', component: CommerceStudioComponent, canActivate: [authGuard] },
+  { path: 'outbound', component: OutboundStudioComponent, canActivate: [authGuard] },
+  { path: 'broadcasts', component: BroadcastStudioComponent, canActivate: [authGuard] },
+  { path: 'sla', component: SlaStudioComponent, canActivate: [authGuard] },
+  { path: 'social', component: SocialStudioComponent, canActivate: [authGuard] },
+  { path: 'voice', component: VoiceStudioComponent, canActivate: [authGuard] },
+  { path: 'accounts', component: AccountsStudioComponent, canActivate: [authGuard] },
+  { path: 'workflows', component: WorkflowStudioComponent, canActivate: [authGuard] },
+  { path: 'contracts', component: ContractsStudioComponent, canActivate: [authGuard] },
+  { path: 'rag', component: RagStudioComponent, canActivate: [authGuard] },
+  { path: 'journeys', component: JourneyStudioComponent, canActivate: [authGuard] },
+  { path: 'feedback', component: FeedbackStudioComponent, canActivate: [authGuard] },
+  { path: 'help', component: KnowledgeStudioComponent, canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

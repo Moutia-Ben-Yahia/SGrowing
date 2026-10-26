@@ -18,6 +18,12 @@ using SGrowing.Api.Modules.Security;
 using SGrowing.Api.Modules.Tenancy;
 using SGrowing.Api.Modules.Voice;
 using SGrowing.Api.Modules.Finance;
+using SGrowing.Api.Modules.Auth;
+using SGrowing.Api.Modules.Messaging;
+using SGrowing.Core.Messaging;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Entities;
@@ -172,7 +178,53 @@ builder.Services.AddScoped<ICrossBorderTradeService, CrossBorderTradeService>();
 builder.Services.AddScoped<IDemandForecastingService, DemandForecastingService>();
 builder.Services.AddScoped<ISecurityAuditAndRbacService, SecurityAuditAndRbacService>();
 
-// 16. SignalR & CORS
+// 16. Authentication, Security & Tenant Context
+var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "SGrowing_SuperSecretEnterpriseMasterKey_998877665544332211!!";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "SGrowing.Api";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "SGrowing.Clients";
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            ValidateIssuer = true,
+            ValidIssuer = jwtIssuer,
+            ValidateAudience = true,
+            ValidAudience = jwtAudience,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+    });
+builder.Services.AddAuthorization();
+
+builder.Services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
+builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// 17. Durable Redis Stream Broker
+var redisConn = builder.Configuration.GetConnectionString("Redis")
+    ?? builder.Configuration["Redis:ConnectionString"];
+if (!string.IsNullOrWhiteSpace(redisConn))
+{
+    try
+    {
+        builder.Services.AddSingleton<StackExchange.Redis.IConnectionMultiplexer>(_ => StackExchange.Redis.ConnectionMultiplexer.Connect(redisConn));
+        builder.Services.AddSingleton<IRedisStreamBroker, RedisStreamBroker>();
+    }
+    catch
+    {
+        builder.Services.AddSingleton<IRedisStreamBroker, InMemoryStreamBroker>();
+    }
+}
+else
+{
+    builder.Services.AddSingleton<IRedisStreamBroker, InMemoryStreamBroker>();
+}
+
+// 18. SignalR & CORS
 builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
 {
@@ -188,6 +240,9 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseCors();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseMiddleware<TenantContextMiddleware>();
 
 // Ensure in-memory dev db is seeded if needed
 using (var scope = app.Services.CreateScope())
@@ -197,6 +252,8 @@ using (var scope = app.Services.CreateScope())
 }
 
 // ----------------- API Endpoints -----------------
+
+app.MapAuthEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", framework = ".NET 10", timestamp = DateTime.UtcNow }));
 

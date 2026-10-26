@@ -68,13 +68,23 @@ public class OutboxProcessorDaemon : BackgroundService
 
         _logger.LogInformation("Processing batch of {Count} outbox messages.", pendingMessages.Count);
 
+        var broker = scope.ServiceProvider.GetService<SGrowing.Core.Messaging.IRedisStreamBroker>();
+
         foreach (var message in pendingMessages)
         {
             try
             {
-                // In production, publish to RabbitMQ / Kafka / External Webhooks
-                _logger.LogDebug("Dispatched event {EventType} ({MessageId}) payload size {PayloadLen}.",
-                    message.EventType, message.Id, message.Payload.Length);
+                if (broker != null)
+                {
+                    await broker.PublishEventAsync(
+                        "sgrowing:stream:outbox",
+                        message.EventType,
+                        message.Payload,
+                        message.TenantId);
+                }
+
+                _logger.LogInformation("Dispatched event {EventType} ({MessageId}) via Durable Redis Stream.",
+                    message.EventType, message.Id);
 
                 message.MarkProcessed();
             }

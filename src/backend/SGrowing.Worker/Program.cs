@@ -2,7 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SGrowing.Api.Data;
+using SGrowing.Api.Modules.Messaging;
+using SGrowing.Core.Messaging;
 using SGrowing.Worker.Services;
+using StackExchange.Redis;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -12,9 +15,7 @@ builder.Services.AddDbContext<SGrowingDbContext>(options =>
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     if (!string.IsNullOrEmpty(connectionString))
     {
-        // Production PostgreSQL
-        // options.UseNpgsql(connectionString);
-        options.UseInMemoryDatabase("SGrowingWorkerDb");
+        options.UseNpgsql(connectionString);
     }
     else
     {
@@ -22,8 +23,30 @@ builder.Services.AddDbContext<SGrowingDbContext>(options =>
     }
 });
 
+// Durable Redis Stream Broker
+var redisConn = builder.Configuration.GetConnectionString("Redis")
+    ?? builder.Configuration["Redis:ConnectionString"];
+
+if (!string.IsNullOrWhiteSpace(redisConn))
+{
+    try
+    {
+        builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisConn));
+        builder.Services.AddSingleton<IRedisStreamBroker, RedisStreamBroker>();
+    }
+    catch
+    {
+        builder.Services.AddSingleton<IRedisStreamBroker, InMemoryStreamBroker>();
+    }
+}
+else
+{
+    builder.Services.AddSingleton<IRedisStreamBroker, InMemoryStreamBroker>();
+}
+
 // Hosted background daemons
 builder.Services.AddHostedService<OutboxProcessorDaemon>();
+builder.Services.AddHostedService<RedisStreamConsumerDaemon>();
 builder.Services.AddHostedService<SlaWatchdogDaemon>();
 
 var host = builder.Build();

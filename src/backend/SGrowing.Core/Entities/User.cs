@@ -15,5 +15,11 @@ public class User
     public string FullName { get; set; } = string.Empty;
     public UserRole Role { get; set; } = UserRole.Agent;
     public string? AvatarUrl { get; set; }
+    public string PasswordHash { get; set; } = string.Empty;
+    public string PasswordSalt { get; set; } = string.Empty;
+    public bool IsActive { get; set; } = true;
+    public string? RefreshToken { get; set; }
+    public DateTime? RefreshTokenExpiresAtUtc { get; set; }
+    public DateTime? LastLoginAtUtc { get; set; }
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 }
