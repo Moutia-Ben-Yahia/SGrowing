@@ -92,6 +92,42 @@ import {
               </div>
             </div>
 
+            <!-- Weighted A/B Variant Resolver Widget (openfunnels style) -->
+            <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 space-y-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                    <span>⚖️ Weighted A/B Variant Split Resolver</span>
+                    <span class="text-[10px] bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2 py-0.5 rounded-full font-mono">
+                      Deterministic Roll (1-100)
+                    </span>
+                  </h3>
+                  <p class="text-xs text-slate-400">Deterministic visitor hash distribution between Variant A (Original) and Variant B (Challenger)</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-orange-400 font-bold font-mono">Split: 50% / 50%</span>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4 pt-1">
+                <div class="p-3 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
+                  <div class="flex justify-between text-xs">
+                    <span class="font-bold text-white">Variant A (Control)</span>
+                    <span class="text-orange-400 font-mono">50% Traffic</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400">Standard COD single page layout with customer reviews</p>
+                  <div class="text-[10px] text-emerald-400 font-mono">Conv: 4.8% • AOV: 180 TND</div>
+                </div>
+                <div class="p-3 bg-slate-950/80 border border-orange-500/30 rounded-xl space-y-1">
+                  <div class="flex justify-between text-xs">
+                    <span class="font-bold text-white">Variant B (Challenger)</span>
+                    <span class="text-emerald-400 font-mono">50% Traffic</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400">Sticky 1-click buy button + countdown timer urgency banner</p>
+                  <div class="text-[10px] text-emerald-400 font-mono">Conv: 6.2% (+29% Lift) • AOV: 215 TND</div>
+                </div>
+              </div>
+            </div>
+
             <!-- Pipeline Visual Canvas -->
             <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 space-y-4">
               <div class="flex items-center justify-between">

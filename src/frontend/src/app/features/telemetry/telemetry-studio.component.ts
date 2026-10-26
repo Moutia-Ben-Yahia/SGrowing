@@ -118,6 +118,84 @@ import { LiveTelemetrySummaryDto, TelemetryEventDto } from '../../core/models/te
             </div>
           </div>
 
+          <!-- Multi-Step Funnel Drop-off Waterfall (PostHog & Countly style) -->
+          <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                  <span>📉 Multi-Step Conversion Funnel Drop-off Analyzer</span>
+                  <span class="text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded-full font-mono">
+                    PostHog Funnels
+                  </span>
+                </h3>
+                <p class="text-xs text-slate-400">Step-by-step visitor retention and drop-off rate from initial store landing to verified purchase</p>
+              </div>
+              <div class="text-right">
+                <span class="text-xs text-slate-400">Overall Conversion Rate:</span>
+                <span class="text-base font-extrabold text-emerald-400 ml-2 font-mono">10.0%</span>
+              </div>
+            </div>
+
+            <!-- Steps Progress Waterfall -->
+            <div class="grid grid-cols-4 gap-4 pt-2">
+              <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                <div class="flex justify-between text-xs">
+                  <span class="text-slate-300 font-semibold">1. Pageview</span>
+                  <span class="text-cyan-400 font-mono font-bold">100 visitors</span>
+                </div>
+                <div class="w-full bg-slate-900 rounded-full h-2">
+                  <div class="bg-cyan-400 h-2 rounded-full" style="width: 100%"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+                  <span>Baseline: 100%</span>
+                  <span class="text-emerald-400">0% drop</span>
+                </div>
+              </div>
+
+              <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                <div class="flex justify-between text-xs">
+                  <span class="text-slate-300 font-semibold">2. Add to Cart</span>
+                  <span class="text-cyan-400 font-mono font-bold">50 visitors</span>
+                </div>
+                <div class="w-full bg-slate-900 rounded-full h-2">
+                  <div class="bg-cyan-400 h-2 rounded-full" style="width: 50%"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+                  <span>Conv: 50.0%</span>
+                  <span class="text-amber-400">-50 dropped</span>
+                </div>
+              </div>
+
+              <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                <div class="flex justify-between text-xs">
+                  <span class="text-slate-300 font-semibold">3. Begin Checkout</span>
+                  <span class="text-cyan-400 font-mono font-bold">25 visitors</span>
+                </div>
+                <div class="w-full bg-slate-900 rounded-full h-2">
+                  <div class="bg-cyan-400 h-2 rounded-full" style="width: 25%"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+                  <span>Conv: 50.0%</span>
+                  <span class="text-amber-400">-25 dropped</span>
+                </div>
+              </div>
+
+              <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                <div class="flex justify-between text-xs">
+                  <span class="text-slate-300 font-semibold">4. Purchase</span>
+                  <span class="text-emerald-400 font-mono font-bold">10 orders</span>
+                </div>
+                <div class="w-full bg-slate-900 rounded-full h-2">
+                  <div class="bg-emerald-400 h-2 rounded-full" style="width: 10%"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+                  <span>Conv: 40.0%</span>
+                  <span class="text-emerald-400">10% overall</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Chronological Telemetry Ingress Feed -->
           <div class="rounded-2xl border border-slate-800 bg-slate-900/40 overflow-hidden">
             <div class="px-5 py-3 border-b border-slate-800 bg-slate-900/80 flex items-center justify-between">

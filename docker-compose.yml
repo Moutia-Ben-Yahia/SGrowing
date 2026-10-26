@@ -37,7 +37,7 @@ services:
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=sgrowing_db;Username=sgrowing_user;Password=sgrowing_password
       - Redis__ConnectionString=redis:6379
     ports:
-      - "5000:5000"
+      - "5000:8080"
     depends_on:
       postgres:
         condition: service_healthy

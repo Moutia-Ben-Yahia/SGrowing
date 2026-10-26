@@ -1,0 +1,86 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: sgrowing_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-sgrowing_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sgrowing_secure_password_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-sgrowing_db}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sgrowing_user} -d ${POSTGRES_DB:-sgrowing_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: sgrowing_redis
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: src/backend/SGrowing.Api/Dockerfile
+    container_name: sgrowing_api
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-sgrowing_db};Username=${POSTGRES_USER:-sgrowing_user};Password=${POSTGRES_PASSWORD:-sgrowing_secure_password_2026}
+      - Redis__ConnectionString=redis:6379
+      - Jwt__SecretKey=${JWT_SECRET:-SGrowing_SuperSecretEnterpriseMasterKey_998877665544332211!!}
+      - Jwt__Issuer=SGrowing.Api
+      - Jwt__Audience=SGrowing.Clients
+    ports:
+      - "5000:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/healthz/live || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  worker:
+    build:
+      context: .
+      dockerfile: src/backend/SGrowing.Worker/Dockerfile
+    container_name: sgrowing_worker
+    restart: unless-stopped
+    environment:
+      - DOTNET_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-sgrowing_db};Username=${POSTGRES_USER:-sgrowing_user};Password=${POSTGRES_PASSWORD:-sgrowing_secure_password_2026}
+      - Redis__ConnectionString=redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: src/frontend
+      dockerfile: Dockerfile
+    container_name: sgrowing_web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  redisdata:

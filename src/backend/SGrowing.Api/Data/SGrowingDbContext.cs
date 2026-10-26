@@ -286,6 +286,10 @@ public class SGrowingDbContext : DbContext
     public DbSet<FeatureFeedbackPost> FeatureFeedbackPosts => Set<FeatureFeedbackPost>();
     public DbSet<FeatureFeedbackVote> FeatureFeedbackVotes => Set<FeatureFeedbackVote>();
 
+    // Phase 5: Safe AI Agent Framework & Tool Sandbox (PRD Phase 5)
+    public DbSet<AiAgentBudget> AiAgentBudgets => Set<AiAgentBudget>();
+    public DbSet<AiToolExecutionLog> AiToolExecutionLogs => Set<AiToolExecutionLog>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

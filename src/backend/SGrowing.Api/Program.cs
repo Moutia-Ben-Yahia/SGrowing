@@ -225,6 +225,10 @@ builder.Services.AddScoped<IPublicationCmsService, PublicationCmsService>();
 builder.Services.AddScoped<ISalesForecastingService, SalesForecastingService>();
 builder.Services.AddScoped<IFeatureFeedbackService, FeatureFeedbackService>();
 
+// 25. Safe AI Agent Framework, Permissioned Tool Execution & Conversational BI (PRD Phase 5)
+builder.Services.AddScoped<IAiAgentOrchestratorService, AiAgentOrchestratorService>();
+builder.Services.AddScoped<IConversationalBiService, ConversationalBiService>();
+
 // 16. Authentication, Security & Tenant Context
 var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "SGrowing_SuperSecretEnterpriseMasterKey_998877665544332211!!";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "SGrowing.Api";
@@ -321,6 +325,7 @@ app.MapDocumentTrackingEndpoints();
 app.MapPublicationCmsEndpoints();
 app.MapSalesForecastingEndpoints();
 app.MapFeatureFeedbackEndpoints();
+app.MapAiEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", framework = ".NET 10", timestamp = DateTime.UtcNow }));
 app.MapGet("/healthz/live", () => Results.Ok(new { status = "Healthy", timestampUtc = DateTime.UtcNow }));

@@ -29,10 +29,18 @@ import { DeveloperStudioComponent } from './features/developer/developer-studio.
 import { CourierCompanionComponent } from './features/courier/courier-companion.component';
 import { CheckoutWidgetComponent } from './features/checkout/checkout-widget.component';
 import { CreativeRadarStudioComponent } from './features/marketing/creative-radar-studio.component';
+import { DocumentsStudioComponent } from './features/documents/documents-studio.component';
+import { PublicationStudioComponent } from './features/publications/publication-studio.component';
+import { ForecastingStudioComponent } from './features/forecasting/forecasting-studio.component';
+import { RoadmapBoardComponent } from './features/roadmap/roadmap-board.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', component: InboxShellComponent, canActivate: [authGuard] },
+  { path: 'documents', component: DocumentsStudioComponent, canActivate: [authGuard] },
+  { path: 'publications', component: PublicationStudioComponent, canActivate: [authGuard] },
+  { path: 'forecasting', component: ForecastingStudioComponent, canActivate: [authGuard] },
+  { path: 'roadmap', component: RoadmapBoardComponent, canActivate: [authGuard] },
   { path: 'courier', component: CourierCompanionComponent, canActivate: [authGuard] },
   { path: 'checkout', component: CheckoutWidgetComponent },
   { path: 'creatives', component: CreativeRadarStudioComponent, canActivate: [authGuard] },
