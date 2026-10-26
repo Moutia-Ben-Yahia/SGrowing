@@ -144,7 +144,13 @@ builder.Services.AddScoped<ISalesCadenceEngine, SalesCadenceEngine>();
 builder.Services.AddScoped<ICustomerIdentityGraphService, CustomerIdentityGraphService>();
 builder.Services.AddScoped<ICustomerSelfServicePortalService, CustomerSelfServicePortalService>();
 
-// 15. SignalR & CORS
+// 15. Server-Side Ad Tracking, Courier Clearing, In-Chat Commerce & Storefront Mesh
+builder.Services.AddScoped<IServerConversionMeshService, ServerConversionMeshService>();
+builder.Services.AddScoped<ICourierRemittanceClearingService, CourierRemittanceClearingService>();
+builder.Services.AddScoped<IConversationalCartEngine, ConversationalCartEngine>();
+builder.Services.AddScoped<IExternalStoreAndSheetsService, ExternalStoreAndSheetsService>();
+
+// 16. SignalR & CORS
 builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
 {
@@ -987,6 +993,71 @@ app.MapPost("/api/portal/rma/review", async ([FromBody] ReviewRmaDto req, ICusto
     return Results.Ok(rma);
 });
 
+// --- Server-Side Conversion Mesh Endpoints ---
+app.MapPost("/api/tracking/conversions", async ([FromBody] TrackConversionDto req, IServerConversionMeshService mesh) =>
+{
+    var ev = await mesh.TrackConversionAsync(req.TenantId, req.Platform, req.EventType, req.ValueAmount, req.Currency ?? "USD", req.Email, req.Phone, req.FirstName, req.LastName, req.City, req.Country, req.Fbc, req.Fbp, req.UserAgent, req.IpAddress, req.CustomDataJson, req.EventId);
+    var emq = mesh.CalculateEventMatchQualityScore(ev);
+    return Results.Ok(new { Event = ev, MatchQualityScore = emq });
+});
+
+app.MapGet("/api/tracking/conversions", async ([FromQuery] Guid tenantId, [FromQuery] int limit, IServerConversionMeshService mesh) =>
+{
+    var events = await mesh.GetRecentConversionsAsync(tenantId, limit <= 0 ? 50 : limit);
+    return Results.Ok(events);
+});
+
+// --- Courier Cash Remittance & Financial Clearing Endpoints ---
+app.MapPost("/api/remittance/reconcile", async ([FromBody] ReconcileRemittanceDto req, ICourierRemittanceClearingService clearingService) =>
+{
+    var result = await clearingService.ReconcileStatementAsync(req.TenantId, req.CourierProviderId, req.StatementReference, req.Items, req.ReconciledBy ?? "FinanceManager");
+    return Results.Ok(result);
+});
+
+app.MapPost("/api/remittance/discrepancies/resolve", async ([FromBody] ResolveDiscrepancyDto req, ICourierRemittanceClearingService clearingService) =>
+{
+    var match = await clearingService.ResolveDiscrepancyAsync(req.TenantId, req.MatchId, req.ResolutionNotes);
+    return Results.Ok(match);
+});
+
+app.MapGet("/api/remittance/profitability", async ([FromQuery] Guid tenantId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] decimal cogsPercent, ICourierRemittanceClearingService clearingService) =>
+{
+    var summary = await clearingService.CalculateNetProfitabilityAsync(tenantId, startDate, endDate, cogsPercent <= 0 ? 35.0m : cogsPercent);
+    return Results.Ok(summary);
+});
+
+// --- In-Chat Commerce & Cart Builder Endpoints ---
+app.MapPost("/api/chat-commerce/parse", ([FromBody] ParseChatCartDto req, IConversationalCartEngine cartEngine) =>
+{
+    var intent = cartEngine.ParseCartIntent(req.MessageText, req.DefaultUnitPrice <= 0 ? 65.0m : req.DefaultUnitPrice, req.Currency ?? "TND");
+    return Results.Ok(intent);
+});
+
+app.MapPost("/api/chat-commerce/orders", async ([FromBody] CreateChatOrderDto req, IConversationalCartEngine cartEngine) =>
+{
+    var result = await cartEngine.CreateInChatOrderAsync(req.TenantId, req.ConversationId, req.Intent, req.WarehouseId);
+    return Results.Ok(result);
+});
+
+// --- External Storefront & Sheets Mesh Endpoints ---
+app.MapPost("/api/storefront/shopify/webhook", async ([FromQuery] Guid tenantId, [FromBody] JsonElement payload, IExternalStoreAndSheetsService storeService) =>
+{
+    var order = await storeService.IngestExternalStoreOrderAsync(tenantId, ExternalStorePlatform.Shopify, payload.GetRawText());
+    return Results.Ok(order);
+});
+
+app.MapPost("/api/storefront/shopify/fulfill", async ([FromBody] PushFulfillmentDto req, IExternalStoreAndSheetsService storeService) =>
+{
+    var record = await storeService.PushFulfillmentUpdateAsync(req.TenantId, req.OrderId, req.CourierName, req.TrackingNumber);
+    return Results.Ok(record);
+});
+
+app.MapPost("/api/storefront/sheets/row", async ([FromBody] GenerateSheetsRowDto req, IExternalStoreAndSheetsService storeService) =>
+{
+    var row = await storeService.GenerateGoogleSheetsRowAsync(req.TenantId, req.OrderId);
+    return Results.Ok(new { Row = row });
+});
+
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
 
@@ -1058,6 +1129,15 @@ public record MergeCustomersDto(Guid TenantId, Guid PrimaryCustomerId, Guid Dupl
 public record PublicTrackingDto(string OrderNumber, string Phone);
 public record SubmitRmaDto(Guid TenantId, string OrderNumber, string Phone, RmaReason Reason, string? Notes = null, List<string>? PhotoUrls = null);
 public record ReviewRmaDto(Guid TenantId, Guid RmaId, bool IsApproved, string ResolutionNotes, bool DispatchReverseCourier = false, Guid? CourierId = null);
+
+// Conversion Mesh, Courier Clearing, In-Chat Commerce & Storefront DTOs
+public record TrackConversionDto(Guid TenantId, AdPlatform Platform, ConversionEventType EventType, decimal ValueAmount, string? Currency = "USD", string? Email = null, string? Phone = null, string? FirstName = null, string? LastName = null, string? City = null, string? Country = null, string? Fbc = null, string? Fbp = null, string? UserAgent = null, string? IpAddress = null, string? CustomDataJson = null, string? EventId = null);
+public record ReconcileRemittanceDto(Guid TenantId, Guid CourierProviderId, string StatementReference, List<ReportedRemittanceItemDto> Items, string? ReconciledBy = null);
+public record ResolveDiscrepancyDto(Guid TenantId, Guid MatchId, string ResolutionNotes);
+public record ParseChatCartDto(string MessageText, decimal DefaultUnitPrice = 65.0m, string? Currency = "TND");
+public record CreateChatOrderDto(Guid TenantId, Guid ConversationId, InChatCartIntent Intent, Guid? WarehouseId = null);
+public record PushFulfillmentDto(Guid TenantId, Guid OrderId, string CourierName, string TrackingNumber);
+public record GenerateSheetsRowDto(Guid TenantId, Guid OrderId);
 
 // Required for WebApplicationFactory in integration tests
 public partial class Program { }

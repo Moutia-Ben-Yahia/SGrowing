@@ -119,6 +119,15 @@ public class SGrowingDbContext : DbContext
     public DbSet<SalesCadenceLeadEnrollment> SalesCadenceLeadEnrollments => Set<SalesCadenceLeadEnrollment>();
     public DbSet<SdrTaskItem> SdrTaskItems => Set<SdrTaskItem>();
 
+    // Ad Conversions, Remittance Clearing, In-Chat Commerce & Storefront Sync
+    public DbSet<ServerConversionEvent> ServerConversionEvents => Set<ServerConversionEvent>();
+    public DbSet<ConversionTrackingConfig> ConversionTrackingConfigs => Set<ConversionTrackingConfig>();
+    public DbSet<CourierRemittanceStatement> CourierRemittanceStatements => Set<CourierRemittanceStatement>();
+    public DbSet<RemittanceItemMatch> RemittanceItemMatches => Set<RemittanceItemMatch>();
+    public DbSet<InChatCartSession> InChatCartSessions => Set<InChatCartSession>();
+    public DbSet<ExternalStoreSyncRecord> ExternalStoreSyncRecords => Set<ExternalStoreSyncRecord>();
+    public DbSet<GoogleSheetsSyncConfig> GoogleSheetsSyncConfigs => Set<GoogleSheetsSyncConfig>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

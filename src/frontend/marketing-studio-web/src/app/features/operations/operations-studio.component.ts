@@ -106,6 +106,21 @@ export interface RmaRequestUi {
               class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition">
               <span class="flex items-center gap-2">🔄 Customer 360 & RMA</span>
             </button>
+            <button
+              (click)="activeTab.set('remittance')"
+              [class.bg-slate-800]="activeTab() === 'remittance'"
+              [class.text-emerald-400]="activeTab() === 'remittance'"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition">
+              <span class="flex items-center gap-2">💰 Courier Cash Clearing</span>
+              <span class="bg-rose-500/20 text-rose-400 text-[10px] px-1.5 py-0.5 rounded-full font-bold">1 Alert</span>
+            </button>
+            <button
+              (click)="activeTab.set('conversions')"
+              [class.bg-slate-800]="activeTab() === 'conversions'"
+              [class.text-sky-400]="activeTab() === 'conversions'"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition">
+              <span class="flex items-center gap-2">📡 Ad Tracking & CAPI Mesh</span>
+            </button>
           </div>
         </div>
 
@@ -129,6 +144,8 @@ export interface RmaRequestUi {
               @if (activeTab() === 'wms') { Defensive Multi-State WMS Stock Ledger }
               @if (activeTab() === 'cadences') { Sales Outbound Cadences & Stop-On-Reply SDR }
               @if (activeTab() === 'rma') { Customer 360 Identity Graph & Self-Service RMA }
+              @if (activeTab() === 'remittance') { Courier Cash Remittance & Financial Clearing House }
+              @if (activeTab() === 'conversions') { Server-Side Conversion Mesh & In-Chat Commerce }
             </h2>
             <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
               Live Engine Active
@@ -458,13 +475,172 @@ export interface RmaRequestUi {
               </div>
             </div>
           }
+
+          <!-- TAB 6: Courier Cash Remittance & Financial Clearing House -->
+          @if (activeTab() === 'remittance') {
+            <div class="space-y-6">
+              <!-- Summary KPI Cards -->
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60">
+                  <div class="text-xs text-slate-400">Total Cash Collected</div>
+                  <div class="text-xl font-bold text-white mt-1">12,450 TND</div>
+                  <span class="text-[11px] text-emerald-400">Aramex + Express Courrier</span>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60">
+                  <div class="text-xs text-slate-400">Courier Fees Deducted</div>
+                  <div class="text-xl font-bold text-rose-400 mt-1">-1,120 TND</div>
+                  <span class="text-[11px] text-slate-400">Avg 8.00 TND / delivery</span>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60">
+                  <div class="text-xs text-slate-400">Net Cash Remitted</div>
+                  <div class="text-xl font-bold text-emerald-400 mt-1">11,330 TND</div>
+                  <span class="text-[11px] text-emerald-400">Deposited into Bank</span>
+                </div>
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60">
+                  <div class="text-xs text-slate-400">Net Merchant Profitability</div>
+                  <div class="text-xl font-bold text-cyan-400 mt-1">5,145 TND</div>
+                  <span class="text-[11px] text-cyan-400">41.3% Net Margin</span>
+                </div>
+              </div>
+
+              <!-- Discrepancy Reconciliation Table -->
+              <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 space-y-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="text-sm font-semibold text-slate-200">Weekly Courier Settlement Reconciliation</h3>
+                    <p class="text-xs text-slate-400">Automated 3-way matching against system delivered orders</p>
+                  </div>
+                  <button
+                    (click)="simulateReconciliation()"
+                    class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white transition">
+                    🔄 Run Auto-Reconciliation
+                  </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs">
+                    <thead class="border-b border-slate-800 text-slate-400">
+                      <tr>
+                        <th class="py-2">Tracking #</th>
+                        <th class="py-2">Courier</th>
+                        <th class="py-2 text-right">Expected Cash</th>
+                        <th class="py-2 text-right">Reported Cash</th>
+                        <th class="py-2 text-right">Difference</th>
+                        <th class="py-2 text-center">Status</th>
+                        <th class="py-2 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                      @for (item of remittanceDiscrepancies(); track item.tracking) {
+                        <tr class="hover:bg-slate-800/40 transition">
+                          <td class="py-2.5 font-mono text-slate-200">{{ item.tracking }}</td>
+                          <td class="py-2.5 text-slate-300">{{ item.courier }}</td>
+                          <td class="py-2.5 text-right font-mono">{{ item.expected }} TND</td>
+                          <td class="py-2.5 text-right font-mono">{{ item.reported }} TND</td>
+                          <td class="py-2.5 text-right font-mono font-bold"
+                              [class.text-emerald-400]="item.diff === 0"
+                              [class.text-rose-400]="item.diff < 0">
+                            {{ item.diff }} TND
+                          </td>
+                          <td class="py-2.5 text-center">
+                            <span class="px-2 py-0.5 rounded text-[11px] font-medium"
+                                  [class.bg-emerald-500/20]="item.status === 'ExactMatch'"
+                                  [class.text-emerald-400]="item.status === 'ExactMatch'"
+                                  [class.bg-rose-500/20]="item.status === 'ShortPayment'"
+                                  [class.text-rose-400]="item.status === 'ShortPayment'">
+                              {{ item.status }}
+                            </span>
+                          </td>
+                          <td class="py-2.5 text-right">
+                            @if (item.status === 'ShortPayment') {
+                              <button
+                                (click)="resolveDiscrepancy(item)"
+                                class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition text-[11px]">
+                                Resolve Dispute
+                              </button>
+                            } @else {
+                              <span class="text-slate-500">Cleared</span>
+                            }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- TAB 7: Server-Side Conversion Mesh & In-Chat Commerce -->
+          @if (activeTab() === 'conversions') {
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Meta CAPI & TikTok Events -->
+              <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 space-y-4">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-semibold text-slate-200">Server-Side Conversion Mesh</h3>
+                  <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-xs font-bold">
+                    EMQ: 9.4 / 10.0
+                  </span>
+                </div>
+                <p class="text-xs text-slate-400">
+                  Bypassing iOS 14.5 ad-blockers with SHA-256 server-to-server event dispatching for Meta Graph API & TikTok Events API.
+                </p>
+
+                <div class="space-y-2 text-xs font-mono">
+                  <div class="p-2.5 rounded bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-between">
+                    <div>
+                      <div class="text-sky-400 font-bold">Meta CAPI: Purchase (180 TND)</div>
+                      <div class="text-slate-500 text-[10px]">SHA256(phone)=a94a8fe5... | fbp=fb.1.1689...</div>
+                    </div>
+                    <span class="text-emerald-400 font-bold">Dispatched</span>
+                  </div>
+                  <div class="p-2.5 rounded bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-between">
+                    <div>
+                      <div class="text-fuchsia-400 font-bold">TikTok Events: CompletePayment (89 TND)</div>
+                      <div class="text-slate-500 text-[10px]">SHA256(email)=e3b0c442... | deduplication_id=EVT-881</div>
+                    </div>
+                    <span class="text-emerald-400 font-bold">Dispatched</span>
+                  </div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                  <span>Shopify Bi-Directional Webhook: <strong class="text-emerald-400">Connected</strong></span>
+                  <span>Google Sheets Stream: <strong class="text-emerald-400">48 Rows Appended</strong></span>
+                </div>
+              </div>
+
+              <!-- In-Chat Conversational Cart Builder -->
+              <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/60 space-y-4">
+                <h3 class="text-sm font-semibold text-slate-200">Conversational In-Chat Cart Builder</h3>
+                <p class="text-xs text-slate-400">Extracts quantities, governorate shipping fees, and customer phone directly from chat.</p>
+
+                <div class="space-y-3">
+                  <div class="p-3 rounded-lg border border-slate-800 bg-slate-950 text-xs space-y-1.5">
+                    <div class="text-slate-400 font-sans">Simulated WhatsApp Customer Message:</div>
+                    <div class="p-2 rounded bg-slate-900 text-slate-200 italic font-mono">
+                      "Bonjour, je veux 2 bouteilles de Royal Oud pour Sousse au +21698112233"
+                    </div>
+                    <div class="text-emerald-400 font-sans font-medium pt-1">
+                      ➔ Detected: Product="Royal Oud" | Qty=2 | Gov="Sousse" | Shipping=7.0 TND | Total=167 TND
+                    </div>
+                  </div>
+
+                  <button
+                    (click)="simulateChatOrder()"
+                    class="w-full py-2 rounded-lg bg-teal-600 hover:bg-teal-500 text-xs font-semibold text-white transition">
+                    ⚡ Generate 1-Click WhatsApp Order Card & Reserve Stock
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
         </div>
       </main>
     </div>
   `
 })
 export class OperationsStudioComponent {
-  activeTab = signal<'confirmation' | 'logistics' | 'wms' | 'cadences' | 'rma'>('confirmation');
+  activeTab = signal<'confirmation' | 'logistics' | 'wms' | 'cadences' | 'rma' | 'remittance' | 'conversions'>('confirmation');
   audioAlertsEnabled = signal<boolean>(true);
 
   orders = signal<CodOrderUi[]>([
@@ -612,5 +788,37 @@ export class OperationsStudioComponent {
   approveRma(rma: RmaRequestUi) {
     this.rmaRequests.update(list => list.filter(r => r.rmaNumber !== rma.rmaNumber));
     alert(`RMA ${rma.rmaNumber} approved! Reverse courier pickup dispatched.`);
+  }
+
+  remittanceDiscrepancies = signal([
+    {
+      tracking: 'ARX-TN-9901-22',
+      courier: 'Aramex Tunisia',
+      expected: 149,
+      reported: 149,
+      diff: 0,
+      status: 'ExactMatch'
+    },
+    {
+      tracking: 'EXP-TN-8802-11',
+      courier: 'Express Courrier',
+      expected: 220,
+      reported: 180,
+      diff: -40,
+      status: 'ShortPayment'
+    }
+  ]);
+
+  simulateReconciliation() {
+    alert('Reconciliation complete: 2 statements processed, 1 short-payment dispute flagged.');
+  }
+
+  resolveDiscrepancy(item: any) {
+    this.remittanceDiscrepancies.update(list => list.map(i => i.tracking === item.tracking ? { ...i, status: 'ExactMatch', diff: 0 } : i));
+    alert(`Dispute on ${item.tracking} marked resolved.`);
+  }
+
+  simulateChatOrder() {
+    alert('Order #CHAT-261026-8821 generated for Sousse (167 TND). Stock reserved in WMS. WhatsApp interactive button card dispatched.');
   }
 }
