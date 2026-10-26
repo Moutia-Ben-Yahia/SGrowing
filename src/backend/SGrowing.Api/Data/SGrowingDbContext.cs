@@ -90,6 +90,15 @@ public class SGrowingDbContext : DbContext
     public DbSet<WebhookDeliveryLog> WebhookDeliveryLogs => Set<WebhookDeliveryLog>();
     public DbSet<PrivacyErasureRequest> PrivacyErasureRequests => Set<PrivacyErasureRequest>();
 
+    // Global Strategic Leadership (Revenue Attribution, SaaS Metering, Cron DLQ, AI Gateway)
+    public DbSet<AttributionTouchpoint> AttributionTouchpoints => Set<AttributionTouchpoint>();
+    public DbSet<TenantSubscription> TenantSubscriptions => Set<TenantSubscription>();
+    public DbSet<FeatureEntitlement> FeatureEntitlements => Set<FeatureEntitlement>();
+    public DbSet<UsageMeterRecord> UsageMeterRecords => Set<UsageMeterRecord>();
+    public DbSet<QuietHoursPolicy> QuietHoursPolicies => Set<QuietHoursPolicy>();
+    public DbSet<WorkflowDeadLetterLog> WorkflowDeadLetterLogs => Set<WorkflowDeadLetterLog>();
+    public DbSet<DynamicAgentTool> DynamicAgentTools => Set<DynamicAgentTool>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

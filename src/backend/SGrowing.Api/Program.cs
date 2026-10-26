@@ -2,6 +2,7 @@ using System.Text.Json;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.AI;
+using SGrowing.Api.Modules.Analytics;
 using SGrowing.Api.Modules.Channels;
 using SGrowing.Api.Modules.Conversations;
 using SGrowing.Api.Modules.CRM;
@@ -14,6 +15,7 @@ using SGrowing.Api.Modules.Commerce;
 using SGrowing.Api.Modules.Integrations;
 using SGrowing.Api.Modules.Marketing;
 using SGrowing.Api.Modules.Security;
+using SGrowing.Api.Modules.Tenancy;
 using SGrowing.Api.Modules.Voice;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
@@ -126,7 +128,15 @@ builder.Services.AddSingleton<OpenAiRealtimeBridgeService>();
 builder.Services.AddSingleton<BrowserSoftphoneSignalingService>();
 builder.Services.AddScoped<CustomerPrivacyService>();
 
-// 13. SignalR & CORS
+// 13. Global Strategic Leadership: Revenue Attribution, SaaS Metering, Cron DLQ, AI Gateway
+builder.Services.AddScoped<MultiTouchAttributionService>();
+builder.Services.AddScoped<TenantUsageMeteringService>();
+builder.Services.AddScoped<QuietHoursGuardService>();
+builder.Services.AddSingleton<PromptFirewallService>();
+builder.Services.AddSingleton<AiModelRouterService>();
+builder.Services.AddScoped<DynamicAgentToolRegistry>();
+
+// 14. SignalR & CORS
 builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
 {
@@ -711,6 +721,88 @@ app.MapPost("/api/privacy/erasure", async ([FromBody] PrivacyErasureDto req, Cus
     return Results.Ok(result);
 });
 
+// ----------------- Multi-Touch Revenue Attribution & BI -----------------
+app.MapPost("/api/analytics/touchpoints", async ([FromBody] RecordTouchpointDto req, MultiTouchAttributionService attribution) =>
+{
+    var tp = await attribution.RecordTouchpointAsync(req.TenantId, req.ContactId, req.Channel, req.CampaignName, req.Stage, req.DealId, req.Cost, req.UtmSource, req.UtmMedium, req.UtmCampaign);
+    return Results.Ok(tp);
+});
+
+app.MapPost("/api/analytics/attribution/calculate", async ([FromBody] CalculateAttributionDto req, MultiTouchAttributionService attribution) =>
+{
+    var results = await attribution.CalculateAttributionAsync(req.TenantId, req.DealId, req.Model);
+    return Results.Ok(results);
+});
+
+app.MapGet("/api/analytics/kpis", async ([FromQuery] Guid tenantId, MultiTouchAttributionService attribution) =>
+{
+    var kpis = await attribution.CalculateExecutiveKpisAsync(tenantId);
+    return Results.Ok(kpis);
+});
+
+// ----------------- SaaS Usage Metering & Plan Entitlements -----------------
+app.MapGet("/api/saas/usage/summary", async ([FromQuery] Guid tenantId, TenantUsageMeteringService metering) =>
+{
+    var summary = await metering.GetUsageSummaryAsync(tenantId);
+    return Results.Ok(summary);
+});
+
+app.MapPost("/api/saas/usage/record", async ([FromBody] RecordUsageDto req, TenantUsageMeteringService metering) =>
+{
+    var record = await metering.RecordUsageAsync(req.TenantId, req.Metric, req.Quantity, req.Metadata);
+    return Results.Ok(record);
+});
+
+app.MapPost("/api/saas/entitlements/check", async ([FromBody] CheckEntitlementDto req, TenantUsageMeteringService metering) =>
+{
+    var check = await metering.CheckEntitlementAsync(req.TenantId, req.Metric, req.IncomingQuantity);
+    return Results.Ok(check);
+});
+
+// ----------------- Advanced Workflows & Quiet Hours -----------------
+app.MapGet("/api/workflows/dlq", async ([FromQuery] Guid tenantId, SGrowingDbContext db) =>
+{
+    var dlq = await db.WorkflowDeadLetterLogs.Where(d => d.TenantId == tenantId).ToListAsync();
+    return Results.Ok(dlq);
+});
+
+app.MapPost("/api/workflows/quiet-hours/evaluate", async ([FromBody] EvaluateQuietHoursDto req, QuietHoursGuardService guard) =>
+{
+    var result = await guard.EvaluateDispatchTimeAsync(req.TenantId, req.RecipientLocalTime, req.IsUrgent);
+    return Results.Ok(result);
+});
+
+// ----------------- Enterprise AI Gateway & Prompt Firewall -----------------
+app.MapPost("/api/ai/firewall/inspect", ([FromBody] InspectPromptDto req, PromptFirewallService firewall) =>
+{
+    var result = firewall.InspectAndSanitize(req.UserPrompt);
+    return Results.Ok(result);
+});
+
+app.MapPost("/api/ai/gateway/route", ([FromBody] RouteModelDto req, AiModelRouterService router) =>
+{
+    var decision = router.SelectModelForTask(req.Complexity, req.TaskHint);
+    return Results.Ok(decision);
+});
+
+app.MapPost("/api/ai/tools/register", async ([FromBody] RegisterToolDto req, DynamicAgentToolRegistry toolRegistry) =>
+{
+    var tool = await toolRegistry.RegisterToolAsync(req.TenantId, req.Name, req.Description, req.SchemaJson, req.TargetUrl, req.HttpMethod ?? "POST");
+    return Results.Ok(tool);
+});
+
+app.MapGet("/api/ai/tools", async ([FromQuery] Guid tenantId, DynamicAgentToolRegistry toolRegistry) =>
+{
+    var tools = await toolRegistry.GetActiveToolsAsync(tenantId);
+    return Results.Ok(tools);
+});
+
+app.MapPost("/api/ai/tools/execute", async ([FromBody] ExecuteToolDto req, DynamicAgentToolRegistry toolRegistry) =>
+{
+    var result = await toolRegistry.ExecuteToolAsync(req.TenantId, req.ToolName, req.ArgumentsJson);
+    return Results.Ok(result);
+});
+
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
 
@@ -743,6 +835,16 @@ public record CreateVariantDto(Guid TenantId, string Sku, string Name, decimal P
 public record CreateQuoteDto(Guid TenantId, Guid ContactId, List<CreateQuoteLineItemRequest> Items, Guid? CompanyId = null, Guid? DealId = null, decimal DiscountPercent = 0, decimal TaxPercent = 0, string? Currency = "USD", string? Notes = null);
 public record CreateWebhookSubscriptionDto(Guid TenantId, string TargetUrl, string SecretToken, string? SubscribedEvents = "*");
 public record PrivacyErasureDto(Guid TenantId, string ContactEmail);
+
+public record RecordTouchpointDto(Guid TenantId, Guid ContactId, string Channel, string CampaignName, TouchpointStage Stage, Guid? DealId = null, decimal Cost = 0, string? UtmSource = null, string? UtmMedium = null, string? UtmCampaign = null);
+public record CalculateAttributionDto(Guid TenantId, Guid DealId, AttributionModelType Model = AttributionModelType.WShaped);
+public record RecordUsageDto(Guid TenantId, UsageMetricType Metric, long Quantity, string? Metadata = null);
+public record CheckEntitlementDto(Guid TenantId, UsageMetricType Metric, long IncomingQuantity);
+public record EvaluateQuietHoursDto(Guid TenantId, DateTime RecipientLocalTime, bool IsUrgent = false);
+public record InspectPromptDto(string UserPrompt);
+public record RouteModelDto(AiTaskComplexity Complexity, string? TaskHint = null);
+public record RegisterToolDto(Guid TenantId, string Name, string Description, string SchemaJson, string TargetUrl, string? HttpMethod = "POST");
+public record ExecuteToolDto(Guid TenantId, string ToolName, string ArgumentsJson);
 
 // Required for WebApplicationFactory in integration tests
 public partial class Program { }

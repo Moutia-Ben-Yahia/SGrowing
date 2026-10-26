@@ -178,3 +178,20 @@ In addition to the 79 open-source codebases, detailed architectural and function
 | **Respond.io** | Omnichannel Customer Messaging | WhatsApp Cloud API, Instagram, Telegram, SMS, visual workflow routing canvas | [Read Wiki](respond-io.md) |
 | **Sent.dm** | Social Direct Message Outreach | Multi-account Instagram & X automation, comment-to-DM funnels, anti-detection | [Read Wiki](sent-dm.md) |
 
+---
+
+## 📦 Regional COD E-Commerce, Logistics & Funnel OS Benchmarks
+
+To address the specific dynamics of **Cash-on-Delivery (COD)** markets across North Africa and the Middle East (where 90%+ of commerce relies on physical cash settlement, telephone order confirmation, and regional couriers), **5 market-defining regional commerce platforms** have been reverse-engineered alongside an overarching cross-platform architectural comparison:
+
+🔗 **Master Comparison & Convergence Guide: [North African & MENA COD E-Commerce Platforms: Architectural Comparison & Convergence Guide](cod-ecommerce-ecosystem-comparison.md)**
+
+| Platform | Primary Market | Core Architecture & Key Capabilities | Wiki Reference |
+| :--- | :--- | :--- | :--- |
+| **Mallatech** (`mallatech.tn`) | Tunisia | 15+ Tunisian courier auto-routing, 24 Gouvernorats cascade, Ka-ching audio alert, free SMS gateway, real-time net profitability & ROAS ledger | [Read Wiki](mallatech.md) |
+| **Vondera** (`vondera.app`) | Egypt & MENA | Mobile-first commerce OS (Flutter), "Vinbox" omnichannel social CRM (WhatsApp/IG/FB), native Bosta & Mylerz courier APIs, Shopify 2-way sync | [Read Wiki](vondera.md) |
+| **Converty** (`converty.shop`) | Tunisia & North Africa | High-velocity COD funnels, sub-second static landing pages, embedded 1-step checkout, Order Bumps, algorithmic anti-fraud device shield, Meta/TikTok CAPI | [Read Wiki](converty.md) |
+| **TikTak PRO** (`tiktakpro.com`) | Tunisia & Francophone Africa | Integrated call center CRM ("TikTak Caller"), server-side anti-collision locks, WinSMS automated confirmation flows, defensive multi-warehouse stock reservation | [Read Wiki](tiktakpro.md) |
+| **YouCan** (`youcan.shop`) | Morocco, GCC & Pan-MENA | Enterprise multi-tenant cloud, Express Checkout (No-Cart), Liquid Theme Engine, Celeste UI, YouCan CLI, native "YouCan Pay" gateway (`yp.js`), Google Sheets real-time stream | [Read Wiki](youcan.md) |
+
+

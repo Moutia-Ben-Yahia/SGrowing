@@ -29,6 +29,11 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
             <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2">Navigation</span>
             <div class="space-y-1 mb-4">
               <a
+                routerLink="/analytics"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-sky-400 hover:bg-sky-500/10 border border-sky-500/20 transition">
+                <span class="flex items-center gap-2">📊 Analytics & Multi-Touch BI</span>
+              </a>
+              <a
                 routerLink="/commerce"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
                 <span class="flex items-center gap-2">🛒 Commerce & CPQ</span>
