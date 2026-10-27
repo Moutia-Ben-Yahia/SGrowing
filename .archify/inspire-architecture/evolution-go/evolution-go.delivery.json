@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "8b74de11-7b0c-4d8b-b45e-c3c7f2287eb8",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\evolution-go\\candidate.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\evolution-go\\evolution-go.html",
+  "specification": {
+    "sha256": "4b0350ebafc6dfb9361dca61c9557d951c3e4bbd8ce27c74dea6a867c0b20dd8",
+    "bytes": 5905
+  },
+  "artifact": {
+    "sha256": "c89276d8198d8c2a97a84b7d2d7bdefdaad1eb8deedfe77e7033bcc067d5476b",
+    "bytes": 850656
+  }
+}

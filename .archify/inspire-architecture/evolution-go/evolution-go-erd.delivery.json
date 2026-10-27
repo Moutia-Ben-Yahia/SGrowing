@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "1465e05e-f5cb-4a55-95b1-450c27efadcd",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\evolution-go\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\evolution-go\\evolution-go-erd.html",
+  "specification": {
+    "sha256": "02be108291641dc959f4769c26fabfe176bad1e12064ac741dd133e4fb6577da",
+    "bytes": 5340
+  },
+  "artifact": {
+    "sha256": "4a80f8ac1988bbc465c0dc20056acf10076354810e85fe52d461a7dd6f0ad224",
+    "bytes": 855143
+  }
+}

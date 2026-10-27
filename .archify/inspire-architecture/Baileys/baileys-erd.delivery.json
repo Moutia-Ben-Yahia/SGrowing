@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "5db9f7c2-ff5a-44a1-a743-56f0652d4588",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\Baileys\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\Baileys\\Baileys-erd.html",
+  "specification": {
+    "sha256": "b6d9ac4c99fd84fd837cd6bd27d9dcf0d164c0314ff91fe198d8cc8c3469ba34",
+    "bytes": 5248
+  },
+  "artifact": {
+    "sha256": "62015d65ae3949c4767f1411e8efaba1fedfdb48549185f5f1ba7d551fe1dd87",
+    "bytes": 855059
+  }
+}

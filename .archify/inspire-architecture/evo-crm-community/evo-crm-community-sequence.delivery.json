@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "46cef352-0063-4283-bcba-ee7b8efe76fd",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\evo-crm-community\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\evo-crm-community\\evo-crm-community-sequence.html",
+  "specification": {
+    "sha256": "d93a6a299cf4aedc8638e23f0ab7326390df9f2f2d6d115028cbd74630f50a60",
+    "bytes": 4479
+  },
+  "artifact": {
+    "sha256": "22fd9f307d5a1ba8285175d41553c36222d8fa48342bc776237367d82d3a105b",
+    "bytes": 841195
+  }
+}

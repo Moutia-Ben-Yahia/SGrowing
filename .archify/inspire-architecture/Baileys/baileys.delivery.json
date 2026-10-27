@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "7e12a84d-c8d9-4c8a-af94-1e89f959c126",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\Baileys\\candidate.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\Baileys\\Baileys.html",
+  "specification": {
+    "sha256": "6b71561a3b31c52184523472ef482c39425f74d9e1b73714bd0de156e1845ed5",
+    "bytes": 5953
+  },
+  "artifact": {
+    "sha256": "951d962387e4b4e3337818e8a18f6fdc2db69a495eb9ba70ff7c59f9ab3c2351",
+    "bytes": 850626
+  }
+}

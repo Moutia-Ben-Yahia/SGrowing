@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "b5f1a19c-16ac-41ef-a61b-779040eaf658",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\evo-crm-community\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\evo-crm-community\\evo-crm-community-erd.html",
+  "specification": {
+    "sha256": "fa12e7211d1f2671eed1fe9efc2f27b632a541184ce9548dee43da8ac6d3a2ea",
+    "bytes": 5368
+  },
+  "artifact": {
+    "sha256": "99ca38ca34e43f7a27e31541007a0af66442804192adc6998b2b8aa7ea34758f",
+    "bytes": 855186
+  }
+}

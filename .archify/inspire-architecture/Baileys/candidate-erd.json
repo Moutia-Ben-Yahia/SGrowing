@@ -1,0 +1,252 @@
+{
+  "schema_version": 1,
+  "diagram_type": "erd",
+  "meta": {
+    "title": "Baileys State Schema",
+    "output": ".archify/inspire-architecture/Baileys/Baileys-erd.html",
+    "quality_profile": "showcase"
+  },
+  "entities": [
+    {
+      "id": "sessions",
+      "label": "sessions",
+      "tag": "Core & Identity",
+      "row": 0,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "session_id",
+          "type": "varchar(64)",
+          "key": "uk"
+        },
+        {
+          "name": "jid",
+          "type": "varchar(128)"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "creds",
+      "label": "creds",
+      "tag": "Core & Identity",
+      "row": 1,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "sessions_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "sessions.id"
+        },
+        {
+          "name": "noise_key",
+          "type": "bytea"
+        },
+        {
+          "name": "identity_key",
+          "type": "bytea"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "pre_keys",
+      "label": "pre_keys",
+      "tag": "Core & Identity",
+      "row": 2,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "sessions_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "sessions.id"
+        },
+        {
+          "name": "key_id",
+          "type": "integer"
+        },
+        {
+          "name": "public_key",
+          "type": "bytea"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "chats",
+      "label": "chats",
+      "tag": "Domain Operations",
+      "row": 0,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "sessions_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "sessions.id"
+        },
+        {
+          "name": "chat_jid",
+          "type": "varchar(128)",
+          "key": "uk"
+        },
+        {
+          "name": "unread_count",
+          "type": "integer"
+        },
+        {
+          "name": "last_message_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "messages",
+      "label": "messages",
+      "tag": "Domain Operations",
+      "row": 1,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "chats_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "chats.id"
+        },
+        {
+          "name": "message_id",
+          "type": "varchar(64)",
+          "key": "uk"
+        },
+        {
+          "name": "payload",
+          "type": "jsonb"
+        },
+        {
+          "name": "timestamp",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "contacts",
+      "label": "contacts",
+      "tag": "Domain Operations",
+      "row": 2,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "messages_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "messages.id"
+        },
+        {
+          "name": "contact_jid",
+          "type": "varchar(128)"
+        },
+        {
+          "name": "push_name",
+          "type": "varchar(128)"
+        },
+        {
+          "name": "synced_at",
+          "type": "timestamptz"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel-t0-t1",
+      "from": "sessions",
+      "to": "creds",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t1-t2",
+      "from": "creds",
+      "to": "pre_keys",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t0-d0",
+      "from": "sessions",
+      "to": "chats",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d0-d1",
+      "from": "chats",
+      "to": "messages",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d1-d2",
+      "from": "messages",
+      "to": "contacts",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Baileys Normalized State Schema",
+      "items": [
+        "Strict session & cryptographic credential persistence anchored on sessions.id primary key",
+        "Clean separation between cryptographic creds and operational chats chat caches",
+        "High-performance pre-key index supporting rapid Signal Protocol Double Ratchet handshakes"
+      ]
+    }
+  ]
+}

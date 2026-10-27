@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Baileys Request Sequence",
+    "output": ".archify/inspire-architecture/Baileys/Baileys-sequence.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "WhatsApp Server",
+      "sublabel": "WebSocket Network"
+    },
+    {
+      "id": "web",
+      "type": "frontend",
+      "label": "Baileys Socket",
+      "sublabel": "Client App"
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "Signal Engine",
+      "sublabel": "Noise & PreKeys"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Baileys Core",
+      "sublabel": "WASocket Core"
+    },
+    {
+      "id": "redis",
+      "type": "database",
+      "label": "Session Cache",
+      "sublabel": "Signal Key Cache"
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "Auth Store",
+      "sublabel": "State Store"
+    },
+    {
+      "id": "worker",
+      "type": "backend",
+      "label": "Event Emitter",
+      "sublabel": "Baileys Events"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 295,
+      "label": "WebSocket Handshake & Signal Decryption"
+    },
+    {
+      "from": 300,
+      "to": 445,
+      "label": "Session State & Binary Node Decoding"
+    },
+    {
+      "from": 450,
+      "to": 590,
+      "label": "Typed Event Dispatch to Consumer"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "user",
+      "to": "web",
+      "y": 170,
+      "label": "WSS Binary Frame (Noise Frame)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m2",
+      "from": "web",
+      "to": "api",
+      "y": 205,
+      "label": "Decode Binary Protocol Node",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m3",
+      "from": "api",
+      "to": "auth",
+      "y": 240,
+      "label": "Decrypt Signal Double Ratchet",
+      "variant": "security"
+    },
+    {
+      "id": "m4",
+      "from": "auth",
+      "to": "api",
+      "y": 275,
+      "label": "Decrypted Proto Message (OK)",
+      "variant": "return"
+    },
+    {
+      "id": "m5",
+      "from": "api",
+      "to": "redis",
+      "y": 315,
+      "label": "GET prekey:message",
+      "variant": "default"
+    },
+    {
+      "id": "m6",
+      "from": "redis",
+      "to": "api",
+      "y": 350,
+      "label": "Key verified",
+      "variant": "return"
+    },
+    {
+      "id": "m7",
+      "from": "api",
+      "to": "db",
+      "y": 390,
+      "label": "UPDATE session_state",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m8",
+      "from": "db",
+      "to": "api",
+      "y": 425,
+      "label": "Committed state (OK)",
+      "variant": "return"
+    },
+    {
+      "id": "m9",
+      "from": "api",
+      "to": "redis",
+      "y": 465,
+      "label": "CACHE message_receipt",
+      "variant": "dashed"
+    },
+    {
+      "id": "m10",
+      "from": "api",
+      "to": "worker",
+      "y": 500,
+      "label": "Emit messages.upsert",
+      "variant": "dashed"
+    },
+    {
+      "id": "m11",
+      "from": "api",
+      "to": "web",
+      "y": 535,
+      "label": "Send ACK Receipt to WA Server",
+      "variant": "return"
+    },
+    {
+      "id": "m12",
+      "from": "worker",
+      "to": "user",
+      "y": 570,
+      "label": "Client Consumer receives message",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "web",
+      "from": 165,
+      "to": 575,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 200,
+      "to": 540,
+      "type": "backend"
+    },
+    {
+      "participant": "auth",
+      "from": 235,
+      "to": 280,
+      "type": "security"
+    },
+    {
+      "participant": "redis",
+      "from": 310,
+      "to": 355,
+      "type": "database"
+    },
+    {
+      "participant": "db",
+      "from": 385,
+      "to": 430,
+      "type": "database"
+    },
+    {
+      "participant": "redis",
+      "from": 460,
+      "to": 475,
+      "type": "database"
+    },
+    {
+      "participant": "worker",
+      "from": 495,
+      "to": 580,
+      "type": "backend"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "violet",
+      "title": "Baileys End-to-End Inbound Message Lifecycle",
+      "items": [
+        "Direct binary WebSocket connection without headless browser overhead",
+        "In-memory Signal Protocol decryption with hardware-accelerated Curve25519",
+        "Typed event stream emission enabling ultra-fast bot responses"
+      ]
+    }
+  ]
+}
