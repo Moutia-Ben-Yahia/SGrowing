@@ -217,7 +217,10 @@ builder.Services.AddScoped<IInventoryLiquidationService, InventoryLiquidationSer
 builder.Services.AddScoped<ICalendarSchedulingService, CalendarSchedulingService>();
 builder.Services.AddScoped<IEmailDeliverabilityService, EmailDeliverabilityService>();
 builder.Services.AddScoped<IProductTelemetryService, ProductTelemetryService>();
+builder.Services.AddScoped<IDatabasePartitioningService, DatabasePartitioningService>();
+builder.Services.AddScoped<IClickstreamBufferService, ClickstreamBufferService>();
 builder.Services.AddScoped<ISaasBillingService, SaasBillingService>();
+builder.Services.AddScoped<IPlanQuotaEnforcementService, PlanQuotaEnforcementService>();
 
 // 22. Frontiers 2-4: Digital Goods & PIM Matrix, Dynamic Forms & Developer Webhooks
 builder.Services.AddScoped<IDigitalGoodsService, DigitalGoodsService>();
@@ -241,6 +244,7 @@ builder.Services.AddScoped<IFeatureFeedbackService, FeatureFeedbackService>();
 
 // 25. Safe AI Agent Framework, Permissioned Tool Execution & Conversational BI (PRD Phase 5)
 builder.Services.AddScoped<IAiAgentOrchestratorService, AiAgentOrchestratorService>();
+builder.Services.AddScoped<IAutonomousAgentMissionService, AutonomousAgentMissionService>();
 builder.Services.AddScoped<IConversationalBiService, ConversationalBiService>();
 
 // 26. Track 1-3 Enhancements: PDF Generator, Gateways & Semantic RAG
@@ -349,6 +353,7 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<TenantContextMiddleware>();
+app.UseMiddleware<PlanQuotaEnforcementMiddleware>();
 
 // Ensure in-memory dev db is seeded if needed
 using (var scope = app.Services.CreateScope())
@@ -373,6 +378,7 @@ app.MapFunnelEndpoints();
 app.MapCalendarEndpoints();
 app.MapDeliverabilityEndpoints();
 app.MapTelemetryEndpoints();
+app.MapAnalyticsEndpoints();
 app.MapBillingEndpoints();
 app.MapDigitalGoodsEndpoints();
 app.MapDynamicFormEndpoints();
@@ -384,6 +390,7 @@ app.MapPublicationCmsEndpoints();
 app.MapSalesForecastingEndpoints();
 app.MapFeatureFeedbackEndpoints();
 app.MapAiEndpoints();
+app.MapAgentMissionEndpoints();
 app.MapOutboundPillarEndpoints();
 app.MapDeliverabilityPillarEndpoints();
 app.MapOmnichannelEndpoints();

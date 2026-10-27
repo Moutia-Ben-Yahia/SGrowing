@@ -18,6 +18,7 @@ public interface IDeveloperWebhookService
     Task<bool> ToggleWebhookSubscriptionAsync(Guid tenantId, Guid subscriptionId, bool isActive);
     Task<List<WebhookDeliveryAttemptLog>> DispatchWebhookEventAsync(Guid tenantId, string eventType, object payload);
     Task<List<WebhookDeliveryAttemptLog>> GetDeliveryLogsAsync(Guid tenantId, Guid? subscriptionId = null, int limit = 50);
+    Task<List<WebhookDeliveryAttemptLog>> GetDeadLetterLogsAsync(Guid tenantId, int limit = 50);
     Task<WebhookDeliveryAttemptLog?> RetryDeliveryAsync(Guid tenantId, Guid logId);
 }
 
@@ -107,15 +108,21 @@ public class DeveloperWebhookService : IDeveloperWebhookService
             .ToListAsync();
 
         var payloadJson = JsonSerializer.Serialize(payload);
+        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var logs = new List<WebhookDeliveryAttemptLog>();
 
         foreach (var sub in subscriptions)
         {
             var events = JsonSerializer.Deserialize<List<string>>(sub.SubscribedEventsJson) ?? new List<string>();
-            if (events.Count > 0 && !events.Contains("*") && !events.Contains(eventType))
+            if (events.Count > 0 && !events.Contains("*") && !events.Contains(eventType, StringComparer.OrdinalIgnoreCase))
             {
                 continue;
             }
+
+            // Compute HMAC-SHA256 signature
+            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(sub.SecretKey));
+            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes($"{timestamp}.{payloadJson}"));
+            var signature = "sha256=" + Convert.ToHexString(hash).ToLowerInvariant();
 
             var log = WebhookDeliveryAttemptLog.Create(
                 tenantId,
@@ -124,7 +131,11 @@ public class DeveloperWebhookService : IDeveloperWebhookService
                 payloadJson,
                 statusCode: 200,
                 isSuccess: true,
-                durationMs: Random.Shared.Next(25, 95)
+                durationMs: Random.Shared.Next(25, 95),
+                attemptNumber: 1,
+                maxRetries: 5,
+                signature: signature,
+                timestamp: timestamp
             );
 
             logs.Add(log);
@@ -153,6 +164,15 @@ public class DeveloperWebhookService : IDeveloperWebhookService
             .ToListAsync();
     }
 
+    public async Task<List<WebhookDeliveryAttemptLog>> GetDeadLetterLogsAsync(Guid tenantId, int limit = 50)
+    {
+        return await _db.WebhookDeliveryAttemptLogs
+            .Where(l => l.TenantId == tenantId && l.IsDeadLetter)
+            .OrderByDescending(l => l.AttemptedAtUtc)
+            .Take(limit)
+            .ToListAsync();
+    }
+
     public async Task<WebhookDeliveryAttemptLog?> RetryDeliveryAsync(Guid tenantId, Guid logId)
     {
         var log = await _db.WebhookDeliveryAttemptLogs.FirstOrDefaultAsync(l => l.TenantId == tenantId && l.Id == logId);
@@ -161,6 +181,16 @@ public class DeveloperWebhookService : IDeveloperWebhookService
         var sub = await _db.WebhookSubscriptionRecords.FirstOrDefaultAsync(s => s.Id == log.SubscriptionId);
         if (sub == null) return null;
 
+        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(sub.SecretKey));
+        var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes($"{timestamp}.{log.PayloadJson}"));
+        var signature = "sha256=" + Convert.ToHexString(hash).ToLowerInvariant();
+
+        // Clear DLQ status on original log to reflect replay
+        log.IsDeadLetter = false;
+        log.DeadLetterReason = "Replayed manually via Developer Webhook Cockpit";
+        log.AttemptedAtUtc = DateTime.UtcNow;
+
         var retryLog = WebhookDeliveryAttemptLog.Create(
             tenantId,
             sub.Id,
@@ -168,7 +198,11 @@ public class DeveloperWebhookService : IDeveloperWebhookService
             log.PayloadJson,
             statusCode: 200,
             isSuccess: true,
-            durationMs: Random.Shared.Next(30, 80)
+            durationMs: Random.Shared.Next(30, 80),
+            attemptNumber: 1,
+            maxRetries: 5,
+            signature: signature,
+            timestamp: timestamp
         );
 
         _db.WebhookDeliveryAttemptLogs.Add(retryLog);

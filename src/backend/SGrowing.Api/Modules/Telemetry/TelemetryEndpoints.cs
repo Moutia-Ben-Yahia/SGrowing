@@ -70,6 +70,31 @@ public static class TelemetryEndpoints
             return Results.Ok(dropoff);
         });
 
+        // Clickstream Buffer & Flush
+        group.MapPost("/buffer", async ([FromBody] IngestEventDto req, IClickstreamBufferService bufferService) =>
+        {
+            var ev = Core.Entities.TelemetryEvent.Create(
+                req.TenantId, req.SessionId, req.VisitorId, req.EventName, req.Url,
+                req.Referrer ?? "", req.DeviceType ?? "Desktop", req.Browser ?? "Chrome",
+                req.CountryCode ?? "TN", req.City ?? "Tunis", req.PropertiesJson ?? "{}");
+
+            await bufferService.BufferEventAsync(ev);
+            return Results.Accepted(value: new { buffered = true, pending = bufferService.GetPendingBufferCount() });
+        });
+
+        group.MapPost("/buffer/flush", async ([FromQuery] int? batchSize, IClickstreamBufferService bufferService) =>
+        {
+            var flushed = await bufferService.FlushBufferBatchAsync(batchSize ?? 100);
+            return Results.Ok(new { flushedCount = flushed, pendingRemaining = bufferService.GetPendingBufferCount() });
+        });
+
+        group.MapGet("/partitions", ([FromQuery] string? table, IDatabasePartitioningService partService) =>
+        {
+            var baseTable = table ?? "TelemetryEvents";
+            var partitions = partService.GetPreconfiguredPartitions(baseTable, DateTime.UtcNow, 4);
+            return Results.Ok(partitions);
+        });
+
         return endpoints;
     }
 }

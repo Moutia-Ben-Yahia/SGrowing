@@ -289,6 +289,8 @@ public class SGrowingDbContext : DbContext
     // Phase 5: Safe AI Agent Framework & Tool Sandbox (PRD Phase 5)
     public DbSet<AiAgentBudget> AiAgentBudgets => Set<AiAgentBudget>();
     public DbSet<AiToolExecutionLog> AiToolExecutionLogs => Set<AiToolExecutionLog>();
+    public DbSet<AgentMission> AgentMissions => Set<AgentMission>();
+    public DbSet<AgentMissionStep> AgentMissionSteps => Set<AgentMissionStep>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

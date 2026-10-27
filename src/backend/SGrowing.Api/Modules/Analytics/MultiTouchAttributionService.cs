@@ -120,6 +120,41 @@ public class MultiTouchAttributionService
                 break;
             }
 
+            case AttributionModelType.TimeDecay:
+            {
+                var latestTime = touchpoints.Last().OccurredAtUtc;
+                const double halfLifeDays = 7.0;
+
+                // Calculate exponential decay weight: 2^(-deltaDays / halfLifeDays)
+                var rawWeights = touchpoints.Select(tp =>
+                {
+                    var deltaDays = Math.Max(0.0, (latestTime - tp.OccurredAtUtc).TotalDays);
+                    return Math.Pow(2.0, -deltaDays / halfLifeDays);
+                }).ToList();
+
+                var totalWeight = rawWeights.Sum();
+                if (totalWeight <= 0) totalWeight = 1.0;
+
+                for (int i = 0; i < touchpoints.Count; i++)
+                {
+                    var tp = touchpoints[i];
+                    decimal weightFraction = (decimal)(rawWeights[i] / totalWeight);
+                    decimal weightPercent = Math.Round(weightFraction * 100m, 2);
+                    decimal revenueShare = Math.Round(totalRevenue * weightFraction, 2);
+
+                    results.Add(new AttributedRevenueItem
+                    {
+                        TouchpointId = tp.Id,
+                        Channel = tp.Channel,
+                        CampaignName = tp.CampaignName,
+                        Stage = tp.Stage,
+                        AttributedRevenue = revenueShare,
+                        WeightPercent = weightPercent
+                    });
+                }
+                break;
+            }
+
             case AttributionModelType.WShaped:
             default:
             {

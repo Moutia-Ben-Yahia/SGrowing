@@ -15,6 +15,28 @@ public record SubscriptionDetailsDto(
     TenantUsageSummary UsageSummary
 );
 
+public record BillingWebhookPayloadDto(
+    string Provider, // "Stripe", "LemonSqueezy", "Chargily"
+    string EventType, // "customer.subscription.created", "invoice.payment_succeeded", "invoice.payment_failed", etc.
+    Guid TenantId,
+    string? ExternalSubscriptionId = null,
+    string? ExternalInvoiceId = null,
+    decimal Amount = 0m,
+    string? Currency = "USD",
+    PlanTier? TargetPlanTier = null,
+    string? RawPayload = null
+);
+
+public record BillingWebhookResultDto(
+    bool Success,
+    string Provider,
+    string EventType,
+    Guid TenantId,
+    string SubscriptionStatus,
+    string? InvoiceNumber,
+    string Message
+);
+
 public interface ISaasBillingService
 {
     Task<SubscriptionDetailsDto> GetSubscriptionDetailsAsync(Guid tenantId);
@@ -23,6 +45,7 @@ public interface ISaasBillingService
     Task<UsageMeterRecord> RecordUsageAsync(Guid tenantId, UsageMetricType metric, long quantity, string? metadata = null);
     Task<string> CreateCheckoutSessionUrlAsync(Guid tenantId, PlanTier targetTier, string successUrl);
     Task<BillingInvoiceRecord> ProcessStripePaymentSuccessWebhookAsync(Guid tenantId, string stripeInvoiceId, decimal amount, string currency = "USD");
+    Task<BillingWebhookResultDto> ProcessWebhookEventAsync(BillingWebhookPayloadDto payload);
     Task<List<BillingInvoiceRecord>> GetInvoicesAsync(Guid tenantId);
 }
 
@@ -103,6 +126,8 @@ public class SaasBillingService : ISaasBillingService
         {
             sub.PlanTier = newTier;
             sub.MonthlyPrice = newPrice;
+            sub.BillingCycleStartUtc = DateTime.UtcNow;
+            sub.BillingCycleEndUtc = DateTime.UtcNow.AddDays(30);
         }
         else
         {
@@ -119,6 +144,10 @@ public class SaasBillingService : ISaasBillingService
             entitlement.MonthlyIncludedAiTokens = updated.MonthlyIncludedAiTokens;
             entitlement.MonthlyIncludedVoiceMinutes = updated.MonthlyIncludedVoiceMinutes;
             entitlement.MonthlyIncludedMessages = updated.MonthlyIncludedMessages;
+            entitlement.MaxWarmupMailboxes = updated.MaxWarmupMailboxes;
+            entitlement.MonthlyIncludedColdEmails = updated.MonthlyIncludedColdEmails;
+            entitlement.MaxCarrierWaybills = updated.MaxCarrierWaybills;
+            entitlement.StorageMbLimit = updated.StorageMbLimit;
             entitlement.IsCustomDomainEnabled = updated.IsCustomDomainEnabled;
             entitlement.IsSlaEscalationEnabled = updated.IsSlaEscalationEnabled;
         }
@@ -151,6 +180,10 @@ public class SaasBillingService : ISaasBillingService
 
         long limit = metric switch
         {
+            UsageMetricType.ConnectedWarmupMailboxes => entitlement.MaxWarmupMailboxes,
+            UsageMetricType.MonthlyColdEmails => entitlement.MonthlyIncludedColdEmails,
+            UsageMetricType.CarrierWaybills => entitlement.MaxCarrierWaybills,
+            UsageMetricType.StorageMb => entitlement.StorageMbLimit,
             UsageMetricType.AiTokens => entitlement.MonthlyIncludedAiTokens,
             UsageMetricType.VoiceMinutes => entitlement.MonthlyIncludedVoiceMinutes,
             UsageMetricType.OutboundMessages => entitlement.MonthlyIncludedMessages,
@@ -218,6 +251,97 @@ public class SaasBillingService : ISaasBillingService
         _db.BillingInvoiceRecords.Add(invoice);
         await _db.SaveChangesAsync();
         return invoice;
+    }
+
+    public async Task<BillingWebhookResultDto> ProcessWebhookEventAsync(BillingWebhookPayloadDto payload)
+    {
+        var sub = await _db.TenantSubscriptions.FirstOrDefaultAsync(s => s.TenantId == payload.TenantId);
+        if (sub == null)
+        {
+            var tier = payload.TargetPlanTier ?? PlanTier.Growth;
+            sub = TenantSubscription.Create(payload.TenantId, tier, tier == PlanTier.Enterprise ? 799m : tier == PlanTier.Starter ? 99m : 249m);
+            _db.TenantSubscriptions.Add(sub);
+        }
+
+        string normalizedEvent = payload.EventType.ToLowerInvariant();
+        string? invoiceNumber = null;
+
+        if (normalizedEvent.Contains("subscription.created") || normalizedEvent.Contains("subscription_created"))
+        {
+            sub.Status = "Active";
+            if (payload.TargetPlanTier.HasValue && payload.TargetPlanTier.Value != sub.PlanTier)
+            {
+                sub.PlanTier = payload.TargetPlanTier.Value;
+                var entitlement = await _db.FeatureEntitlements.FirstOrDefaultAsync(e => e.TenantId == payload.TenantId);
+                if (entitlement != null)
+                {
+                    var updated = FeatureEntitlement.CreateDefault(payload.TenantId, payload.TargetPlanTier.Value);
+                    entitlement.PlanTier = payload.TargetPlanTier.Value;
+                    entitlement.MaxTeamSeats = updated.MaxTeamSeats;
+                    entitlement.MonthlyIncludedAiTokens = updated.MonthlyIncludedAiTokens;
+                    entitlement.MonthlyIncludedVoiceMinutes = updated.MonthlyIncludedVoiceMinutes;
+                    entitlement.MonthlyIncludedMessages = updated.MonthlyIncludedMessages;
+                    entitlement.MaxWarmupMailboxes = updated.MaxWarmupMailboxes;
+                    entitlement.MonthlyIncludedColdEmails = updated.MonthlyIncludedColdEmails;
+                    entitlement.MaxCarrierWaybills = updated.MaxCarrierWaybills;
+                    entitlement.StorageMbLimit = updated.StorageMbLimit;
+                }
+            }
+        }
+        else if (normalizedEvent.Contains("payment_succeeded") || normalizedEvent.Contains("paid") || normalizedEvent.Contains("order_created"))
+        {
+            sub.Status = "Active";
+            sub.BillingCycleStartUtc = DateTime.UtcNow;
+            sub.BillingCycleEndUtc = DateTime.UtcNow.AddDays(30);
+
+            var invNum = $"INV-{DateTime.UtcNow:yyyyMM}-{Random.Shared.Next(1000, 9999)}";
+            invoiceNumber = invNum;
+            var providerName = string.IsNullOrWhiteSpace(payload.Provider) ? "Stripe" : payload.Provider;
+            var extId = payload.ExternalInvoiceId ?? $"ext_{Guid.NewGuid():N}";
+            var invoice = BillingInvoiceRecord.Create(
+                payload.TenantId,
+                invNum,
+                payload.Amount > 0 ? payload.Amount : sub.MonthlyPrice,
+                payload.Currency ?? "USD",
+                "Paid",
+                extId,
+                $"https://billing.{providerName.ToLowerInvariant()}.com/invoices/{extId}"
+            );
+            _db.BillingInvoiceRecords.Add(invoice);
+        }
+        else if (normalizedEvent.Contains("payment_failed") || normalizedEvent.Contains("failed"))
+        {
+            sub.Status = "PastDue";
+            var invNum = $"INV-FAIL-{DateTime.UtcNow:yyyyMM}-{Random.Shared.Next(1000, 9999)}";
+            invoiceNumber = invNum;
+            var invoice = BillingInvoiceRecord.Create(
+                payload.TenantId,
+                invNum,
+                payload.Amount > 0 ? payload.Amount : sub.MonthlyPrice,
+                payload.Currency ?? "USD",
+                "Failed",
+                payload.ExternalInvoiceId ?? $"fail_{Guid.NewGuid():N}",
+                ""
+            );
+            _db.BillingInvoiceRecords.Add(invoice);
+        }
+        else if (normalizedEvent.Contains("subscription.deleted") || normalizedEvent.Contains("subscription_cancelled") || normalizedEvent.Contains("canceled"))
+        {
+            sub.Status = "Canceled";
+        }
+
+        await _db.SaveChangesAsync();
+
+        var safeProvider = string.IsNullOrWhiteSpace(payload.Provider) ? "Stripe" : payload.Provider;
+        return new BillingWebhookResultDto(
+            Success: true,
+            Provider: safeProvider,
+            EventType: payload.EventType,
+            TenantId: payload.TenantId,
+            SubscriptionStatus: sub.Status,
+            InvoiceNumber: invoiceNumber,
+            Message: $"Successfully processed {safeProvider} event '{payload.EventType}' for tenant {payload.TenantId}."
+        );
     }
 
     public async Task<List<BillingInvoiceRecord>> GetInvoicesAsync(Guid tenantId)

@@ -86,3 +86,108 @@ public class AiToolExecutionLog
         };
     }
 }
+
+public enum AgentMissionStatus
+{
+    Pending = 1,
+    Running = 2,
+    PausedForApproval = 3,
+    Completed = 4,
+    Failed = 5,
+    Canceled = 6
+}
+
+public enum AgentMissionStepStatus
+{
+    Pending = 1,
+    AwaitingApproval = 2,
+    Executing = 3,
+    Completed = 4,
+    Failed = 5,
+    Skipped = 6
+}
+
+public class AgentMission
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid TenantId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string TargetGoal { get; set; } = string.Empty;
+    public AgentMissionStatus Status { get; set; } = AgentMissionStatus.Pending;
+    public string AutonomyMode { get; set; } = "Human-in-the-Loop"; // "Auto-Approve", "Human-in-the-Loop", "Draft Only"
+    public decimal TotalBudgetUsd { get; set; } = 50.0m;
+    public decimal SpentBudgetUsd { get; set; } = 0m;
+    public long TokensConsumed { get; set; } = 0;
+    public int CurrentStepIndex { get; set; } = 0;
+    public string ReasoningTrace { get; set; } = string.Empty;
+    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+    public DateTime? CompletedAtUtc { get; set; }
+    public List<AgentMissionStep> Steps { get; set; } = [];
+
+    public static AgentMission Create(
+        Guid tenantId,
+        string title,
+        string targetGoal,
+        string autonomyMode = "Human-in-the-Loop",
+        decimal budgetUsd = 50.0m)
+    {
+        return new AgentMission
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            Title = title.Trim(),
+            TargetGoal = targetGoal.Trim(),
+            Status = AgentMissionStatus.Pending,
+            AutonomyMode = autonomyMode.Trim(),
+            TotalBudgetUsd = budgetUsd,
+            SpentBudgetUsd = 0m,
+            TokensConsumed = 0,
+            CurrentStepIndex = 0,
+            ReasoningTrace = $"[Init] Mission initialized with target goal: '{targetGoal}'. Mode: {autonomyMode}.",
+            CreatedAtUtc = DateTime.UtcNow
+        };
+    }
+}
+
+public class AgentMissionStep
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid MissionId { get; set; }
+    public int StepIndex { get; set; }
+    public string ToolName { get; set; } = string.Empty;
+    public string InputArgumentsJson { get; set; } = "{}";
+    public string OutputResultJson { get; set; } = "{}";
+    public string ReasoningThought { get; set; } = string.Empty;
+    public AgentMissionStepStatus Status { get; set; } = AgentMissionStepStatus.Pending;
+    public double ExecutionDurationMs { get; set; } = 0;
+    public int TokensConsumed { get; set; } = 0;
+    public decimal CostUsd { get; set; } = 0m;
+    public bool ApprovalRequired { get; set; } = false;
+    public string? ApprovedBy { get; set; }
+    public DateTime? ApprovedAtUtc { get; set; }
+    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+    public DateTime? ExecutedAtUtc { get; set; }
+
+    public static AgentMissionStep Create(
+        Guid missionId,
+        int stepIndex,
+        string toolName,
+        string argumentsJson,
+        string reasoningThought,
+        bool approvalRequired = false)
+    {
+        return new AgentMissionStep
+        {
+            Id = Guid.NewGuid(),
+            MissionId = missionId,
+            StepIndex = stepIndex,
+            ToolName = toolName.Trim(),
+            InputArgumentsJson = argumentsJson,
+            ReasoningThought = reasoningThought.Trim(),
+            Status = AgentMissionStepStatus.Pending,
+            ApprovalRequired = approvalRequired,
+            CreatedAtUtc = DateTime.UtcNow
+        };
+    }
+}
+

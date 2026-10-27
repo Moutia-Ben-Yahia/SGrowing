@@ -46,10 +46,18 @@ import { BotSimulatorRunnerComponent } from './features/funnels/bot-simulator-ru
 import { MultipartySigningCockpitComponent } from './features/contracts/multiparty-signing-cockpit.component';
 import { CodLogisticsFraudCockpitComponent } from './features/courier/cod-logistics-fraud-cockpit.component';
 import { AgentConsoleComponent } from './features/agents/agent-console.component';
+import { OnboardingWizardComponent } from './features/billing/onboarding-wizard.component';
+import { AgentMissionCockpitComponent } from './features/agents/agent-mission-cockpit.component';
+import { DeveloperWebhooksCockpitComponent } from './features/developer/developer-webhooks-cockpit.component';
+import { FunnelAttributionCockpitComponent } from './features/analytics/funnel-attribution-cockpit.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', component: InboxShellComponent, canActivate: [authGuard] },
+  { path: 'onboarding', component: OnboardingWizardComponent, canActivate: [authGuard] },
+  { path: 'agents/missions', component: AgentMissionCockpitComponent, canActivate: [authGuard] },
+  { path: 'developer/webhooks', component: DeveloperWebhooksCockpitComponent, canActivate: [authGuard] },
+  { path: 'analytics/attribution', component: FunnelAttributionCockpitComponent, canActivate: [authGuard] },
   { path: 'outbound/spintax', component: SpintaxEngineComponent, canActivate: [authGuard] },
   { path: 'deliverability/warmup-swarm', component: WarmupSwarmCockpitComponent, canActivate: [authGuard] },
   { path: 'inbox/omnichannel', component: OmnichannelCockpitComponent, canActivate: [authGuard] },

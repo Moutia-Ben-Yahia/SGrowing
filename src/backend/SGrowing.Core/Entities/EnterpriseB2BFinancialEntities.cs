@@ -163,6 +163,13 @@ public class WebhookDeliveryAttemptLog
     public bool IsSuccess { get; set; } = true;
     public long ExecutionDurationMs { get; set; } = 45;
     public DateTime AttemptedAtUtc { get; set; } = DateTime.UtcNow;
+    public int AttemptNumber { get; set; } = 1;
+    public int MaxRetries { get; set; } = 5;
+    public DateTime? NextAttemptAtUtc { get; set; }
+    public bool IsDeadLetter { get; set; } = false;
+    public string? DeadLetterReason { get; set; }
+    public string? SignatureHeader { get; set; }
+    public long TimestampHeader { get; set; }
 
     public static WebhookDeliveryAttemptLog Create(
         Guid tenantId,
@@ -171,7 +178,11 @@ public class WebhookDeliveryAttemptLog
         string payloadJson,
         int statusCode,
         bool isSuccess,
-        long durationMs)
+        long durationMs,
+        int attemptNumber = 1,
+        int maxRetries = 5,
+        string? signature = null,
+        long timestamp = 0)
     {
         return new WebhookDeliveryAttemptLog
         {
@@ -183,7 +194,11 @@ public class WebhookDeliveryAttemptLog
             ResponseStatusCode = statusCode,
             IsSuccess = isSuccess,
             ExecutionDurationMs = durationMs,
-            AttemptedAtUtc = DateTime.UtcNow
+            AttemptedAtUtc = DateTime.UtcNow,
+            AttemptNumber = attemptNumber,
+            MaxRetries = maxRetries,
+            SignatureHeader = signature,
+            TimestampHeader = timestamp > 0 ? timestamp : DateTimeOffset.UtcNow.ToUnixTimeSeconds()
         };
     }
 }

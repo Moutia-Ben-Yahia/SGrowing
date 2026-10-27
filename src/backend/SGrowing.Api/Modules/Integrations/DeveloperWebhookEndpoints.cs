@@ -102,6 +102,19 @@ public static class DeveloperWebhookEndpoints
             return retryLog != null ? Results.Ok(retryLog) : Results.NotFound();
         });
 
+        // 4. Dead-Letter Queue (DLQ)
+        group.MapGet("/webhooks/dlq", async ([FromQuery] Guid tenantId, [FromQuery] int limit, IDeveloperWebhookService service) =>
+        {
+            var dlq = await service.GetDeadLetterLogsAsync(tenantId, limit > 0 ? limit : 50);
+            return Results.Ok(dlq);
+        });
+
+        group.MapPost("/webhooks/dlq/{id}/retry", async (Guid id, [FromQuery] Guid tenantId, IDeveloperWebhookService service) =>
+        {
+            var retryLog = await service.RetryDeliveryAsync(tenantId, id);
+            return retryLog != null ? Results.Ok(retryLog) : Results.NotFound();
+        });
+
         return routes;
     }
 }

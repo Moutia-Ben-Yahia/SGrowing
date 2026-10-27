@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Messaging;
+using SGrowing.Api.Modules.AI;
 using SGrowing.Core.Messaging;
 using SGrowing.Worker.Services;
 using StackExchange.Redis;
@@ -46,6 +47,8 @@ else
 }
 
 // Hosted background daemons
+builder.Services.AddScoped<IMcpServerRegistryService, McpServerRegistryService>();
+builder.Services.AddScoped<IAutonomousAgentMissionService, AutonomousAgentMissionService>();
 builder.Services.AddScoped<AdvancedWorkflowSchedulerService>();
 builder.Services.AddScoped<OutboundWebhookDispatcherService>();
 builder.Services.AddHostedService<OutboxProcessorDaemon>();
@@ -55,6 +58,8 @@ builder.Services.AddHostedService<ResilientDlqDaemon>();
 builder.Services.AddHostedService<DripCampaignCadenceDaemon>();
 builder.Services.AddHostedService<P2PWarmupRescueDaemon>();
 builder.Services.AddHostedService<AutonomousSdrTickDaemon>();
+builder.Services.AddHostedService<AutonomousAgentExecutionDaemon>();
+builder.Services.AddHostedService<OutwardWebhookDeliveryDaemon>();
 builder.Services.AddHostedService<DurableSocialPublishingDaemon>();
 builder.Services.AddHostedService<DealRottingWatchdogDaemon>();
 

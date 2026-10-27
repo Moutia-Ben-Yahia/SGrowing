@@ -13,7 +13,8 @@ public enum AttributionModelType
     FirstTouch = 1,
     LastTouch = 2,
     Linear = 3,
-    WShaped = 4
+    WShaped = 4,
+    TimeDecay = 5
 }
 
 public class AttributionTouchpoint

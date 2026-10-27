@@ -12,7 +12,11 @@ public enum UsageMetricType
     AiTokens = 1,
     VoiceMinutes = 2,
     OutboundMessages = 3,
-    TeamSeats = 4
+    TeamSeats = 4,
+    ConnectedWarmupMailboxes = 5,
+    MonthlyColdEmails = 6,
+    CarrierWaybills = 7,
+    StorageMb = 8
 }
 
 public class TenantSubscription
@@ -49,6 +53,10 @@ public class FeatureEntitlement
     public long MonthlyIncludedAiTokens { get; set; } = 2_000_000;
     public int MonthlyIncludedVoiceMinutes { get; set; } = 500;
     public int MonthlyIncludedMessages { get; set; } = 10_000;
+    public int MaxWarmupMailboxes { get; set; } = 10;
+    public long MonthlyIncludedColdEmails { get; set; } = 10_000;
+    public int MaxCarrierWaybills { get; set; } = 500;
+    public long StorageMbLimit { get; set; } = 10_240;
     public bool IsCustomDomainEnabled { get; set; } = true;
     public bool IsSlaEscalationEnabled { get; set; } = true;
 
@@ -68,6 +76,10 @@ public class FeatureEntitlement
                 MonthlyIncludedAiTokens = 500_000,
                 MonthlyIncludedVoiceMinutes = 100,
                 MonthlyIncludedMessages = 1_000,
+                MaxWarmupMailboxes = 2,
+                MonthlyIncludedColdEmails = 1_000,
+                MaxCarrierWaybills = 50,
+                StorageMbLimit = 1_024,
                 IsCustomDomainEnabled = false,
                 IsSlaEscalationEnabled = false
             },
@@ -80,6 +92,10 @@ public class FeatureEntitlement
                 MonthlyIncludedAiTokens = 5_000_000,
                 MonthlyIncludedVoiceMinutes = 2_500,
                 MonthlyIncludedMessages = 100_000,
+                MaxWarmupMailboxes = 100,
+                MonthlyIncludedColdEmails = 100_000,
+                MaxCarrierWaybills = 10_000,
+                StorageMbLimit = 102_400,
                 IsCustomDomainEnabled = true,
                 IsSlaEscalationEnabled = true
             },
@@ -92,6 +108,10 @@ public class FeatureEntitlement
                 MonthlyIncludedAiTokens = 2_000_000,
                 MonthlyIncludedVoiceMinutes = 500,
                 MonthlyIncludedMessages = 10_000,
+                MaxWarmupMailboxes = 10,
+                MonthlyIncludedColdEmails = 10_000,
+                MaxCarrierWaybills = 500,
+                StorageMbLimit = 10_240,
                 IsCustomDomainEnabled = true,
                 IsSlaEscalationEnabled = true
             }
@@ -181,3 +201,36 @@ public class BillingInvoiceRecord
         };
     }
 }
+
+public class PlanQuotaEnforcementResult
+{
+    public bool Allowed { get; set; }
+    public bool IsHardBlocked { get; set; }
+    public bool RequiresOverageWarning { get; set; }
+    public PlanTier PlanTier { get; set; }
+    public UsageMetricType Metric { get; set; }
+    public long CurrentUsage { get; set; }
+    public long RequestedQuantity { get; set; }
+    public long QuotaLimit { get; set; }
+    public string Message { get; set; } = string.Empty;
+}
+
+public class TenantQuotaMetricStatus
+{
+    public UsageMetricType Metric { get; set; }
+    public string MetricName { get; set; } = string.Empty;
+    public long Used { get; set; }
+    public long Limit { get; set; }
+    public double UsagePercentage => Limit > 0 ? Math.Round((double)Used / Limit * 100, 1) : 0;
+    public bool IsExceeded => Used > Limit;
+}
+
+public class TenantQuotaStatusDto
+{
+    public Guid TenantId { get; set; }
+    public PlanTier PlanTier { get; set; }
+    public string PlanName => PlanTier.ToString();
+    public bool IsHardCapEnforced => PlanTier == PlanTier.Starter;
+    public List<TenantQuotaMetricStatus> Metrics { get; set; } = [];
+}
+
