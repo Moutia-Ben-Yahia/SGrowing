@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "skills": {
+    "angular-developer": {
+      "source": "angular/skills",
+      "sourceType": "github",
+      "skillPath": "angular-developer/SKILL.md",
+      "computedHash": "479e7c8d75cb017be85ae866c610830aae12f4e38c331d758f321ac2841c2810"
+    },
+    "angular-new-app": {
+      "source": "angular/skills",
+      "sourceType": "github",
+      "skillPath": "angular-new-app/SKILL.md",
+      "computedHash": "d9f712544847ab80ef7ed20043820afd275c394ca05340c2f20a0f051e35d945"
+    },
+    "ng22-architecture-composition": {
+      "source": "PavanAnguluri/angular22-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ng22-architecture-composition/SKILL.md",
+      "computedHash": "3d86e14d0f18801f73847a5de2b42e42aa7145cd3ebb70eec72762df0db9988d"
+    },
+    "ng22-control-flow": {
+      "source": "PavanAnguluri/angular22-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ng22-control-flow/SKILL.md",
+      "computedHash": "5a21d339db603dff1a54f620eb65ad2d64f4813618fc2e805dc50db8afe45eee"
+    },
+    "ng22-deferrable-views": {
+      "source": "PavanAnguluri/angular22-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ng22-deferrable-views/SKILL.md",
+      "computedHash": "f988c7c2076bde1f036719e0cf2bb599d584a08376f4e6f446bee2fa8564e824"
+    },
+    "ng22-forms": {
+      "source": "PavanAnguluri/angular22-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ng22-forms/SKILL.md",
+      "computedHash": "6f089e3621fd111ec9e408d516933f80a2b3a7aee36b31d6411ebf92c5815cc4"
+    },
+    "ng22-reactivity": {
+      "source": "PavanAnguluri/angular22-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ng22-reactivity/SKILL.md",
+      "computedHash": "ae7ad0f4934b47b959df0cbf4c9aa1260c47be332e50c7d0bb7fa04032bbadef"
+    },
+    "ng22-routing-lazy": {
+      "source": "PavanAnguluri/angular22-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ng22-routing-lazy/SKILL.md",
+      "computedHash": "45f548e6bbd63f21f9df25b74417c5c1cbe07fe974972b0546ad797c3cfa3dbb"
+    },
+    "ng22-signal-forms": {
+      "source": "PavanAnguluri/angular22-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ng22-signal-forms/SKILL.md",
+      "computedHash": "3d9070f5c3b65cc68ab4914ffe8b8f25fc4886ec47a08ecdf65fa63307b264ec"
+    },
+    "ng22-ssr-hydration": {
+      "source": "PavanAnguluri/angular22-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ng22-ssr-hydration/SKILL.md",
+      "computedHash": "3107953eaa10b107b8fb879f025fba20490c00db52e9c911612f2d562bb7fa9b"
+    },
+    "ng22-testing": {
+      "source": "PavanAnguluri/angular22-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ng22-testing/SKILL.md",
+      "computedHash": "769bfca7408cb17bbc4fd2d3d46af25450128df83b4a5b3930ba348ee8b190be"
+    },
+    "ng22-vitest": {
+      "source": "PavanAnguluri/angular22-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ng22-vitest/SKILL.md",
+      "computedHash": "64d7deb62af9b18db6278f7cf911615ef4fd1432ede0866e649f398affbeace4"
+    },
+    "ng22-zoneless": {
+      "source": "PavanAnguluri/angular22-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ng22-zoneless/SKILL.md",
+      "computedHash": "5fdd1f2ad4c3423e543c42e1e7ae1548219d7676a2a0b8db5f474fd1a9919832"
+    }
+  }
+}
