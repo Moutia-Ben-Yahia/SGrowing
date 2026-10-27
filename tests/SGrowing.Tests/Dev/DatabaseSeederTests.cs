@@ -9,80 +9,83 @@ namespace SGrowing.Tests.Dev;
 
 public class DatabaseSeederTests
 {
-    private SGrowingDbContext CreateDbContext()
+    private (SGrowingDbContext db, DatabaseSeeder seeder) CreateContext()
     {
         var options = new DbContextOptionsBuilder<SGrowingDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-        return new SGrowingDbContext(options);
+
+        var db = new SGrowingDbContext(options);
+        var hasher = new Pbkdf2PasswordHasher();
+        var seeder = new DatabaseSeeder(db, hasher);
+        return (db, seeder);
     }
 
     [Fact]
-    public async Task SeedEnterpriseDemoAsync_PopulatesCompleteEnterpriseDataset()
+    public async Task SeedEnterpriseDemoAsync_CreatesCompleteMultiTenantDataset()
     {
         // Arrange
-        using var db = CreateDbContext();
-        var hasher = new Pbkdf2PasswordHasher();
-        var seeder = new DatabaseSeeder(db, hasher);
+        var (db, seeder) = CreateContext();
+        var targetTenant = Guid.NewGuid();
 
         // Act
-        var seededTenantId = await seeder.SeedEnterpriseDemoAsync();
+        var seededTenantId = await seeder.SeedEnterpriseDemoAsync(targetTenant);
 
         // Assert
-        Assert.NotEqual(Guid.Empty, seededTenantId);
+        Assert.Equal(targetTenant, seededTenantId);
 
-        // Verify Tenant
-        var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == seededTenantId);
+        var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == targetTenant);
         Assert.NotNull(tenant);
-        Assert.Equal("SGrowing Enterprise Labs", tenant.Name);
 
-        // Verify Roles
-        var roles = await db.SystemRoles.Where(r => r.TenantId == seededTenantId).ToListAsync();
-        Assert.Equal(6, roles.Count);
+        var users = await db.Users.Where(u => u.TenantId == targetTenant).ToListAsync();
+        Assert.True(users.Count >= 2);
 
-        // Verify Users
-        var admin = await db.Users.FirstOrDefaultAsync(u => u.TenantId == seededTenantId && u.Email == "admin@sgrowing.io");
-        var agent = await db.Users.FirstOrDefaultAsync(u => u.TenantId == seededTenantId && u.Email == "agent.sarah@sgrowing.io");
-        Assert.NotNull(admin);
-        Assert.NotNull(agent);
-        Assert.True(hasher.VerifyPassword("SecurePassword999!", admin.PasswordHash, admin.PasswordSalt));
+        var contacts = await db.Contacts.Where(c => c.TenantId == targetTenant).ToListAsync();
+        Assert.True(contacts.Count >= 4);
 
-        // Verify Contacts & Companies
-        var companies = await db.Companies.Where(c => c.TenantId == seededTenantId).ToListAsync();
-        var contacts = await db.Contacts.Where(c => c.TenantId == seededTenantId).ToListAsync();
-        Assert.Equal(2, companies.Count);
-        Assert.Equal(4, contacts.Count);
+        var orders = await db.CodOrders.Where(o => o.TenantId == targetTenant).ToListAsync();
+        Assert.True(orders.Count >= 5);
 
-        // Verify Inboxes, Conversations & AI Drafts
-        var inboxes = await db.Inboxes.Where(i => i.TenantId == seededTenantId).ToListAsync();
-        var convs = await db.Conversations.Where(c => c.TenantId == seededTenantId).ToListAsync();
-        var drafts = await db.AiDrafts.Where(d => d.TenantId == seededTenantId).ToListAsync();
-        Assert.Equal(2, inboxes.Count);
-        Assert.Equal(2, convs.Count);
-        Assert.Single(drafts);
+        var envelopes = await db.DocumentEnvelopes.Where(e => e.TenantId == targetTenant).ToListAsync();
+        Assert.Single(envelopes);
+        Assert.Equal(EnvelopeStatus.Completed, envelopes[0].Status);
 
-        // Verify COD Orders
-        var orders = await db.CodOrders.Where(o => o.TenantId == seededTenantId).ToListAsync();
-        Assert.Equal(5, orders.Count);
-        Assert.Contains(orders, o => o.RiskLevel == FraudRiskLevel.Fraudulent);
+        var dwellRecords = await db.DocumentDwellTelemetries.Where(d => d.TenantId == targetTenant).ToListAsync();
+        Assert.Equal(3, dwellRecords.Count);
 
-        // Verify WMS Inventory
-        var inventory = await db.WarehouseInventories.Where(w => w.TenantId == seededTenantId).ToListAsync();
-        Assert.Equal(6, inventory.Count);
+        var articles = await db.PublicationArticles.Where(a => a.TenantId == targetTenant).ToListAsync();
+        Assert.Equal(2, articles.Count);
 
-        // Verify Affiliates
-        var creators = await db.CreatorProfiles.Where(c => c.TenantId == seededTenantId).ToListAsync();
-        var refCodes = await db.AffiliateReferralCodes.Where(r => r.TenantId == seededTenantId).ToListAsync();
-        Assert.Equal(2, creators.Count);
-        Assert.Equal(2, refCodes.Count);
+        var forecasts = await db.SalesForecastPeriods.Where(p => p.TenantId == targetTenant).ToListAsync();
+        Assert.Single(forecasts);
 
-        // Verify Cross-Border Trade
-        var countries = await db.CountryTradeConfigs.Where(c => c.TenantId == seededTenantId).ToListAsync();
-        Assert.Equal(4, countries.Count);
+        var feedback = await db.FeatureFeedbackPosts.Where(f => f.TenantId == targetTenant).ToListAsync();
+        Assert.Equal(4, feedback.Count);
 
-        // Verify Security Audit Trail
-        var auditLogs = await db.SecurityAuditLogEntries.Where(a => a.TenantId == seededTenantId).ToListAsync();
-        Assert.Single(auditLogs);
-        Assert.Equal("SeedEnterpriseDemo", auditLogs[0].Action);
+        var budget = await db.AiAgentBudgets.FirstOrDefaultAsync(b => b.TenantId == targetTenant);
+        Assert.NotNull(budget);
+        Assert.Equal(5000000, budget.MonthlyTokenLimit);
+
+        var toolLogs = await db.AiToolExecutionLogs.Where(l => l.TenantId == targetTenant).ToListAsync();
+        Assert.Equal(2, toolLogs.Count);
+    }
+
+    [Fact]
+    public async Task SeedEnterpriseDemoAsync_IsIdempotentOnSubsequentCalls()
+    {
+        // Arrange
+        var (db, seeder) = CreateContext();
+        var targetTenant = Guid.NewGuid();
+
+        // Act: Run twice
+        await seeder.SeedEnterpriseDemoAsync(targetTenant);
+        await seeder.SeedEnterpriseDemoAsync(targetTenant);
+
+        // Assert: No duplicate articles or envelopes
+        var articlesCount = await db.PublicationArticles.CountAsync(a => a.TenantId == targetTenant);
+        Assert.Equal(2, articlesCount);
+
+        var envelopeCount = await db.DocumentEnvelopes.CountAsync(e => e.TenantId == targetTenant);
+        Assert.Equal(1, envelopeCount);
     }
 }

@@ -2,6 +2,8 @@ using System.Text.Json;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.AI;
+using SGrowing.Api.Modules.Documents;
+using SGrowing.Api.Modules.Gateways;
 using SGrowing.Api.Modules.Analytics;
 using SGrowing.Api.Modules.Channels;
 using SGrowing.Api.Modules.Conversations;
@@ -228,6 +230,12 @@ builder.Services.AddScoped<IFeatureFeedbackService, FeatureFeedbackService>();
 // 25. Safe AI Agent Framework, Permissioned Tool Execution & Conversational BI (PRD Phase 5)
 builder.Services.AddScoped<IAiAgentOrchestratorService, AiAgentOrchestratorService>();
 builder.Services.AddScoped<IConversationalBiService, ConversationalBiService>();
+
+// 26. Track 1-3 Enhancements: PDF Generator, Gateways & Semantic RAG
+builder.Services.AddSingleton<IDocumentPdfGeneratorService, DocumentPdfGeneratorService>();
+builder.Services.AddSingleton<IWhatsAppGatewayClient, EvolutionApiGatewayClient>();
+builder.Services.AddSingleton<ICourierLogisticsGateway, CourierLogisticsGateway>();
+builder.Services.AddScoped<ISemanticVectorRagService, SemanticVectorRagService>();
 
 // 16. Authentication, Security & Tenant Context
 var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "SGrowing_SuperSecretEnterpriseMasterKey_998877665544332211!!";
@@ -1851,6 +1859,132 @@ app.MapPost("/api/developer/webhooks/replay/{attemptId}", async (Guid attemptId,
 
 app.MapHub<OmniHub>("/hubs/omni");
 
+// --- Track 1: Database Seeding Endpoints ---
+app.MapPost("/api/dev/seed", async ([FromQuery] Guid? tenantId, DatabaseSeeder seeder) =>
+{
+    var seededTenantId = await seeder.SeedEnterpriseDemoAsync(tenantId);
+    return Results.Ok(new { status = "Success", tenantId = seededTenantId });
+});
+
+// --- Track 2: PDF Document & Invoice Generation Endpoints ---
+app.MapGet("/api/documents/{documentId}/certificate/download", async (Guid documentId, [FromQuery] Guid tenantId, SGrowingDbContext db, IDocumentPdfGeneratorService pdfService) =>
+{
+    var envelope = await db.DocumentEnvelopes.Include(e => e.Signers).FirstOrDefaultAsync(e => e.TenantId == tenantId && e.Id == documentId);
+    if (envelope == null) return Results.NotFound("Document envelope not found.");
+
+    var signer = envelope.Signers.FirstOrDefault() ?? await db.EnvelopeSigners.FirstOrDefaultAsync(s => s.EnvelopeId == envelope.Id && s.TenantId == tenantId);
+    string signerName = signer?.Name ?? "Signer";
+    string signerEmail = signer?.Email ?? "signer@example.com";
+    string signerIp = !string.IsNullOrEmpty(signer?.IpAddress) ? signer.IpAddress : "196.200.14.88";
+    DateTime signedDate = signer?.SignedAtUtc ?? envelope.CompletedAtUtc ?? DateTime.UtcNow;
+    string docHash = !string.IsNullOrEmpty(envelope.ChecksumSha256) ? envelope.ChecksumSha256 : "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+    string certHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(docHash + signerName + signedDate.ToString("O"))));
+
+    var auditTrail = new List<AuditTrailEventDto>
+    {
+        new("Envelope Created", envelope.CreatedAtUtc, "Platform Admin", "127.0.0.1"),
+        new("Invitation Sent", envelope.CreatedAtUtc.AddMinutes(2), "Email Delivery Engine", "10.0.0.1"),
+        new("Document Viewed", signedDate.AddMinutes(-5), signerEmail, signerIp),
+        new("Cryptographically Signed", signedDate, signerEmail, signerIp)
+    };
+
+    var pdfBytes = pdfService.GenerateCertificatePdf(
+        envelope.Id,
+        envelope.Title,
+        signerName,
+        signerEmail,
+        signerIp,
+        signedDate,
+        docHash,
+        certHash,
+        auditTrail
+    );
+
+    return Results.File(pdfBytes, "application/pdf", $"certificate_{envelope.Id:N}.pdf");
+});
+
+app.MapGet("/api/finance/invoices/{invoiceId}/download", async (Guid invoiceId, [FromQuery] Guid tenantId, SGrowingDbContext db, IDocumentPdfGeneratorService pdfService) =>
+{
+    var order = await db.CodOrders.FirstOrDefaultAsync(o => o.TenantId == tenantId && o.Id == invoiceId);
+    string orderNum = order?.OrderNumber ?? $"INV-{invoiceId:N}".Substring(0, 12).ToUpper();
+    string customer = order?.CustomerName ?? "Enterprise Client";
+    decimal total = order?.TotalAmount ?? 149.99m;
+    decimal subtotal = Math.Round(total / 1.2m, 2);
+    decimal tax = total - subtotal;
+    string currency = order?.CodCurrency ?? "USD";
+
+    var items = new List<InvoiceLineItemDto>
+    {
+        new("Enterprise SaaS & Commerce Platform Services", 1, subtotal, subtotal)
+    };
+
+    var pdfBytes = pdfService.GenerateInvoicePdf(
+        invoiceId,
+        orderNum,
+        "Inspire Global Commerce & SaaS",
+        customer,
+        subtotal,
+        tax,
+        total,
+        currency,
+        items
+    );
+
+    return Results.File(pdfBytes, "application/pdf", $"invoice_{orderNum}.pdf");
+});
+
+// --- Provider Gateways (WhatsApp & Courier Logistics) ---
+app.MapGet("/api/gateways/whatsapp/sessions/{instanceName}", async (string instanceName, IWhatsAppGatewayClient waClient) =>
+{
+    var state = await waClient.GetSessionStateAsync(instanceName);
+    return Results.Ok(state);
+});
+
+app.MapPost("/api/gateways/whatsapp/messages/send", async ([FromBody] SendWhatsAppMessageDto req, IWhatsAppGatewayClient waClient) =>
+{
+    var res = await waClient.SendTextMessageAsync(req.InstanceName, req.RecipientPhone, req.Message);
+    return Results.Ok(res);
+});
+
+app.MapPost("/api/gateways/whatsapp/webhook", async ([FromBody] JsonElement payload, IWhatsAppGatewayClient waClient) =>
+{
+    var parsed = await waClient.ParseWebhookPayloadAsync(payload);
+    return Results.Ok(parsed);
+});
+
+app.MapPost("/api/gateways/couriers/labels/generate", async ([FromBody] GenerateCourierLabelDto req, ICourierLogisticsGateway courierGateway) =>
+{
+    var label = await courierGateway.GenerateShipmentLabelAsync(req.CourierProviderName, req.Details);
+    return Results.Ok(label);
+});
+
+app.MapPost("/api/gateways/couriers/webhook", async ([FromBody] IngestCourierWebhookGatewayDto req, ICourierLogisticsGateway courierGateway) =>
+{
+    var normalized = await courierGateway.TranslateWebhookEventAsync(req.CourierProviderName, req.Payload);
+    return Results.Ok(normalized);
+});
+
+// --- Track 3: Vector RAG & Semantic Knowledge Search ---
+app.MapPost("/api/knowledge/semantic-search", async ([FromBody] SemanticSearchRequestDto req, ISemanticVectorRagService ragService) =>
+{
+    var results = await ragService.SearchKnowledgeAsync(req.TenantId, req.Query, req.TopK, req.MinScore);
+    return Results.Ok(results);
+});
+
+app.MapPost("/api/knowledge/index-articles", async ([FromBody] IndexKnowledgeRequestDto req, ISemanticVectorRagService ragService) =>
+{
+    var indexedCount = await ragService.IndexTenantKnowledgeAsync(req.TenantId);
+    return Results.Ok(new { status = "indexed", count = indexedCount });
+});
+
+if (args.Contains("--seed"))
+{
+    using var scope = app.Services.CreateScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+    await seeder.SeedEnterpriseDemoAsync();
+    Console.WriteLine("Demo database successfully seeded.");
+}
+
 app.Run();
 
 public record IngestEventDto(Guid ContactId, string EventName, string? PayloadJson);
@@ -1996,6 +2130,13 @@ public record CreateApiKeyDto(Guid TenantId, string Name, List<string> Scopes, b
 public record ValidateKeyDto(string SecretKey);
 public record RegisterWebhookDto(Guid TenantId, string TargetUrl, List<string> Events);
 public record DispatchWebhookDto(Guid TenantId, string EventType, object Payload);
+
+// Track 1-3 Extension DTOs
+public record SendWhatsAppMessageDto(string InstanceName, string RecipientPhone, string Message);
+public record GenerateCourierLabelDto(string CourierProviderName, CourierLabelRequestDto Details);
+public record IngestCourierWebhookGatewayDto(string CourierProviderName, CourierTrackingWebhookPayloadDto Payload);
+public record SemanticSearchRequestDto(Guid TenantId, string Query, int TopK = 5, double MinScore = 0.35);
+public record IndexKnowledgeRequestDto(Guid TenantId);
 
 // Required for WebApplicationFactory in integration tests
 public partial class Program { }

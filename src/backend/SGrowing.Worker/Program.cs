@@ -51,6 +51,7 @@ builder.Services.AddHostedService<OutboxProcessorDaemon>();
 builder.Services.AddHostedService<RedisStreamConsumerDaemon>();
 builder.Services.AddHostedService<SlaWatchdogDaemon>();
 builder.Services.AddHostedService<ResilientDlqDaemon>();
+builder.Services.AddHostedService<DripCampaignCadenceDaemon>();
 
 var host = builder.Build();
 host.Run();

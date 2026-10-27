@@ -260,6 +260,218 @@ public class DatabaseSeeder
             TimestampUtc = DateTime.UtcNow
         });
 
+        // 11. E-Signature Envelopes & Signers + Dwell Telemetry
+        if (!await _db.DocumentEnvelopes.AnyAsync(e => e.TenantId == tenantId))
+        {
+            var envelope = DocumentEnvelope.Create(
+                tenantId,
+                "Enterprise Master Services Agreement (MSA) 2026",
+                "https://cdn.sgrowing.io/docs/msa_2026.pdf",
+                "OFFICIAL INSPIRE MSA ENTERPRISE LEGAL TERMS 2026",
+                true
+            );
+            envelope.Status = EnvelopeStatus.Completed;
+            envelope.CompletedAtUtc = DateTime.UtcNow.AddDays(-2);
+            _db.DocumentEnvelopes.Add(envelope);
+
+            var signer = EnvelopeSigner.Create(
+                tenantId,
+                envelope.Id,
+                "Yassine Mansour",
+                "yassine@tunisiamail.tn",
+                SignerRole.Signer,
+                1
+            );
+            signer.Status = SignerStatus.Signed;
+            signer.SignedAtUtc = DateTime.UtcNow.AddDays(-2);
+            signer.IpAddress = "196.200.14.88";
+            signer.SignatureData = "Yassine Mansour (Digital SHA-256 SignOff)";
+            _db.EnvelopeSigners.Add(signer);
+
+            _db.DocumentDwellTelemetries.AddRange(
+                DocumentDwellTelemetry.Create(tenantId, envelope.Id, 1, "yassine@tunisiamail.tn", "196.200.14.88", 45),
+                DocumentDwellTelemetry.Create(tenantId, envelope.Id, 2, "yassine@tunisiamail.tn", "196.200.14.88", 120),
+                DocumentDwellTelemetry.Create(tenantId, envelope.Id, 3, "yassine@tunisiamail.tn", "196.200.14.88", 75)
+            );
+        }
+
+        // 12. Headless Publication CMS Articles & Newsletters
+        if (!await _db.PublicationArticles.AnyAsync(a => a.TenantId == tenantId))
+        {
+            var article1 = PublicationArticle.Create(
+                tenantId,
+                "The State of Autonomous E-Commerce in 2026",
+                "state-of-autonomous-ecommerce-2026",
+                "How AI SDR agents, automated courier reconciliation, and edge funnels are reshaping modern retail.",
+                "<p>Modern e-commerce has evolved beyond static storefronts into intelligent, real-time autonomous systems...</p>",
+                "Editorial Growth Team",
+                PublicationVisibility.Public
+            );
+            article1.Status = PublicationArticleStatus.Published;
+            article1.PublishedAtUtc = DateTime.UtcNow.AddDays(-7);
+            article1.ViewCount = 1840;
+
+            var article2 = PublicationArticle.Create(
+                tenantId,
+                "Beating Cash on Delivery Return-To-Origin (RTO) with Pre-Confirmation",
+                "beating-cod-rto-pre-confirmation",
+                "Tactics for slashing delivery drop-offs using automated WhatsApp confirmation bots and smart routing.",
+                "<p>In emerging markets, Cash on Delivery represents over 70% of consumer transactions...</p>",
+                "Sarah Mansour",
+                PublicationVisibility.PaidTier
+            );
+            article2.Status = PublicationArticleStatus.Published;
+            article2.PublishedAtUtc = DateTime.UtcNow.AddDays(-3);
+            article2.ViewCount = 950;
+
+            _db.PublicationArticles.AddRange(article1, article2);
+
+            var broadcast = NewsletterBroadcast.Create(
+                tenantId,
+                article1.Id,
+                "Weekly Growth Dispatch #42: Optimizing Your Pipeline Velocity",
+                "AllSubscribers",
+                3200
+            );
+            broadcast.Status = NewsletterBroadcastStatus.Completed;
+            broadcast.DeliveredCount = 3180;
+            broadcast.OpenedCount = 1520;
+            broadcast.ClickedCount = 490;
+            broadcast.SentAtUtc = DateTime.UtcNow.AddDays(-4);
+            _db.NewsletterBroadcasts.Add(broadcast);
+        }
+
+        // 13. Sales Forecasting Periods & Rep Quotas
+        if (!await _db.SalesForecastPeriods.AnyAsync(p => p.TenantId == tenantId))
+        {
+            var period = SalesForecastPeriod.Create(
+                tenantId,
+                "Q4 2026",
+                new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc),
+                new DateTime(2026, 12, 31, 23, 59, 59, DateTimeKind.Utc),
+                250000m
+            );
+            period.ClosedWonRevenue = 95000m;
+            period.WeightedForecastRevenue = 155000m;
+            period.UnweightedPipelineRevenue = 210000m;
+            _db.SalesForecastPeriods.Add(period);
+
+            _db.SalesForecastRepQuotas.AddRange(
+                new SalesForecastRepQuota
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId,
+                    PeriodId = period.Id,
+                    SalesRepUserId = agentUser.Id,
+                    SalesRepName = "Sarah Mansour",
+                    QuotaAmount = 100000m,
+                    ClosedWonAmount = 85000m,
+                    CommitAmount = 10000m,
+                    BestCaseAmount = 15000m,
+                    PipelineAmount = 45000m,
+                    UpdatedAtUtc = DateTime.UtcNow
+                },
+                new SalesForecastRepQuota
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId,
+                    PeriodId = period.Id,
+                    SalesRepUserId = adminUser.Id,
+                    SalesRepName = "System Administrator",
+                    QuotaAmount = 150000m,
+                    ClosedWonAmount = 120000m,
+                    CommitAmount = 20000m,
+                    BestCaseAmount = 30000m,
+                    PipelineAmount = 75000m,
+                    UpdatedAtUtc = DateTime.UtcNow
+                }
+            );
+        }
+
+        // 14. Public Roadmap Feature Feedback Posts
+        if (!await _db.FeatureFeedbackPosts.AnyAsync(f => f.TenantId == tenantId))
+        {
+            var p1 = FeatureFeedbackPost.Create(
+                tenantId,
+                "Real-Time Multi-Currency Settlement & Fx Hedging",
+                "Enable automatic multi-currency payouts for cross-border e-commerce across Maghreb and GCC.",
+                "Payments",
+                "tariq@casabusiness.ma",
+                "Tariq Cherif"
+            );
+            p1.Status = FeedbackStatus.UnderReview;
+            p1.UpvoteCount = 42;
+
+            var p2 = FeatureFeedbackPost.Create(
+                tenantId,
+                "Native 2-Way Shopify & WooCommerce Webhook Sync",
+                "Live catalog and stock synchronization with external Shopify stores.",
+                "Integrations",
+                "amina.b@algertech.dz",
+                "Amina Bouazizi"
+            );
+            p2.Status = FeedbackStatus.Planned;
+            p2.UpvoteCount = 89;
+
+            var p3 = FeatureFeedbackPost.Create(
+                tenantId,
+                "AI SDR Voice Cloning for Inbound Confirmation Calls",
+                "Allow uploading 60 seconds of audio to generate branded IVR confirmation voices.",
+                "AI & Voice",
+                "yassine@tunisiamail.tn",
+                "Yassine Mansour"
+            );
+            p3.Status = FeedbackStatus.InProgress;
+            p3.UpvoteCount = 134;
+
+            var p4 = FeatureFeedbackPost.Create(
+                tenantId,
+                "Driver Mobile Companion Progressive Web App (PWA)",
+                "Offline-first delivery runner PWA with barcode camera scanning and doorstep signature capture.",
+                "Logistics",
+                "nour@cairotrade.eg",
+                "Nour El Houda"
+            );
+            p4.Status = FeedbackStatus.Completed;
+            p4.UpvoteCount = 210;
+
+            _db.FeatureFeedbackPosts.AddRange(p1, p2, p3, p4);
+        }
+
+        // 15. AI Agent Budget & Tool Execution Logs
+        if (!await _db.AiAgentBudgets.AnyAsync(b => b.TenantId == tenantId))
+        {
+            var budget = AiAgentBudget.Create(tenantId, 5000000, 200.0m, true);
+            budget.TokensConsumed = 1240000;
+            budget.CostSpentUsd = 49.60m;
+            _db.AiAgentBudgets.Add(budget);
+
+            _db.AiToolExecutionLogs.AddRange(
+                AiToolExecutionLog.Create(
+                    tenantId,
+                    "SdrNegotiationAgent",
+                    "ApproveOrderDiscount",
+                    "{\"orderId\":\"COD-TN-9012\",\"discountPercent\":15}",
+                    "{\"status\":\"discount_applied\",\"adjustedAmount\":186.56}",
+                    120,
+                    450,
+                    0.009m,
+                    ToolApprovalStatus.Approved
+                ),
+                AiToolExecutionLog.Create(
+                    tenantId,
+                    "SupportDispatcherAgent",
+                    "LookupCourierStatus",
+                    "{\"trackingNumber\":\"YAL-77401928-DZ\"}",
+                    "{\"status\":\"Delivered\",\"deliveredDate\":\"2026-10-24\"}",
+                    80,
+                    180,
+                    0.0036m,
+                    ToolApprovalStatus.AutoApproved
+                )
+            );
+        }
+
         await _db.SaveChangesAsync();
         return tenantId;
     }
