@@ -38,10 +38,24 @@ import { WarmupDashboardComponent } from './features/deliverability/warmup-dashb
 import { SoftphoneDialerComponent } from './features/outbound/softphone-dialer.component';
 import { CpqBuilderComponent } from './features/commerce/cpq-builder.component';
 import { SealingInspectorComponent } from './features/documents/sealing-inspector.component';
+import { SpintaxEngineComponent } from './features/outbound/spintax-engine.component';
+import { WarmupSwarmCockpitComponent } from './features/deliverability/warmup-swarm-cockpit.component';
+import { OmnichannelCockpitComponent } from './features/inbox/omnichannel-cockpit.component';
+import { CsvImportCockpitComponent } from './features/accounts/csv-import-cockpit.component';
+import { BotSimulatorRunnerComponent } from './features/funnels/bot-simulator-runner.component';
+import { MultipartySigningCockpitComponent } from './features/contracts/multiparty-signing-cockpit.component';
+import { CodLogisticsFraudCockpitComponent } from './features/courier/cod-logistics-fraud-cockpit.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', component: InboxShellComponent, canActivate: [authGuard] },
+  { path: 'outbound/spintax', component: SpintaxEngineComponent, canActivate: [authGuard] },
+  { path: 'deliverability/warmup-swarm', component: WarmupSwarmCockpitComponent, canActivate: [authGuard] },
+  { path: 'inbox/omnichannel', component: OmnichannelCockpitComponent, canActivate: [authGuard] },
+  { path: 'accounts/csv-import', component: CsvImportCockpitComponent, canActivate: [authGuard] },
+  { path: 'chatbots/simulator', component: BotSimulatorRunnerComponent, canActivate: [authGuard] },
+  { path: 'contracts/multi-party', component: MultipartySigningCockpitComponent, canActivate: [authGuard] },
+  { path: 'courier/cod-fraud', component: CodLogisticsFraudCockpitComponent, canActivate: [authGuard] },
   { path: 'documents', component: DocumentsStudioComponent, canActivate: [authGuard] },
   { path: 'publications', component: PublicationStudioComponent, canActivate: [authGuard] },
   { path: 'forecasting', component: ForecastingStudioComponent, canActivate: [authGuard] },

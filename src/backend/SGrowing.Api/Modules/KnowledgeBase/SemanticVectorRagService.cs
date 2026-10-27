@@ -48,14 +48,14 @@ public class SemanticVectorRagService : ISemanticVectorRagService
             if (word.Length <= 1) continue;
 
             // Word frequency bucket
-            int bucket = Math.Abs(word.GetHashCode()) % dimensions;
+            int bucket = GetDeterministicHashCode(word) % dimensions;
             vector[bucket] += 1.0f;
 
             // Character trigrams for subword/morphological resonance
             for (int i = 0; i <= word.Length - 3; i++)
             {
                 var trigram = word.Substring(i, 3);
-                int triBucket = Math.Abs(trigram.GetHashCode()) % dimensions;
+                int triBucket = GetDeterministicHashCode(trigram) % dimensions;
                 vector[triBucket] += 0.5f;
             }
         }
@@ -190,5 +190,18 @@ public class SemanticVectorRagService : ISemanticVectorRagService
             .OrderByDescending(s => s.SimilarityScore)
             .Take(topK)
             .ToList();
+    }
+
+    private static int GetDeterministicHashCode(string str)
+    {
+        unchecked
+        {
+            uint hash = 2166136261;
+            foreach (char c in str)
+            {
+                hash = (hash ^ c) * 16777619;
+            }
+            return (int)(hash & 0x7FFFFFFF);
+        }
     }
 }

@@ -29,6 +29,16 @@ using SGrowing.Api.Modules.Calendar;
 using SGrowing.Api.Modules.Deliverability;
 using SGrowing.Api.Modules.Telemetry;
 using SGrowing.Api.Modules.Billing;
+using SGrowing.Api.Modules.Outbound.Spintax;
+using SGrowing.Api.Modules.Outbound.EmailVerification;
+using SGrowing.Api.Modules.Outbound.Enrichment;
+using SGrowing.Api.Modules.Conversations.Mime;
+using SGrowing.Api.Modules.Conversations.Macros;
+using SGrowing.Api.Modules.Conversations.Sla;
+using SGrowing.Api.Modules.CRM.Import;
+using SGrowing.Api.Modules.CRM.ContractSigning;
+using SGrowing.Api.Modules.Commerce.Shipping;
+using SGrowing.Api.Modules.Commerce.AntiFraud;
 using Scalar.AspNetCore;
 using SGrowing.Core.Messaging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -255,6 +265,21 @@ builder.Services.AddScoped<ICpqQuoteAndEavService, CpqQuoteAndEavService>();
 builder.Services.AddScoped<ICryptographicPdfSealingService, CryptographicPdfSealingService>();
 builder.Services.AddScoped<ISegmentTelemetryAndJourneysService, SegmentTelemetryAndJourneysService>();
 
+// 28. Revenue Pillars: Cold Outreach & AI SDR, Deliverability, Omnichannel, CRM Data, Bot Canvas, CPQ & E-Sign, COD Anti-Fraud
+builder.Services.AddSingleton<ISpintaxService, SpintaxService>();
+builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
+builder.Services.AddScoped<IContactEnrichmentPipeline, ContactEnrichmentPipeline>();
+builder.Services.AddSingleton<IWarmupThreadGeneratorService, WarmupThreadGeneratorService>();
+builder.Services.AddScoped<IPlacementTestService, PlacementTestService>();
+builder.Services.AddSingleton<IMimeEmailParserService, MimeEmailParserService>();
+builder.Services.AddSingleton<ICannedMacroService, CannedMacroService>();
+builder.Services.AddScoped<ISlaEscalationEngineService, SlaEscalationEngineService>();
+builder.Services.AddScoped<ICsvImportService, CsvImportService>();
+builder.Services.AddSingleton<IBotSimulatorService, BotSimulatorService>();
+builder.Services.AddSingleton<IMultiPartySigningService, MultiPartySigningService>();
+builder.Services.AddSingleton<ICarrierShippingGateway, CarrierShippingGateway>();
+builder.Services.AddScoped<ICodAntiFraudEngine, CodAntiFraudEngine>();
+
 // 16. Authentication, Security & Tenant Context
 var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "SGrowing_SuperSecretEnterpriseMasterKey_998877665544332211!!";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "SGrowing.Api";
@@ -358,6 +383,13 @@ app.MapPublicationCmsEndpoints();
 app.MapSalesForecastingEndpoints();
 app.MapFeatureFeedbackEndpoints();
 app.MapAiEndpoints();
+app.MapOutboundPillarEndpoints();
+app.MapDeliverabilityPillarEndpoints();
+app.MapOmnichannelEndpoints();
+app.MapCrmImportEndpoints();
+app.MapBotCanvasEndpoints();
+app.MapContractSigningEndpoints();
+app.MapCommercePillarEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", framework = ".NET 10", timestamp = DateTime.UtcNow }));
 app.MapGet("/healthz/live", () => Results.Ok(new { status = "Healthy", timestampUtc = DateTime.UtcNow }));

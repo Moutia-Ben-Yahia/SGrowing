@@ -70,6 +70,28 @@ import {
   CryptographicSealResultDto,
   CompletionCertificateDto
 } from '../models/inspiration.models';
+import {
+  SpintaxPreviewResponse,
+  EmailVerificationResult,
+  EnrichedContactDto,
+  WarmupDialogueThread,
+  SeedPlacementReportDto,
+  ParsedMimeEmail,
+  CannedMacroDto,
+  CannedMacroResolutionDto,
+  CsatSurveyDispatchResult,
+  SlaEscalationEvaluationResult,
+  CsvImportPreviewResult,
+  CsvImportExecutionResult,
+  BotSimulationSession,
+  BotSimulationStepResult,
+  MultiPartyContractDto,
+  OtpVerificationResult,
+  WaybillGenerationResult,
+  CarrierTrackingResult,
+  ShippingLabelResult,
+  CodFraudEvaluationResult
+} from '../models/pillars.models';
 
 @Injectable({
   providedIn: 'root'
@@ -1168,5 +1190,111 @@ export class ApiService {
   public getCompletionCertificate(documentId: string, tenantId?: string): Observable<CompletionCertificateDto> {
     const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
     return this.http.get<CompletionCertificateDto>(`${this.baseUrl}/v1/documents/${documentId}/completion-certificate`, { headers });
+  }
+
+  // 12. Seven Revenue Pillars
+  public previewSpintax(template: string, prospectIdOrEmail?: string, variables?: Record<string, string>, sampleCount = 3): Observable<SpintaxPreviewResponse> {
+    return this.http.post<SpintaxPreviewResponse>(`${this.baseUrl}/v1/outbound/spintax/preview`, {
+      template,
+      prospectIdOrEmail,
+      variables,
+      sampleCount
+    });
+  }
+
+  public verifyEmailDeliverability(email: string): Observable<EmailVerificationResult> {
+    return this.http.post<EmailVerificationResult>(`${this.baseUrl}/v1/outbound/email/verify?email=${encodeURIComponent(email)}`, {});
+  }
+
+  public enrichAndVerifyContact(tenantId: string, payload: any): Observable<EnrichedContactDto> {
+    return this.http.post<EnrichedContactDto>(`${this.baseUrl}/v1/outbound/contacts/enrich-and-verify?tenantId=${tenantId}`, payload);
+  }
+
+  public generateWarmupThread(payload: any): Observable<WarmupDialogueThread> {
+    return this.http.post<WarmupDialogueThread>(`${this.baseUrl}/v1/deliverability/warmup/threads/generate`, payload);
+  }
+
+  public runPlacementTest(payload: any): Observable<SeedPlacementReportDto> {
+    return this.http.post<SeedPlacementReportDto>(`${this.baseUrl}/v1/deliverability/placement-test`, payload);
+  }
+
+  public parseMimeEmail(rawMime: string): Observable<ParsedMimeEmail> {
+    return this.http.post<ParsedMimeEmail>(`${this.baseUrl}/v1/conversations/mime/parse`, { rawMime });
+  }
+
+  public getCannedMacros(tenantId: string, category?: string): Observable<CannedMacroDto[]> {
+    const catQuery = category ? `&category=${encodeURIComponent(category)}` : '';
+    return this.http.get<CannedMacroDto[]>(`${this.baseUrl}/v1/conversations/macros?tenantId=${tenantId}${catQuery}`);
+  }
+
+  public createCannedMacro(tenantId: string, payload: any): Observable<CannedMacroDto> {
+    return this.http.post<CannedMacroDto>(`${this.baseUrl}/v1/conversations/macros?tenantId=${tenantId}`, payload);
+  }
+
+  public resolveCannedMacro(tenantId: string, triggerKey: string, context: any): Observable<CannedMacroResolutionDto> {
+    return this.http.post<CannedMacroResolutionDto>(`${this.baseUrl}/v1/conversations/macros/resolve?tenantId=${tenantId}`, {
+      triggerKey,
+      context
+    });
+  }
+
+  public triggerConversationCsat(conversationId: string, tenantId: string, channel = 'email'): Observable<CsatSurveyDispatchResult> {
+    return this.http.post<CsatSurveyDispatchResult>(`${this.baseUrl}/v1/conversations/${conversationId}/csat/trigger?tenantId=${tenantId}`, { channel });
+  }
+
+  public evaluateSlaEscalations(tenantId: string): Observable<SlaEscalationEvaluationResult> {
+    return this.http.post<SlaEscalationEvaluationResult>(`${this.baseUrl}/v1/conversations/sla/escalate?tenantId=${tenantId}`, {});
+  }
+
+  public previewCsvImport(csvContent: string, delimiter = ','): Observable<CsvImportPreviewResult> {
+    return this.http.post<CsvImportPreviewResult>(`${this.baseUrl}/v1/crm/contacts/import/preview`, { csvContent, delimiter });
+  }
+
+  public executeCsvImport(tenantId: string, payload: any): Observable<CsvImportExecutionResult> {
+    return this.http.post<CsvImportExecutionResult>(`${this.baseUrl}/v1/crm/contacts/import/execute?tenantId=${tenantId}`, payload);
+  }
+
+  public startBotSimulation(payload: any): Observable<BotSimulationSession> {
+    return this.http.post<BotSimulationSession>(`${this.baseUrl}/v1/automation/bots/simulate/start`, payload);
+  }
+
+  public stepBotSimulation(payload: any): Observable<BotSimulationStepResult> {
+    return this.http.post<BotSimulationStepResult>(`${this.baseUrl}/v1/automation/bots/simulate/step`, payload);
+  }
+
+  public createMultiPartyContract(tenantId: string, payload: any): Observable<MultiPartyContractDto> {
+    return this.http.post<MultiPartyContractDto>(`${this.baseUrl}/v1/contracts/multi-party?tenantId=${tenantId}`, payload);
+  }
+
+  public startSigningWorkflow(contractId: string, tenantId: string): Observable<MultiPartyContractDto> {
+    return this.http.post<MultiPartyContractDto>(`${this.baseUrl}/v1/contracts/${contractId}/workflow/start?tenantId=${tenantId}`, {});
+  }
+
+  public sendSignerOtp(signingToken: string, destination = 'email'): Observable<OtpVerificationResult> {
+    return this.http.post<OtpVerificationResult>(`${this.baseUrl}/v1/contracts/signing/${signingToken}/otp/send`, { destination });
+  }
+
+  public verifySignerOtp(signingToken: string, otpCode: string): Observable<OtpVerificationResult> {
+    return this.http.post<OtpVerificationResult>(`${this.baseUrl}/v1/contracts/signing/${signingToken}/otp/verify`, { otpCode });
+  }
+
+  public submitSignerSignature(signingToken: string, payload: any): Observable<MultiPartyContractDto> {
+    return this.http.post<MultiPartyContractDto>(`${this.baseUrl}/v1/contracts/signing/${signingToken}/sign`, payload);
+  }
+
+  public generateCarrierWaybill(tenantId: string, payload: any): Observable<WaybillGenerationResult> {
+    return this.http.post<WaybillGenerationResult>(`${this.baseUrl}/v1/commerce/shipping/waybill?tenantId=${tenantId}`, payload);
+  }
+
+  public trackCarrierShipment(tenantId: string, courierCode: string, trackingNumber: string): Observable<CarrierTrackingResult> {
+    return this.http.get<CarrierTrackingResult>(`${this.baseUrl}/v1/commerce/shipping/track?tenantId=${tenantId}&courierCode=${encodeURIComponent(courierCode)}&trackingNumber=${encodeURIComponent(trackingNumber)}`);
+  }
+
+  public generateShippingLabel(tenantId: string, courierCode: string, trackingNumber: string, format = 0): Observable<ShippingLabelResult> {
+    return this.http.post<ShippingLabelResult>(`${this.baseUrl}/v1/commerce/shipping/label?tenantId=${tenantId}&courierCode=${encodeURIComponent(courierCode)}&trackingNumber=${encodeURIComponent(trackingNumber)}&format=${format}`, {});
+  }
+
+  public evaluateCodFraud(tenantId: string, payload: any): Observable<CodFraudEvaluationResult> {
+    return this.http.post<CodFraudEvaluationResult>(`${this.baseUrl}/v1/commerce/cod/evaluate-fraud?tenantId=${tenantId}`, payload);
   }
 }
