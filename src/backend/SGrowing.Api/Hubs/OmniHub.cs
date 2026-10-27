@@ -32,6 +32,24 @@ public class OmniHub : Hub<IOmniClient>
             .OnConversationUnlocked(conversationId);
     }
 
+    public async Task BroadcastPresence(Guid conversationId, string operatorId, string operatorName, bool isTyping)
+    {
+        await Clients.Group(GetConversationGroup(conversationId))
+            .OnOperatorPresenceChanged(conversationId, operatorId, operatorName, isTyping);
+    }
+
+    public async Task BroadcastSlaAlert(Guid tenantId, Guid conversationId, string priority, int minutesRemaining, bool isBreached)
+    {
+        await Clients.Group(GetTenantGroup(tenantId))
+            .OnSlaBreachAlert(conversationId, priority, minutesRemaining, isBreached);
+    }
+
+    public async Task BroadcastCallState(Guid tenantId, Guid callSessionId, string status, string? callerPhone)
+    {
+        await Clients.Group(GetTenantGroup(tenantId))
+            .OnCallSessionStateChanged(callSessionId, status, callerPhone);
+    }
+
     public static string GetConversationGroup(Guid conversationId) => $"conv_{conversationId}";
     public static string GetTenantGroup(Guid tenantId) => $"tenant_{tenantId}";
 }

@@ -472,6 +472,35 @@ public class DatabaseSeeder
             );
         }
 
+        // 16. Inspiration Feature Showcases (Warmup, Rotten Deals, Sealed Contracts)
+        if (!await _db.WarmupRecords.AnyAsync(w => w.TenantId == tenantId))
+        {
+            var sender1 = SenderAccount.Create(tenantId, "outreach.demo@sgrowing.io", "Demo Outbound SDR", MailboxProvider.GoogleWorkspace, 50, 4);
+            _db.SenderAccounts.Add(sender1);
+
+            _db.WarmupRecords.AddRange(
+                new WarmupRecord { Id = Guid.NewGuid(), TenantId = tenantId, SenderAccountId = sender1.Id, PeerEmail = "peer-network-node1@growthpool.io", Direction = WarmupDirection.Sent, Status = WarmupStatus.Inbox, OccurredAtUtc = DateTime.UtcNow.AddHours(-3) },
+                new WarmupRecord { Id = Guid.NewGuid(), TenantId = tenantId, SenderAccountId = sender1.Id, PeerEmail = "peer-network-node2@growthpool.io", Direction = WarmupDirection.Received, Status = WarmupStatus.SpamRescued, OccurredAtUtc = DateTime.UtcNow.AddHours(-1) }
+            );
+        }
+
+        if (!await _db.Deals.AnyAsync(d => d.TenantId == tenantId && d.Title.Contains("Rotten")))
+        {
+            var contact = await _db.Contacts.FirstOrDefaultAsync(c => c.TenantId == tenantId);
+            var contactId = contact?.Id ?? Guid.NewGuid();
+
+            var rottenDeal = Deal.Create(tenantId, contactId, "Stalled Enterprise Expansion [Rotten]", 65000m, DealStage.Proposal);
+            rottenDeal.Notes = "[ROTTEN DEAL ALERT] Deal has stagnated in Proposal for over 7 days. Action required.";
+            _db.Deals.Add(rottenDeal);
+        }
+
+        if (!await _db.DigitalContracts.AnyAsync(c => c.TenantId == tenantId))
+        {
+            var contract = DigitalContract.Create(tenantId, "Master Platform Service Agreement 2026", "MSA", "Sarah Jenkins", "sarah.jenkins@partnercorp.com", 36000m);
+            contract.MarkSigned("/storage/sealed/demo-contract-sealed.pdf");
+            _db.DigitalContracts.Add(contract);
+        }
+
         await _db.SaveChangesAsync();
         return tenantId;
     }

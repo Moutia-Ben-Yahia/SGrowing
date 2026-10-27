@@ -82,6 +82,21 @@ services:
       - AUTHENTICATION_API_KEY=sgrowing_super_secret_wa_key
       - DATABASE_ENABLED=false
 
+  minio:
+    image: minio/minio:RELEASE.2024-10-02T17-50-41Z
+    container_name: sgrowing_minio
+    restart: always
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=sgrowing_admin
+      - MINIO_ROOT_PASSWORD=sgrowing_secret_s3_pass
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - miniodata:/data
+
 volumes:
   pgdata:
   redisdata:
+  miniodata:

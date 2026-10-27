@@ -33,6 +33,11 @@ import { DocumentsStudioComponent } from './features/documents/documents-studio.
 import { PublicationStudioComponent } from './features/publications/publication-studio.component';
 import { ForecastingStudioComponent } from './features/forecasting/forecasting-studio.component';
 import { RoadmapBoardComponent } from './features/roadmap/roadmap-board.component';
+import { ChatbotCanvasComponent } from './features/funnels/chatbot-canvas.component';
+import { WarmupDashboardComponent } from './features/deliverability/warmup-dashboard.component';
+import { SoftphoneDialerComponent } from './features/outbound/softphone-dialer.component';
+import { CpqBuilderComponent } from './features/commerce/cpq-builder.component';
+import { SealingInspectorComponent } from './features/documents/sealing-inspector.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -68,5 +73,10 @@ export const routes: Routes = [
   { path: 'journeys', component: JourneyStudioComponent, canActivate: [authGuard] },
   { path: 'feedback', component: FeedbackStudioComponent, canActivate: [authGuard] },
   { path: 'help', component: KnowledgeStudioComponent, canActivate: [authGuard] },
+  { path: 'chatbots', component: ChatbotCanvasComponent, canActivate: [authGuard] },
+  { path: 'warmup', component: WarmupDashboardComponent, canActivate: [authGuard] },
+  { path: 'softphone', component: SoftphoneDialerComponent, canActivate: [authGuard] },
+  { path: 'cpq', component: CpqBuilderComponent, canActivate: [authGuard] },
+  { path: 'sealing', component: SealingInspectorComponent, canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

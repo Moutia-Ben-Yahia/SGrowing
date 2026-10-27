@@ -19,4 +19,7 @@ public interface IOmniClient
     Task OnTypingIndicator(Guid conversationId, string senderName, bool isTyping);
     Task OnConversationLocked(Guid conversationId, string lockedByAgentName);
     Task OnConversationUnlocked(Guid conversationId);
+    Task OnOperatorPresenceChanged(Guid conversationId, string operatorId, string operatorName, bool isTyping);
+    Task OnSlaBreachAlert(Guid conversationId, string priority, int minutesRemaining, bool isBreached);
+    Task OnCallSessionStateChanged(Guid callSessionId, string status, string? callerPhone);
 }

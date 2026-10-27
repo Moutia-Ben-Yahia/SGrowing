@@ -40,6 +40,36 @@ import {
   B2BCreditAccountDto,
   FactoringReceivableRecordDto
 } from '../models/horizons-advanced.models';
+import {
+  ChatbotFlowNodeDto,
+  ChatbotFlowDefinitionDto,
+  FlowExecutionResultDto,
+  SocialCommentReactionDto,
+  InAppTourDto,
+  InAppBannerDto,
+  OperatorPresenceDto,
+  SlaBreachAlertDto,
+  CsatFeedbackDto,
+  WarmupPeerPairDto,
+  SpamRescueSummaryDto,
+  DnsDeliverabilityReportDto,
+  InboxSlotAllocationDto,
+  CallSessionInitiationDto,
+  ClassifiedReplyDto,
+  DurablePublishResultDto,
+  ViralHookSuggestionDto,
+  PlatformAdaptedPostDto,
+  McpToolDefinitionDto,
+  ContactFactDto,
+  ContactBriefDto,
+  RottenDealAlertDto,
+  TicketCommercialContextDto,
+  CpqQuoteDto,
+  CpqLineItemDto,
+  EavAttributeDto,
+  CryptographicSealResultDto,
+  CompletionCertificateDto
+} from '../models/inspiration.models';
 
 @Injectable({
   providedIn: 'root'
@@ -940,5 +970,203 @@ export class ApiService {
 
   public simulateJourneyEvent(payload: any): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/journeys/simulate`, payload);
+  }
+
+  // ==========================================
+  // INSPIRATION STACK CAPABILITIES (V1 APIS)
+  // ==========================================
+
+  // 1. Chatbot Flow Builder & Instagram/FB Comment-to-DM Engine
+  public registerChatbotFlow(payload: { name: string; channel: string; nodes: ChatbotFlowNodeDto[]; entryNodeId: string }, tenantId?: string): Observable<ChatbotFlowDefinitionDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<ChatbotFlowDefinitionDto>(`${this.baseUrl}/v1/funnels/chatbot/flows`, payload, { headers });
+  }
+
+  public executeChatbotFlowStep(flowId: string, payload: { currentNodeId?: string; variables?: Record<string, any>; userResponse?: string }, tenantId?: string): Observable<FlowExecutionResultDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<FlowExecutionResultDto>(`${this.baseUrl}/v1/funnels/chatbot/flows/${flowId}/execute`, payload, { headers });
+  }
+
+  public processSocialCommentWebhook(payload: any, tenantId?: string): Observable<SocialCommentReactionDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<SocialCommentReactionDto>(`${this.baseUrl}/v1/funnels/chatbot/comments/webhook`, payload, { headers });
+  }
+
+  // 2. In-App Product Tours & Smart Context Banners
+  public createInAppTour(payload: any, tenantId?: string): Observable<InAppTourDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<InAppTourDto>(`${this.baseUrl}/v1/engagement/tours`, payload, { headers });
+  }
+
+  public getActiveTours(path = '/', tenantId?: string): Observable<InAppTourDto[]> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.get<InAppTourDto[]>(`${this.baseUrl}/v1/engagement/tours/active?path=${encodeURIComponent(path)}`, { headers });
+  }
+
+  public completeInAppTour(tourId: string, user: string, tenantId?: string): Observable<{ tourId: string; completed: boolean }> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<{ tourId: string; completed: boolean }>(`${this.baseUrl}/v1/engagement/tours/${tourId}/complete?user=${encodeURIComponent(user)}`, {}, { headers });
+  }
+
+  public createInAppBanner(payload: any, tenantId?: string): Observable<InAppBannerDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<InAppBannerDto>(`${this.baseUrl}/v1/engagement/banners`, payload, { headers });
+  }
+
+  public evaluateActiveBanners(path = '/', segment = 'ALL', tenantId?: string): Observable<InAppBannerDto[]> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.get<InAppBannerDto[]>(`${this.baseUrl}/v1/engagement/banners/evaluate?path=${encodeURIComponent(path)}&segment=${encodeURIComponent(segment)}`, { headers });
+  }
+
+  // 3. Multi-Operator Collision Prevention, SLA Watches & CSAT
+  public updateOperatorPresence(conversationId: string, payload: { operatorId: string; operatorName: string; isTyping: boolean }, tenantId?: string): Observable<OperatorPresenceDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<OperatorPresenceDto>(`${this.baseUrl}/v1/conversations/${conversationId}/presence`, payload, { headers });
+  }
+
+  public getActiveViewers(conversationId: string, tenantId?: string): Observable<OperatorPresenceDto[]> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.get<OperatorPresenceDto[]>(`${this.baseUrl}/v1/conversations/${conversationId}/presence`, { headers });
+  }
+
+  public getSlaBreachAlerts(tenantId?: string): Observable<SlaBreachAlertDto[]> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.get<SlaBreachAlertDto[]>(`${this.baseUrl}/v1/conversations/sla/breaches`, { headers });
+  }
+
+  public submitConversationCsat(conversationId: string, ratingScore: number, comment?: string, tenantId?: string): Observable<CsatFeedbackDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<CsatFeedbackDto>(`${this.baseUrl}/v1/conversations/${conversationId}/csat`, { ratingScore, comment }, { headers });
+  }
+
+  // 4. Peer-to-Peer Warmup & Spam Rescue Sweeper
+  public pairWarmupPeers(tenantId?: string): Observable<WarmupPeerPairDto[]> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<WarmupPeerPairDto[]>(`${this.baseUrl}/v1/deliverability/warmup/peers/pair`, {}, { headers });
+  }
+
+  public runSpamRescueSweep(tenantId?: string): Observable<SpamRescueSummaryDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<SpamRescueSummaryDto>(`${this.baseUrl}/v1/deliverability/warmup/spam-rescue/run`, {}, { headers });
+  }
+
+  public getDnsDiagnostics(domain: string): Observable<DnsDeliverabilityReportDto> {
+    return this.http.get<DnsDeliverabilityReportDto>(`${this.baseUrl}/v1/deliverability/warmup/dns-diagnostics/${encodeURIComponent(domain)}`);
+  }
+
+  // 5. Autonomous SDR Fleet & WebRTC Softphone Calling
+  public allocateInboxSlots(volume = 100, tenantId?: string): Observable<InboxSlotAllocationDto[]> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<InboxSlotAllocationDto[]>(`${this.baseUrl}/v1/outbound/sdr/inbox-rotation/allocate?volume=${volume}`, {}, { headers });
+  }
+
+  public startWebRtcCallSession(prospectPhone: string, agentPhone: string, tenantId?: string): Observable<CallSessionInitiationDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<CallSessionInitiationDto>(`${this.baseUrl}/v1/outbound/sdr/calls/session`, { prospectPhone, agentPhone }, { headers });
+  }
+
+  public submitCallDisposition(payload: { callSessionId: string; dispositionOutcome: string; notes?: string; callbackScheduledAtUtc?: string }, tenantId?: string): Observable<{ success: boolean }> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<{ success: boolean }>(`${this.baseUrl}/v1/outbound/sdr/calls/disposition`, payload, { headers });
+  }
+
+  public classifyInboundReply(subject: string, body: string, tenantId?: string): Observable<ClassifiedReplyDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<ClassifiedReplyDto>(`${this.baseUrl}/v1/outbound/sdr/replies/classify`, { subject, body }, { headers });
+  }
+
+  // 6. Durable Multi-Platform Publishing & AI Viral Hooks
+  public publishPostDurably(postId: string, platforms: number[], tenantId?: string): Observable<DurablePublishResultDto[]> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<DurablePublishResultDto[]>(`${this.baseUrl}/v1/social/posts/publish-durable`, { postId, platforms }, { headers });
+  }
+
+  public generateViralHooks(topic = 'B2B SaaS Growth', tenantId?: string): Observable<ViralHookSuggestionDto[]> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<ViralHookSuggestionDto[]>(`${this.baseUrl}/v1/social/ai/viral-hooks?topic=${encodeURIComponent(topic)}`, {}, { headers });
+  }
+
+  public rewritePostForPlatforms(masterDraft: string, platforms: number[], tenantId?: string): Observable<PlatformAdaptedPostDto[]> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<PlatformAdaptedPostDto[]>(`${this.baseUrl}/v1/social/ai/rewrite`, { masterDraft, platforms }, { headers });
+  }
+
+  // 7. Model Context Protocol (MCP) & Autonomous Fact Extraction
+  public getMcpTools(): Observable<McpToolDefinitionDto[]> {
+    return this.http.get<McpToolDefinitionDto[]>(`${this.baseUrl}/v1/mcp/tools`);
+  }
+
+  public executeMcpTool(toolName: string, args: Record<string, any>, tenantId?: string): Observable<any> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<any>(`${this.baseUrl}/v1/mcp/tools/${encodeURIComponent(toolName)}/invoke`, args, { headers });
+  }
+
+  public extractContactFacts(contactId: string, transcript: string, tenantId?: string): Observable<ContactFactDto[]> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<ContactFactDto[]>(`${this.baseUrl}/v1/mcp/contacts/${contactId}/extract-facts`, { transcript }, { headers });
+  }
+
+  public getContactBrief(contactId: string, tenantId?: string): Observable<ContactBriefDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.get<ContactBriefDto>(`${this.baseUrl}/v1/mcp/contacts/${contactId}/brief`, { headers });
+  }
+
+  // 8. Advanced CRM (Frappe-inspired Rotten Deals, Territories, DocTypes)
+  public getRottenDeals(thresholdDays = 7, tenantId?: string): Observable<RottenDealAlertDto[]> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.get<RottenDealAlertDto[]>(`${this.baseUrl}/v1/crm/advanced/deals/rotten?thresholdDays=${thresholdDays}`, { headers });
+  }
+
+  public validateDocTypeSchema(docTypeName: string, fields: Record<string, any>, tenantId?: string): Observable<any> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<any>(`${this.baseUrl}/v1/crm/advanced/doctypes/validate`, { docTypeName, fields }, { headers });
+  }
+
+  public assignLeadTerritory(payload: { leadId: string; leadAddress: string; latitude: number; longitude: number }, tenantId?: string): Observable<any> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<any>(`${this.baseUrl}/v1/crm/advanced/territories/assign`, payload, { headers });
+  }
+
+  // 9. Helpdesk Commercial ERP Context & Pause-on-Hold SLAs
+  public getTicketCommercialContext(ticketId: string, tenantId?: string): Observable<TicketCommercialContextDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.get<TicketCommercialContextDto>(`${this.baseUrl}/v1/helpdesk/tickets/${ticketId}/erp-context`, { headers });
+  }
+
+  public setTicketSlaPauseState(ticketId: string, pause: boolean, reason: string, tenantId?: string): Observable<any> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<any>(`${this.baseUrl}/v1/helpdesk/tickets/${ticketId}/pause-sla`, { pause, reason }, { headers });
+  }
+
+  // 10. CPQ Quotes & Polymorphic EAV
+  public createCpqQuote(payload: { customerName: string; customerEmail: string; currency: string; lineItems: CpqLineItemDto[]; globalDiscountPercentage: number }, tenantId?: string): Observable<CpqQuoteDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<CpqQuoteDto>(`${this.baseUrl}/v1/commerce/cpq/quotes`, payload, { headers });
+  }
+
+  public getCpqQuotePdfUrl(quoteId: string, tenantId?: string): string {
+    const tenantParam = tenantId ? `?tenantId=${tenantId}` : '';
+    return `${this.baseUrl}/v1/commerce/cpq/quotes/${quoteId}/pdf${tenantParam}`;
+  }
+
+  public setEavAttribute(payload: { entityType: string; entityId: string; key: string; value: string; dataType?: string }, tenantId?: string): Observable<EavAttributeDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<EavAttributeDto>(`${this.baseUrl}/v1/commerce/cpq/eav/attributes`, payload, { headers });
+  }
+
+  public getEavAttributes(entityType: string, entityId: string, tenantId?: string): Observable<EavAttributeDto[]> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.get<EavAttributeDto[]>(`${this.baseUrl}/v1/commerce/cpq/eav/attributes?entityType=${encodeURIComponent(entityType)}&entityId=${encodeURIComponent(entityId)}`, { headers });
+  }
+
+  // 11. Cryptographic Document Sealing & Documenso-grade Signatures
+  public sealDocumentPkcs7(documentId: string, signerEmail: string, pdfBase64?: string, tenantId?: string): Observable<CryptographicSealResultDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<CryptographicSealResultDto>(`${this.baseUrl}/v1/documents/${documentId}/cryptographic-seal`, { pdfBase64, signerEmail }, { headers });
+  }
+
+  public getCompletionCertificate(documentId: string, tenantId?: string): Observable<CompletionCertificateDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.get<CompletionCertificateDto>(`${this.baseUrl}/v1/documents/${documentId}/completion-certificate`, { headers });
   }
 }

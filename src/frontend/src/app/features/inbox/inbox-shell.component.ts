@@ -164,6 +164,31 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-indigo-400 hover:bg-indigo-500/10 border border-indigo-500/20 transition">
                 <span class="flex items-center gap-2">📚 Help Center & Bot</span>
               </a>
+              <a
+                routerLink="/chatbots"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-indigo-400 hover:bg-indigo-500/10 border border-indigo-500/20 transition">
+                <span class="flex items-center gap-2">🤖 Chatbot Flow DAG & Triggers</span>
+              </a>
+              <a
+                routerLink="/warmup"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
+                <span class="flex items-center gap-2">🔥 P2P Warmup & Spam Rescue</span>
+              </a>
+              <a
+                routerLink="/softphone"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
+                <span class="flex items-center gap-2">📞 WebRTC Softphone & Fleet</span>
+              </a>
+              <a
+                routerLink="/cpq"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
+                <span class="flex items-center gap-2">💼 Enterprise CPQ & EAV</span>
+              </a>
+              <a
+                routerLink="/sealing"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-violet-400 hover:bg-violet-500/10 border border-violet-500/20 transition">
+                <span class="flex items-center gap-2">🛡️ Cryptographic PDF Sealing</span>
+              </a>
             </div>
 
             <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2">Inboxes</span>

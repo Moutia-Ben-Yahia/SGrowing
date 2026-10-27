@@ -16,6 +16,9 @@ export class SignalRService {
   public typingIndicator$ = new Subject<{ conversationId: string; senderName: string; isTyping: boolean }>();
   public conversationLocked$ = new Subject<{ conversationId: string; lockedByUserId: string; agentName: string }>();
   public conversationUnlocked$ = new Subject<{ conversationId: string }>();
+  public operatorPresenceChanged$ = new Subject<{ conversationId: string; operatorId: string; operatorName: string; isTyping: boolean }>();
+  public slaBreachAlert$ = new Subject<{ conversationId: string; priority: string; minutesRemaining: number; isBreached: boolean }>();
+  public callSessionStateChanged$ = new Subject<{ callSessionId: string; status: string; callerPhone?: string }>();
 
   public async startConnection(hubUrl = 'http://localhost:5000/hubs/omni'): Promise<void> {
     try {
@@ -49,6 +52,18 @@ export class SignalRService {
 
       this.hubConnection.on('OnConversationUnlocked', (conversationId: string) => {
         this.conversationUnlocked$.next({ conversationId });
+      });
+
+      this.hubConnection.on('OnOperatorPresenceChanged', (conversationId: string, operatorId: string, operatorName: string, isTyping: boolean) => {
+        this.operatorPresenceChanged$.next({ conversationId, operatorId, operatorName, isTyping });
+      });
+
+      this.hubConnection.on('OnSlaBreachAlert', (conversationId: string, priority: string, minutesRemaining: number, isBreached: boolean) => {
+        this.slaBreachAlert$.next({ conversationId, priority, minutesRemaining, isBreached });
+      });
+
+      this.hubConnection.on('OnCallSessionStateChanged', (callSessionId: string, status: string, callerPhone?: string) => {
+        this.callSessionStateChanged$.next({ callSessionId, status, callerPhone });
       });
 
       await this.hubConnection.start();

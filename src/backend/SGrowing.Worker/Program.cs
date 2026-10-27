@@ -52,6 +52,10 @@ builder.Services.AddHostedService<RedisStreamConsumerDaemon>();
 builder.Services.AddHostedService<SlaWatchdogDaemon>();
 builder.Services.AddHostedService<ResilientDlqDaemon>();
 builder.Services.AddHostedService<DripCampaignCadenceDaemon>();
+builder.Services.AddHostedService<P2PWarmupRescueDaemon>();
+builder.Services.AddHostedService<AutonomousSdrTickDaemon>();
+builder.Services.AddHostedService<DurableSocialPublishingDaemon>();
+builder.Services.AddHostedService<DealRottingWatchdogDaemon>();
 
 var host = builder.Build();
 host.Run();
