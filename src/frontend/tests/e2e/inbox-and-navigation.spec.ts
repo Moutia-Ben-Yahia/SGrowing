@@ -25,6 +25,7 @@ test.describe('Inbox Shell & Inspiration Studios Navigation E2E', () => {
     await expect(page.locator('a[href="/softphone"]')).toContainText('WebRTC Softphone & Fleet');
     await expect(page.locator('a[href="/cpq"]')).toContainText('Enterprise CPQ & EAV');
     await expect(page.locator('a[href="/sealing"]')).toContainText('Cryptographic PDF Sealing');
+    await expect(page.locator('a[href="/agents/console"]')).toContainText('Autonomous AI Agent Hub');
 
     // Click on CPQ link and verify routing
     await page.locator('a[href="/cpq"]').click();

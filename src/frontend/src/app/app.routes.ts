@@ -45,6 +45,7 @@ import { CsvImportCockpitComponent } from './features/accounts/csv-import-cockpi
 import { BotSimulatorRunnerComponent } from './features/funnels/bot-simulator-runner.component';
 import { MultipartySigningCockpitComponent } from './features/contracts/multiparty-signing-cockpit.component';
 import { CodLogisticsFraudCockpitComponent } from './features/courier/cod-logistics-fraud-cockpit.component';
+import { AgentConsoleComponent } from './features/agents/agent-console.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -56,6 +57,7 @@ export const routes: Routes = [
   { path: 'chatbots/simulator', component: BotSimulatorRunnerComponent, canActivate: [authGuard] },
   { path: 'contracts/multi-party', component: MultipartySigningCockpitComponent, canActivate: [authGuard] },
   { path: 'courier/cod-fraud', component: CodLogisticsFraudCockpitComponent, canActivate: [authGuard] },
+  { path: 'agents/console', component: AgentConsoleComponent, canActivate: [authGuard] },
   { path: 'documents', component: DocumentsStudioComponent, canActivate: [authGuard] },
   { path: 'publications', component: PublicationStudioComponent, canActivate: [authGuard] },
   { path: 'forecasting', component: ForecastingStudioComponent, canActivate: [authGuard] },

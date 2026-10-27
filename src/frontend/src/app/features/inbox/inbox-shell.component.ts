@@ -224,6 +224,11 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-teal-400 hover:bg-teal-500/10 border border-teal-500/20 transition">
                 <span class="flex items-center gap-2">🚚 Multi-Carrier COD & Fraud</span>
               </a>
+              <a
+                routerLink="/agents/console"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-purple-400 hover:bg-purple-500/10 border border-purple-500/20 transition">
+                <span class="flex items-center gap-2">🤖 Autonomous AI Agent Hub</span>
+              </a>
             </div>
 
             <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2">Inboxes</span>

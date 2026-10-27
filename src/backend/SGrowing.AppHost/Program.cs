@@ -19,4 +19,7 @@ var worker = builder.AddProject<Projects.SGrowing_Worker>("worker")
     .WithReference(db)
     .WithReference(redis);
 
+// SGrowing MCP Autonomous AI Server
+var mcpserver = builder.AddProject<Projects.SGrowing_McpServer>("mcpserver");
+
 builder.Build().Run();

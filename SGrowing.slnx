@@ -4,6 +4,7 @@
     <Project Path="src/backend/SGrowing.Api/SGrowing.Api.csproj" />
     <Project Path="src/backend/SGrowing.AppHost/SGrowing.AppHost.csproj" />
     <Project Path="src/backend/SGrowing.Core/SGrowing.Core.csproj" />
+    <Project Path="src/backend/SGrowing.McpServer/SGrowing.McpServer.csproj" />
     <Project Path="src/backend/SGrowing.ServiceDefaults/SGrowing.ServiceDefaults.csproj" />
     <Project Path="src/backend/SGrowing.Worker/SGrowing.Worker.csproj" />
   </Folder>

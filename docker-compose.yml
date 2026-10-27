@@ -11,6 +11,7 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./docker/init-rls.sql:/docker-entrypoint-initdb.d/init-rls.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U sgrowing_user -d sgrowing_db"]
       interval: 5s
@@ -95,6 +96,29 @@ services:
       - "9001:9001"
     volumes:
       - miniodata:/data
+
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: sgrowing_livekit
+    restart: always
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "7882:7882/udp"
+    environment:
+      - LIVEKIT_KEYS=devkey:secret
+
+  mcpserver:
+    build:
+      context: .
+      dockerfile: src/backend/SGrowing.McpServer/Dockerfile
+    container_name: sgrowing_mcpserver
+    restart: always
+    ports:
+      - "7890:7890"
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   pgdata:

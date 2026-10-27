@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SGrowing.Api\SGrowing.Api.csproj" />
+    <ProjectReference Include="..\SGrowing.McpServer\SGrowing.McpServer.csproj" />
     <ProjectReference Include="..\SGrowing.Worker\SGrowing.Worker.csproj" />
   </ItemGroup>
 

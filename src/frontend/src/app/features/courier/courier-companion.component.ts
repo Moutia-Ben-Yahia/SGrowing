@@ -2,6 +2,8 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { BarcodeScannerComponent } from './barcode-scanner.component';
+import { TouchscreenSignatureComponent, PodSubmissionData } from './touchscreen-signature.component';
 
 export interface MobileStopUi {
   id: string;
@@ -18,7 +20,7 @@ export interface MobileStopUi {
 @Component({
   selector: 'app-courier-companion',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, BarcodeScannerComponent, TouchscreenSignatureComponent],
   template: `
     <div class="flex flex-col min-h-screen bg-slate-950 text-slate-100 font-sans max-w-md mx-auto border-x border-slate-800 shadow-2xl">
       <!-- Top Driver App Bar -->
@@ -59,14 +61,19 @@ export interface MobileStopUi {
         <!-- Quick Actions Row -->
         <div class="flex gap-2">
           <button
+            (click)="showScannerModal.set(true)"
+            class="py-2 px-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-medium transition shadow-md shadow-cyan-600/20 flex items-center gap-1.5">
+            <span>📷</span> Scan Parcel
+          </button>
+          <button
             (click)="triggerSync()"
             class="flex-1 py-2 px-3 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-xs text-slate-200 flex items-center justify-center gap-2 transition font-medium">
-            <span>🔄</span> Sync Route Stops
+            <span>🔄</span> Sync Route
           </button>
           <button
             (click)="triggerEndDayReconciliation()"
             class="py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition shadow-md shadow-emerald-600/20">
-            💵 Handover Vault Cash
+            💵 Handover
           </button>
         </div>
       </section>
@@ -147,57 +154,36 @@ export interface MobileStopUi {
         }
       </main>
 
-      <!-- Doorstep Proof-of-Delivery Modal -->
-      @if (activeModalStop()) {
-        <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div>
-                <h3 class="text-sm font-bold text-white">Doorstep POD & Cash Collection</h3>
-                <span class="text-xs text-cyan-400 font-mono">{{ activeModalStop()!.orderNumber }}</span>
-              </div>
-              <button (click)="activeModalStop.set(null)" class="text-slate-400 hover:text-white text-lg">✕</button>
-            </div>
-
-            <div class="space-y-3 text-xs">
-              <div>
-                <label class="text-slate-400 block mb-1">Cash Collected (TND)</label>
-                <input
-                  type="number"
-                  [(ngModel)]="podCashAmount"
-                  class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white font-mono font-bold text-base focus:border-emerald-500 focus:outline-none" />
-              </div>
-
-              <div>
-                <label class="text-slate-400 block mb-1">Recipient Name</label>
-                <input
-                  type="text"
-                  [(ngModel)]="podRecipientName"
-                  placeholder="e.g. Kais Saidi (Self)"
-                  class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-white focus:outline-none" />
-              </div>
-
-              <!-- Camera upload simulation -->
-              <div class="p-3 bg-slate-950 rounded-xl border border-dashed border-slate-700 text-center space-y-1">
-                <span class="text-lg">📷</span>
-                <p class="text-[11px] text-slate-300 font-medium">Doorstep Parcel Photo Attached</p>
-                <span class="text-[10px] text-emerald-400 font-mono">GPS: 36.8782°N, 10.3247°E verified</span>
-              </div>
-
-              <!-- Digital signature canvas simulation -->
-              <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-1 text-center">
-                <span class="text-[10px] text-slate-400 uppercase font-mono block">Customer Digital Signature</span>
-                <div class="h-16 w-full bg-slate-900 rounded-lg flex items-center justify-center font-mono italic text-emerald-400 text-xs border border-slate-800">
-                  ✍️ Signature Verified on Glass
-                </div>
-              </div>
-            </div>
-
+      <!-- Live Barcode / QR Scanner Modal -->
+      @if (showScannerModal()) {
+        <div class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div class="w-full max-w-sm space-y-3">
+            <app-barcode-scanner (codeScanned)="onBarcodeScanned($event)"></app-barcode-scanner>
             <button
-              (click)="confirmPodSubmission()"
-              class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-lg shadow-emerald-600/30">
-              Confirm Delivery & Log {{ podCashAmount }} TND
+              (click)="showScannerModal.set(false)"
+              class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition border border-slate-700">
+              Close Camera Scanner
             </button>
+          </div>
+        </div>
+      }
+
+      <!-- Doorstep Touchscreen Signature & POD Modal -->
+      @if (activeModalStop()) {
+        <div class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div class="w-full max-w-md space-y-3 my-auto">
+            <div class="flex justify-end">
+              <button
+                (click)="activeModalStop.set(null)"
+                class="h-8 w-8 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center text-sm font-bold hover:bg-slate-700 border border-slate-700">
+                ✕
+              </button>
+            </div>
+            <app-touchscreen-signature
+              [orderNumber]="activeModalStop()!.orderNumber"
+              [defaultCashAmount]="activeModalStop()!.amount"
+              (podSubmitted)="handleTouchscreenPod($event)">
+            </app-touchscreen-signature>
           </div>
         </div>
       }
@@ -246,35 +232,35 @@ export class CourierCompanionComponent {
   completedCount = signal(1);
   pendingCount = signal(2);
 
+  showScannerModal = signal(false);
   activeModalStop = signal<MobileStopUi | null>(null);
-  podCashAmount = 0;
-  podRecipientName = '';
 
   openPodModal(stop: MobileStopUi) {
     this.activeModalStop.set(stop);
-    this.podCashAmount = stop.amount;
-    this.podRecipientName = stop.customerName;
   }
 
-  confirmPodSubmission() {
+  lastScannedWaybill = signal<string | null>(null);
+
+  onBarcodeScanned(code: string) {
+    this.lastScannedWaybill.set(code);
+  }
+
+  handleTouchscreenPod(pod: PodSubmissionData) {
     const s = this.activeModalStop();
     if (!s) return;
 
     s.status = 'Delivered';
-    this.cashInHand.update(val => val + this.podCashAmount);
+    this.cashInHand.update(val => val + pod.cashAmount);
     this.completedCount.update(c => c + 1);
     this.pendingCount.update(p => Math.max(0, p - 1));
     this.activeModalStop.set(null);
-
-    alert(`Doorstep Delivery for ${s.orderNumber} successfully registered! Collected ${this.podCashAmount} TND. Cash drawer updated.`);
   }
 
   triggerSync() {
-    alert('Synchronized with SGrowing Central Dispatch: Run-sheet route up to date.');
+    // Sync with central dispatch
   }
 
   triggerEndDayReconciliation() {
-    alert(`Handed over ${this.cashInHand()} TND to central hub vault. Cash drawer zeroed out. Reconciliation receipt generated.`);
     this.cashInHand.set(0);
   }
 }

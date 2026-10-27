@@ -1,0 +1,141 @@
+version: '3.8'
+
+# ====================================================================
+# SGrowing — 1-Click Production Deployment Bundle for Coolify & Docker
+# Includes: .NET 10 API, Worker Daemon, Angular 22 Web, PostgreSQL (pgvector + RLS),
+# Redis, LiveKit WebRTC Server, Evolution API, and MinIO S3.
+# ====================================================================
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: sgrowing_coolify_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-sgrowing_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sgrowing_secure_password_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-sgrowing_db}
+    volumes:
+      - coolify_pgdata:/var/lib/postgresql/data
+      - ../../docker/init-rls.sql:/docker-entrypoint-initdb.d/init-rls.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sgrowing_user} -d ${POSTGRES_DB:-sgrowing_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: sgrowing_coolify_redis
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - coolify_redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ../..
+      dockerfile: src/backend/SGrowing.Api/Dockerfile
+    container_name: sgrowing_coolify_api
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-sgrowing_db};Username=${POSTGRES_USER:-sgrowing_user};Password=${POSTGRES_PASSWORD:-sgrowing_secure_password_2026}
+      - Redis__ConnectionString=redis:6379
+      - Jwt__SecretKey=${JWT_SECRET:-SGrowing_SuperSecretEnterpriseMasterKey_998877665544332211!!}
+      - Jwt__Issuer=SGrowing.Api
+      - Jwt__Audience=SGrowing.Clients
+      - WhatsApp__AppSecret=${WHATSAPP_APP_SECRET:-sgrowing_super_secret_wa_key}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    labels:
+      - "coolify.managed=true"
+      - "traefik.enable=true"
+      - "traefik.http.routers.sgrowing-api.rule=Host(`api.${APP_DOMAIN:-sgrowing.io}`)"
+      - "traefik.http.routers.sgrowing-api.entrypoints=websecure"
+      - "traefik.http.routers.sgrowing-api.tls=true"
+      - "traefik.http.routers.sgrowing-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.sgrowing-api.loadbalancer.server.port=8080"
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: src/backend/SGrowing.Worker/Dockerfile
+    container_name: sgrowing_coolify_worker
+    restart: always
+    environment:
+      - DOTNET_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-sgrowing_db};Username=${POSTGRES_USER:-sgrowing_user};Password=${POSTGRES_PASSWORD:-sgrowing_secure_password_2026}
+      - Redis__ConnectionString=redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ../../src/frontend
+      dockerfile: Dockerfile
+    container_name: sgrowing_coolify_web
+    restart: always
+    depends_on:
+      - api
+    labels:
+      - "coolify.managed=true"
+      - "traefik.enable=true"
+      - "traefik.http.routers.sgrowing-web.rule=Host(`${APP_DOMAIN:-sgrowing.io}`)"
+      - "traefik.http.routers.sgrowing-web.entrypoints=websecure"
+      - "traefik.http.routers.sgrowing-web.tls=true"
+      - "traefik.http.routers.sgrowing-web.tls.certresolver=letsencrypt"
+      - "traefik.http.services.sgrowing-web.loadbalancer.server.port=80"
+
+  mcpserver:
+    build:
+      context: ../..
+      dockerfile: src/backend/SGrowing.McpServer/Dockerfile
+    container_name: sgrowing_coolify_mcp
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-sgrowing_db};Username=${POSTGRES_USER:-sgrowing_user};Password=${POSTGRES_PASSWORD:-sgrowing_secure_password_2026}
+    labels:
+      - "coolify.managed=true"
+      - "traefik.enable=true"
+      - "traefik.http.routers.sgrowing-mcp.rule=Host(`mcp.${APP_DOMAIN:-sgrowing.io}`)"
+      - "traefik.http.routers.sgrowing-mcp.entrypoints=websecure"
+      - "traefik.http.routers.sgrowing-mcp.tls=true"
+      - "traefik.http.routers.sgrowing-mcp.tls.certresolver=letsencrypt"
+      - "traefik.http.services.sgrowing-mcp.loadbalancer.server.port=7890"
+
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: sgrowing_coolify_livekit
+    restart: always
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "7882:7882/udp"
+    environment:
+      - LIVEKIT_KEYS=${LIVEKIT_KEYS:-devkey:secret}
+
+  evolution-api:
+    image: atendai/evolution-api:v2.1.2
+    container_name: sgrowing_coolify_wa
+    restart: always
+    environment:
+      - SERVER_URL=http://evolution-api:8080
+      - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY:-sgrowing_super_secret_wa_key}
+      - DATABASE_ENABLED=false
+
+volumes:
+  coolify_pgdata:
+  coolify_redisdata:

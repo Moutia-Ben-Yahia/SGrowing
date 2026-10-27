@@ -144,6 +144,7 @@ builder.Services.AddScoped<WorkflowEngineService>();
 builder.Services.AddSingleton<BargeInInterruptionService>();
 builder.Services.AddSingleton<StreamingVoiceWebSocketHandler>();
 builder.Services.AddSingleton<AesEncryptionService>();
+builder.Services.AddScoped<ITenantSecretsVaultService, TenantSecretsVaultService>();
 builder.Services.AddSingleton<DocumentChunkingService>();
 builder.Services.AddScoped<VectorRagRetrievalService>();
 builder.Services.AddScoped<LeadEnrichmentService>();
@@ -390,6 +391,7 @@ app.MapCrmImportEndpoints();
 app.MapBotCanvasEndpoints();
 app.MapContractSigningEndpoints();
 app.MapCommercePillarEndpoints();
+app.MapWhatsAppCloudWebhookEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", framework = ".NET 10", timestamp = DateTime.UtcNow }));
 app.MapGet("/healthz/live", () => Results.Ok(new { status = "Healthy", timestampUtc = DateTime.UtcNow }));

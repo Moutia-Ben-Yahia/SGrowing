@@ -25,6 +25,7 @@
     <ProjectReference Include="..\..\src\backend\SGrowing.Core\SGrowing.Core.csproj" />
     <ProjectReference Include="..\..\src\backend\SGrowing.Api\SGrowing.Api.csproj" />
     <ProjectReference Include="..\..\src\backend\SGrowing.Worker\SGrowing.Worker.csproj" />
+    <ProjectReference Include="..\..\src\backend\SGrowing.McpServer\SGrowing.McpServer.csproj" />
   </ItemGroup>
 
 </Project>

@@ -16,6 +16,7 @@ public class WebhookSignatureValidator
             return false;
         }
 
+        signatureHeader = signatureHeader.Trim();
         const string prefix = "sha256=";
         if (!signatureHeader.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         {
@@ -25,10 +26,10 @@ public class WebhookSignatureValidator
         var expectedHex = signatureHeader.Substring(prefix.Length).Trim();
         using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(appSecret));
         var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(rawBody));
-        var computedHex = Convert.ToHexString(computedHash).ToLowerInvariant();
+        var computedHex = Convert.ToHexString(computedHash);
 
         return CryptographicOperations.FixedTimeEquals(
-            Encoding.UTF8.GetBytes(computedHex),
+            Encoding.UTF8.GetBytes(computedHex.ToLowerInvariant()),
             Encoding.UTF8.GetBytes(expectedHex.ToLowerInvariant()));
     }
 
