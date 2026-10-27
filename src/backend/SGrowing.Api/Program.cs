@@ -237,6 +237,20 @@ builder.Services.AddSingleton<IWhatsAppGatewayClient, EvolutionApiGatewayClient>
 builder.Services.AddSingleton<ICourierLogisticsGateway, CourierLogisticsGateway>();
 builder.Services.AddScoped<ISemanticVectorRagService, SemanticVectorRagService>();
 
+// 27. Missing Core Inspiration Repository Services (Phases 1-4)
+builder.Services.AddScoped<IChatbotFlowEngineService, ChatbotFlowEngineService>();
+builder.Services.AddScoped<IInAppEngagementService, InAppEngagementService>();
+builder.Services.AddScoped<ICollisionDetectionAndSlaService, CollisionDetectionAndSlaService>();
+builder.Services.AddScoped<IWarmupPeerNetworkService, WarmupPeerNetworkService>();
+builder.Services.AddScoped<IAutonomousSdrFleetService, AutonomousSdrFleetService>();
+builder.Services.AddScoped<ISocialPublishingEngineService, SocialPublishingEngineService>();
+builder.Services.AddScoped<IMcpServerRegistryService, McpServerRegistryService>();
+builder.Services.AddScoped<IFrappeCrmEnhancementsService, FrappeCrmEnhancementsService>();
+builder.Services.AddScoped<IHelpdeskCommercialContextService, HelpdeskCommercialContextService>();
+builder.Services.AddScoped<ICpqQuoteAndEavService, CpqQuoteAndEavService>();
+builder.Services.AddScoped<ICryptographicPdfSealingService, CryptographicPdfSealingService>();
+builder.Services.AddScoped<ISegmentTelemetryAndJourneysService, SegmentTelemetryAndJourneysService>();
+
 // 16. Authentication, Security & Tenant Context
 var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "SGrowing_SuperSecretEnterpriseMasterKey_998877665544332211!!";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "SGrowing.Api";
@@ -1976,6 +1990,20 @@ app.MapPost("/api/knowledge/index-articles", async ([FromBody] IndexKnowledgeReq
     var indexedCount = await ragService.IndexTenantKnowledgeAsync(req.TenantId);
     return Results.Ok(new { status = "indexed", count = indexedCount });
 });
+
+// --- Phases 1-4 Core Inspiration Repositories Endpoint Mappings ---
+app.MapChatbotFlowEndpoints();
+app.MapInAppEngagementEndpoints();
+app.MapCollisionAndSlaEndpoints();
+app.MapWarmupNetworkEndpoints();
+app.MapAutonomousSdrFleetEndpoints();
+app.MapSocialPublishingEndpoints();
+app.MapMcpServerEndpoints();
+app.MapFrappeCrmEnhancementsEndpoints();
+app.MapHelpdeskCommercialContextEndpoints();
+app.MapCpqQuoteAndEavEndpoints();
+app.MapCryptographicSealingEndpoints();
+app.MapSegmentTelemetryEndpoints();
 
 if (args.Contains("--seed"))
 {
