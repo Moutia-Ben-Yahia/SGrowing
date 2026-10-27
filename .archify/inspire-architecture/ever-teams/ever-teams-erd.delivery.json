@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "703afe92-2c9f-4921-bcb6-78c56c18fad5",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-teams\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-teams\\ever-teams-erd.html",
+  "specification": {
+    "sha256": "3e7c3b0097d3203116ca27181105c952492d28dbbd09d12e39a8265f95164286",
+    "bytes": 5389
+  },
+  "artifact": {
+    "sha256": "341e9b64707aef44c864e3c2e38c75e1a99aa2a1af8cda06c5968366493189ff",
+    "bytes": 855213
+  }
+}

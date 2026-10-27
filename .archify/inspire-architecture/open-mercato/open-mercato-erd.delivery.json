@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "bc205b3b-b9f1-44b8-a6b2-378649968431",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\open-mercato\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\open-mercato\\open-mercato-erd.html",
+  "specification": {
+    "sha256": "370ae724211a0ab5e14e88da1ed39309ccbe2a1aeab4e8c64e89a685ea9cd1f5",
+    "bytes": 5432
+  },
+  "artifact": {
+    "sha256": "5b47b8adbb6f01b51f3095d4cea03d74d9f04815f26207302ceb7e473a3d2639",
+    "bytes": 855259
+  }
+}

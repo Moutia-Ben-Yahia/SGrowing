@@ -1,7 +1,7 @@
 # MarketingStudio Open Source Inspiration Wiki
 
-> Comprehensive architectural, functional, and technical knowledge base of the **79 open-source repositories** in `inspire/` driving the design and capabilities of **MarketingStudio**.  
-> 🔗 **NEW: [Explore the Category & Solution Comparison Knowledge Base](../comparisons/README.md)** featuring 16 Category Master Guides and 79 Head-to-Head Solution Comparison Reports.
+> Comprehensive architectural, functional, and technical knowledge base of the **83 open-source repositories** in `inspire/` driving the design and capabilities of **MarketingStudio**.  
+> 🔗 **NEW: [Explore the Category & Solution Comparison Knowledge Base](../comparisons/README.md)** featuring 16 Category Master Guides and Solution Comparison Reports.
 
 ---
 
@@ -9,7 +9,7 @@
 
 **MarketingStudio** is architected to unify the fragmented landscape of marketing automation, CRM, customer communication, cold outreach, conversational AI, and content operations into an integrated, autonomous engine.
 
-To inform MarketingStudio's architecture, data models, integration patterns, and user experience, 79 industry-leading open-source repositories across 16 functional domains have been selected and analyzed. This wiki serves as the definitive reference guide to each project's internal mechanics, schema designs, API surfaces, and architectural lessons.
+To inform MarketingStudio's architecture, data models, integration patterns, and user experience, 83 industry-leading open-source repositories across 16 functional domains have been selected and analyzed. This wiki serves as the definitive reference guide to each project's internal mechanics, schema designs, API surfaces, and architectural lessons.
 
 ```
                            ┌────────────────────────────────────────────────────────┐
@@ -43,7 +43,7 @@ To inform MarketingStudio's architecture, data models, integration patterns, and
 | :--- | :--- | :--- |
 | **1. Email Infrastructure & Delivery** | High-throughput SMTP, newsletter management, bounce handling, warming | [listmonk](listmonk.md), [BillionMail](BillionMail.md), [postal](postal.md), [useSend](useSend.md), [warmbly](warmbly.md), [jasmin](jasmin.md) |
 | **2. Customer Lifecycle & Journeys** | Event-driven triggers, customer journeys, multi-channel onboarding | [dittofeed](dittofeed.md), [laudspeaker](laudspeaker.md), [notifuse](notifuse.md), [n8n](n8n.md), [mautic](mautic.md), [parcelvoy](parcelvoy.md) |
-| **3. CRM & Contact Management** | Custom objects, lead pipelines, deals, accounts, and activities | [twenty](twenty.md), [trycrm](trycrm.md), [espocrm](espocrm.md), [crm (Frappe)](crm.md), [laravel-crm](laravel-crm.md), [DeskcommCRM](DeskcommCRM.md), [Quickly](Quickly.md), [qrev](qrev.md), [DenchClaw](DenchClaw.md), [relaticle](relaticle.md) |
+| **3. CRM & Contact Management** | Custom objects, lead pipelines, deals, accounts, and activities | [twenty](twenty.md), [trycrm](trycrm.md), [espocrm](espocrm.md), [crm (Frappe)](crm.md), [ever-gauzy](ever-gauzy.md), [ever-teams](ever-teams.md), [laravel-crm](laravel-crm.md), [DeskcommCRM](DeskcommCRM.md), [Quickly](Quickly.md), [qrev](qrev.md), [DenchClaw](DenchClaw.md), [relaticle](relaticle.md) |
 | **4. Cold Outreach & AI SDR** | Cold email sequences, LinkedIn prospecting, AI SDR agents, power dialers | [AgentSDR](AgentSDR.md), [OpenOutreach](OpenOutreach.md), [linkedin-outreach-mcp](linkedin-outreach-mcp.md), [Open-Cold-Dialer](Open-Cold-Dialer.md), [ringee-app](ringee-app.md) |
 | **5. Telephony, Voice & PBX** | SIP routing, VoIP, WebRTC audio, voice AI agents, IVR | [asterisk](asterisk.md), [VoicEra](VoicEra.md), [dograh](dograh.md) |
 | **6. Omnichannel Helpdesk & Support** | Shared inboxes, ticketing systems, live chat widgets, SLAs | [chatwoot](chatwoot.md), [zammad](zammad.md), [freescout](freescout.md), [helpdesk (Frappe)](helpdesk.md), [libredesk](libredesk.md), [chaskiq](chaskiq.md), [brightbean-chat](brightbean-chat.md) |
@@ -55,7 +55,7 @@ To inform MarketingStudio's architecture, data models, integration patterns, and
 | **12. E-Signature & Document Tracking** | Legally binding e-signatures, document viewing analytics, PDF signing | [documenso](documenso.md), [docuseal](docuseal.md), [OpenSign](OpenSign.md), [papermark](papermark.md) |
 | **13. Content Management & Publishing** | Headless publishing, newsletter subscriptions, membership tiers | [Ghost](Ghost.md) |
 | **14. Product Analytics & Telemetry** | User journey tracking, mobile analytics, in-app event telemetry | [countly-server](countly-server.md) |
-| **15. Sales Funnels & Checkout Engines** | Conversion landing pages, 1-click upsells, order bumps, prompt-to-funnel AI | [autonnel](autonnel.md), [openfunnels](openfunnels.md), [spree](spree.md) |
+| **15. Sales Funnels, Commerce & Checkout Engines** | Conversion landing pages, 1-click upsells, on-demand commerce, modular ERP | [autonnel](autonnel.md), [openfunnels](openfunnels.md), [spree](spree.md), [ever-demand](ever-demand.md), [open-mercato](open-mercato.md) |
 | **16. Appointment Scheduling & Calendar Engines** | Online booking links, round-robin lead distribution, WebRTC video meetings | [calnode](calnode.md), [cal.diy](cal.diy.md) |
 
 ---
@@ -88,6 +88,9 @@ To inform MarketingStudio's architecture, data models, integration patterns, and
 | **dsforms** | Go | Native Go HTTP / modernc SQLite | SQLite (WAL mode) | Background Channels | Headless form submission backend with Turnstile spam protection | [Read Wiki](dsforms.md) |
 | **espocrm** | PHP / JS | Custom PHP / Backbone | MySQL / MariaDB | Cron / Async Queue | Deeply customizable CRM with schema manager & BPM flows | [Read Wiki](espocrm.md) |
 | **evolution-api** | TypeScript | Express / Baileys | PostgreSQL / Redis | RabbitMQ / BullMQ | Multi-session WhatsApp Baileys gateway with webhooks | [Read Wiki](evolution-api.md) |
+| **ever-demand** | TypeScript | NestJS / Angular / Ionic | PostgreSQL / TypeORM | Redis / BullMQ | On-demand collaborative commerce, multi-warehouse & courier routing | [Read Wiki](ever-demand.md) |
+| **ever-gauzy** | TypeScript | NestJS / Angular / Electron | PostgreSQL / MikroORM | Redis / BullMQ | Open business management platform (ERP/CRM/HRM/ATS/PM) with time auditing | [Read Wiki](ever-gauzy.md) |
+| **ever-teams** | TypeScript | Next.js 16 / React 19 | PostgreSQL (Gauzy API) | Redis PubSub | Open work & project management platform with optimistic sprint kanban | [Read Wiki](ever-teams.md) |
 | **fider** | Go / TS | Go HTTP / React | PostgreSQL | Go Channels | Clean user feedback voting and feature request portal | [Read Wiki](fider.md) |
 | **formbricks** | TypeScript | Next.js Monorepo | PostgreSQL / Prisma | BullMQ | Targeted in-app micro-surveys and UX telemetry | [Read Wiki](formbricks.md) |
 | **formizee** | TypeScript | Turborepo / Hono | PostgreSQL / Drizzle | BullMQ | High-velocity form backend & submission router | [Read Wiki](formizee.md) |
@@ -111,6 +114,7 @@ To inform MarketingStudio's architecture, data models, integration patterns, and
 | **notifuse** | Go | Go Native | PostgreSQL | Worker Pools | Multi-channel notification delivery platform | [Read Wiki](notifuse.md) |
 | **ntfy** | Go | Go Native | SQLite / Memory | Go Channels / SSE | HTTP pub-sub push notification service | [Read Wiki](ntfy.md) |
 | **Open-Cold-Dialer** | TypeScript | Next.js / Supabase | PostgreSQL | Supabase Realtime | Web-based power dialer with live call routing | [Read Wiki](Open-Cold-Dialer.md) |
+| **open-mercato** | TypeScript | Next.js 15+ / React 19 | PostgreSQL / Kysely | Redis / Mercato Queue | AI-engineering foundation framework with modular ERP, CRM & commerce | [Read Wiki](open-mercato.md) |
 | **open-seo** | TypeScript | Next.js / React | PostgreSQL | BullMQ | Technical SEO analyzer and lighthouse performance suite | [Read Wiki](open-seo.md) |
 | **OpenOutreach** | Python | Django | PostgreSQL / Redis | Celery | Multi-channel cold outbound sequencing engine | [Read Wiki](OpenOutreach.md) |
 | **openfunnels** | PHP / TS | Laravel 11 / React 19 | MySQL / PostgreSQL | Laravel Queue | Open-source funnel builder, CRM pipeline & A/B testing | [Read Wiki](openfunnels.md) |

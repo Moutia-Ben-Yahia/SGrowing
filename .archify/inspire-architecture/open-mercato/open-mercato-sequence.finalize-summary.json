@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "sequence",
+  "quality": "showcase",
+  "specification": {
+    "path": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\open-mercato\\candidate-seq.json",
+    "sha256": "936b8c28ca50edfd5eaaeb70f3dbdbb6e29eddc55cd5ebd5583df4276d6ad95d",
+    "bytes": 4464
+  },
+  "artifact": {
+    "path": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\open-mercato\\open-mercato-sequence.html",
+    "sha256": "8ba43b9aa2b624ea155bc4c36b71501cb7804703b8edae6caa865b588a23fb8c",
+    "bytes": 841193
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\open-mercato\\open-mercato-sequence.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\open-mercato\\open-mercato-sequence.finalize-summary.json",
+    "browserCheckReceipt": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\open-mercato\\open-mercato-sequence.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-27T17:30:46.140Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2639,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

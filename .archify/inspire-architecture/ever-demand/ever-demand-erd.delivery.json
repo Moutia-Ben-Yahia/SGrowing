@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "fc114d95-c1cb-4299-b705-135427691d92",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-demand\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-demand\\ever-demand-erd.html",
+  "specification": {
+    "sha256": "7d18eb8524178804fb7b4bef938acec046dd425c0ff35734ab823fbd8491a712",
+    "bytes": 5312
+  },
+  "artifact": {
+    "sha256": "b0ef94ec286797c9e8f9446f02332a73902463760ab9706fd2311941e4a2ecc8",
+    "bytes": 855127
+  }
+}

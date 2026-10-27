@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "3cf5e69e-1bc3-4943-bdab-7703fc0909d4",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-teams\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-teams\\ever-teams-sequence.html",
+  "specification": {
+    "sha256": "08d00e7b213b3b3f595ea7f8666b8a186ee5ef91c21b0fe2d4eff6963f21c924",
+    "bytes": 4430
+  },
+  "artifact": {
+    "sha256": "d6d55332a0dcae380b05a503527adf515846d76883883ea74875de59ce79de5c",
+    "bytes": 841113
+  }
+}

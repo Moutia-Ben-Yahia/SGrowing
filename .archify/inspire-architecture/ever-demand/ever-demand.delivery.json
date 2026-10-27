@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "dbfd5d16-499a-481a-98b9-706e1d6eea5e",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-demand\\candidate.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-demand\\ever-demand.html",
+  "specification": {
+    "sha256": "0e1c859eb9d2bb30ed4683c2b7a5b84ca52f4abf7efb2defc63fa1bc6074a201",
+    "bytes": 5915
+  },
+  "artifact": {
+    "sha256": "47a95526902e9613edc07ce933d1c7f7f095ef6f268f2b6a5809dbce32a1dfc5",
+    "bytes": 850693
+  }
+}

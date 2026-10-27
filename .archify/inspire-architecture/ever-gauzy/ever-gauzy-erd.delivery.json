@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "bf4ec57a-ade3-4e3d-b1ca-29760e28d20d",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-gauzy\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-gauzy\\ever-gauzy-erd.html",
+  "specification": {
+    "sha256": "7995e3deed3eec97f2082610c0397d730b94254a9fc1a82f3e09c77d81d75d5d",
+    "bytes": 5324
+  },
+  "artifact": {
+    "sha256": "6c0fcc40c2500f2a80365ea3d5da6442b268dce7b99581f9f3027fd9f3c1923f",
+    "bytes": 855132
+  }
+}

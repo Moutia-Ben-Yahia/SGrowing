@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "205360b8-4889-43ea-884a-ebf0cbe40883",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-gauzy\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-gauzy\\ever-gauzy-sequence.html",
+  "specification": {
+    "sha256": "5521ff9ae7eaecc7e5db27fb5a86ab9f6314137270414f3e2861c957c4804dae",
+    "bytes": 4444
+  },
+  "artifact": {
+    "sha256": "122374e8b6f0ab868c4ce317d8c517517ede0aa3549c871355dac3640672f7e2",
+    "bytes": 841126
+  }
+}

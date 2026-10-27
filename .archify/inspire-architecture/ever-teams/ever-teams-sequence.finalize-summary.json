@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "sequence",
+  "quality": "showcase",
+  "specification": {
+    "path": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-teams\\candidate-seq.json",
+    "sha256": "08d00e7b213b3b3f595ea7f8666b8a186ee5ef91c21b0fe2d4eff6963f21c924",
+    "bytes": 4430
+  },
+  "artifact": {
+    "path": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-teams\\ever-teams-sequence.html",
+    "sha256": "d6d55332a0dcae380b05a503527adf515846d76883883ea74875de59ce79de5c",
+    "bytes": 841113
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-teams\\ever-teams-sequence.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-teams\\ever-teams-sequence.finalize-summary.json",
+    "browserCheckReceipt": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-teams\\ever-teams-sequence.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-27T17:30:46.140Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2628,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

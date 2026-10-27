@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "sequence",
+  "quality": "showcase",
+  "specification": {
+    "path": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-demand\\candidate-seq.json",
+    "sha256": "9e8a745c30ef7b4a6f064d2655ef152537d4b065fa573bfb1cc5c6814cb9af10",
+    "bytes": 4442
+  },
+  "artifact": {
+    "path": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-demand\\ever-demand-sequence.html",
+    "sha256": "74d9698ee91148f44126ddfba4cf9a01b0be9891a613c0a8f7bb921301fcab9e",
+    "bytes": 841168
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-demand\\ever-demand-sequence.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-demand\\ever-demand-sequence.finalize-summary.json",
+    "browserCheckReceipt": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-demand\\ever-demand-sequence.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-27T17:30:46.140Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2456,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

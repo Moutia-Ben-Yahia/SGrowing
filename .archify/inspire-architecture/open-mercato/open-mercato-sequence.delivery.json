@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "59715ba1-b163-43dd-8ced-e473b787a432",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\open-mercato\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\open-mercato\\open-mercato-sequence.html",
+  "specification": {
+    "sha256": "936b8c28ca50edfd5eaaeb70f3dbdbb6e29eddc55cd5ebd5583df4276d6ad95d",
+    "bytes": 4464
+  },
+  "artifact": {
+    "sha256": "8ba43b9aa2b624ea155bc4c36b71501cb7804703b8edae6caa865b588a23fb8c",
+    "bytes": 841193
+  }
+}

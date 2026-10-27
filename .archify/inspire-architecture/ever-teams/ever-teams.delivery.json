@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "4bb151df-b2a0-4176-98c2-d21cb66f907d",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-teams\\candidate.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-teams\\ever-teams.html",
+  "specification": {
+    "sha256": "8b80d6a15655faa4834975f922e9deeba5e7db0ec385c36eba6e426ee5b0fb3b",
+    "bytes": 5906
+  },
+  "artifact": {
+    "sha256": "5d17f9936c715c42e5cf01270df981c74a1e22de40632ea3afcb344b0810f521",
+    "bytes": 850566
+  }
+}

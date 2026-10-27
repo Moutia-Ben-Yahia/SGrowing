@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "3fed39ac-b9f2-4fbd-9aa5-40b824b07786",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-demand\\candidate-seq.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-demand\\ever-demand-sequence.html",
+  "specification": {
+    "sha256": "9e8a745c30ef7b4a6f064d2655ef152537d4b065fa573bfb1cc5c6814cb9af10",
+    "bytes": 4442
+  },
+  "artifact": {
+    "sha256": "74d9698ee91148f44126ddfba4cf9a01b0be9891a613c0a8f7bb921301fcab9e",
+    "bytes": 841168
+  }
+}

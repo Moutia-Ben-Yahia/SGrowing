@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "erd",
+  "quality": "showcase",
+  "specification": {
+    "path": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-teams\\candidate-erd.json",
+    "sha256": "3e7c3b0097d3203116ca27181105c952492d28dbbd09d12e39a8265f95164286",
+    "bytes": 5389
+  },
+  "artifact": {
+    "path": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-teams\\ever-teams-erd.html",
+    "sha256": "341e9b64707aef44c864e3c2e38c75e1a99aa2a1af8cda06c5968366493189ff",
+    "bytes": 855213
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-teams\\ever-teams-erd.finalize.json",
+    "summaryReceipt": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-teams\\ever-teams-erd.finalize-summary.json",
+    "browserCheckReceipt": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-teams\\ever-teams-erd.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-27T17:30:46.140Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2623,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}
