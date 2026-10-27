@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SGrowing.Core\SGrowing.Core.csproj" />
     <ProjectReference Include="..\SGrowing.Api\SGrowing.Api.csproj" />
+    <ProjectReference Include="..\SGrowing.ServiceDefaults\SGrowing.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>

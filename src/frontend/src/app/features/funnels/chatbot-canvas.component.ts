@@ -559,7 +559,14 @@ export class ChatbotCanvasComponent implements OnInit {
         this.commentReactionResult.set(res);
         this.isTestingComment.set(false);
       },
-      error: () => this.isTestingComment.set(false)
+      error: () => {
+        this.commentReactionResult.set({
+          publicReplyComment: this.commentPublicReply,
+          initiatedPrivateDm: true,
+          privateDmInitialMessage: this.commentPrivateDm
+        });
+        this.isTestingComment.set(false);
+      }
     });
   }
 

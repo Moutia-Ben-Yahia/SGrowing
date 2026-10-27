@@ -45,6 +45,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddServiceDefaults();
 
 // 1. Tenancy & Database
 builder.Services.AddScoped<ITenantContext, TenantContext>();
@@ -234,6 +235,9 @@ builder.Services.AddScoped<IConversationalBiService, ConversationalBiService>();
 // 26. Track 1-3 Enhancements: PDF Generator, Gateways & Semantic RAG
 builder.Services.AddSingleton<IDocumentPdfGeneratorService, DocumentPdfGeneratorService>();
 builder.Services.AddSingleton<IWhatsAppGatewayClient, EvolutionApiGatewayClient>();
+builder.Services.AddHttpClient<IWhatsAppCloudApiClient, WhatsAppCloudApiAdapter>();
+builder.Services.AddSingleton<ILiveKitMediaClient, LiveKitMediaServerAdapter>();
+builder.Services.AddSingleton<ISmtpSocketClient, SmtpSocketClientAdapter>();
 builder.Services.AddSingleton<ICourierLogisticsGateway, CourierLogisticsGateway>();
 builder.Services.AddScoped<ISemanticVectorRagService, SemanticVectorRagService>();
 
@@ -313,6 +317,7 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+app.MapDefaultEndpoints();
 
 app.UseCors();
 app.UseAuthentication();
@@ -329,7 +334,12 @@ using (var scope = app.Services.CreateScope())
 // ----------------- API Endpoints -----------------
 
 app.MapOpenApi();
-app.MapScalarApiReference();
+app.MapScalarApiReference(options =>
+{
+    options.WithTitle("SGrowing Omnichannel & AI Growth Engine API")
+           .WithTheme(ScalarTheme.Moon)
+           .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+});
 app.MapAuthEndpoints();
 app.MapDevEndpoints();
 app.MapSeoEndpoints();

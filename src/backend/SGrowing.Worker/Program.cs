@@ -8,6 +8,7 @@ using SGrowing.Worker.Services;
 using StackExchange.Redis;
 
 var builder = Host.CreateApplicationBuilder(args);
+builder.AddServiceDefaults();
 
 // Database context
 builder.Services.AddDbContext<SGrowingDbContext>(options =>

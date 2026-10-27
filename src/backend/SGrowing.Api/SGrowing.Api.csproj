@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SGrowing.Core\SGrowing.Core.csproj" />
+    <ProjectReference Include="..\SGrowing.ServiceDefaults\SGrowing.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>

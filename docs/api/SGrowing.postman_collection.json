@@ -1,0 +1,212 @@
+{
+  "info": {
+    "_postman_id": "sgrowing-enterprise-api-v1",
+    "name": "SGrowing Omnichannel & AI Growth Engine (V1 Postman Collection)",
+    "description": "Comprehensive production collection for SGrowing covering all 12 inspiration repository integrations: ChatbotX, AgentSDR, Postiz, Chaskiq, Warmbly, Chatwoot, Twenty MCP, TryCRM, Frappe Helpdesk, Dittofeed, Documenso, and Laravel-CRM.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000", "type": "string" },
+    { "key": "tenantId", "value": "00000000-0000-0000-0000-000000000001", "type": "string" },
+    { "key": "authToken", "value": "jwt_token_sample", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. ChatbotX - Visual DAG Flows & Comment Hooks",
+      "item": [
+        {
+          "name": "Register Chatbot Flow",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Tenant-Id", "value": "{{tenantId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"VIP Qualification Bot\",\n  \"channel\": \"WhatsApp\",\n  \"entryNodeId\": \"node-1\",\n  \"nodes\": [\n    {\n      \"nodeId\": \"node-1\",\n      \"nodeType\": 1,\n      \"title\": \"Greeting\",\n      \"parameters\": { \"text\": \"Welcome to SGrowing!\" },\n      \"nextNodeIds\": [\"node-2\"]\n    },\n    {\n      \"nodeId\": \"node-2\",\n      \"nodeType\": 2,\n      \"title\": \"Ask Intent\",\n      \"parameters\": { \"prompt\": \"How can we assist?\", \"variableKey\": \"intent\" },\n      \"nextNodeIds\": []\n    }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/funnels/chatbot/flows", "host": ["{{baseUrl}}"], "path": ["api", "v1", "funnels", "chatbot", "flows"] }
+          }
+        },
+        {
+          "name": "Process Social Comment Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Tenant-Id", "value": "{{tenantId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"postId\": \"post_9921\",\n  \"commentId\": \"cm_8831\",\n  \"commentAuthor\": \"sarah_growth\",\n  \"commentText\": \"What is the price?\",\n  \"platform\": \"Instagram\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/funnels/chatbot/comments/webhook", "host": ["{{baseUrl}}"], "path": ["api", "v1", "funnels", "chatbot", "comments", "webhook"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. AgentSDR - Autonomous SDR Fleet & Calling",
+      "item": [
+        {
+          "name": "Allocate Inbox Slots",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "X-Tenant-Id", "value": "{{tenantId}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/outbound/sdr/inbox-rotation/allocate?volume=100", "host": ["{{baseUrl}}"], "path": ["api", "v1", "outbound", "sdr", "inbox-rotation", "allocate"], "query": [{ "key": "volume", "value": "100" }] }
+          }
+        },
+        {
+          "name": "Start WebRTC Call Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Tenant-Id", "value": "{{tenantId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prospectPhone\": \"+213555019283\",\n  \"agentPhone\": \"+18005550199\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/outbound/sdr/calls/session", "host": ["{{baseUrl}}"], "path": ["api", "v1", "outbound", "sdr", "calls", "session"] }
+          }
+        },
+        {
+          "name": "Classify Inbound Reply",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Tenant-Id", "value": "{{tenantId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject\": \"Re: Demo request\",\n  \"body\": \"Sounds great! Can you send a calendar link for Thursday 3pm?\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/outbound/sdr/replies/classify", "host": ["{{baseUrl}}"], "path": ["api", "v1", "outbound", "sdr", "replies", "classify"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Warmbly - Deliverability & P2P Warmup",
+      "item": [
+        {
+          "name": "Pair Mailboxes for Warmup",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "X-Tenant-Id", "value": "{{tenantId}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/deliverability/warmup/peers/pair", "host": ["{{baseUrl}}"], "path": ["api", "v1", "deliverability", "warmup", "peers", "pair"] }
+          }
+        },
+        {
+          "name": "Run Spam Rescue Sweep",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "X-Tenant-Id", "value": "{{tenantId}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/deliverability/warmup/spam-rescue/run", "host": ["{{baseUrl}}"], "path": ["api", "v1", "deliverability", "warmup", "spam-rescue", "run"] }
+          }
+        },
+        {
+          "name": "Run DNS Diagnostics",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/v1/deliverability/warmup/dns-diagnostics/sgrowing.io", "host": ["{{baseUrl}}"], "path": ["api", "v1", "deliverability", "warmup", "dns-diagnostics", "sgrowing.io"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Chatwoot - Collision Locks, SLAs & CSAT",
+      "item": [
+        {
+          "name": "Update Operator Presence",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Tenant-Id", "value": "{{tenantId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operatorId\": \"op_12\",\n  \"operatorName\": \"Karim Bennani\",\n  \"isTyping\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/conversations/00000000-0000-0000-0000-000000000001/presence", "host": ["{{baseUrl}}"], "path": ["api", "v1", "conversations", "00000000-0000-0000-0000-000000000001", "presence"] }
+          }
+        },
+        {
+          "name": "Evaluate SLA Breaches",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Tenant-Id", "value": "{{tenantId}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/conversations/sla/breaches", "host": ["{{baseUrl}}"], "path": ["api", "v1", "conversations", "sla", "breaches"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Documenso - Cryptographic Sealing & Proof",
+      "item": [
+        {
+          "name": "Apply PKCS#7 Cryptographic Seal",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Tenant-Id", "value": "{{tenantId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"signerEmail\": \"cfo@acme-corp.com\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/documents/00000000-0000-0000-0000-000000000001/cryptographic-seal", "host": ["{{baseUrl}}"], "path": ["api", "v1", "documents", "00000000-0000-0000-0000-000000000001", "cryptographic-seal"] }
+          }
+        },
+        {
+          "name": "Get Certificate of Completion",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Tenant-Id", "value": "{{tenantId}}" }],
+            "url": { "raw": "{{baseUrl}}/api/v1/documents/00000000-0000-0000-0000-000000000001/completion-certificate", "host": ["{{baseUrl}}"], "path": ["api", "v1", "documents", "00000000-0000-0000-0000-000000000001", "completion-certificate"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Laravel-CRM - CPQ Quotes & EAV Attributes",
+      "item": [
+        {
+          "name": "Create CPQ Quote",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Tenant-Id", "value": "{{tenantId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"Acme Corp\",\n  \"customerEmail\": \"billing@acme.com\",\n  \"currency\": \"USD\",\n  \"globalDiscountPercentage\": 10,\n  \"lineItems\": [\n    {\n      \"sku\": \"SG-ENTERPRISE\",\n      \"description\": \"Annual Core SaaS License\",\n      \"quantity\": 1,\n      \"unitPrice\": 12000,\n      \"taxRatePercentage\": 19,\n      \"discountPercentage\": 0,\n      \"totalAmount\": 12000\n    }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/commerce/cpq/quotes", "host": ["{{baseUrl}}"], "path": ["api", "v1", "commerce", "cpq", "quotes"] }
+          }
+        },
+        {
+          "name": "Set Dynamic EAV Attribute",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Tenant-Id", "value": "{{tenantId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entityType\": \"Quote\",\n  \"entityId\": \"00000000-0000-0000-0000-000000000001\",\n  \"key\": \"PaymentTerms\",\n  \"value\": \"Net-30\",\n  \"dataType\": \"String\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/v1/commerce/cpq/eav/attributes", "host": ["{{baseUrl}}"], "path": ["api", "v1", "commerce", "cpq", "eav", "attributes"] }
+          }
+        }
+      ]
+    }
+  ]
+}
