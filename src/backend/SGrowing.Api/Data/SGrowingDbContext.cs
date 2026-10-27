@@ -292,6 +292,23 @@ public class SGrowingDbContext : DbContext
     public DbSet<AgentMission> AgentMissions => Set<AgentMission>();
     public DbSet<AgentMissionStep> AgentMissionSteps => Set<AgentMissionStep>();
 
+    // Strategic Recommendations: Ever-Teams, Open-Mercato, Ever-Demand & Ever-Gauzy
+    public DbSet<ProjectRecord> Projects => Set<ProjectRecord>();
+    public DbSet<TaskItemRecord> TaskItems => Set<TaskItemRecord>();
+    public DbSet<TaskCommentRecord> TaskComments => Set<TaskCommentRecord>();
+
+    public DbSet<WebResearchRecord> WebResearchRecords => Set<WebResearchRecord>();
+
+    public DbSet<WarehouseRecord> WarehouseRecords => Set<WarehouseRecord>();
+    public DbSet<WarehouseStockRecord> WarehouseStockRecords => Set<WarehouseStockRecord>();
+    public DbSet<StockTransferManifest> StockTransferManifests => Set<StockTransferManifest>();
+
+    public DbSet<OrganizationRecord> OrganizationRecords => Set<OrganizationRecord>();
+    public DbSet<BranchRecord> BranchRecords => Set<BranchRecord>();
+    public DbSet<TeamRecord> TeamRecords => Set<TeamRecord>();
+    public DbSet<TeamMemberRecord> TeamMemberRecords => Set<TeamMemberRecord>();
+    public DbSet<DealMarginRecord> DealMarginRecords => Set<DealMarginRecord>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -367,6 +384,91 @@ public class SGrowingDbContext : DbContext
         {
             b.HasKey(d => d.Id);
             b.HasIndex(d => new { d.TenantId, d.ConversationId, d.Status });
+        });
+
+        // Strategic Recommendations Configurations (Ever-Teams, Open-Mercato, Ever-Demand & Ever-Gauzy)
+        modelBuilder.Entity<ProjectRecord>(b =>
+        {
+            b.HasKey(p => p.Id);
+            b.HasIndex(p => new { p.TenantId, p.DealId });
+            b.HasIndex(p => new { p.TenantId, p.ContractId });
+        });
+
+        modelBuilder.Entity<TaskItemRecord>(b =>
+        {
+            b.HasKey(t => t.Id);
+            b.HasIndex(t => new { t.TenantId, t.ProjectId, t.Status });
+        });
+
+        modelBuilder.Entity<TaskCommentRecord>(b =>
+        {
+            b.HasKey(c => c.Id);
+            b.HasIndex(c => new { c.TenantId, c.TaskId });
+        });
+
+        modelBuilder.Entity<WebResearchRecord>(b =>
+        {
+            b.HasKey(r => r.Id);
+            b.HasIndex(r => new { r.TenantId, r.Domain });
+        });
+
+        modelBuilder.Entity<WarehouseRecord>(b =>
+        {
+            b.HasKey(w => w.Id);
+            b.HasIndex(w => new { w.TenantId, w.Code });
+        });
+
+        modelBuilder.Entity<WarehouseStockRecord>(b =>
+        {
+            b.HasKey(s => s.Id);
+            b.HasIndex(s => new { s.TenantId, s.WarehouseId, s.Sku });
+            b.Property(s => s.UnitCost).HasPrecision(18, 2);
+        });
+
+        modelBuilder.Entity<StockTransferManifest>(b =>
+        {
+            b.HasKey(m => m.Id);
+            b.HasIndex(m => new { m.TenantId, m.ManifestNumber });
+        });
+
+        modelBuilder.Entity<OrganizationRecord>(b =>
+        {
+            b.HasKey(o => o.Id);
+            b.HasIndex(o => new { o.TenantId, o.Code });
+        });
+
+        modelBuilder.Entity<BranchRecord>(b =>
+        {
+            b.HasKey(br => br.Id);
+            b.HasIndex(br => new { br.TenantId, br.OrganizationId });
+        });
+
+        modelBuilder.Entity<TeamRecord>(b =>
+        {
+            b.HasKey(tm => tm.Id);
+            b.HasIndex(tm => new { tm.TenantId, tm.BranchId });
+        });
+
+        modelBuilder.Entity<TeamMemberRecord>(b =>
+        {
+            b.HasKey(m => m.Id);
+            b.HasIndex(m => new { m.TenantId, m.TeamId });
+            b.Property(m => m.HourlyLaborRate).HasPrecision(18, 2);
+        });
+
+        modelBuilder.Entity<DealMarginRecord>(b =>
+        {
+            b.HasKey(d => d.Id);
+            b.HasIndex(d => new { d.TenantId, d.DealId });
+            b.HasIndex(d => new { d.TenantId, d.OrganizationId });
+            b.Property(d => d.Revenue).HasPrecision(18, 2);
+            b.Property(d => d.CostOfGoodsSold).HasPrecision(18, 2);
+            b.Property(d => d.CourierShippingFees).HasPrecision(18, 2);
+            b.Property(d => d.OperatorLaborHours).HasPrecision(18, 2);
+            b.Property(d => d.OperatorHourlyRate).HasPrecision(18, 2);
+            b.Property(d => d.OperatorLaborCost).HasPrecision(18, 2);
+            b.Property(d => d.TrueGrossMargin).HasPrecision(18, 2);
+            b.Property(d => d.GrossMarginPercentage).HasPrecision(18, 2);
         });
     }
 }

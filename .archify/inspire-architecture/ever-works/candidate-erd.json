@@ -1,0 +1,248 @@
+{
+  "schema_version": 1,
+  "diagram_type": "erd",
+  "meta": {
+    "title": "EverWorks State Schema",
+    "output": ".archify/inspire-architecture/ever-works/ever-works-erd.html",
+    "quality_profile": "showcase"
+  },
+  "entities": [
+    {
+      "id": "organizations",
+      "label": "organizations",
+      "tag": "Core & Identity",
+      "row": 0,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "name",
+          "type": "varchar(120)",
+          "key": "uk"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "users",
+      "label": "users",
+      "tag": "Core & Identity",
+      "row": 1,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "organizations_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "organizations.id"
+        },
+        {
+          "name": "role_name",
+          "type": "varchar(64)"
+        },
+        {
+          "name": "permissions",
+          "type": "jsonb"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "works",
+      "label": "works",
+      "tag": "Core & Identity",
+      "row": 2,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "organizations_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "organizations.id"
+        },
+        {
+          "name": "title",
+          "type": "varchar(255)"
+        },
+        {
+          "name": "type",
+          "type": "varchar(50)"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "projects",
+      "label": "projects",
+      "tag": "Domain Operations",
+      "row": 0,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "organizations_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "organizations.id"
+        },
+        {
+          "name": "slug",
+          "type": "varchar(128)",
+          "key": "uk"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "progress",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "id": "tasks",
+      "label": "tasks",
+      "tag": "Domain Operations",
+      "row": 1,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "projects_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "projects.id"
+        },
+        {
+          "name": "task_key",
+          "type": "varchar(64)",
+          "key": "uk"
+        },
+        {
+          "name": "params",
+          "type": "jsonb"
+        },
+        {
+          "name": "assigned_agent",
+          "type": "varchar(64)"
+        }
+      ]
+    },
+    {
+      "id": "runs",
+      "label": "runs",
+      "tag": "Domain Operations",
+      "row": 2,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "tasks_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "tasks.id"
+        },
+        {
+          "name": "result_code",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "metrics",
+          "type": "jsonb"
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamptz"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel-t0-t1",
+      "from": "organizations",
+      "to": "users",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t1-t2",
+      "from": "users",
+      "to": "works",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t0-d0",
+      "from": "organizations",
+      "to": "projects",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d0-d1",
+      "from": "projects",
+      "to": "tasks",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d1-d2",
+      "from": "tasks",
+      "to": "runs",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "EverWorks Data Model Architecture",
+      "items": [
+        "Normalized relational schema anchored on organizations.id primary key",
+        "Explicit isolation between identity management (organizations, users) and operational models (projects, tasks)",
+        "Audit-ready execution tracking and outcome telemetry (runs)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,248 @@
+{
+  "schema_version": 1,
+  "diagram_type": "erd",
+  "meta": {
+    "title": "EvoNexus State Schema",
+    "output": ".archify/inspire-architecture/evo-nexus/evo-nexus-erd.html",
+    "quality_profile": "showcase"
+  },
+  "entities": [
+    {
+      "id": "users",
+      "label": "users",
+      "tag": "Core & Identity",
+      "row": 0,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "name",
+          "type": "varchar(120)",
+          "key": "uk"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "roles",
+      "label": "roles",
+      "tag": "Core & Identity",
+      "row": 1,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "users_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "users.id"
+        },
+        {
+          "name": "role_name",
+          "type": "varchar(64)"
+        },
+        {
+          "name": "permissions",
+          "type": "jsonb"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "missions",
+      "label": "missions",
+      "tag": "Core & Identity",
+      "row": 2,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "users_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "users.id"
+        },
+        {
+          "name": "title",
+          "type": "varchar(255)"
+        },
+        {
+          "name": "type",
+          "type": "varchar(50)"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "goals",
+      "label": "goals",
+      "tag": "Domain Operations",
+      "row": 0,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "users_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "users.id"
+        },
+        {
+          "name": "slug",
+          "type": "varchar(128)",
+          "key": "uk"
+        },
+        {
+          "name": "status",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "progress",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "id": "goal_tasks",
+      "label": "goal_tasks",
+      "tag": "Domain Operations",
+      "row": 1,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "goals_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "goals.id"
+        },
+        {
+          "name": "task_key",
+          "type": "varchar(64)",
+          "key": "uk"
+        },
+        {
+          "name": "params",
+          "type": "jsonb"
+        },
+        {
+          "name": "assigned_agent",
+          "type": "varchar(64)"
+        }
+      ]
+    },
+    {
+      "id": "tickets",
+      "label": "tickets",
+      "tag": "Domain Operations",
+      "row": 2,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "goal_tasks_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "goal_tasks.id"
+        },
+        {
+          "name": "result_code",
+          "type": "varchar(32)"
+        },
+        {
+          "name": "metrics",
+          "type": "jsonb"
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamptz"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel-t0-t1",
+      "from": "users",
+      "to": "roles",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t1-t2",
+      "from": "roles",
+      "to": "missions",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-t0-d0",
+      "from": "users",
+      "to": "goals",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d0-d1",
+      "from": "goals",
+      "to": "goal_tasks",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    },
+    {
+      "id": "rel-d1-d2",
+      "from": "goal_tasks",
+      "to": "tickets",
+      "fromCardinality": "one",
+      "toCardinality": "many"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "EvoNexus Data Model Architecture",
+      "items": [
+        "Normalized relational schema anchored on users.id primary key",
+        "Explicit isolation between identity management (users, roles) and operational models (goals, goal_tasks)",
+        "Audit-ready execution tracking and outcome telemetry (tickets)"
+      ]
+    }
+  ]
+}

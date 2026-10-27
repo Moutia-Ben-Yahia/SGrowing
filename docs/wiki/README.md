@@ -1,6 +1,6 @@
 # MarketingStudio Open Source Inspiration Wiki
 
-> Comprehensive architectural, functional, and technical knowledge base of the **86 open-source repositories** in `inspire/` driving the design and capabilities of **MarketingStudio**.  
+> Comprehensive architectural, functional, and technical knowledge base of the **88 open-source repositories** in `inspire/` driving the design and capabilities of **MarketingStudio**.  
 > 🔗 **NEW: [Explore the Category & Solution Comparison Knowledge Base](../comparisons/README.md)** featuring 16 Category Master Guides and Solution Comparison Reports.
 
 ---
@@ -9,7 +9,7 @@
 
 **MarketingStudio** is architected to unify the fragmented landscape of marketing automation, CRM, customer communication, cold outreach, conversational AI, and content operations into an integrated, autonomous engine.
 
-To inform MarketingStudio's architecture, data models, integration patterns, and user experience, 86 industry-leading open-source repositories across 16 functional domains have been selected and analyzed. This wiki serves as the definitive reference guide to each project's internal mechanics, schema designs, API surfaces, and architectural lessons.
+To inform MarketingStudio's architecture, data models, integration patterns, and user experience, 88 industry-leading open-source repositories across 16 functional domains have been selected and analyzed. This wiki serves as the definitive reference guide to each project's internal mechanics, schema designs, API surfaces, and architectural lessons.
 
 ```
                            ┌────────────────────────────────────────────────────────┐
@@ -49,18 +49,18 @@ To inform MarketingStudio's architecture, data models, integration patterns, and
 | **6. Omnichannel Helpdesk & Support** | Shared inboxes, ticketing systems, live chat widgets, SLAs | [chatwoot](chatwoot.md), [evo-crm-community](evo-crm-community.md), [zammad](zammad.md), [freescout](freescout.md), [helpdesk (Frappe)](helpdesk.md), [libredesk](libredesk.md), [chaskiq](chaskiq.md), [brightbean-chat](brightbean-chat.md) |
 | **7. WhatsApp & Messaging Gateways** | Multi-device WhatsApp APIs, session managers, SMS gateways, webhooks | [Baileys](Baileys.md), [evolution-go](evolution-go.md), [evolution-api](evolution-api.md), [wppconnect](wppconnect.md), [OpenWA](OpenWA.md), [textbee](textbee.md), [playsms](playsms.md), [ntfy](ntfy.md) |
 | **8. Social Media Management** | Multi-account post scheduling, social calendars, analytics, viral hooks | [mixpost](mixpost.md), [postiz-app](postiz-app.md), [openpost](openpost.md), [trypost](trypost.md), [postbase](postbase.md) |
-| **9. Conversational AI & Bots** | Visual bot builders, Telegram frameworks, Discord automation | [botpress](botpress.md), [ChatbotX](ChatbotX.md), [aiogram](aiogram.md), [grammY](grammY.md), [discord.js](discord.js.md), [Red-DiscordBot](Red-DiscordBot.md), [TomoriBot](TomoriBot.md) |
+| **9. Conversational AI & Bots** | Visual bot builders, Telegram frameworks, Discord automation | [evo-nexus](evo-nexus.md), [botpress](botpress.md), [ChatbotX](ChatbotX.md), [aiogram](aiogram.md), [grammY](grammY.md), [discord.js](discord.js.md), [Red-DiscordBot](Red-DiscordBot.md), [TomoriBot](TomoriBot.md) |
 | **10. Forms, Surveys & Feedback** | In-app micro-surveys, conversational forms, CSAT/NPS, feedback boards | [formbricks](formbricks.md), [heyform](heyform.md), [OpnForm](OpnForm.md), [formizee](formizee.md), [LimeSurvey](LimeSurvey.md), [survey-library](survey-library.md), [fider](fider.md), [logchimp](logchimp.md), [Logiq](Logiq.md), [dsforms](dsforms.md) |
 | **11. SEO, Crawlers & Rank Tracking** | On-page technical audits, SERP rank tracking, high-speed website crawling | [open-seo](open-seo.md), [seonaut](seonaut.md), [serpbear](serpbear.md) |
 | **12. E-Signature & Document Tracking** | Legally binding e-signatures, document viewing analytics, PDF signing | [documenso](documenso.md), [docuseal](docuseal.md), [OpenSign](OpenSign.md), [papermark](papermark.md) |
 | **13. Content Management & Publishing** | Headless publishing, newsletter subscriptions, membership tiers | [Ghost](Ghost.md) |
 | **14. Product Analytics & Telemetry** | User journey tracking, mobile analytics, in-app event telemetry | [countly-server](countly-server.md) |
-| **15. Sales Funnels, Commerce & Checkout Engines** | Conversion landing pages, 1-click upsells, on-demand commerce, modular ERP | [autonnel](autonnel.md), [openfunnels](openfunnels.md), [spree](spree.md), [ever-demand](ever-demand.md), [open-mercato](open-mercato.md) |
+| **15. Sales Funnels, Commerce & Checkout Engines** | Conversion landing pages, 1-click upsells, on-demand commerce, modular ERP | [ever-works](ever-works.md), [autonnel](autonnel.md), [openfunnels](openfunnels.md), [spree](spree.md), [ever-demand](ever-demand.md), [open-mercato](open-mercato.md) |
 | **16. Appointment Scheduling & Calendar Engines** | Online booking links, round-robin lead distribution, WebRTC video meetings | [calnode](calnode.md), [cal.diy](cal.diy.md) |
 
 ---
 
-## 📊 Complete Technical Ecosystem Matrix (79 Projects)
+## 📊 Complete Technical Ecosystem Matrix (88 Projects)
 
 | Project | Primary Language | Core Framework | Database / Cache | Queue / Event Broker | Key Architectural Feature | Wiki Page |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -89,11 +89,13 @@ To inform MarketingStudio's architecture, data models, integration patterns, and
 | **dsforms** | Go | Native Go HTTP / modernc SQLite | SQLite (WAL mode) | Background Channels | Headless form submission backend with Turnstile spam protection | [Read Wiki](dsforms.md) |
 | **espocrm** | PHP / JS | Custom PHP / Backbone | MySQL / MariaDB | Cron / Async Queue | Deeply customizable CRM with schema manager & BPM flows | [Read Wiki](espocrm.md) |
 | **evo-crm-community** | Ruby / Python / Vue | Rails 7 / FastAPI / Vue 3 | PostgreSQL (pgvector) | RabbitMQ / Redis Sidekiq | AI-powered single-tenant customer support CRM with RAG embeddings | [Read Wiki](evo-crm-community.md) |
+| **evo-nexus** | Python / JS | Flask / Claude Code CLI | SQLite / PostgreSQL | Async Scheduler Daemon | Multi-agent operating layer and orchestration hub with 38 specialized agents | [Read Wiki](evo-nexus.md) |
 | **evolution-api** | TypeScript | Express / Baileys | PostgreSQL / Redis | RabbitMQ / BullMQ | Multi-session WhatsApp Baileys gateway with webhooks | [Read Wiki](evolution-api.md) |
 | **evolution-go** | Go | Gin / whatsmeow | PostgreSQL / SQLite | RabbitMQ / NATS / WS | High-performance compiled WhatsApp gateway with multi-broker fanout | [Read Wiki](evolution-go.md) |
 | **ever-demand** | TypeScript | NestJS / Angular / Ionic | PostgreSQL / TypeORM | Redis / BullMQ | On-demand collaborative commerce, multi-warehouse & courier routing | [Read Wiki](ever-demand.md) |
 | **ever-gauzy** | TypeScript | NestJS / Angular / Electron | PostgreSQL / MikroORM | Redis / BullMQ | Open business management platform (ERP/CRM/HRM/ATS/PM) with time auditing | [Read Wiki](ever-gauzy.md) |
 | **ever-teams** | TypeScript | Next.js 16 / React 19 | PostgreSQL (Gauzy API) | Redis PubSub | Open work & project management platform with optimistic sprint kanban | [Read Wiki](ever-teams.md) |
+| **ever-works** | TypeScript | NestJS / Next.js 15+ | PostgreSQL / TypeORM | Trigger.dev v3 / Redis | Autonomous agentic runtime & AI workshop for end-to-end software businesses | [Read Wiki](ever-works.md) |
 | **fider** | Go / TS | Go HTTP / React | PostgreSQL | Go Channels | Clean user feedback voting and feature request portal | [Read Wiki](fider.md) |
 | **formbricks** | TypeScript | Next.js Monorepo | PostgreSQL / Prisma | BullMQ | Targeted in-app micro-surveys and UX telemetry | [Read Wiki](formbricks.md) |
 | **formizee** | TypeScript | Turborepo / Hono | PostgreSQL / Drizzle | BullMQ | High-velocity form backend & submission router | [Read Wiki](formizee.md) |

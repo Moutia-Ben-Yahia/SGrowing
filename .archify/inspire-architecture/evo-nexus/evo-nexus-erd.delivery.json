@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "3ae2547e-f5dc-4098-a6af-9b404039e241",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\evo-nexus\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\evo-nexus\\evo-nexus-erd.html",
+  "specification": {
+    "sha256": "0a0985d143fd59686208a2a39818ee2d81587ff36a3c4558347ec299ba302058",
+    "bytes": 5107
+  },
+  "artifact": {
+    "sha256": "5ae64e3f81a81716a3c4d11b17b765746f54b8363863fde6d0de600ffc384597",
+    "bytes": 854590
+  }
+}

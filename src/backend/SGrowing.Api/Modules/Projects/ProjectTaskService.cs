@@ -1,0 +1,325 @@
+using Microsoft.EntityFrameworkCore;
+using SGrowing.Api.Data;
+using SGrowing.Core.Entities;
+
+namespace SGrowing.Api.Modules.Projects;
+
+public class ProjectTaskService : IProjectTaskService
+{
+    private readonly SGrowingDbContext _db;
+
+    public ProjectTaskService(SGrowingDbContext db)
+    {
+        _db = db;
+    }
+
+    public async Task<ProjectRecord> ConvertFromDealAsync(Guid tenantId, Guid dealId, CancellationToken ct = default)
+    {
+        var existingProject = await _db.Projects.FirstOrDefaultAsync(p => p.TenantId == tenantId && p.DealId == dealId, ct);
+        if (existingProject != null) return existingProject;
+
+        var deal = await _db.Deals.FirstOrDefaultAsync(d => d.Id == dealId && d.TenantId == tenantId, ct);
+        var dealTitle = deal?.Title ?? $"Enterprise Deal {dealId.ToString()[..8]}";
+
+        var project = new ProjectRecord
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            DealId = dealId,
+            Name = $"Client Onboarding: {dealTitle}",
+            Description = $"Automated post-close onboarding sprint generated from Won Deal '{dealTitle}'.",
+            Status = "Active",
+            CreatedAtUtc = DateTime.UtcNow,
+            TargetLaunchDateUtc = DateTime.UtcNow.AddDays(30)
+        };
+
+        _db.Projects.Add(project);
+
+        var templateTasks = new List<TaskItemRecord>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                ProjectId = project.Id,
+                TenantId = tenantId,
+                Title = "Kickoff & Stakeholder Requirements",
+                Description = "Align key stakeholders, define success criteria, and sign off on project timeline.",
+                Status = "Todo",
+                Priority = "Urgent",
+                AssigneeName = "Sarah Jenkins",
+                AssigneeAvatar = "SJ",
+                Position = 1,
+                SubtasksCompleted = 1,
+                SubtasksTotal = 3,
+                DueDateUtc = DateTime.UtcNow.AddDays(5),
+                CreatedAtUtc = DateTime.UtcNow
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                ProjectId = project.Id,
+                TenantId = tenantId,
+                Title = "Technical Infrastructure & API Provisioning",
+                Description = "Configure multi-tenant sub-account, API credentials, and webhooks for CRM ingestion.",
+                Status = "InProgress",
+                Priority = "High",
+                AssigneeName = "Alex Rivera",
+                AssigneeAvatar = "AR",
+                Position = 2,
+                SubtasksCompleted = 2,
+                SubtasksTotal = 4,
+                DueDateUtc = DateTime.UtcNow.AddDays(10),
+                CreatedAtUtc = DateTime.UtcNow
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                ProjectId = project.Id,
+                TenantId = tenantId,
+                Title = "Catalog & Customer Data Migration",
+                Description = "Ingest historical catalog, warehouse stock balances, and contact records into system.",
+                Status = "Backlog",
+                Priority = "Medium",
+                AssigneeName = "Liam Chen",
+                AssigneeAvatar = "LC",
+                Position = 3,
+                SubtasksCompleted = 0,
+                SubtasksTotal = 5,
+                DueDateUtc = DateTime.UtcNow.AddDays(18),
+                CreatedAtUtc = DateTime.UtcNow
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                ProjectId = project.Id,
+                TenantId = tenantId,
+                Title = "Operator Workflow Training & Testing",
+                Description = "Deliver team training for SDRs, warehouse managers, and customer support representatives.",
+                Status = "Backlog",
+                Priority = "High",
+                AssigneeName = "Emma Watson",
+                AssigneeAvatar = "EW",
+                Position = 4,
+                SubtasksCompleted = 0,
+                SubtasksTotal = 4,
+                DueDateUtc = DateTime.UtcNow.AddDays(25),
+                CreatedAtUtc = DateTime.UtcNow
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                ProjectId = project.Id,
+                TenantId = tenantId,
+                Title = "Production Go-Live & Post-Launch Sign-off",
+                Description = "Final cutover, live order fulfillment verification, and stakeholder celebration.",
+                Status = "Backlog",
+                Priority = "Urgent",
+                AssigneeName = "Sarah Jenkins",
+                AssigneeAvatar = "SJ",
+                Position = 5,
+                SubtasksCompleted = 0,
+                SubtasksTotal = 2,
+                DueDateUtc = DateTime.UtcNow.AddDays(30),
+                CreatedAtUtc = DateTime.UtcNow
+            }
+        };
+
+        _db.TaskItems.AddRange(templateTasks);
+        await _db.SaveChangesAsync(ct);
+
+        return project;
+    }
+
+    public async Task<ProjectRecord> ConvertFromContractAsync(Guid tenantId, Guid contractId, CancellationToken ct = default)
+    {
+        var existingProject = await _db.Projects.FirstOrDefaultAsync(p => p.TenantId == tenantId && p.ContractId == contractId, ct);
+        if (existingProject != null) return existingProject;
+
+        var contract = await _db.DigitalContracts.FirstOrDefaultAsync(c => c.Id == contractId && c.TenantId == tenantId, ct);
+        var contractTitle = contract?.Title ?? $"Master Services Agreement {contractId.ToString()[..8]}";
+
+        var project = new ProjectRecord
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            ContractId = contractId,
+            Name = $"Deployment Sprint: {contractTitle}",
+            Description = $"Post-signature implementation sprint generated from Sealed Contract '{contractTitle}'.",
+            Status = "Active",
+            CreatedAtUtc = DateTime.UtcNow,
+            TargetLaunchDateUtc = DateTime.UtcNow.AddDays(45)
+        };
+
+        _db.Projects.Add(project);
+
+        var templateTasks = new List<TaskItemRecord>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                ProjectId = project.Id,
+                TenantId = tenantId,
+                Title = "Contract Term Review & Scope Validation",
+                Description = "Review contractual SLA, compliance guarantees, and deliverables.",
+                Status = "Todo",
+                Priority = "Urgent",
+                AssigneeName = "Marcus Vance",
+                AssigneeAvatar = "MV",
+                Position = 1,
+                SubtasksCompleted = 2,
+                SubtasksTotal = 2,
+                DueDateUtc = DateTime.UtcNow.AddDays(4),
+                CreatedAtUtc = DateTime.UtcNow
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                ProjectId = project.Id,
+                TenantId = tenantId,
+                Title = "Enterprise Security Audit & Network Whitelisting",
+                Description = "Verify TLS ciphers, IP allowlists, and cryptographic signature verification keys.",
+                Status = "InProgress",
+                Priority = "High",
+                AssigneeName = "Elena Rostova",
+                AssigneeAvatar = "ER",
+                Position = 2,
+                SubtasksCompleted = 1,
+                SubtasksTotal = 3,
+                DueDateUtc = DateTime.UtcNow.AddDays(12),
+                CreatedAtUtc = DateTime.UtcNow
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                ProjectId = project.Id,
+                TenantId = tenantId,
+                Title = "Warehouse & Logistics Integration Testing",
+                Description = "Validate multi-carrier webhook dispatches and barcode fulfillment workflows.",
+                Status = "Backlog",
+                Priority = "Medium",
+                AssigneeName = "Tariq Mansour",
+                AssigneeAvatar = "TM",
+                Position = 3,
+                SubtasksCompleted = 0,
+                SubtasksTotal = 4,
+                DueDateUtc = DateTime.UtcNow.AddDays(22),
+                CreatedAtUtc = DateTime.UtcNow
+            }
+        };
+
+        _db.TaskItems.AddRange(templateTasks);
+        await _db.SaveChangesAsync(ct);
+
+        return project;
+    }
+
+    public async Task<IEnumerable<ProjectRecord>> GetProjectsAsync(Guid tenantId, CancellationToken ct = default)
+    {
+        return await _db.Projects
+            .Where(p => p.TenantId == tenantId)
+            .OrderByDescending(p => p.CreatedAtUtc)
+            .ToListAsync(ct);
+    }
+
+    public async Task<ProjectRecord?> GetProjectByIdAsync(Guid tenantId, Guid projectId, CancellationToken ct = default)
+    {
+        return await _db.Projects
+            .FirstOrDefaultAsync(p => p.Id == projectId && p.TenantId == tenantId, ct);
+    }
+
+    public async Task<IEnumerable<TaskItemRecord>> GetProjectTasksAsync(Guid tenantId, Guid projectId, CancellationToken ct = default)
+    {
+        return await _db.TaskItems
+            .Where(t => t.ProjectId == projectId && t.TenantId == tenantId)
+            .OrderBy(t => t.Position)
+            .ToListAsync(ct);
+    }
+
+    public async Task<TaskItemRecord> CreateTaskAsync(Guid tenantId, Guid projectId, CreateTaskRequest req, CancellationToken ct = default)
+    {
+        var existingCount = await _db.TaskItems.CountAsync(t => t.ProjectId == projectId && t.TenantId == tenantId, ct);
+
+        var task = new TaskItemRecord
+        {
+            Id = Guid.NewGuid(),
+            ProjectId = projectId,
+            TenantId = tenantId,
+            Title = req.Title.Trim(),
+            Description = req.Description?.Trim() ?? string.Empty,
+            Status = string.IsNullOrWhiteSpace(req.Status) ? "Todo" : req.Status,
+            Priority = string.IsNullOrWhiteSpace(req.Priority) ? "Medium" : req.Priority,
+            AssigneeName = req.AssigneeName,
+            AssigneeAvatar = GenerateAvatar(req.AssigneeName),
+            Position = existingCount + 1,
+            SubtasksCompleted = Math.Max(0, req.SubtasksCompleted),
+            SubtasksTotal = Math.Max(0, req.SubtasksTotal),
+            DueDateUtc = req.DueDateUtc ?? DateTime.UtcNow.AddDays(7),
+            CreatedAtUtc = DateTime.UtcNow
+        };
+
+        _db.TaskItems.Add(task);
+        await _db.SaveChangesAsync(ct);
+
+        return task;
+    }
+
+    public async Task<TaskItemRecord?> UpdateTaskAsync(Guid tenantId, Guid taskId, UpdateTaskRequest req, CancellationToken ct = default)
+    {
+        var task = await _db.TaskItems.FirstOrDefaultAsync(t => t.Id == taskId && t.TenantId == tenantId, ct);
+        if (task == null) return null;
+
+        if (req.Title != null) task.Title = req.Title.Trim();
+        if (req.Description != null) task.Description = req.Description.Trim();
+        if (req.Status != null) task.Status = req.Status;
+        if (req.Priority != null) task.Priority = req.Priority;
+        if (req.AssigneeName != null)
+        {
+            task.AssigneeName = req.AssigneeName;
+            task.AssigneeAvatar = GenerateAvatar(req.AssigneeName);
+        }
+        if (req.Position.HasValue) task.Position = req.Position.Value;
+        if (req.SubtasksCompleted.HasValue) task.SubtasksCompleted = Math.Max(0, req.SubtasksCompleted.Value);
+        if (req.SubtasksTotal.HasValue) task.SubtasksTotal = Math.Max(0, req.SubtasksTotal.Value);
+        if (req.DueDateUtc.HasValue) task.DueDateUtc = req.DueDateUtc.Value;
+
+        await _db.SaveChangesAsync(ct);
+        return task;
+    }
+
+    public async Task<TaskCommentRecord> AddCommentAsync(Guid tenantId, Guid taskId, AddCommentRequest req, CancellationToken ct = default)
+    {
+        var comment = new TaskCommentRecord
+        {
+            Id = Guid.NewGuid(),
+            TaskId = taskId,
+            TenantId = tenantId,
+            AuthorName = req.AuthorName.Trim(),
+            Content = req.Content.Trim(),
+            CreatedAtUtc = DateTime.UtcNow
+        };
+
+        _db.TaskComments.Add(comment);
+        await _db.SaveChangesAsync(ct);
+
+        return comment;
+    }
+
+    public async Task<IEnumerable<TaskCommentRecord>> GetCommentsAsync(Guid tenantId, Guid taskId, CancellationToken ct = default)
+    {
+        return await _db.TaskComments
+            .Where(c => c.TaskId == taskId && c.TenantId == tenantId)
+            .OrderBy(c => c.CreatedAtUtc)
+            .ToListAsync(ct);
+    }
+
+    private static string GenerateAvatar(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "OP";
+        var parts = name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+        {
+            return $"{char.ToUpperInvariant(parts[0][0])}{char.ToUpperInvariant(parts[1][0])}";
+        }
+        return name.Length >= 2 ? name[..2].ToUpperInvariant() : name.ToUpperInvariant();
+    }
+}

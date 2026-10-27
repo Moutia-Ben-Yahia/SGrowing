@@ -51,10 +51,18 @@ import { AgentMissionCockpitComponent } from './features/agents/agent-mission-co
 import { DeveloperWebhooksCockpitComponent } from './features/developer/developer-webhooks-cockpit.component';
 import { FunnelAttributionCockpitComponent } from './features/analytics/funnel-attribution-cockpit.component';
 import { EcommerceConnectorsCockpitComponent } from './features/commerce/ecommerce-connectors-cockpit.component';
+import { ProjectTaskBoardComponent } from './features/projects/project-task-board.component';
+import { ProspectResearchCockpitComponent } from './features/outbound/prospect-research-cockpit.component';
+import { MultiWarehouseCockpitComponent } from './features/commerce/multi-warehouse-cockpit.component';
+import { OrganizationMarginCockpitComponent } from './features/organizations/organization-margin-cockpit.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', component: InboxShellComponent, canActivate: [authGuard] },
+  { path: 'projects/tasks', component: ProjectTaskBoardComponent, canActivate: [authGuard] },
+  { path: 'outbound/research', component: ProspectResearchCockpitComponent, canActivate: [authGuard] },
+  { path: 'commerce/warehouses', component: MultiWarehouseCockpitComponent, canActivate: [authGuard] },
+  { path: 'organizations/margin', component: OrganizationMarginCockpitComponent, canActivate: [authGuard] },
   { path: 'onboarding', component: OnboardingWizardComponent, canActivate: [authGuard] },
   { path: 'agents/missions', component: AgentMissionCockpitComponent, canActivate: [authGuard] },
   { path: 'developer/webhooks', component: DeveloperWebhooksCockpitComponent, canActivate: [authGuard] },

@@ -61,6 +61,10 @@ const EN_US_TRANSLATIONS: TranslationDictionary = {
   'nav.sealing': 'Cryptographic PDF Sealing',
   'nav.agents_hub': 'Autonomous AI Agent Hub',
   'nav.missions': 'Agent Missions & SDR Fleet',
+  'nav.projects': 'Sprint Tasks & Onboarding',
+  'nav.research': 'Deep AI Web Research',
+  'nav.warehouses': 'Multi-Warehouse Allocation',
+  'nav.organizations': 'Organization & Margin Tracker',
 
   // Common Actions & Statuses
   'common.search': 'Search conversations...',

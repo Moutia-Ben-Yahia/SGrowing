@@ -40,6 +40,10 @@ using SGrowing.Api.Modules.CRM.ContractSigning;
 using SGrowing.Api.Modules.Commerce.Shipping;
 using SGrowing.Api.Modules.Commerce.AntiFraud;
 using SGrowing.Api.Modules.Commerce.Connectors;
+using SGrowing.Api.Modules.Projects;
+using SGrowing.Api.Modules.Outbound.Research;
+using SGrowing.Api.Modules.Commerce.Warehouses;
+using SGrowing.Api.Modules.Organizations;
 using Scalar.AspNetCore;
 using SGrowing.Core.Messaging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -288,6 +292,12 @@ builder.Services.AddScoped<ICodAntiFraudEngine, CodAntiFraudEngine>();
 builder.Services.AddScoped<IShopifyConnectorService, ShopifyConnectorService>();
 builder.Services.AddScoped<IWooCommerceConnectorService, WooCommerceConnectorService>();
 
+// 29. Strategic Recommendations (Ever-Teams, Open-Mercato, Ever-Demand & Ever-Gauzy)
+builder.Services.AddScoped<IProjectTaskService, ProjectTaskService>();
+builder.Services.AddScoped<IDeepWebResearchService, DeepWebResearchService>();
+builder.Services.AddScoped<IWarehouseRoutingService, WarehouseRoutingService>();
+builder.Services.AddScoped<IOrganizationHierarchyService, OrganizationHierarchyService>();
+
 // 16. Authentication, Security & Tenant Context
 var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "SGrowing_SuperSecretEnterpriseMasterKey_998877665544332211!!";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "SGrowing.Api";
@@ -406,6 +416,10 @@ app.MapContractSigningEndpoints();
 app.MapCommercePillarEndpoints();
 app.MapCommerceConnectorEndpoints();
 app.MapWhatsAppCloudWebhookEndpoints();
+app.MapProjectTaskEndpoints();
+app.MapDeepWebResearchEndpoints();
+app.MapWarehouseRoutingEndpoints();
+app.MapOrganizationHierarchyEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", framework = ".NET 10", timestamp = DateTime.UtcNow }));
 app.MapGet("/healthz/live", () => Results.Ok(new { status = "Healthy", timestampUtc = DateTime.UtcNow }));

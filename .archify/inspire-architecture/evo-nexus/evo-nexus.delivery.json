@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "1decd367-bc24-4f82-9c81-dbd7ac3194b5",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\evo-nexus\\candidate.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\evo-nexus\\evo-nexus.html",
+  "specification": {
+    "sha256": "3fc266884525812b141db797227b75c2f1586e638956b5eb21a5e427f356d28d",
+    "bytes": 5966
+  },
+  "artifact": {
+    "sha256": "71bd5f939d1560146c6d2192ea610ce975f7a1734eb2deadad0729751595a4c5",
+    "bytes": 850717
+  }
+}

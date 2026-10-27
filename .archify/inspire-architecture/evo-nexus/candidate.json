@@ -1,0 +1,315 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "EvoNexus System Architecture",
+    "output": ".archify/inspire-architecture/evo-nexus/evo-nexus.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "ingress",
+        "label": "Ingress & Interaction Layer",
+        "focus": [
+          "actor",
+          "front",
+          "auth",
+          "api"
+        ],
+        "note": "User requests, API keys, and CLI commands routed into the central orchestrator."
+      },
+      {
+        "id": "core-processing",
+        "label": "Domain Services & Execution Pipeline",
+        "focus": [
+          "api",
+          "domain",
+          "queue",
+          "worker"
+        ],
+        "note": "Agent coordination, routine dispatching, and background workflow pipelines."
+      },
+      {
+        "id": "persistence-subsystem",
+        "label": "Database & Storage Subsystem",
+        "focus": [
+          "api",
+          "domain",
+          "worker",
+          "cache",
+          "db",
+          "storage"
+        ],
+        "note": "Relational data stores, Redis caches, and persistent object/file repositories."
+      },
+      {
+        "id": "external-integrations",
+        "label": "External Gateways & Model Providers",
+        "focus": [
+          "api",
+          "worker",
+          "ext"
+        ],
+        "note": "Model Context Protocol (MCP) integrations, LLM providers, and external webhooks."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "actor",
+      "type": "external",
+      "label": "Claude Code CLI",
+      "sublabel": "Multi-Model Terminal",
+      "pos": [
+        40,
+        50
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "front",
+      "type": "frontend",
+      "label": "Dashboard UI",
+      "sublabel": "Flask & HTML5 UI",
+      "pos": [
+        260,
+        50
+      ],
+      "size": [
+        140,
+        60
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Nexus Hub",
+      "sublabel": "Agent Operating Laye",
+      "pos": [
+        490,
+        50
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "queue",
+      "type": "messagebus",
+      "label": "Routines Engine",
+      "sublabel": "Scheduler & Heartbea",
+      "pos": [
+        730,
+        50
+      ],
+      "size": [
+        140,
+        60
+      ]
+    },
+    {
+      "id": "ext",
+      "type": "external",
+      "label": "External AI APIs",
+      "sublabel": "LLM & Search Gateways",
+      "pos": [
+        970,
+        50
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "Auth & RBAC",
+      "sublabel": "Tokens & Permissions",
+      "pos": [
+        260,
+        180
+      ],
+      "size": [
+        140,
+        60
+      ]
+    },
+    {
+      "id": "domain",
+      "type": "backend",
+      "label": "Domain Core",
+      "sublabel": "Orchestrator Services",
+      "pos": [
+        490,
+        180
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "worker",
+      "type": "backend",
+      "label": "Async Workers",
+      "sublabel": "Background Tasks",
+      "pos": [
+        730,
+        180
+      ],
+      "size": [
+        140,
+        60
+      ]
+    },
+    {
+      "id": "cache",
+      "type": "database",
+      "label": "Plugin Cache",
+      "sublabel": "Skills & Tools Cache",
+      "pos": [
+        260,
+        310
+      ],
+      "size": [
+        140,
+        60
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "Dashboard DB",
+      "sublabel": "SQLite / PostgreSQL",
+      "pos": [
+        490,
+        310
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "storage",
+      "type": "cloud",
+      "label": "Brain Storage",
+      "sublabel": "Markdown Knowledge",
+      "pos": [
+        730,
+        310
+      ],
+      "size": [
+        140,
+        60
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "EvoNexus Platform Boundary",
+      "wraps": [
+        "front",
+        "api",
+        "queue",
+        "auth",
+        "domain",
+        "worker",
+        "cache",
+        "db",
+        "storage"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "from": "actor",
+      "to": "front",
+      "label": "HTTP / API",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c2",
+      "from": "front",
+      "to": "api",
+      "label": "RPC / REST"
+    },
+    {
+      "id": "c3",
+      "from": "front",
+      "to": "auth",
+      "label": "Verify",
+      "variant": "security"
+    },
+    {
+      "id": "c4",
+      "from": "api",
+      "to": "domain",
+      "label": "Dispatch"
+    },
+    {
+      "id": "c5",
+      "from": "api",
+      "to": "cache",
+      "label": "Session"
+    },
+    {
+      "id": "c6",
+      "from": "api",
+      "to": "queue",
+      "label": "Enqueue",
+      "variant": "dashed"
+    },
+    {
+      "id": "c7",
+      "from": "api",
+      "to": "ext",
+      "label": "Integrations",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "top"
+    },
+    {
+      "id": "c8",
+      "from": "domain",
+      "to": "db",
+      "label": "Persist"
+    },
+    {
+      "id": "c9",
+      "from": "queue",
+      "to": "worker",
+      "label": "Consume"
+    },
+    {
+      "id": "c10",
+      "from": "worker",
+      "to": "db",
+      "label": "Save Run"
+    },
+    {
+      "id": "c11",
+      "from": "worker",
+      "to": "storage",
+      "label": "Upload",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "EvoNexus Architecture Topology",
+      "items": [
+        "Ingress: High-throughput HTTP API and reactive Web/CLI clients",
+        "Orchestration: Autonomous task scheduling with multi-agent coordination",
+        "Resilience: Decoupled message queues and persistent state storage"
+      ]
+    }
+  ]
+}

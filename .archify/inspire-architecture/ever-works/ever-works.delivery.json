@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "31eec45c-d171-4e6f-997f-edf2356fd618",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-works\\candidate.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-works\\ever-works.html",
+  "specification": {
+    "sha256": "fc6ccea06102f8be2a657281e193094905d1db0ee514c537d3f3649d5189d429",
+    "bytes": 5975
+  },
+  "artifact": {
+    "sha256": "49d4b7d40ad59a16d04e693d63a28fce589fe66fb6822467d834038a8d5ec541",
+    "bytes": 850796
+  }
+}

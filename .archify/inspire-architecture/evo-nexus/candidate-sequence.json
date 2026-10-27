@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "EvoNexus Request Sequence",
+    "output": ".archify/inspire-architecture/evo-nexus/evo-nexus-sequence.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "Operator / Client",
+      "sublabel": "HTTP Ingress / User"
+    },
+    {
+      "id": "web",
+      "type": "frontend",
+      "label": "EvoNexus UI",
+      "sublabel": "Dashboard UI"
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "Auth Gateway",
+      "sublabel": "Token & API Key"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "EvoNexus API",
+      "sublabel": "Nexus Hub"
+    },
+    {
+      "id": "redis",
+      "type": "database",
+      "label": "State Cache",
+      "sublabel": "Plugin Cache"
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "Primary DB",
+      "sublabel": "Dashboard DB"
+    },
+    {
+      "id": "worker",
+      "type": "backend",
+      "label": "Task Engine",
+      "sublabel": "Routines Engine"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 295,
+      "label": "Authentication & Ingress Routing"
+    },
+    {
+      "from": 300,
+      "to": 445,
+      "label": "Domain Validation & State Persistence"
+    },
+    {
+      "from": 450,
+      "to": 590,
+      "label": "Asynchronous Workflow & Agent Dispatch"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "user",
+      "to": "web",
+      "y": 170,
+      "label": "Trigger action /api/heartbeat/run",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m2",
+      "from": "web",
+      "to": "api",
+      "y": 205,
+      "label": "Forward request with Auth headers",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m3",
+      "from": "api",
+      "to": "auth",
+      "y": 240,
+      "label": "Validate Session & Tool Grants",
+      "variant": "security"
+    },
+    {
+      "id": "m4",
+      "from": "auth",
+      "to": "api",
+      "y": 275,
+      "label": "Identity verified (OK)",
+      "variant": "return"
+    },
+    {
+      "id": "m5",
+      "from": "api",
+      "to": "redis",
+      "y": 315,
+      "label": "CHECK rate_limit & active lock",
+      "variant": "default"
+    },
+    {
+      "id": "m6",
+      "from": "redis",
+      "to": "api",
+      "y": 350,
+      "label": "Lock acquired",
+      "variant": "return"
+    },
+    {
+      "id": "m7",
+      "from": "api",
+      "to": "db",
+      "y": 390,
+      "label": "INSERT / UPDATE mission",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m8",
+      "from": "db",
+      "to": "api",
+      "y": 425,
+      "label": "Committed state (OK)",
+      "variant": "return"
+    },
+    {
+      "id": "m9",
+      "from": "api",
+      "to": "redis",
+      "y": 465,
+      "label": "SET active_job:mission",
+      "variant": "dashed"
+    },
+    {
+      "id": "m10",
+      "from": "api",
+      "to": "worker",
+      "y": 500,
+      "label": "Execute agent routine",
+      "variant": "dashed"
+    },
+    {
+      "id": "m11",
+      "from": "api",
+      "to": "web",
+      "y": 535,
+      "label": "202 Accepted (Job Enqueued)",
+      "variant": "return"
+    },
+    {
+      "id": "m12",
+      "from": "worker",
+      "to": "user",
+      "y": 570,
+      "label": "Notify completion via SSE / Webhook",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "web",
+      "from": 165,
+      "to": 575,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 200,
+      "to": 540,
+      "type": "backend"
+    },
+    {
+      "participant": "auth",
+      "from": 235,
+      "to": 280,
+      "type": "security"
+    },
+    {
+      "participant": "redis",
+      "from": 310,
+      "to": 355,
+      "type": "database"
+    },
+    {
+      "participant": "db",
+      "from": 385,
+      "to": 430,
+      "type": "database"
+    },
+    {
+      "participant": "redis",
+      "from": 460,
+      "to": 475,
+      "type": "database"
+    },
+    {
+      "participant": "worker",
+      "from": 495,
+      "to": 580,
+      "type": "backend"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "violet",
+      "title": "EvoNexus Orchestration Lifecycle",
+      "items": [
+        "Deterministic authentication and quota validation prior to workflow execution",
+        "Stateful persistence ensuring idempotent execution across system restarts",
+        "Decoupled background task workers preventing API latency spikes"
+      ]
+    }
+  ]
+}

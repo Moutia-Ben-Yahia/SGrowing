@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "3ae0dc42-3847-4704-870e-5c111d90b15c",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-works\\candidate-erd.json",
+  "output": "C:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture\\ever-works\\ever-works-erd.html",
+  "specification": {
+    "sha256": "5c20f5b422fe23754e2594f7207b757c42118768db42eb4b9bb1fe33ebd4333c",
+    "bytes": 5172
+  },
+  "artifact": {
+    "sha256": "a1e979081a84c048e5f675c9b5d9f401807dd9efea7424cde7de700806c45047",
+    "bytes": 854633
+  }
+}

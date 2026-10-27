@@ -32,6 +32,26 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
             <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2">Navigation</span>
             <div class="space-y-1 mb-4">
               <a
+                routerLink="/projects/tasks"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-indigo-400 hover:bg-indigo-500/10 border border-indigo-500/20 transition">
+                <span class="flex items-center gap-2">📋 Sprint Tasks & Onboarding</span>
+              </a>
+              <a
+                routerLink="/outbound/research"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
+                <span class="flex items-center gap-2">🌐 Deep AI Web Research</span>
+              </a>
+              <a
+                routerLink="/commerce/warehouses"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
+                <span class="flex items-center gap-2">🏬 Multi-Warehouse Allocation</span>
+              </a>
+              <a
+                routerLink="/organizations/margin"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
+                <span class="flex items-center gap-2">🏢 Organization & Margin Tracker</span>
+              </a>
+              <a
                 routerLink="/courier"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
                 <span class="flex items-center gap-2">🛵 Courier Driver Companion</span>
