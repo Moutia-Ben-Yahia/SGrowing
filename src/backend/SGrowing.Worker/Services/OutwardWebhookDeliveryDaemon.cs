@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SGrowing.Api.Data;
 using SGrowing.Core.Entities;
+using SGrowing.Core.Diagnostics;
 
 namespace SGrowing.Worker.Services;
 
@@ -14,6 +15,7 @@ public class OutwardWebhookDeliveryDaemon : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<OutwardWebhookDeliveryDaemon>? _logger;
+    private readonly IDaemonHeartbeatService? _heartbeatService;
     private readonly TimeSpan _pollInterval = TimeSpan.FromSeconds(10);
 
     public static readonly string[] MonitoredDomainEvents =
@@ -27,10 +29,12 @@ public class OutwardWebhookDeliveryDaemon : BackgroundService
 
     public OutwardWebhookDeliveryDaemon(
         IServiceProvider serviceProvider,
-        ILogger<OutwardWebhookDeliveryDaemon>? logger = null)
+        ILogger<OutwardWebhookDeliveryDaemon>? logger = null,
+        IDaemonHeartbeatService? heartbeatService = null)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _heartbeatService = heartbeatService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -41,6 +45,12 @@ public class OutwardWebhookDeliveryDaemon : BackgroundService
         {
             try
             {
+                var heartbeat = _heartbeatService ?? _serviceProvider.GetService<IDaemonHeartbeatService>();
+                if (heartbeat != null)
+                {
+                    await heartbeat.RecordHeartbeatAsync("OutwardWebhookDeliveryDaemon", stoppingToken);
+                }
+
                 using var scope = _serviceProvider.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<SGrowingDbContext>();
                 await ProcessPendingWebhookDeliveriesAsync(db, null, stoppingToken);

@@ -50,6 +50,7 @@ import { OnboardingWizardComponent } from './features/billing/onboarding-wizard.
 import { AgentMissionCockpitComponent } from './features/agents/agent-mission-cockpit.component';
 import { DeveloperWebhooksCockpitComponent } from './features/developer/developer-webhooks-cockpit.component';
 import { FunnelAttributionCockpitComponent } from './features/analytics/funnel-attribution-cockpit.component';
+import { EcommerceConnectorsCockpitComponent } from './features/commerce/ecommerce-connectors-cockpit.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -84,6 +85,7 @@ export const routes: Routes = [
   { path: 'funnels', component: FunnelsStudioComponent, canActivate: [authGuard] },
   { path: 'operations', component: OperationsStudioComponent, canActivate: [authGuard] },
   { path: 'analytics', component: AnalyticsStudioComponent, canActivate: [authGuard] },
+  { path: 'commerce/connectors', component: EcommerceConnectorsCockpitComponent, canActivate: [authGuard] },
   { path: 'commerce', component: CommerceStudioComponent, canActivate: [authGuard] },
   { path: 'outbound', component: OutboundStudioComponent, canActivate: [authGuard] },
   { path: 'broadcasts', component: BroadcastStudioComponent, canActivate: [authGuard] },

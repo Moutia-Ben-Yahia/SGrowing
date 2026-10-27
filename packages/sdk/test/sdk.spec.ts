@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import { SGrowingClient, computeWebhookSignature, verifyWebhookSignature } from '../src/index.js';
+import { SGrowingClient, computeWebhookSignature, verifyWebhookSignature } from '../dist/index.js';
 
 test('SGrowingClient initialization throws when apiKey or tenantId missing', () => {
   assert.throws(() => new SGrowingClient({ apiKey: '', tenantId: '123' }), /apiKey/);

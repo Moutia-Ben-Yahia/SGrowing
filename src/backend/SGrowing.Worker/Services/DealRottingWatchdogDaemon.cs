@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SGrowing.Api.Data;
 using SGrowing.Core.Entities;
+using SGrowing.Core.Diagnostics;
 
 namespace SGrowing.Worker.Services;
 
@@ -11,12 +12,17 @@ public class DealRottingWatchdogDaemon : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<DealRottingWatchdogDaemon>? _logger;
+    private readonly IDaemonHeartbeatService? _heartbeatService;
     private readonly TimeSpan _pollInterval = TimeSpan.FromMinutes(1);
 
-    public DealRottingWatchdogDaemon(IServiceProvider serviceProvider, ILogger<DealRottingWatchdogDaemon>? logger = null)
+    public DealRottingWatchdogDaemon(
+        IServiceProvider serviceProvider,
+        ILogger<DealRottingWatchdogDaemon>? logger = null,
+        IDaemonHeartbeatService? heartbeatService = null)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _heartbeatService = heartbeatService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -27,6 +33,12 @@ public class DealRottingWatchdogDaemon : BackgroundService
         {
             try
             {
+                var heartbeat = _heartbeatService ?? _serviceProvider.GetService<IDaemonHeartbeatService>();
+                if (heartbeat != null)
+                {
+                    await heartbeat.RecordHeartbeatAsync("DealRottingWatchdogDaemon", stoppingToken);
+                }
+
                 using var scope = _serviceProvider.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<SGrowingDbContext>();
                 await ProcessRottenDealsAsync(db, 7, stoppingToken);

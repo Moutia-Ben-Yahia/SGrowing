@@ -4,9 +4,10 @@
   "description": "Official TypeScript SDK for SGrowing Enterprise Omnichannel & Autonomous Growth Engine",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "scripts": {
     "build": "tsc",
-    "test": "npx tsx --test test/sdk.spec.ts"
+    "test": "npm run build && node --test test/sdk.spec.ts"
   },
   "keywords": [
     "sgrowing",

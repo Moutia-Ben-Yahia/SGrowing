@@ -21,7 +21,7 @@ public class ClickstreamBufferService : IClickstreamBufferService
     private readonly SGrowingDbContext _db;
     private readonly IConnectionMultiplexer? _redis;
     private readonly ILogger<ClickstreamBufferService>? _logger;
-    private readonly ConcurrentQueue<TelemetryEvent> _fallbackQueue = new();
+    private static readonly ConcurrentQueue<TelemetryEvent> _fallbackQueue = new();
     private const string RedisStreamKey = "sgrowing:stream:clickstream";
     private const string RedisListKey = "sgrowing:buffer:clickstream";
 

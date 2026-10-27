@@ -1,0 +1,12 @@
+{
+	"appId": "io.sgrowing.app",
+	"appName": "SGrowing",
+	"webDir": "dist/marketing-studio-web/browser",
+	"server": {
+		"androidScheme": "https"
+	},
+	"android": {
+		"allowMixedContent": false,
+		"webContentsDebuggingEnabled": false
+	}
+}

@@ -6,11 +6,13 @@ import { SignalRService } from '../../core/services/signalr.service';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/models/chat.models';
+import { TranslationService } from '../../core/services/translation.service';
+import { LanguageSwitcherComponent } from '../../core/components/language-switcher.component';
 
 @Component({
   selector: 'app-inbox-shell',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, LanguageSwitcherComponent],
   template: `
     <div class="flex h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 font-sans">
       <!-- 1. Left Nav & Channels Bar -->
@@ -93,6 +95,11 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
                 routerLink="/commerce"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
                 <span class="flex items-center gap-2">🛒 Commerce & CPQ</span>
+              </a>
+              <a
+                routerLink="/commerce/connectors"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
+                <span class="flex items-center gap-2">🔌 {{ translation.t('nav.connectors') }}</span>
               </a>
               <a
                 routerLink="/funnels"
@@ -370,7 +377,8 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
             }
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-3">
+            <app-language-switcher></app-language-switcher>
             <button
               (click)="resolveCurrentConversation()"
               class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-md transition">
@@ -561,6 +569,7 @@ import { AiDraftDto, ConversationDto, MessageDto, ContactDto } from '../../core/
 export class InboxShellComponent implements OnInit {
   public signalR = inject(SignalRService);
   public auth = inject(AuthService);
+  public translation = inject(TranslationService);
   private api = inject(ApiService);
 
   public selectedChannelFilter = signal<string>('all');

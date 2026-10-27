@@ -5,6 +5,8 @@ using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Messaging;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Core.Messaging;
+using SGrowing.Core.Diagnostics;
+using SGrowing.Api.Modules.Diagnostics;
 using SGrowing.Worker.Services;
 using StackExchange.Redis;
 
@@ -45,6 +47,10 @@ else
 {
     builder.Services.AddSingleton<IRedisStreamBroker, InMemoryStreamBroker>();
 }
+
+// Daemon Heartbeat & Watchdog
+builder.Services.AddSingleton<IDaemonHeartbeatService, DaemonHeartbeatService>();
+builder.Services.AddHostedService<DaemonWatchdogService>();
 
 // Hosted background daemons
 builder.Services.AddScoped<IMcpServerRegistryService, McpServerRegistryService>();

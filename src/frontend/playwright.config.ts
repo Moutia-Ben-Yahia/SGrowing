@@ -22,7 +22,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npx serve -s dist/marketing-studio-web/browser -p 4200',
+    command: 'node serve.mjs',
     port: 4200,
     reuseExistingServer: !process.env['CI'],
     timeout: 30000,

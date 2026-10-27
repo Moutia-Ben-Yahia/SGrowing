@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Core.Entities;
+using SGrowing.Core.Diagnostics;
 
 namespace SGrowing.Worker.Services;
 
@@ -13,14 +14,17 @@ public class AutonomousAgentExecutionDaemon : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<AutonomousAgentExecutionDaemon>? _logger;
+    private readonly IDaemonHeartbeatService? _heartbeatService;
     private readonly TimeSpan _pollInterval = TimeSpan.FromSeconds(5);
 
     public AutonomousAgentExecutionDaemon(
         IServiceProvider serviceProvider,
-        ILogger<AutonomousAgentExecutionDaemon>? logger = null)
+        ILogger<AutonomousAgentExecutionDaemon>? logger = null,
+        IDaemonHeartbeatService? heartbeatService = null)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _heartbeatService = heartbeatService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -31,6 +35,12 @@ public class AutonomousAgentExecutionDaemon : BackgroundService
         {
             try
             {
+                var heartbeat = _heartbeatService ?? _serviceProvider.GetService<IDaemonHeartbeatService>();
+                if (heartbeat != null)
+                {
+                    await heartbeat.RecordHeartbeatAsync("AutonomousAgentExecutionDaemon", stoppingToken);
+                }
+
                 using var scope = _serviceProvider.CreateScope();
                 var missionService = scope.ServiceProvider.GetRequiredService<IAutonomousAgentMissionService>();
                 await missionService.ProcessActiveMissionsAsync(stoppingToken);

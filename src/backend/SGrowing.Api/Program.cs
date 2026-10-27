@@ -39,6 +39,7 @@ using SGrowing.Api.Modules.CRM.Import;
 using SGrowing.Api.Modules.CRM.ContractSigning;
 using SGrowing.Api.Modules.Commerce.Shipping;
 using SGrowing.Api.Modules.Commerce.AntiFraud;
+using SGrowing.Api.Modules.Commerce.Connectors;
 using Scalar.AspNetCore;
 using SGrowing.Core.Messaging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -284,6 +285,8 @@ builder.Services.AddSingleton<IBotSimulatorService, BotSimulatorService>();
 builder.Services.AddSingleton<IMultiPartySigningService, MultiPartySigningService>();
 builder.Services.AddSingleton<ICarrierShippingGateway, CarrierShippingGateway>();
 builder.Services.AddScoped<ICodAntiFraudEngine, CodAntiFraudEngine>();
+builder.Services.AddScoped<IShopifyConnectorService, ShopifyConnectorService>();
+builder.Services.AddScoped<IWooCommerceConnectorService, WooCommerceConnectorService>();
 
 // 16. Authentication, Security & Tenant Context
 var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "SGrowing_SuperSecretEnterpriseMasterKey_998877665544332211!!";
@@ -332,6 +335,9 @@ else
 {
     builder.Services.AddSingleton<IRedisStreamBroker, InMemoryStreamBroker>();
 }
+
+// Daemon Heartbeat & Watchdog Service
+builder.Services.AddSingleton<SGrowing.Core.Diagnostics.IDaemonHeartbeatService, SGrowing.Api.Modules.Diagnostics.DaemonHeartbeatService>();
 
 // 18. SignalR & CORS
 builder.Services.AddSignalR();
@@ -398,6 +404,7 @@ app.MapCrmImportEndpoints();
 app.MapBotCanvasEndpoints();
 app.MapContractSigningEndpoints();
 app.MapCommercePillarEndpoints();
+app.MapCommerceConnectorEndpoints();
 app.MapWhatsAppCloudWebhookEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", framework = ".NET 10", timestamp = DateTime.UtcNow }));
@@ -408,6 +415,18 @@ app.MapGet("/healthz/ready", async (SGrowingDbContext db) =>
     return canConnect 
         ? Results.Ok(new { status = "Ready", database = "Connected", timestampUtc = DateTime.UtcNow }) 
         : Results.Problem("Database unavailable", statusCode: 503);
+});
+
+app.MapGet("/health/daemons", async (SGrowing.Core.Diagnostics.IDaemonHeartbeatService heartbeat) =>
+{
+    var report = await heartbeat.GetHealthReportAsync();
+    return Results.Ok(report);
+});
+
+app.MapGet("/api/v1/health/daemons", async (SGrowing.Core.Diagnostics.IDaemonHeartbeatService heartbeat) =>
+{
+    var report = await heartbeat.GetHealthReportAsync();
+    return Results.Ok(report);
 });
 
 // CRM Contacts

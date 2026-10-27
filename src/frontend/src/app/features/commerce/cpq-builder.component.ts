@@ -9,11 +9,13 @@ import {
   CpqLineItemDto, 
   EavAttributeDto 
 } from '../../core/models/inspiration.models';
+import { TranslationService } from '../../core/services/translation.service';
+import { LanguageSwitcherComponent } from '../../core/components/language-switcher.component';
 
 @Component({
   selector: 'app-cpq-builder',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, LanguageSwitcherComponent],
   template: `
     <div class="flex h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 font-sans">
       <main class="flex-1 flex flex-col overflow-y-auto">
@@ -33,6 +35,7 @@ import {
           </div>
 
           <div class="flex items-center gap-3">
+            <app-language-switcher></app-language-switcher>
             @if (generatedQuote()) {
               <a 
                 [href]="getPdfDownloadUrl()" 
@@ -270,6 +273,7 @@ import {
 export class CpqBuilderComponent implements OnInit {
   private api = inject(ApiService);
   private auth = inject(AuthService);
+  public translation = inject(TranslationService);
 
   public customerName = 'Acme Logistics Global';
   public customerEmail = 'cfo@acme-logistics.com';

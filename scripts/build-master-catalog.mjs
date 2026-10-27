@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const INSPIRE_DIR = 'c:\\Business\\Software\\MarketingStudio\\inspire';
-const BASE_OUT_DIR = 'c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architecture';
-const OVERVIEW_HTML = 'c:\\Business\\Software\\MarketingStudio\\.archify\\inspire-architectures.html';
+const INSPIRE_DIR = 'c:\\Business\\Software\\SGrowing\\inspire';
+const BASE_OUT_DIR = 'c:\\Business\\Software\\SGrowing\\.archify\\inspire-architecture';
+const OVERVIEW_HTML = 'c:\\Business\\Software\\SGrowing\\.archify\\inspire-architectures.html';
 
 function getRepoMetadata(repoName) {
   const repoPath = path.join(INSPIRE_DIR, repoName);

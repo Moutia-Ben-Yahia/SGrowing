@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SGrowing.Api.Data;
 using SGrowing.Core.Entities;
+using SGrowing.Core.Diagnostics;
 
 namespace SGrowing.Worker.Services;
 
@@ -13,10 +14,16 @@ public class P2PWarmupRescueDaemon : BackgroundService
     private readonly ILogger<P2PWarmupRescueDaemon>? _logger;
     private readonly TimeSpan _pollInterval = TimeSpan.FromSeconds(30);
 
-    public P2PWarmupRescueDaemon(IServiceProvider serviceProvider, ILogger<P2PWarmupRescueDaemon>? logger = null)
+    private readonly IDaemonHeartbeatService? _heartbeatService;
+
+    public P2PWarmupRescueDaemon(
+        IServiceProvider serviceProvider,
+        ILogger<P2PWarmupRescueDaemon>? logger = null,
+        IDaemonHeartbeatService? heartbeatService = null)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _heartbeatService = heartbeatService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -27,6 +34,12 @@ public class P2PWarmupRescueDaemon : BackgroundService
         {
             try
             {
+                var heartbeat = _heartbeatService ?? _serviceProvider.GetService<IDaemonHeartbeatService>();
+                if (heartbeat != null)
+                {
+                    await heartbeat.RecordHeartbeatAsync("P2PWarmupRescueDaemon", stoppingToken);
+                }
+
                 using var scope = _serviceProvider.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<SGrowingDbContext>();
                 await ProcessWarmupAndRescueAsync(db, stoppingToken);
