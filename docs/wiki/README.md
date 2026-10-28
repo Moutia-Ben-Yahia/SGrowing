@@ -1,7 +1,8 @@
 # MarketingStudio Open Source Inspiration Wiki
 
 > Comprehensive architectural, functional, and technical knowledge base of the **88 open-source repositories** in `inspire/` driving the design and capabilities of **MarketingStudio**.  
-> 🔗 **NEW: [Explore the Category & Solution Comparison Knowledge Base](../comparisons/README.md)** featuring 16 Category Master Guides and Solution Comparison Reports.
+> 🔗 **NEW: [Explore the Category & Solution Comparison Knowledge Base](../comparisons/README.md)** featuring 16 Category Master Guides and Solution Comparison Reports.  
+> 🚀 **FEATURE EXTRACTION: [Comprehensive Feature Extraction & Strategic Recommendations](../extracted-features-analysis.md)** analyzing commits `a4a156b`, `5a78733`, and `31c381c` across 9 foundational open-source systems.
 
 ---
 
