@@ -17,6 +17,25 @@ public class WarehouseRoutingService : IWarehouseRoutingService
     {
         await EnsureDefaultWarehousesAndStockAsync(req.TenantId, ct);
 
+        const int maxRetries = 3;
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
+        {
+            try
+            {
+                return await ExecuteRouteOrderAttemptAsync(req, ct);
+            }
+            catch (DbUpdateConcurrencyException) when (attempt < maxRetries)
+            {
+                _db.ChangeTracker.Clear();
+                await Task.Delay(20 * attempt, ct);
+            }
+        }
+
+        return await ExecuteRouteOrderAttemptAsync(req, ct);
+    }
+
+    private async Task<WarehouseRoutingResult> ExecuteRouteOrderAttemptAsync(RoutingRequest req, CancellationToken ct)
+    {
         var activeWarehouses = await _db.WarehouseRecords
             .Where(w => w.TenantId == req.TenantId && w.IsActive)
             .ToListAsync(ct);
@@ -66,6 +85,8 @@ public class WarehouseRoutingService : IWarehouseRoutingService
                 {
                     stockInClosest.QuantityAvailable -= item.Quantity;
                     stockInClosest.QuantityReserved += item.Quantity;
+                    stockInClosest.RowVersion++;
+                    stockInClosest.UpdatedAtUtc = DateTime.UtcNow;
                 }
                 allocatedItems.Add(new AllocatedItem(item.Sku, item.Quantity, closest.Warehouse.Id, closest.Warehouse.Name));
             }
@@ -77,6 +98,8 @@ public class WarehouseRoutingService : IWarehouseRoutingService
                 {
                     stockInClosest.QuantityAvailable = 0;
                     stockInClosest.QuantityReserved += allocatedFromClosest;
+                    stockInClosest.RowVersion++;
+                    stockInClosest.UpdatedAtUtc = DateTime.UtcNow;
                     allocatedItems.Add(new AllocatedItem(item.Sku, allocatedFromClosest, closest.Warehouse.Id, closest.Warehouse.Name));
                 }
 
@@ -93,6 +116,8 @@ public class WarehouseRoutingService : IWarehouseRoutingService
                     int allocFromSec = Math.Min(secStock.QuantityAvailable, remainingShortage);
                     secStock.QuantityAvailable -= allocFromSec;
                     secStock.QuantityReserved += allocFromSec;
+                    secStock.RowVersion++;
+                    secStock.UpdatedAtUtc = DateTime.UtcNow;
 
                     allocatedItems.Add(new AllocatedItem(item.Sku, allocFromSec, sec.Warehouse.Id, sec.Warehouse.Name));
 
@@ -234,7 +259,7 @@ public class WarehouseRoutingService : IWarehouseRoutingService
         await EnsureDefaultWarehousesAndStockAsync(tenantId, ct);
 
         double radiusKm = Math.Max(1.0, req.RadiusKm);
-        double originLat = req.Latitude;
+        double originLat = Math.Clamp(req.Latitude, -90.0, 90.0);
         double originLon = req.Longitude;
 
         // Geodesic bounding-box computation (1 deg latitude ~= 111.0 km)
@@ -244,23 +269,56 @@ public class WarehouseRoutingService : IWarehouseRoutingService
 
         double latRad = DegreesToRadians(originLat);
         double cosLat = Math.Cos(latRad);
-        double deltaLon = Math.Abs(cosLat) > 1e-6 ? (radiusKm / (111.0 * Math.Abs(cosLat))) : 180.0;
+        double deltaLon = Math.Abs(cosLat) > 1e-4 ? (radiusKm / (111.0 * Math.Abs(cosLat))) : 180.0;
         double minLon = originLon - deltaLon;
         double maxLon = originLon + deltaLon;
+
+        bool crossesAntiMeridian = false;
+        double normMinLon = minLon;
+        double normMaxLon = maxLon;
+
+        if (deltaLon >= 180.0 || Math.Abs(originLat) >= 89.0)
+        {
+            // Polar region or global radius covers all longitudes
+            normMinLon = -180.0;
+            normMaxLon = 180.0;
+        }
+        else if (minLon < -180.0)
+        {
+            crossesAntiMeridian = true;
+            normMinLon = minLon + 360.0;
+            normMaxLon = maxLon;
+        }
+        else if (maxLon > 180.0)
+        {
+            crossesAntiMeridian = true;
+            normMinLon = minLon;
+            normMaxLon = maxLon - 360.0;
+        }
 
         var boundingBox = new SpatialBoundingBox(
             Math.Round(minLat, 4),
             Math.Round(maxLat, 4),
-            Math.Round(minLon, 4),
-            Math.Round(maxLon, 4)
+            Math.Round(crossesAntiMeridian ? normMinLon : minLon, 4),
+            Math.Round(crossesAntiMeridian ? normMaxLon : maxLon, 4)
         );
 
         // Spatial bounding-box query pre-filtering (simulating PostGIS GiST index scan)
         var query = _db.WarehouseRecords
-            .Where(w => w.TenantId == tenantId && w.IsActive);
+            .Where(w => w.TenantId == tenantId && w.IsActive)
+            .Where(w => w.Latitude >= minLat && w.Latitude <= maxLat);
 
-        // Pre-filter with bounding box for O(1) indexed scanning
-        query = query.Where(w => w.Latitude >= minLat && w.Latitude <= maxLat);
+        if (deltaLon < 180.0 && Math.Abs(originLat) < 89.0)
+        {
+            if (crossesAntiMeridian)
+            {
+                query = query.Where(w => w.Longitude >= normMinLon || w.Longitude <= normMaxLon);
+            }
+            else
+            {
+                query = query.Where(w => w.Longitude >= minLon && w.Longitude <= maxLon);
+            }
+        }
 
         var candidateHubs = await query.ToListAsync(ct);
         int totalEvaluated = candidateHubs.Count;

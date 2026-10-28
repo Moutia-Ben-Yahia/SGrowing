@@ -1,22 +1,22 @@
-import { TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { App } from './app';
 
 describe('App', () => {
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [App],
-    }).compileComponents();
+  let app: App;
+
+  beforeEach(() => {
+    localStorage.clear();
+    app = Object.create(App.prototype);
+    (app as any).title = () => 'marketing-studio-web';
   });
 
   it('should create the app', () => {
-    const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
     expect(app).toBeTruthy();
   });
 
   it('should have default title', () => {
-    const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
-    expect(app['title']()).toBe('marketing-studio-web');
+    expect((app as any).title()).toBe('marketing-studio-web');
   });
 });

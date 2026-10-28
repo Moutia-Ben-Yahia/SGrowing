@@ -31,4 +31,30 @@ public static class SGrowingTelemetry
         "sgrowing_active_drivers_current",
         "drivers",
         "Current number of in-house courier drivers actively on route");
+
+    // Ingested Capability Expansion Metrics
+    public static readonly Counter<long> WarehouseAllocationsCounter = Meter.CreateCounter<long>(
+        "sgrowing_warehouse_allocations_total",
+        "allocations",
+        "Total number of multi-warehouse order allocations executed");
+
+    public static readonly Counter<long> WhatsAppDispatchesCounter = Meter.CreateCounter<long>(
+        "sgrowing_whatsapp_dispatches_total",
+        "messages",
+        "Total number of WhatsApp gateway messages dispatched");
+
+    public static readonly Counter<long> AutonomousFunnelsGeneratedCounter = Meter.CreateCounter<long>(
+        "sgrowing_autonomous_funnels_total",
+        "funnels",
+        "Total number of 15-step autonomous funnels generated and deployed");
+
+    public static readonly Counter<long> AgentHeartbeatsExecutedCounter = Meter.CreateCounter<long>(
+        "sgrowing_agent_heartbeats_total",
+        "heartbeats",
+        "Total number of autonomous agent heartbeat cycles executed");
+
+    public static readonly Counter<long> MediaVaultUploadsCounter = Meter.CreateCounter<long>(
+        "sgrowing_media_vault_uploads_total",
+        "uploads",
+        "Total number of pre-signed direct-to-S3 uploads generated");
 }

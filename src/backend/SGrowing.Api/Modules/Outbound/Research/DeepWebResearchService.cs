@@ -10,11 +10,13 @@ public class DeepWebResearchService : IDeepWebResearchService
 {
     private readonly SGrowingDbContext _db;
     private readonly IScraperVaultService? _vault;
+    private readonly IHttpClientFactory? _httpFactory;
 
-    public DeepWebResearchService(SGrowingDbContext db, IScraperVaultService? vault = null)
+    public DeepWebResearchService(SGrowingDbContext db, IScraperVaultService? vault = null, IHttpClientFactory? httpFactory = null)
     {
         _db = db;
         _vault = vault;
+        _httpFactory = httpFactory;
     }
 
     public async Task<WebResearchCrawlResult> CrawlAndExtractAsync(Guid tenantId, WebResearchCrawlRequest req, CancellationToken ct = default)

@@ -44,6 +44,11 @@ using SGrowing.Api.Modules.Projects;
 using SGrowing.Api.Modules.Outbound.Research;
 using SGrowing.Api.Modules.Commerce.Warehouses;
 using SGrowing.Api.Modules.Organizations;
+using SGrowing.Api.Modules.Workforce.Timesheets;
+using SGrowing.Api.Modules.Channels.WhatsApp;
+using SGrowing.Api.Modules.Funnels.Autonomous;
+using SGrowing.Api.Modules.AI.Personas;
+using SGrowing.Api.Modules.Storage.Media;
 using Scalar.AspNetCore;
 using SGrowing.Core.Messaging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -299,6 +304,19 @@ builder.Services.AddScoped<IDeepWebResearchService, DeepWebResearchService>();
 builder.Services.AddScoped<IWarehouseRoutingService, WarehouseRoutingService>();
 builder.Services.AddScoped<IOrganizationHierarchyService, OrganizationHierarchyService>();
 
+// Ingested Capability Expansion & Strategic Next Steps
+builder.Services.AddSingleton<IEventDeduplicationService, EventDeduplicationService>();
+builder.Services.AddScoped<ITimesheetService, TimesheetService>();
+builder.Services.AddScoped<IWhatsAppGatewayService, WhatsAppGatewayService>();
+builder.Services.AddScoped<IAutonomousFunnelPipelineService, AutonomousFunnelPipelineService>();
+builder.Services.AddScoped<IAgentPersonaService, AgentPersonaService>();
+builder.Services.AddScoped<IMediaVaultService, MediaVaultService>();
+builder.Services.AddHttpClient("WebScraperClient", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("User-Agent", "SGrowing-Bot/2.0 (Resilient Scraper Engine)");
+});
+
 // 16. Authentication, Security & Tenant Context
 var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "SGrowing_SuperSecretEnterpriseMasterKey_998877665544332211!!";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "SGrowing.Api";
@@ -421,6 +439,11 @@ app.MapProjectTaskEndpoints();
 app.MapDeepWebResearchEndpoints();
 app.MapWarehouseRoutingEndpoints();
 app.MapOrganizationHierarchyEndpoints();
+app.MapTimesheetEndpoints();
+app.MapWhatsAppGatewayEndpoints();
+app.MapAutonomousFunnelEndpoints();
+app.MapAgentPersonaEndpoints();
+app.MapMediaVaultEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", framework = ".NET 10", timestamp = DateTime.UtcNow }));
 app.MapGet("/healthz/live", () => Results.Ok(new { status = "Healthy", timestampUtc = DateTime.UtcNow }));

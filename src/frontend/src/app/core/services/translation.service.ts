@@ -65,6 +65,10 @@ const EN_US_TRANSLATIONS: TranslationDictionary = {
   'nav.research': 'Deep AI Web Research',
   'nav.warehouses': 'Multi-Warehouse Allocation',
   'nav.organizations': 'Organization & Margin Tracker',
+  'nav.timesheets': 'Timesheets & Labor Costing',
+  'nav.whatsapp_gateway': 'Native WhatsApp Gateway',
+  'nav.autonomous_funnels': 'Autonomous Funnel Workshop',
+  'nav.agent_fleet': 'Dual-Layer 38 Agent Fleet',
 
   // Common Actions & Statuses
   'common.search': 'Search conversations...',

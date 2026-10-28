@@ -30,6 +30,7 @@ public class ClickstreamAndPartitioningTests
     [Fact]
     public async Task ClickstreamBuffer_EnqueuesAndBatchFlushesEventsToDatabase()
     {
+        ClickstreamBufferService.ResetBuffer();
         var tenantId = Guid.NewGuid();
 
         // Buffer 3 events

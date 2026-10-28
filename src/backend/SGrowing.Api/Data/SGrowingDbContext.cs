@@ -312,6 +312,14 @@ public class SGrowingDbContext : DbContext
     public DbSet<TeamMemberRecord> TeamMemberRecords => Set<TeamMemberRecord>();
     public DbSet<DealMarginRecord> DealMarginRecords => Set<DealMarginRecord>();
 
+    // Frontier Enhancements & Ingested Capability Expansions
+    public DbSet<TimesheetEntryRecord> TimesheetEntries => Set<TimesheetEntryRecord>();
+    public DbSet<WhatsAppInstanceRecord> WhatsAppInstances => Set<WhatsAppInstanceRecord>();
+    public DbSet<AutonomousFunnelRunRecord> AutonomousFunnelRuns => Set<AutonomousFunnelRunRecord>();
+    public DbSet<AgentPersonaRecord> AgentPersonas => Set<AgentPersonaRecord>();
+    public DbSet<AgentHeartbeatRecord> AgentHeartbeatRecords => Set<AgentHeartbeatRecord>();
+    public DbSet<MediaVaultRecord> MediaVaultRecords => Set<MediaVaultRecord>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -446,6 +454,7 @@ public class SGrowingDbContext : DbContext
             b.HasKey(s => s.Id);
             b.HasIndex(s => new { s.TenantId, s.WarehouseId, s.Sku });
             b.Property(s => s.UnitCost).HasPrecision(18, 2);
+            b.Property(s => s.RowVersion).IsConcurrencyToken();
         });
 
         modelBuilder.Entity<StockTransferManifest>(b =>
@@ -492,6 +501,46 @@ public class SGrowingDbContext : DbContext
             b.Property(d => d.OperatorLaborCost).HasPrecision(18, 2);
             b.Property(d => d.TrueGrossMargin).HasPrecision(18, 2);
             b.Property(d => d.GrossMarginPercentage).HasPrecision(18, 2);
+        });
+
+        modelBuilder.Entity<TimesheetEntryRecord>(b =>
+        {
+            b.HasKey(t => t.Id);
+            b.HasIndex(t => new { t.TenantId, t.DealId });
+            b.HasIndex(t => new { t.TenantId, t.TeamMemberId });
+            b.Property(t => t.HoursWorked).HasPrecision(18, 2);
+            b.Property(t => t.HourlyRate).HasPrecision(18, 2);
+            b.Property(t => t.TotalLaborCost).HasPrecision(18, 2);
+        });
+
+        modelBuilder.Entity<WhatsAppInstanceRecord>(b =>
+        {
+            b.HasKey(w => w.Id);
+            b.HasIndex(w => new { w.TenantId, w.InstanceName }).IsUnique();
+        });
+
+        modelBuilder.Entity<AutonomousFunnelRunRecord>(b =>
+        {
+            b.HasKey(r => r.Id);
+            b.HasIndex(r => new { r.TenantId, r.StartedAtUtc });
+        });
+
+        modelBuilder.Entity<AgentPersonaRecord>(b =>
+        {
+            b.HasKey(a => a.Id);
+            b.HasIndex(a => a.RoleKey).IsUnique();
+        });
+
+        modelBuilder.Entity<AgentHeartbeatRecord>(b =>
+        {
+            b.HasKey(h => h.Id);
+            b.HasIndex(h => new { h.TenantId, h.ExecutedAtUtc });
+        });
+
+        modelBuilder.Entity<MediaVaultRecord>(b =>
+        {
+            b.HasKey(m => m.Id);
+            b.HasIndex(m => new { m.TenantId, m.StorageKey });
         });
     }
 }

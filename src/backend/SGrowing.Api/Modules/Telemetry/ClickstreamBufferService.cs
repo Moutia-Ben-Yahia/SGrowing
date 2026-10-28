@@ -120,4 +120,9 @@ public class ClickstreamBufferService : IClickstreamBufferService
 
         return redisCount + _fallbackQueue.Count;
     }
+
+    public static void ResetBuffer()
+    {
+        while (_fallbackQueue.TryDequeue(out _)) { }
+    }
 }

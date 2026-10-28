@@ -13,6 +13,9 @@ public class WarehouseRecord
     public double Longitude { get; set; }
     public bool IsActive { get; set; } = true;
     public int CapacityUnits { get; set; } = 10000;
+    public uint RowVersion { get; set; } = 1;
+    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAtUtc { get; set; }
 }
 
 public class WarehouseStockRecord
@@ -25,6 +28,9 @@ public class WarehouseStockRecord
     public int QuantityAvailable { get; set; }
     public int QuantityReserved { get; set; }
     public decimal UnitCost { get; set; }
+    public uint RowVersion { get; set; } = 1;
+    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAtUtc { get; set; }
 }
 
 public class StockTransferManifest
