@@ -52,6 +52,26 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 <span class="flex items-center gap-2">🏢 Organization & Margin Tracker</span>
               </a>
               <a
+                routerLink="/workforce/timesheets"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
+                <span class="flex items-center gap-2">⏱️ Timesheets & Labor Margin</span>
+              </a>
+              <a
+                routerLink="/channels/whatsapp-gateway"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
+                <span class="flex items-center gap-2">💬 Native WhatsApp Gateway</span>
+              </a>
+              <a
+                routerLink="/funnels/autonomous"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-violet-400 hover:bg-violet-500/10 border border-violet-500/20 transition">
+                <span class="flex items-center gap-2">🚀 Autonomous Funnel Workshop</span>
+              </a>
+              <a
+                routerLink="/ai/agent-fleet"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-indigo-400 hover:bg-indigo-500/10 border border-indigo-500/20 transition">
+                <span class="flex items-center gap-2">🤖 Dual-Layer 38 Agent Fleet</span>
+              </a>
+              <a
                 routerLink="/courier"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
                 <span class="flex items-center gap-2">🛵 Courier Driver Companion</span>
