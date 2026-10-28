@@ -106,6 +106,20 @@ public static class WarehouseRoutingEndpoints
         .WithName("CreateWarehouse")
         .WithSummary("Register a new regional warehouse hub");
 
+        group.MapPost("/spatial-search", async (
+            [FromBody] SpatialWarehouseQueryRequest req,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IWarehouseRoutingService service,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var results = await service.SpatialSearchAsync(effectiveTenantId, req, ct);
+            return Results.Ok(results);
+        })
+        .WithName("SpatialWarehouseSearch")
+        .WithSummary("Perform PostGIS geodetic bounding-box spatial radar search for nearest warehouse hubs");
+
         return app;
     }
 }

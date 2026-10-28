@@ -59,6 +59,12 @@ export interface ProjectHeader {
           <div class="flex items-center gap-3">
             <app-language-switcher></app-language-switcher>
             <button
+              data-testid="share-portal-token-btn"
+              (click)="openPortalModal.set(true)"
+              class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition border border-slate-700">
+              🌐 Client Portal Link
+            </button>
+            <button
               data-testid="convert-deal-btn"
               (click)="convertWonDealDemo()"
               class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-sm">
@@ -329,6 +335,99 @@ export interface ProjectHeader {
             </div>
           </div>
         }
+
+        <!-- Client Portal Link Generation Modal -->
+        @if (openPortalModal()) {
+          <div class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl">
+              <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                  <span>🌐</span> Secure Client Onboarding Portal
+                </h3>
+                <button (click)="openPortalModal.set(false)" class="text-slate-400 hover:text-white">✕</button>
+              </div>
+
+              <div class="mt-4 space-y-4">
+                <p class="text-xs text-slate-300 leading-relaxed">
+                  Generate a signed, time-limited external link allowing client stakeholders to review sprint milestones, track onboarding velocity, and submit formal signoffs without needing system credentials.
+                </p>
+
+                <div>
+                  <label class="block text-xs text-slate-300 mb-1">Client Stakeholder Email</label>
+                  <input
+                    type="email"
+                    [(ngModel)]="portalClientEmail"
+                    placeholder="e.g. lead@client-org.com"
+                    class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono" />
+                </div>
+
+                <div>
+                  <label class="block text-xs text-slate-300 mb-1">Client Organization Name</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="portalClientOrg"
+                    placeholder="e.g. Hyper-Logistics S.A."
+                    class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+                </div>
+
+                <div>
+                  <label class="block text-xs text-slate-300 mb-1">Link Validity (Days)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="90"
+                    [(ngModel)]="portalValidDays"
+                    class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono" />
+                </div>
+
+                @if (portalLinkGenerated()) {
+                  <div class="p-3 bg-emerald-950/40 border border-emerald-500/40 rounded-xl space-y-2">
+                    <div class="text-[11px] font-bold text-emerald-300 flex items-center gap-1.5">
+                      <span>✓</span> Shareable Client Portal URL Generated
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <input
+                        type="text"
+                        readonly
+                        data-testid="portal-shareable-url"
+                        [value]="'/portal/onboarding/' + portalGeneratedToken()"
+                        class="flex-1 bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-emerald-400 font-mono select-all" />
+                      <button
+                        data-testid="copy-portal-link-btn"
+                        (click)="copyPortalUrl()"
+                        class="px-2.5 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold">
+                        Copy
+                      </button>
+                    </div>
+                    <div class="text-right">
+                      <a
+                        [routerLink]="['/portal/onboarding', portalGeneratedToken()]"
+                        target="_blank"
+                        data-testid="preview-portal-link"
+                        class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold inline-flex items-center gap-1">
+                        Open Portal Preview ↗
+                      </a>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <div class="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+                <button
+                  (click)="openPortalModal.set(false)"
+                  class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition">
+                  Close
+                </button>
+                <button
+                  data-testid="generate-portal-link-submit"
+                  (click)="generatePortalLink()"
+                  class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition flex items-center gap-1.5">
+                  ⚡ Generate Secure Link
+                </button>
+              </div>
+            </div>
+          </div>
+        }
       </main>
     </div>
   `
@@ -447,6 +546,14 @@ export class ProjectTaskBoardComponent {
   selectedPriorityFilter = 'ALL';
   toastMessage = signal<string>('');
   showCreateModal = signal<boolean>(false);
+
+  // Client Portal Share Modal State
+  openPortalModal = signal<boolean>(false);
+  portalClientEmail = 'lead-stakeholder@retail-corp.com';
+  portalClientOrg = 'Enterprise Retail Corp Stakeholders';
+  portalValidDays = 30;
+  portalGeneratedToken = signal<string>('spt_live_99a8b7c6d5e4f3a2b1c0');
+  portalLinkGenerated = signal<boolean>(true);
 
   // Form inputs
   newTaskTitle = '';
@@ -630,5 +737,21 @@ export class ProjectTaskBoardComponent {
 
     this.tasks.update(current => [...current, ...generatedTasks]);
     this.toastMessage.set(`Won Deal converted into "${newProject.name}" with milestone templates!`);
+  }
+
+  generatePortalLink(): void {
+    const randomHex = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+    const token = `spt_live_${randomHex}`;
+    this.portalGeneratedToken.set(token);
+    this.portalLinkGenerated.set(true);
+    this.toastMessage.set('Secure client onboarding portal link generated successfully!');
+  }
+
+  copyPortalUrl(): void {
+    const url = `/portal/onboarding/${this.portalGeneratedToken()}`;
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(url).catch(() => {});
+    }
+    this.toastMessage.set(`Copied portal URL to clipboard: ${url}`);
   }
 }

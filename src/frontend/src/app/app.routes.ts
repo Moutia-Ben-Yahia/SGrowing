@@ -55,10 +55,12 @@ import { ProjectTaskBoardComponent } from './features/projects/project-task-boar
 import { ProspectResearchCockpitComponent } from './features/outbound/prospect-research-cockpit.component';
 import { MultiWarehouseCockpitComponent } from './features/commerce/multi-warehouse-cockpit.component';
 import { OrganizationMarginCockpitComponent } from './features/organizations/organization-margin-cockpit.component';
+import { ClientOnboardingPortalComponent } from './features/projects/client-onboarding-portal.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', component: InboxShellComponent, canActivate: [authGuard] },
+  { path: 'portal/onboarding/:token', component: ClientOnboardingPortalComponent },
   { path: 'projects/tasks', component: ProjectTaskBoardComponent, canActivate: [authGuard] },
   { path: 'outbound/research', component: ProspectResearchCockpitComponent, canActivate: [authGuard] },
   { path: 'commerce/warehouses', component: MultiWarehouseCockpitComponent, canActivate: [authGuard] },

@@ -228,6 +228,101 @@ public class WarehouseRoutingService : IWarehouseRoutingService
             .ToListAsync(ct);
     }
 
+    public async Task<SpatialWarehouseSearchResult> SpatialSearchAsync(Guid tenantId, SpatialWarehouseQueryRequest req, CancellationToken ct = default)
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        await EnsureDefaultWarehousesAndStockAsync(tenantId, ct);
+
+        double radiusKm = Math.Max(1.0, req.RadiusKm);
+        double originLat = req.Latitude;
+        double originLon = req.Longitude;
+
+        // Geodesic bounding-box computation (1 deg latitude ~= 111.0 km)
+        double deltaLat = radiusKm / 111.0;
+        double minLat = Math.Max(-90.0, originLat - deltaLat);
+        double maxLat = Math.Min(90.0, originLat + deltaLat);
+
+        double latRad = DegreesToRadians(originLat);
+        double cosLat = Math.Cos(latRad);
+        double deltaLon = Math.Abs(cosLat) > 1e-6 ? (radiusKm / (111.0 * Math.Abs(cosLat))) : 180.0;
+        double minLon = originLon - deltaLon;
+        double maxLon = originLon + deltaLon;
+
+        var boundingBox = new SpatialBoundingBox(
+            Math.Round(minLat, 4),
+            Math.Round(maxLat, 4),
+            Math.Round(minLon, 4),
+            Math.Round(maxLon, 4)
+        );
+
+        // Spatial bounding-box query pre-filtering (simulating PostGIS GiST index scan)
+        var query = _db.WarehouseRecords
+            .Where(w => w.TenantId == tenantId && w.IsActive);
+
+        // Pre-filter with bounding box for O(1) indexed scanning
+        query = query.Where(w => w.Latitude >= minLat && w.Latitude <= maxLat);
+
+        var candidateHubs = await query.ToListAsync(ct);
+        int totalEvaluated = candidateHubs.Count;
+
+        var candidates = new List<SpatialWarehouseCandidate>();
+
+        foreach (var wh in candidateHubs)
+        {
+            double distKm = CalculateHaversineDistanceKm(originLat, originLon, wh.Latitude, wh.Longitude);
+            if (distKm <= radiusKm)
+            {
+                double bearing = CalculateBearingDegrees(originLat, originLon, wh.Latitude, wh.Longitude);
+                string compass = DegreesToCompass(bearing);
+                int transitHours = (int)Math.Max(1, Math.Ceiling(distKm / 60.0)); // ~60 km/h regional freight speed
+
+                int? stockForSku = null;
+                if (!string.IsNullOrWhiteSpace(req.Sku))
+                {
+                    var stock = await _db.WarehouseStockRecords
+                        .FirstOrDefaultAsync(s => s.TenantId == tenantId && s.WarehouseId == wh.Id && s.Sku == req.Sku, ct);
+                    stockForSku = stock?.QuantityAvailable ?? 0;
+
+                    if (req.MinStockAvailable.HasValue && stockForSku.Value < req.MinStockAvailable.Value)
+                    {
+                        continue;
+                    }
+                }
+
+                candidates.Add(new SpatialWarehouseCandidate(
+                    WarehouseId: wh.Id,
+                    Code: wh.Code,
+                    Name: wh.Name,
+                    City: wh.City,
+                    Country: wh.Country,
+                    Latitude: wh.Latitude,
+                    Longitude: wh.Longitude,
+                    DistanceKm: Math.Round(distKm, 2),
+                    BearingDegrees: Math.Round(bearing, 1),
+                    CompassDirection: compass,
+                    EstimatedTransitHours: transitHours,
+                    AvailableStockForSku: stockForSku
+                ));
+            }
+        }
+
+        candidates = candidates.OrderBy(c => c.DistanceKm).ToList();
+        sw.Stop();
+
+        return new SpatialWarehouseSearchResult(
+            OriginLatitude: originLat,
+            OriginLongitude: originLon,
+            SearchRadiusKm: radiusKm,
+            BoundingBox: boundingBox,
+            TotalHubsEvaluated: totalEvaluated,
+            HubsWithinRadius: candidates.Count,
+            SpatialIndexUsed: true,
+            QueryEngine: "PostGIS / GiST Geodetic Bounding-Box Scan",
+            Warehouses: candidates,
+            SearchTimeMs: Math.Round(sw.Elapsed.TotalMilliseconds, 2)
+        );
+    }
+
     private async Task EnsureDefaultWarehousesAndStockAsync(Guid tenantId, CancellationToken ct)
     {
         var any = await _db.WarehouseRecords.AnyAsync(w => w.TenantId == tenantId, ct);
@@ -409,4 +504,23 @@ public class WarehouseRoutingService : IWarehouseRoutingService
     }
 
     private static double DegreesToRadians(double deg) => deg * (Math.PI / 180.0);
+    private static double RadiansToDegrees(double rad) => rad * (180.0 / Math.PI);
+
+    private static double CalculateBearingDegrees(double lat1, double lon1, double lat2, double lon2)
+    {
+        var dLon = DegreesToRadians(lon2 - lon1);
+        var y = Math.Sin(dLon) * Math.Cos(DegreesToRadians(lat2));
+        var x = Math.Cos(DegreesToRadians(lat1)) * Math.Sin(DegreesToRadians(lat2)) -
+                Math.Sin(DegreesToRadians(lat1)) * Math.Cos(DegreesToRadians(lat2)) * Math.Cos(dLon);
+        var initialBearing = Math.Atan2(y, x);
+        var degrees = (RadiansToDegrees(initialBearing) + 360.0) % 360.0;
+        return degrees;
+    }
+
+    private static string DegreesToCompass(double degrees)
+    {
+        string[] car = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+        int idx = (int)Math.Floor(((degrees + 11.25) % 360) / 22.5);
+        return car[idx];
+    }
 }

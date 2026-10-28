@@ -148,6 +148,71 @@ public static class ProjectTaskEndpoints
         .WithName("GetTaskComments")
         .WithSummary("Get comments for a task");
 
+        group.MapPost("/{projectId:guid}/portal-token", async (
+            Guid projectId,
+            [FromBody] GeneratePortalTokenRequest req,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IProjectTaskService service,
+            HttpContext httpContext,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var baseUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}";
+            var result = await service.GenerateClientPortalTokenAsync(effectiveTenantId, projectId, req, baseUrl, ct);
+            return Results.Ok(result);
+        })
+        .WithName("GenerateClientPortalToken")
+        .WithSummary("Generate a secure time-limited token for external client onboarding portal");
+
+        group.MapDelete("/portal-tokens/{token}", async (
+            string token,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IProjectTaskService service,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var revoked = await service.RevokeClientPortalTokenAsync(effectiveTenantId, token, ct);
+            return revoked ? Results.Ok(new { message = "Portal token revoked successfully" }) : Results.NotFound(new { error = "Token not found" });
+        })
+        .WithName("RevokeClientPortalToken")
+        .WithSummary("Revoke client access via an onboarding portal token");
+
+        // Public External Portal Group
+        var publicPortalGroup = app.MapGroup("/api/v1/portal/onboarding")
+            .WithTags("Public Client Onboarding Portal");
+
+        publicPortalGroup.MapGet("/{token}", async (
+            string token,
+            IProjectTaskService service,
+            CancellationToken ct) =>
+        {
+            var view = await service.GetClientPortalViewAsync(token, ct);
+            return view != null ? Results.Ok(view) : Results.NotFound(new { error = "Invalid, revoked, or expired client onboarding token." });
+        })
+        .WithName("GetClientOnboardingPortalView")
+        .WithSummary("Public external endpoint to view project onboarding milestones via secure token");
+
+        publicPortalGroup.MapPost("/{token}/feedback", async (
+            string token,
+            [FromBody] ClientPortalFeedbackRequest req,
+            IProjectTaskService service,
+            CancellationToken ct) =>
+        {
+            try
+            {
+                var feedback = await service.SubmitClientPortalFeedbackAsync(token, req, ct);
+                return Results.Ok(feedback);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("SubmitClientPortalFeedback")
+        .WithSummary("Submit milestone approval or change request feedback from the client portal");
+
         return app;
     }
 }

@@ -73,3 +73,73 @@ public record ConvertDealRequest(
 
 public record ConvertContractRequest(
     Guid ContractId);
+
+public class ClientPortalTokenRecord
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid TenantId { get; set; }
+    public Guid ProjectId { get; set; }
+    public string Token { get; set; } = string.Empty;
+    public string ClientContactEmail { get; set; } = string.Empty;
+    public string ClientOrganizationName { get; set; } = string.Empty;
+    public DateTime ExpiresAtUtc { get; set; }
+    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+    public bool IsRevoked { get; set; } = false;
+}
+
+public class ClientPortalFeedbackRecord
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid TenantId { get; set; }
+    public Guid ProjectId { get; set; }
+    public Guid TaskId { get; set; }
+    public string ClientName { get; set; } = string.Empty;
+    public string ClientEmail { get; set; } = string.Empty;
+    public string StatusVote { get; set; } = "Approved"; // Approved, ChangeRequested, InReview
+    public string FeedbackNotes { get; set; } = string.Empty;
+    public DateTime SubmittedAtUtc { get; set; } = DateTime.UtcNow;
+}
+
+public record GeneratePortalTokenRequest(
+    string? ClientEmail = null,
+    string? ClientOrganization = null,
+    int ValidDays = 30);
+
+public record ClientPortalTokenResult(
+    string Token,
+    string ShareableUrl,
+    DateTime ExpiresAtUtc,
+    string ClientOrganizationName);
+
+public record ClientPortalTaskView(
+    Guid Id,
+    string Title,
+    string Description,
+    string Status,
+    string Priority,
+    int SubtasksCompleted,
+    int SubtasksTotal,
+    int ProgressPercent,
+    DateTime? DueDateUtc,
+    string? LatestClientVote);
+
+public record ClientPortalView(
+    Guid ProjectId,
+    string ProjectName,
+    string ProjectDescription,
+    string ClientOrganizationName,
+    int OverallProgressPercent,
+    int CompletedMilestones,
+    int TotalMilestones,
+    DateTime? TargetLaunchDateUtc,
+    DateTime TokenExpiresAtUtc,
+    List<ClientPortalTaskView> Milestones,
+    List<TaskCommentRecord> RecentUpdates);
+
+public record ClientPortalFeedbackRequest(
+    Guid TaskId,
+    string ClientName,
+    string ClientEmail,
+    string StatusVote,
+    string FeedbackNotes);
+

@@ -58,3 +58,35 @@ public record ProspectResearchBrief(
     List<string> SalesHooks,
     int ConfidenceScore,
     DateTime ResearchedAtUtc);
+
+public class CrawlerSecretRecord
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid TenantId { get; set; }
+    public string Provider { get; set; } = string.Empty; // "Tavily", "Firecrawl", "Exa"
+    public string MaskedApiKey { get; set; } = string.Empty;
+    public bool IsActive { get; set; } = true;
+    public string HealthStatus { get; set; } = "Configured"; // Configured, Operational, Degraded, Failed
+    public int LastLatencyMs { get; set; } = 45;
+    public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
+}
+
+public record SaveCrawlerSecretRequest(
+    string Provider,
+    string ApiKey);
+
+public record CrawlerEngineHealth(
+    string Provider,
+    bool IsConfigured,
+    string Status, // Operational, SimulatedFallback, MissingKey, Degraded
+    string MaskedKey,
+    int LatencyMs,
+    string Message,
+    List<string> Capabilities);
+
+public record CrawlerVaultOverview(
+    Guid TenantId,
+    List<CrawlerEngineHealth> Engines,
+    string ActivePrimaryEngine,
+    DateTime CheckedAtUtc);
+

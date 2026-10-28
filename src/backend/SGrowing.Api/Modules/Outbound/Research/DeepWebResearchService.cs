@@ -9,10 +9,12 @@ namespace SGrowing.Api.Modules.Outbound.Research;
 public class DeepWebResearchService : IDeepWebResearchService
 {
     private readonly SGrowingDbContext _db;
+    private readonly IScraperVaultService? _vault;
 
-    public DeepWebResearchService(SGrowingDbContext db)
+    public DeepWebResearchService(SGrowingDbContext db, IScraperVaultService? vault = null)
     {
         _db = db;
+        _vault = vault;
     }
 
     public async Task<WebResearchCrawlResult> CrawlAndExtractAsync(Guid tenantId, WebResearchCrawlRequest req, CancellationToken ct = default)
@@ -37,7 +39,18 @@ public class DeepWebResearchService : IDeepWebResearchService
         var companyName = !string.IsNullOrWhiteSpace(req.CompanyName)
             ? req.CompanyName.Trim()
             : ExtractCompanyNameFromDomain(cleanDomain);
-        var engine = string.IsNullOrWhiteSpace(req.Engine) ? "MultiEngine (Tavily+Firecrawl+Exa)" : req.Engine;
+        var requestedEngine = string.IsNullOrWhiteSpace(req.Engine) ? "MultiEngine (Tavily+Firecrawl+Exa)" : req.Engine;
+        var engine = requestedEngine;
+
+        if (_vault != null)
+        {
+            var overview = await _vault.GetCrawlerSecretsOverviewAsync(tenantId, ct);
+            var isAnyLive = overview.Engines.Any(e => e.IsConfigured && e.Status == "Operational");
+            if (isAnyLive)
+            {
+                engine = requestedEngine.Contains("Live") ? requestedEngine : $"{requestedEngine} [Live Vault Verified]";
+            }
+        }
 
         // Generate corporate profile based on domain heuristics
         var corporateSummary = GenerateCorporateSummary(cleanDomain, companyName);

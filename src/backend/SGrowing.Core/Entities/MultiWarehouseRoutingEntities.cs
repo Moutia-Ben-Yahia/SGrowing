@@ -86,3 +86,43 @@ public record CreateStockTransferRequest(
     Guid DestinationWarehouseId,
     string Sku,
     int Quantity);
+
+public record SpatialBoundingBox(
+    double MinLatitude,
+    double MaxLatitude,
+    double MinLongitude,
+    double MaxLongitude);
+
+public record SpatialWarehouseQueryRequest(
+    double Latitude,
+    double Longitude,
+    double RadiusKm = 100.0,
+    string? Sku = null,
+    int? MinStockAvailable = null);
+
+public record SpatialWarehouseCandidate(
+    Guid WarehouseId,
+    string Code,
+    string Name,
+    string City,
+    string Country,
+    double Latitude,
+    double Longitude,
+    double DistanceKm,
+    double BearingDegrees,
+    string CompassDirection,
+    int EstimatedTransitHours,
+    int? AvailableStockForSku);
+
+public record SpatialWarehouseSearchResult(
+    double OriginLatitude,
+    double OriginLongitude,
+    double SearchRadiusKm,
+    SpatialBoundingBox BoundingBox,
+    int TotalHubsEvaluated,
+    int HubsWithinRadius,
+    bool SpatialIndexUsed,
+    string QueryEngine,
+    List<SpatialWarehouseCandidate> Warehouses,
+    double SearchTimeMs);
+

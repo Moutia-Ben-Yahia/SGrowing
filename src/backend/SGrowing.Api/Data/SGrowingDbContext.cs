@@ -296,8 +296,11 @@ public class SGrowingDbContext : DbContext
     public DbSet<ProjectRecord> Projects => Set<ProjectRecord>();
     public DbSet<TaskItemRecord> TaskItems => Set<TaskItemRecord>();
     public DbSet<TaskCommentRecord> TaskComments => Set<TaskCommentRecord>();
+    public DbSet<ClientPortalTokenRecord> ClientPortalTokens => Set<ClientPortalTokenRecord>();
+    public DbSet<ClientPortalFeedbackRecord> ClientPortalFeedbacks => Set<ClientPortalFeedbackRecord>();
 
     public DbSet<WebResearchRecord> WebResearchRecords => Set<WebResearchRecord>();
+    public DbSet<CrawlerSecretRecord> CrawlerSecretRecords => Set<CrawlerSecretRecord>();
 
     public DbSet<WarehouseRecord> WarehouseRecords => Set<WarehouseRecord>();
     public DbSet<WarehouseStockRecord> WarehouseStockRecords => Set<WarehouseStockRecord>();
@@ -406,10 +409,30 @@ public class SGrowingDbContext : DbContext
             b.HasIndex(c => new { c.TenantId, c.TaskId });
         });
 
+        modelBuilder.Entity<ClientPortalTokenRecord>(b =>
+        {
+            b.HasKey(t => t.Id);
+            b.HasIndex(t => new { t.TenantId, t.ProjectId });
+            b.HasIndex(t => t.Token).IsUnique();
+        });
+
+        modelBuilder.Entity<ClientPortalFeedbackRecord>(b =>
+        {
+            b.HasKey(f => f.Id);
+            b.HasIndex(f => new { f.TenantId, f.ProjectId });
+            b.HasIndex(f => new { f.TenantId, f.TaskId });
+        });
+
         modelBuilder.Entity<WebResearchRecord>(b =>
         {
             b.HasKey(r => r.Id);
             b.HasIndex(r => new { r.TenantId, r.Domain });
+        });
+
+        modelBuilder.Entity<CrawlerSecretRecord>(b =>
+        {
+            b.HasKey(cs => cs.Id);
+            b.HasIndex(cs => new { cs.TenantId, cs.Provider });
         });
 
         modelBuilder.Entity<WarehouseRecord>(b =>

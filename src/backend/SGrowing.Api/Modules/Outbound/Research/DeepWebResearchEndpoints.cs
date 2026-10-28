@@ -66,6 +66,46 @@ public static class DeepWebResearchEndpoints
         .WithName("ListProspectResearchBriefs")
         .WithSummary("List recent prospect intelligence briefs");
 
+        group.MapGet("/crawler-secrets", async (
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IScraperVaultService vault,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var overview = await vault.GetCrawlerSecretsOverviewAsync(effectiveTenantId, ct);
+            return Results.Ok(overview);
+        })
+        .WithName("GetCrawlerSecretsOverview")
+        .WithSummary("Get configured scraper engine credentials status and health");
+
+        group.MapPost("/crawler-secrets", async (
+            [FromBody] SaveCrawlerSecretRequest req,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IScraperVaultService vault,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var result = await vault.SaveCrawlerSecretAsync(effectiveTenantId, req, ct);
+            return Results.Ok(result);
+        })
+        .WithName("SaveCrawlerSecret")
+        .WithSummary("Encrypt and store crawler engine API secret in tenant vault");
+
+        group.MapGet("/crawler-health", async (
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IScraperVaultService vault,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var health = await vault.CheckAllEnginesHealthAsync(effectiveTenantId, ct);
+            return Results.Ok(health);
+        })
+        .WithName("CheckCrawlerHealth")
+        .WithSummary("Execute connectivity health check across web crawler engines");
+
         return app;
     }
 }

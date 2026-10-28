@@ -294,6 +294,7 @@ builder.Services.AddScoped<IWooCommerceConnectorService, WooCommerceConnectorSer
 
 // 29. Strategic Recommendations (Ever-Teams, Open-Mercato, Ever-Demand & Ever-Gauzy)
 builder.Services.AddScoped<IProjectTaskService, ProjectTaskService>();
+builder.Services.AddScoped<IScraperVaultService, ScraperVaultService>();
 builder.Services.AddScoped<IDeepWebResearchService, DeepWebResearchService>();
 builder.Services.AddScoped<IWarehouseRoutingService, WarehouseRoutingService>();
 builder.Services.AddScoped<IOrganizationHierarchyService, OrganizationHierarchyService>();

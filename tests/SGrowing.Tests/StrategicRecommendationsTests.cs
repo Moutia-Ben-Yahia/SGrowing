@@ -700,4 +700,174 @@ public class StrategicRecommendationsTests
         Assert.Equal(-2100m, negResult.TrueGrossMargin);
         Assert.Equal(-105.00m, negResult.GrossMarginPercentage);
     }
+
+    // =========================================================================
+    // Next Recommended Steps: PostGIS Spatial Search, Scraper Vault & Client Portal
+    // =========================================================================
+
+    [Fact]
+    public async Task NextStep1_SpatialWarehouseRadarSearch_ComputesBoundingBoxAndTriangulatesWithinRadius()
+    {
+        using var db = CreateInMemoryDb();
+        var tenantId = Guid.NewGuid();
+        var service = new WarehouseRoutingService(db);
+
+        // Radar center at Tunis Nord (36.8065, 10.1815) with 250 km radius
+        var req = new SpatialWarehouseQueryRequest(
+            Latitude: 36.8065,
+            Longitude: 10.1815,
+            RadiusKm: 250.0,
+            Sku: "SKU-GROW-PRO",
+            MinStockAvailable: 100
+        );
+
+        var result = await service.SpatialSearchAsync(tenantId, req);
+
+        Assert.NotNull(result);
+        Assert.Equal(36.8065, result.OriginLatitude);
+        Assert.Equal(10.1815, result.OriginLongitude);
+        Assert.Equal(250.0, result.SearchRadiusKm);
+        Assert.True(result.SpatialIndexUsed);
+        Assert.Contains("GiST", result.QueryEngine);
+
+        // Bounding box should span ~2.25 degrees latitude (250 / 111)
+        Assert.True(result.BoundingBox.MinLatitude < 36.8065);
+        Assert.True(result.BoundingBox.MaxLatitude > 36.8065);
+        Assert.True(result.BoundingBox.MinLongitude < 10.1815);
+        Assert.True(result.BoundingBox.MaxLongitude > 10.1815);
+
+        // Bounding-box pre-filter prunes distant hubs (Cairo and Casablanca), so only 3 candidate hubs within the bounding box are evaluated
+        Assert.Equal(3, result.TotalHubsEvaluated);
+        Assert.Equal(3, result.HubsWithinRadius);
+
+        // Nearest should be Tunis Nord
+        var closest = result.Warehouses.First();
+        Assert.Equal("WH-TUN-01", closest.Code);
+        Assert.Equal(0.0, closest.DistanceKm);
+        Assert.NotNull(closest.AvailableStockForSku);
+        Assert.True(closest.AvailableStockForSku >= 100);
+
+        // Sousse should be second, Sfax third
+        Assert.Equal("WH-SOU-02", result.Warehouses[1].Code);
+        Assert.True(result.Warehouses[1].DistanceKm > 100 && result.Warehouses[1].DistanceKm < 150);
+        Assert.Equal("SSE", result.Warehouses[1].CompassDirection);
+
+        Assert.Equal("WH-SFX-03", result.Warehouses[2].Code);
+        Assert.True(result.Warehouses[2].DistanceKm > 220 && result.Warehouses[2].DistanceKm < 250);
+
+        // Far away hubs (Cairo ~2100km, Casablanca ~1650km) must NOT be present
+        Assert.DoesNotContain(result.Warehouses, w => w.Code == "WH-CAI-04");
+        Assert.DoesNotContain(result.Warehouses, w => w.Code == "WH-CAS-05");
+    }
+
+    [Fact]
+    public async Task NextStep2_CrawlerSecretVault_EncryptsKeysAndVerifiesHealth()
+    {
+        using var db = CreateInMemoryDb();
+        var tenantId = Guid.NewGuid();
+        var vault = new SGrowing.Api.Modules.Security.TenantSecretsVaultService(db);
+        var scraperVault = new ScraperVaultService(db, vault);
+
+        // Initial overview with zero configured keys
+        var initialOverview = await scraperVault.GetCrawlerSecretsOverviewAsync(tenantId);
+        Assert.Equal(3, initialOverview.Engines.Count);
+        Assert.All(initialOverview.Engines, e =>
+        {
+            Assert.False(e.IsConfigured);
+            Assert.Equal("SimulatedFallback", e.Status);
+        });
+
+        // Store live Tavily key
+        var saveResult = await scraperVault.SaveCrawlerSecretAsync(tenantId, new SaveCrawlerSecretRequest("Tavily", "tvly-secret-key-prod-998877665544"));
+        Assert.True(saveResult.IsConfigured);
+        Assert.Equal("Operational", saveResult.Status);
+        Assert.StartsWith("tvly****...", saveResult.MaskedKey);
+        Assert.EndsWith("5544", saveResult.MaskedKey);
+
+        // Verify decrypted plaintext matches original secret
+        var decrypted = await scraperVault.GetDecryptedCrawlerSecretAsync(tenantId, "Tavily");
+        Assert.Equal("tvly-secret-key-prod-998877665544", decrypted);
+
+        // Verify overview reflects configured engine
+        var updatedOverview = await scraperVault.GetCrawlerSecretsOverviewAsync(tenantId);
+        var tavilyEngine = updatedOverview.Engines.First(e => e.Provider == "Tavily");
+        Assert.True(tavilyEngine.IsConfigured);
+        Assert.Equal("Operational", tavilyEngine.Status);
+        Assert.NotEmpty(tavilyEngine.Capabilities);
+
+        // Research service with scraper vault integration
+        var researchService = new DeepWebResearchService(db, scraperVault);
+        var crawlResult = await researchService.CrawlAndExtractAsync(tenantId, new WebResearchCrawlRequest("hyper-logistics.tn"));
+        Assert.True(crawlResult.Success);
+        Assert.Contains("Live Vault Verified", crawlResult.EngineUsed);
+    }
+
+    [Fact]
+    public async Task NextStep3_ClientPortalTokenAndMilestones_GeneratesViewAndSubmitsSignoff()
+    {
+        using var db = CreateInMemoryDb();
+        var tenantId = Guid.NewGuid();
+        var contactId = Guid.NewGuid();
+
+        // 1. Setup Deal and Project with Milestones
+        var deal = Deal.Create(tenantId, contactId, "Hyper-Logistics Enterprise", 65000m, DealStage.Won);
+        db.Deals.Add(deal);
+        await db.SaveChangesAsync();
+
+        var service = new ProjectTaskService(db);
+        var project = await service.ConvertFromDealAsync(tenantId, deal.Id);
+
+        // 2. Generate Client Portal Token
+        var tokenReq = new GeneratePortalTokenRequest(
+            ClientEmail: "alex@hyper-logistics.tn",
+            ClientOrganization: "Hyper-Logistics S.A. Stakeholders",
+            ValidDays: 45
+        );
+        var tokenResult = await service.GenerateClientPortalTokenAsync(tenantId, project.Id, tokenReq, "https://app.sgrowing.io");
+
+        Assert.NotNull(tokenResult);
+        Assert.StartsWith("spt_", tokenResult.Token);
+        Assert.Contains("https://app.sgrowing.io/portal/onboarding/spt_", tokenResult.ShareableUrl);
+        Assert.True(tokenResult.ExpiresAtUtc > DateTime.UtcNow.AddDays(40));
+
+        // 3. Retrieve Client Portal View via Token (Public External Access)
+        var portalView = await service.GetClientPortalViewAsync(tokenResult.Token);
+        Assert.NotNull(portalView);
+        Assert.Equal(project.Id, portalView.ProjectId);
+        Assert.Equal("Hyper-Logistics S.A. Stakeholders", portalView.ClientOrganizationName);
+        Assert.Equal(5, portalView.Milestones.Count);
+        Assert.True(portalView.OverallProgressPercent >= 0);
+
+        // 4. Submit Client Signoff on a Milestone
+        var targetTask = portalView.Milestones.First();
+        var feedbackReq = new ClientPortalFeedbackRequest(
+            TaskId: targetTask.Id,
+            ClientName: "Alexandre Meyer",
+            ClientEmail: "alex@hyper-logistics.tn",
+            StatusVote: "Approved",
+            FeedbackNotes: "Architecture scope and security boundary verified by committee."
+        );
+        var feedback = await service.SubmitClientPortalFeedbackAsync(tokenResult.Token, feedbackReq);
+
+        Assert.NotNull(feedback);
+        Assert.Equal(targetTask.Id, feedback.TaskId);
+        Assert.Equal("Approved", feedback.StatusVote);
+
+        // Audit comment must have been added to the task
+        var comments = (await service.GetCommentsAsync(tenantId, targetTask.Id)).ToList();
+        var auditComment = comments.FirstOrDefault(c => c.AuthorName.Contains("Alexandre Meyer"));
+        Assert.NotNull(auditComment);
+        Assert.Contains("Approved", auditComment.Content);
+        Assert.Contains("Architecture scope", auditComment.Content);
+
+        // 5. Revoke Token and ensure access is rejected
+        var revoked = await service.RevokeClientPortalTokenAsync(tenantId, tokenResult.Token);
+        Assert.True(revoked);
+
+        var revokedView = await service.GetClientPortalViewAsync(tokenResult.Token);
+        Assert.Null(revokedView);
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            service.SubmitClientPortalFeedbackAsync(tokenResult.Token, feedbackReq));
+    }
 }

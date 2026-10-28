@@ -200,4 +200,108 @@ test.describe('Strategic Recommendations E2E: Ever-Teams, Open-Mercato, Ever-Dem
     await expect(consolidatedMargin).toBeVisible();
     await expect(consolidatedMargin).toContainText('$30,300.00');
   });
+
+  test('Next Step 1: PostGIS Geodetic Bounding-Box Spatial Radar & Warehouse Proximity Triangulation', async ({ page }) => {
+    await page.goto('/commerce/warehouses');
+
+    // 1. Strict LTR check
+    const rootDir = await page.locator('div[dir="ltr"]').first().getAttribute('dir');
+    expect(rootDir).toBe('ltr');
+
+    // 2. Spatial Radar controls
+    const radarBtn = page.locator('[data-testid="spatial-radar-search-btn"]');
+    await expect(radarBtn).toBeVisible();
+    await radarBtn.click();
+
+    // 3. Results Card
+    const resultsCard = page.locator('[data-testid="spatial-results-card"]');
+    await expect(resultsCard).toBeVisible();
+    await expect(resultsCard).toContainText('PostGIS / GiST Geodetic Bounding-Box Scan');
+    await expect(resultsCard).toContainText('Bounding Box:');
+    await expect(resultsCard).toContainText('Tunis Nord Logistics Mega-Hub');
+  });
+
+  test('Next Step 2: Production Scraper API Vault, AES-256-GCM Encryption & Engine Health Check', async ({ page }) => {
+    await page.goto('/outbound/research');
+
+    // 1. Open Scraper Vault Modal
+    const openVaultBtn = page.locator('[data-testid="open-crawler-vault-btn"]');
+    await expect(openVaultBtn).toBeVisible();
+    await openVaultBtn.click();
+
+    // 2. Engine health cards
+    const healthCards = page.locator('[data-testid="engine-health-card"]');
+    await expect(healthCards.first()).toBeVisible();
+    expect(await healthCards.count()).toBe(3);
+
+    // 3. Ping health check
+    const testHealthBtn = page.locator('[data-testid="test-crawler-health-btn"]');
+    await testHealthBtn.click();
+    await expect(page.locator('text=health check completed').first()).toBeVisible();
+
+    // 4. Encrypt and save secret key
+    const secretInput = page.locator('input[type="password"]');
+    await secretInput.fill('exa-secret-key-prod-99887766');
+
+    const saveSecretBtn = page.locator('[data-testid="save-crawler-secret-btn"]');
+    await saveSecretBtn.click();
+    await expect(page.locator('text=encrypted and stored in tenant vault').first()).toBeVisible();
+  });
+
+  test('Next Step 3: Secure External Client Onboarding Portal, Token Generation & Milestone Signoff', async ({ page }) => {
+    // 1. Project Board: Generate Client Portal Link
+    await page.goto('/projects/tasks');
+
+    const shareBtn = page.locator('[data-testid="share-portal-token-btn"]');
+    await expect(shareBtn).toBeVisible();
+    await shareBtn.click();
+
+    const generateBtn = page.locator('[data-testid="generate-portal-link-submit"]');
+    await expect(generateBtn).toBeVisible();
+    await generateBtn.click();
+
+    const shareableInput = page.locator('[data-testid="portal-shareable-url"]');
+    await expect(shareableInput).toBeVisible();
+    const portalUrl = await shareableInput.inputValue();
+    expect(portalUrl).toContain('/portal/onboarding/spt_');
+
+    // 2. External Stakeholder Visits Tokenized Portal Page (Public, no auth redirect)
+    await page.goto(portalUrl);
+
+    // Strict LTR check
+    const rootDir = await page.locator('div[dir="ltr"]').first().getAttribute('dir');
+    expect(rootDir).toBe('ltr');
+
+    // Verify Header and Summary
+    const portalHeader = page.locator('[data-testid="client-portal-header"]');
+    await expect(portalHeader).toBeVisible();
+    await expect(portalHeader).toContainText('SGrowing Client Success Portal');
+
+    // Verify Milestones
+    const milestoneCards = page.locator('[data-testid="milestone-card"]');
+    await expect(milestoneCards.first()).toBeVisible();
+    expect(await milestoneCards.count()).toBe(5);
+
+    // 3. Submit Formal Milestone Review & Signoff
+    const nameInput = page.locator('[data-testid="client-name-input"]');
+    await nameInput.fill('Sarah Jenkins (Director of Ops)');
+
+    const emailInput = page.locator('[data-testid="client-email-input"]');
+    await emailInput.fill('s.jenkins@hyper-logistics.tn');
+
+    const voteSelect = page.locator('[data-testid="client-status-vote"]');
+    await voteSelect.selectOption('Approved');
+
+    const notesInput = page.locator('[data-testid="client-feedback-notes"]');
+    await notesInput.fill('Verified staging cluster and customer migration pipeline.');
+
+    const submitSignoffBtn = page.locator('[data-testid="submit-client-feedback-btn"]');
+    await submitSignoffBtn.click();
+
+    // Verify confirmation and approved tag
+    const successToast = page.locator('[data-testid="client-feedback-success"]');
+    await expect(successToast).toBeVisible();
+    await expect(successToast).toContainText('milestone feedback successfully recorded');
+    await expect(page.locator('text=Client Approved').first()).toBeVisible();
+  });
 });

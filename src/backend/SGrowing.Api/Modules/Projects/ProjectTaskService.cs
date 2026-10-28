@@ -312,6 +312,203 @@ public class ProjectTaskService : IProjectTaskService
             .ToListAsync(ct);
     }
 
+    public async Task<ClientPortalTokenResult> GenerateClientPortalTokenAsync(
+        Guid tenantId,
+        Guid projectId,
+        GeneratePortalTokenRequest req,
+        string baseUrl,
+        CancellationToken ct = default)
+    {
+        var project = await _db.Projects.FirstOrDefaultAsync(p => p.Id == projectId && p.TenantId == tenantId, ct);
+        if (project == null)
+        {
+            throw new KeyNotFoundException($"Project {projectId} not found for tenant {tenantId}");
+        }
+
+        var randomBytes = new byte[24];
+        System.Security.Cryptography.RandomNumberGenerator.Fill(randomBytes);
+        var token = "spt_" + Convert.ToBase64String(randomBytes)
+            .Replace("+", "-")
+            .Replace("/", "_")
+            .TrimEnd('=');
+
+        var days = Math.Clamp(req.ValidDays <= 0 ? 30 : req.ValidDays, 1, 365);
+        var clientOrg = string.IsNullOrWhiteSpace(req.ClientOrganization)
+            ? (!string.IsNullOrWhiteSpace(project.Name) ? $"{project.Name} Stakeholders" : "Client Organization")
+            : req.ClientOrganization.Trim();
+
+        var tokenRecord = new ClientPortalTokenRecord
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            ProjectId = projectId,
+            Token = token,
+            ClientContactEmail = req.ClientEmail?.Trim() ?? string.Empty,
+            ClientOrganizationName = clientOrg,
+            ExpiresAtUtc = DateTime.UtcNow.AddDays(days),
+            CreatedAtUtc = DateTime.UtcNow,
+            IsRevoked = false
+        };
+
+        _db.ClientPortalTokens.Add(tokenRecord);
+        await _db.SaveChangesAsync(ct);
+
+        var cleanBase = string.IsNullOrWhiteSpace(baseUrl) ? "/portal/onboarding" : $"{baseUrl.TrimEnd('/')}/portal/onboarding";
+        var shareableUrl = $"{cleanBase}/{token}";
+
+        return new ClientPortalTokenResult(
+            Token: token,
+            ShareableUrl: shareableUrl,
+            ExpiresAtUtc: tokenRecord.ExpiresAtUtc,
+            ClientOrganizationName: clientOrg
+        );
+    }
+
+    public async Task<ClientPortalView?> GetClientPortalViewAsync(string token, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(token)) return null;
+
+        var tokenRecord = await _db.ClientPortalTokens
+            .FirstOrDefaultAsync(t => t.Token == token && !t.IsRevoked, ct);
+
+        if (tokenRecord == null || tokenRecord.ExpiresAtUtc < DateTime.UtcNow)
+        {
+            return null;
+        }
+
+        var project = await _db.Projects
+            .FirstOrDefaultAsync(p => p.Id == tokenRecord.ProjectId && p.TenantId == tokenRecord.TenantId, ct);
+
+        if (project == null) return null;
+
+        var tasks = await _db.TaskItems
+            .Where(t => t.ProjectId == project.Id && t.TenantId == project.TenantId)
+            .OrderBy(t => t.Position)
+            .ToListAsync(ct);
+
+        var taskIds = tasks.Select(t => t.Id).ToList();
+        var feedbacks = await _db.ClientPortalFeedbacks
+            .Where(f => f.ProjectId == project.Id && f.TenantId == project.TenantId)
+            .OrderByDescending(f => f.SubmittedAtUtc)
+            .ToListAsync(ct);
+
+        var comments = await _db.TaskComments
+            .Where(c => c.TenantId == project.TenantId && taskIds.Contains(c.TaskId))
+            .OrderByDescending(c => c.CreatedAtUtc)
+            .Take(15)
+            .ToListAsync(ct);
+
+        int totalTasks = tasks.Count;
+        int completedTasks = tasks.Count(t => string.Equals(t.Status, "Done", StringComparison.OrdinalIgnoreCase));
+        int overallProgress = totalTasks > 0 ? (int)Math.Round((double)completedTasks / totalTasks * 100.0) : 0;
+
+        var milestoneViews = tasks.Select(t =>
+        {
+            var latestVote = feedbacks.FirstOrDefault(f => f.TaskId == t.Id)?.StatusVote;
+            int progress = t.SubtasksTotal > 0
+                ? (int)Math.Round((double)t.SubtasksCompleted / t.SubtasksTotal * 100.0)
+                : (string.Equals(t.Status, "Done", StringComparison.OrdinalIgnoreCase) ? 100 : 0);
+
+            return new ClientPortalTaskView(
+                Id: t.Id,
+                Title: t.Title,
+                Description: t.Description,
+                Status: t.Status,
+                Priority: t.Priority,
+                SubtasksCompleted: t.SubtasksCompleted,
+                SubtasksTotal: t.SubtasksTotal,
+                ProgressPercent: progress,
+                DueDateUtc: t.DueDateUtc,
+                LatestClientVote: latestVote
+            );
+        }).ToList();
+
+        return new ClientPortalView(
+            ProjectId: project.Id,
+            ProjectName: project.Name,
+            ProjectDescription: project.Description,
+            ClientOrganizationName: tokenRecord.ClientOrganizationName,
+            OverallProgressPercent: overallProgress,
+            CompletedMilestones: completedTasks,
+            TotalMilestones: totalTasks,
+            TargetLaunchDateUtc: project.TargetLaunchDateUtc,
+            TokenExpiresAtUtc: tokenRecord.ExpiresAtUtc,
+            Milestones: milestoneViews,
+            RecentUpdates: comments
+        );
+    }
+
+    public async Task<ClientPortalFeedbackRecord> SubmitClientPortalFeedbackAsync(
+        string token,
+        ClientPortalFeedbackRequest req,
+        CancellationToken ct = default)
+    {
+        var tokenRecord = await _db.ClientPortalTokens
+            .FirstOrDefaultAsync(t => t.Token == token && !t.IsRevoked, ct);
+
+        if (tokenRecord == null || tokenRecord.ExpiresAtUtc < DateTime.UtcNow)
+        {
+            throw new KeyNotFoundException("Client portal token is invalid or has expired.");
+        }
+
+        var task = await _db.TaskItems
+            .FirstOrDefaultAsync(t => t.Id == req.TaskId && t.ProjectId == tokenRecord.ProjectId && t.TenantId == tokenRecord.TenantId, ct);
+
+        if (task == null)
+        {
+            throw new KeyNotFoundException($"Milestone task {req.TaskId} does not exist in this project.");
+        }
+
+        var feedback = new ClientPortalFeedbackRecord
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tokenRecord.TenantId,
+            ProjectId = tokenRecord.ProjectId,
+            TaskId = req.TaskId,
+            ClientName = req.ClientName.Trim(),
+            ClientEmail = req.ClientEmail.Trim(),
+            StatusVote = string.IsNullOrWhiteSpace(req.StatusVote) ? "Approved" : req.StatusVote.Trim(),
+            FeedbackNotes = req.FeedbackNotes.Trim(),
+            SubmittedAtUtc = DateTime.UtcNow
+        };
+
+        _db.ClientPortalFeedbacks.Add(feedback);
+
+        // Add corresponding audit comment to task thread
+        var auditComment = new TaskCommentRecord
+        {
+            Id = Guid.NewGuid(),
+            TaskId = task.Id,
+            TenantId = tokenRecord.TenantId,
+            AuthorName = $"[Client Signoff] {feedback.ClientName}",
+            Content = $"Client Review: {feedback.StatusVote}. Note: {feedback.FeedbackNotes}",
+            CreatedAtUtc = DateTime.UtcNow
+        };
+        _db.TaskComments.Add(auditComment);
+
+        if (string.Equals(feedback.StatusVote, "Approved", StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(task.Status, "InReview", StringComparison.OrdinalIgnoreCase))
+        {
+            task.Status = "Done";
+            task.SubtasksCompleted = task.SubtasksTotal;
+        }
+
+        await _db.SaveChangesAsync(ct);
+        return feedback;
+    }
+
+    public async Task<bool> RevokeClientPortalTokenAsync(Guid tenantId, string token, CancellationToken ct = default)
+    {
+        var tokenRecord = await _db.ClientPortalTokens
+            .FirstOrDefaultAsync(t => t.Token == token && t.TenantId == tenantId, ct);
+
+        if (tokenRecord == null) return false;
+
+        tokenRecord.IsRevoked = true;
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
+
     private static string GenerateAvatar(string? name)
     {
         if (string.IsNullOrWhiteSpace(name)) return "OP";
