@@ -214,6 +214,12 @@ export interface DispatchedLog {
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 Dispatch via Go Gateway
               </button>
+
+              <div class="pt-2 border-t border-slate-800 flex gap-2">
+                <button (click)="openInteractiveModal.set(true)" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 rounded-lg text-xs font-semibold transition border border-cyan-500/20 flex items-center justify-center gap-1.5">
+                  <span>📱</span> Compose 1-Tap Quick-Reply Buttons
+                </button>
+              </div>
             </div>
 
             <!-- Live Stream Dispatch Log -->
@@ -242,6 +248,71 @@ export interface DispatchedLog {
           </div>
         </div>
       </main>
+
+      <!-- Interactive Buttons Modal -->
+      @if (openInteractiveModal()) {
+        <div class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+              <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <span>📱</span> WhatsApp Interactive Buttons Composer
+              </h3>
+              <button (click)="openInteractiveModal.set(false)" class="text-slate-400 hover:text-white">✕</button>
+            </div>
+
+            <div class="space-y-3 text-xs">
+              <div>
+                <label class="block text-slate-400 mb-1">Recipient Phone Number</label>
+                <input [(ngModel)]="interactiveRecipient" type="text" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono" placeholder="+216 98 123 456">
+              </div>
+
+              <div>
+                <label class="block text-slate-400 mb-1">Message Body</label>
+                <textarea [(ngModel)]="interactiveBody" rows="2" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white" placeholder="Hi! Your order is ready. Would you like tracking updates?"></textarea>
+              </div>
+
+              <div class="grid grid-cols-3 gap-2">
+                <div>
+                  <label class="block text-slate-400 mb-1">Button 1</label>
+                  <input [(ngModel)]="button1" type="text" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-white" placeholder="Confirm">
+                </div>
+                <div>
+                  <label class="block text-slate-400 mb-1">Button 2</label>
+                  <input [(ngModel)]="button2" type="text" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-white" placeholder="Reschedule">
+                </div>
+                <div>
+                  <label class="block text-slate-400 mb-1">Button 3</label>
+                  <input [(ngModel)]="button3" type="text" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-white" placeholder="Support">
+                </div>
+              </div>
+
+              <!-- Interactive Handset Preview -->
+              <div class="p-4 bg-emerald-950/30 border border-emerald-500/20 rounded-xl space-y-2">
+                <div class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Mobile Handset Preview</div>
+                <div class="p-3 bg-emerald-900/40 rounded-lg text-slate-100 text-xs">
+                  {{ interactiveBody }}
+                </div>
+                <div class="grid grid-cols-3 gap-2 pt-1">
+                  <div class="p-2 bg-slate-900 border border-emerald-500/30 text-emerald-300 text-center rounded font-medium text-[11px] shadow">
+                    {{ button1 }}
+                  </div>
+                  <div class="p-2 bg-slate-900 border border-emerald-500/30 text-emerald-300 text-center rounded font-medium text-[11px] shadow">
+                    {{ button2 }}
+                  </div>
+                  <div class="p-2 bg-slate-900 border border-emerald-500/30 text-emerald-300 text-center rounded font-medium text-[11px] shadow">
+                    {{ button3 }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
+              <button (click)="openInteractiveModal.set(false)" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-xs hover:bg-slate-700">Cancel</button>
+              <button (click)="dispatchInteractiveTest()" class="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg text-xs font-bold hover:from-emerald-500 hover:to-teal-500">Dispatch Interactive</button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   `
 })
@@ -250,6 +321,7 @@ export class WhatsAppGatewayCockpitComponent {
 
   openNewInstanceModal = signal<boolean>(false);
   showPairingModal = signal<boolean>(false);
+  openInteractiveModal = signal<boolean>(false);
   selectedInstance = signal<WhatsAppInstance | null>(null);
   activePairTab = signal<'code' | 'qr'>('code');
 
@@ -258,6 +330,12 @@ export class WhatsAppGatewayCockpitComponent {
 
   dispatchRecipient = '+216 98 444 888';
   dispatchBody = 'Your wholesale stock transfer TRF-20261028-A01 is dispatched from Tunis Central Hub.';
+
+  interactiveRecipient = '+216 98 444 888';
+  interactiveBody = 'Your order is out for delivery with our courier driver. Please confirm your presence:';
+  button1 = 'Confirm Delivery';
+  button2 = 'Change Address';
+  button3 = 'Contact Driver';
 
   instances = signal<WhatsAppInstance[]>([
     {
@@ -368,5 +446,28 @@ export class WhatsAppGatewayCockpitComponent {
       }
       return list;
     });
+  }
+
+  dispatchInteractiveTest() {
+    const lat = Math.floor(6 + Math.random() * 12);
+    const content = `[Interactive Buttons: "${this.button1}", "${this.button2}", "${this.button3}"] ${this.interactiveBody}`;
+    const newLog: DispatchedLog = {
+      id: 'log-' + Math.random().toString(36).substring(2, 6),
+      recipient: this.interactiveRecipient,
+      content: content,
+      status: 'Dispatched',
+      latencyMs: lat,
+      broker: 'Whatsmeow Binary Codec + RabbitMQ',
+      timestamp: new Date().toTimeString().split(' ')[0]
+    };
+
+    this.dispatchLogs.update(logs => [newLog, ...logs]);
+    this.instances.update(list => {
+      if (list.length > 0 && list[0].status === 'Connected') {
+        return [{ ...list[0], messagesSent: list[0].messagesSent + 1 }, ...list.slice(1)];
+      }
+      return list;
+    });
+    this.openInteractiveModal.set(false);
   }
 }

@@ -143,3 +143,13 @@ public record ClientPortalFeedbackRequest(
     string StatusVote,
     string FeedbackNotes);
 
+public record CompleteMilestoneRequest(
+    bool TriggerInvoice = true,
+    decimal? MilestoneAmount = null,
+    string Currency = "USD");
+
+public record CompleteMilestoneResult(
+    TaskItemRecord Task,
+    InvoiceRecord? Invoice,
+    string Message);
+

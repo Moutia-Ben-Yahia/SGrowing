@@ -423,6 +423,27 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
           </div>
 
           <div class="flex items-center gap-3">
+            <!-- Connection State Pill & Offline Buffer Badge -->
+            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono border"
+                 [ngClass]="{
+                   'bg-emerald-950/60 text-emerald-400 border-emerald-800/60': signalR.connectionState() === 'Connected',
+                   'bg-amber-950/60 text-amber-300 border-amber-800/60 animate-pulse': signalR.connectionState() === 'Reconnecting',
+                   'bg-rose-950/60 text-rose-300 border-rose-800/60': signalR.connectionState() === 'Disconnected'
+                 }">
+              <span class="w-2 h-2 rounded-full"
+                    [ngClass]="{
+                      'bg-emerald-400': signalR.connectionState() === 'Connected',
+                      'bg-amber-400': signalR.connectionState() === 'Reconnecting',
+                      'bg-rose-400': signalR.connectionState() === 'Disconnected'
+                    }"></span>
+              <span>{{ signalR.connectionState() }}</span>
+              @if (signalR.offlineQueue().length > 0) {
+                <span class="ml-1 px-1.5 py-0.2 bg-amber-500/20 text-amber-300 rounded text-[10px]">
+                  {{ signalR.offlineQueue().length }} queued
+                </span>
+              }
+            </div>
+
             <app-language-switcher></app-language-switcher>
             <button
               (click)="resolveCurrentConversation()"
@@ -441,7 +462,8 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
               [class.items-end]="msg.senderType === 2 || msg.senderType === 3">
               <div
                 class="rounded-2xl px-4 py-2.5 text-sm shadow-sm"
-                [class.bg-indigo-600]="msg.senderType === 2"
+                [class.bg-indigo-600]="msg.senderType === 2 && !msg.isOptimistic"
+                [class.bg-indigo-600/75]="msg.senderType === 2 && msg.isOptimistic"
                 [class.text-white]="msg.senderType === 2"
                 [class.bg-slate-800]="msg.senderType === 1"
                 [class.text-slate-100]="msg.senderType === 1"
@@ -451,8 +473,13 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 [class.text-cyan-100]="msg.senderType === 3">
                 {{ msg.content }}
               </div>
-              <span class="text-[10px] text-slate-500 mt-1 px-1">
+              <span class="text-[10px] text-slate-500 mt-1 px-1 flex items-center gap-1.5">
                 {{ msg.senderType === 1 ? 'Customer' : msg.senderType === 2 ? 'Agent' : '🤖 AI Agent' }} • {{ msg.createdAtUtc | date:'shortTime' }}
+                @if (msg.isOptimistic) {
+                  <span class="text-amber-400 font-mono text-[9px] flex items-center gap-0.5">
+                    <span>⏳</span> In Flight (Offline Queue)
+                  </span>
+                }
               </span>
             </div>
           }
@@ -663,6 +690,13 @@ export class InboxShellComponent implements OnInit {
         this.lockedByAgent.set(null);
       }
     });
+
+    // 6. Subscribe to flushed offline messages
+    this.signalR.offlineMessageFlushed$.subscribe((flushed) => {
+      this.activeMessages.update(list =>
+        list.map(m => m.clientUuid === flushed.clientUuid ? { ...m, isOptimistic: false, deliveryStatus: 2 } : m)
+      );
+    });
   }
 
   private seedDemoData(): void {
@@ -733,18 +767,40 @@ export class InboxShellComponent implements OnInit {
   public sendMessage(): void {
     if (!this.composerText.trim() || !this.activeConversation()) return;
 
+    const text = this.composerText;
+    const convId = this.activeConversation()!.id;
+    const clientUuid = 'cli-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7);
+    const isConnected = this.signalR.isConnected();
+
     const newMsg: MessageDto = {
-      id: 'msg-' + Date.now(),
-      conversationId: this.activeConversation()!.id,
+      id: clientUuid,
+      conversationId: convId,
       senderType: 2, // Agent
       contentType: 1,
-      content: this.composerText,
-      deliveryStatus: 2,
-      createdAtUtc: new Date().toISOString()
+      content: text,
+      deliveryStatus: isConnected ? 2 : 1,
+      createdAtUtc: new Date().toISOString(),
+      isOptimistic: !isConnected,
+      clientUuid: clientUuid
     };
 
     this.activeMessages.update(list => [...list, newMsg]);
     this.composerText = '';
+
+    if (!isConnected) {
+      this.signalR.enqueueOfflineMessage({
+        clientUuid: clientUuid,
+        conversationId: convId,
+        content: text,
+        queuedAt: new Date().toISOString()
+      });
+    } else {
+      setTimeout(() => {
+        this.activeMessages.update(list =>
+          list.map(m => m.clientUuid === clientUuid ? { ...m, isOptimistic: false, deliveryStatus: 2 } : m)
+        );
+      }, 300);
+    }
   }
 
   public insertBookingLink(): void {

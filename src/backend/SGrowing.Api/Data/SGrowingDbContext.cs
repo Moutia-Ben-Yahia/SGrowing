@@ -323,6 +323,8 @@ public class SGrowingDbContext : DbContext
     public DbSet<InvoiceLineItemRecord> InvoiceLineItems => Set<InvoiceLineItemRecord>();
     public DbSet<PaymentRecord> Payments => Set<PaymentRecord>();
     public DbSet<CurrencyRateRecord> CurrencyRates => Set<CurrencyRateRecord>();
+    public DbSet<CustomFieldDefinition> CustomFieldDefinitions => Set<CustomFieldDefinition>();
+    public DbSet<CustomFieldValueRecord> CustomFieldValues => Set<CustomFieldValueRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -35,6 +35,8 @@ export interface MessageDto {
   mediaUrl?: string;
   deliveryStatus: number;
   createdAtUtc: string;
+  isOptimistic?: boolean;
+  clientUuid?: string;
 }
 
 export interface AiDraftDto {

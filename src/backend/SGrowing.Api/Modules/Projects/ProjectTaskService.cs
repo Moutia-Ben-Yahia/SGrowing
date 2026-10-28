@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SGrowing.Api.Data;
+using SGrowing.Api.Modules.Billing.Invoicing;
 using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.Projects;
@@ -7,10 +8,12 @@ namespace SGrowing.Api.Modules.Projects;
 public class ProjectTaskService : IProjectTaskService
 {
     private readonly SGrowingDbContext _db;
+    private readonly IInvoiceService _invoiceService;
 
-    public ProjectTaskService(SGrowingDbContext db)
+    public ProjectTaskService(SGrowingDbContext db, IInvoiceService? invoiceService = null)
     {
         _db = db;
+        _invoiceService = invoiceService ?? new InvoiceService(db);
     }
 
     public async Task<ProjectRecord> ConvertFromDealAsync(Guid tenantId, Guid dealId, CancellationToken ct = default)
@@ -507,6 +510,54 @@ public class ProjectTaskService : IProjectTaskService
         tokenRecord.IsRevoked = true;
         await _db.SaveChangesAsync(ct);
         return true;
+    }
+
+    public async Task<CompleteMilestoneResult?> CompleteMilestoneWithBillingAsync(Guid tenantId, Guid taskId, CompleteMilestoneRequest req, CancellationToken ct = default)
+    {
+        var task = await _db.TaskItems.FirstOrDefaultAsync(t => t.TenantId == tenantId && t.Id == taskId, ct);
+        if (task == null) return null;
+
+        task.Status = "Done";
+        task.SubtasksCompleted = task.SubtasksTotal > 0 ? task.SubtasksTotal : 1;
+        if (task.SubtasksTotal == 0) task.SubtasksTotal = 1;
+        await _db.SaveChangesAsync(ct);
+
+        InvoiceRecord? invoice = null;
+        if (req.TriggerInvoice)
+        {
+            var project = await _db.Projects.FirstOrDefaultAsync(p => p.TenantId == tenantId && p.Id == task.ProjectId, ct);
+            var clientName = project?.Name ?? "Client Enterprise Partner";
+            var milestoneAmount = req.MilestoneAmount ?? 1500.00m;
+            var currency = string.IsNullOrWhiteSpace(req.Currency) ? "USD" : req.Currency.ToUpperInvariant();
+
+            var createInvoiceReq = new CreateInvoiceRequest(
+                ClientName: clientName,
+                ClientEmail: "billing@" + (project != null ? project.Name.Replace(" ", "").ToLowerInvariant() : "enterprise") + ".com",
+                Currency: currency,
+                TaxPercentage: 19.0m,
+                DealId: project?.DealId,
+                DueDateUtc: DateTime.UtcNow.AddDays(15),
+                Notes: $"Milestone sprint sign-off: '{task.Title}' on project '{project?.Name ?? "General"}'. Automated B2B Billing (Ever-Gauzy/Ever-Teams).",
+                LineItems: new List<CreateInvoiceLineItemRequest>
+                {
+                    new(
+                        Description: $"Milestone Deliverable Sign-Off: {task.Title}",
+                        Quantity: 1,
+                        UnitPrice: milestoneAmount
+                    )
+                }
+            );
+
+            invoice = await _invoiceService.CreateInvoiceAsync(tenantId, createInvoiceReq, ct);
+        }
+
+        return new CompleteMilestoneResult(
+            Task: task,
+            Invoice: invoice,
+            Message: invoice != null
+                ? $"Milestone '{task.Title}' signed off. Triggered Invoice {invoice.InvoiceNumber} for {invoice.TotalAmount} {invoice.Currency} (19% VAT inclusive)."
+                : $"Milestone '{task.Title}' signed off without invoicing."
+        );
     }
 
     private static string GenerateAvatar(string? name)

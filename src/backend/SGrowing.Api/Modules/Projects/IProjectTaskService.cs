@@ -17,4 +17,5 @@ public interface IProjectTaskService
     Task<ClientPortalView?> GetClientPortalViewAsync(string token, CancellationToken ct = default);
     Task<ClientPortalFeedbackRecord> SubmitClientPortalFeedbackAsync(string token, ClientPortalFeedbackRequest req, CancellationToken ct = default);
     Task<bool> RevokeClientPortalTokenAsync(Guid tenantId, string token, CancellationToken ct = default);
+    Task<CompleteMilestoneResult?> CompleteMilestoneWithBillingAsync(Guid tenantId, Guid taskId, CompleteMilestoneRequest req, CancellationToken ct = default);
 }

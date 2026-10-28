@@ -119,6 +119,21 @@ public static class ProjectTaskEndpoints
         .WithName("UpdateProjectTask")
         .WithSummary("Update task status, priority, position, or subtask progress");
 
+        group.MapPost("/tasks/{taskId:guid}/complete-milestone", async (
+            Guid taskId,
+            [FromBody] CompleteMilestoneRequest req,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IProjectTaskService service,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var result = await service.CompleteMilestoneWithBillingAsync(effectiveTenantId, taskId, req, ct);
+            return result != null ? Results.Ok(result) : Results.NotFound(new { error = "Task not found" });
+        })
+        .WithName("CompleteMilestoneWithBilling")
+        .WithSummary("Mark milestone task done and autonomously generate milestone B2B invoice with 19% VAT");
+
         group.MapPost("/tasks/{taskId:guid}/comments", async (
             Guid taskId,
             [FromBody] AddCommentRequest req,

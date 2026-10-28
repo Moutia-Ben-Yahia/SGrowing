@@ -37,6 +37,7 @@ using SGrowing.Api.Modules.Conversations.Macros;
 using SGrowing.Api.Modules.Conversations.Sla;
 using SGrowing.Api.Modules.CRM.Import;
 using SGrowing.Api.Modules.CRM.ContractSigning;
+using SGrowing.Api.Modules.CRM.CustomFields;
 using SGrowing.Api.Modules.Commerce.Shipping;
 using SGrowing.Api.Modules.Commerce.AntiFraud;
 using SGrowing.Api.Modules.Commerce.Connectors;
@@ -318,6 +319,8 @@ builder.Services.AddScoped<IInboundMessageRouterService, InboundMessageRouterSer
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IGitHubAutomationService, GitHubAutomationService>();
 builder.Services.AddSingleton<ITokenRevocationService, TokenRevocationService>();
+builder.Services.AddScoped<ICustomFieldService, CustomFieldService>();
+builder.Services.AddScoped<IWorkflowGraphExecutorService, WorkflowGraphExecutorService>();
 builder.Services.AddHttpClient("WebScraperClient", client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
@@ -454,6 +457,8 @@ app.MapAgentPersonaEndpoints();
 app.MapMediaVaultEndpoints();
 app.MapInvoiceEndpoints();
 app.MapConversationCopilotEndpoints();
+app.MapCustomFieldEndpoints();
+app.MapWorkflowGraphEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", framework = ".NET 10", timestamp = DateTime.UtcNow }));
 app.MapGet("/healthz/live", () => Results.Ok(new { status = "Healthy", timestampUtc = DateTime.UtcNow }));

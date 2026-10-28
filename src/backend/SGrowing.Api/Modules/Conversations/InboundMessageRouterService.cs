@@ -16,7 +16,8 @@ public record InboundMessagePayload(
     string ChannelType = "WhatsApp",
     string? ExternalMessageId = null,
     string? MediaUrl = null,
-    string? InstanceName = null
+    string? InstanceName = null,
+    WhatsAppInteractiveCallbackPayload? InteractiveCallback = null
 );
 
 public record InboundRoutingResult(
@@ -116,11 +117,15 @@ public class InboundMessageRouterService : IInboundMessageRouterService
 
         // 4. Create Inbound Message Record
         var contentType = !string.IsNullOrWhiteSpace(payload.MediaUrl) ? MessageContentType.Image : MessageContentType.Text;
+        var finalContent = payload.InteractiveCallback != null
+            ? $"[Selected: {payload.InteractiveCallback.ButtonText ?? payload.InteractiveCallback.ButtonId}] {payload.Content}".Trim()
+            : payload.Content;
+
         var message = Message.Create(
             tenantId: payload.TenantId,
             conversationId: conversation.Id,
             senderType: MessageSenderType.Contact,
-            content: payload.Content,
+            content: finalContent,
             contentType: contentType,
             mediaUrl: payload.MediaUrl,
             externalMessageId: payload.ExternalMessageId ?? $"wa-inbound-{Guid.NewGuid():N}",

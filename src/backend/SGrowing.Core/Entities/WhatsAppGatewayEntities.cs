@@ -50,3 +50,37 @@ public record WhatsAppMessageDispatchResult(
     string BrokerFanout, // "NATS + RabbitMQ + WebSocket"
     int LatencyMs,
     DateTime DispatchedAtUtc);
+
+public record WhatsAppButton(
+    string ButtonId,
+    string ButtonText);
+
+public record SendInteractiveButtonsRequest(
+    string RecipientPhoneNumber,
+    string Title,
+    string Body,
+    string? Footer = null,
+    List<WhatsAppButton>? Buttons = null);
+
+public record WhatsAppListRow(
+    string RowId,
+    string Title,
+    string? Description = null);
+
+public record WhatsAppListSection(
+    string SectionTitle,
+    List<WhatsAppListRow> Rows);
+
+public record SendInteractiveListRequest(
+    string RecipientPhoneNumber,
+    string Title,
+    string Body,
+    string ButtonText,
+    string? Footer = null,
+    List<WhatsAppListSection>? Sections = null);
+
+public record WhatsAppInteractiveCallbackPayload(
+    string ButtonId,
+    string? SelectedRowId = null,
+    string? ButtonText = null,
+    string? ContextMessageId = null);

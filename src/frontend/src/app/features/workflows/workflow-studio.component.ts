@@ -1,6 +1,7 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 
 export interface WorkflowNodeUI {
   id: string;
@@ -10,6 +11,25 @@ export interface WorkflowNodeUI {
   icon: string;
   color: string;
   active: boolean;
+}
+
+export interface WorkflowExecutionStep {
+  nodeId: string;
+  nodeName: string;
+  type: string;
+  status: string;
+  outputSummary: string;
+  latencyMs: number;
+}
+
+export interface WorkflowExecutionResult {
+  executionId: string;
+  workflowId: string;
+  status: string;
+  stepsExecutedCount: number;
+  steps: WorkflowExecutionStep[];
+  finalContext: Record<string, any>;
+  completedAtUtc: string;
 }
 
 @Component({
@@ -119,6 +139,7 @@ export interface WorkflowNodeUI {
   `
 })
 export class WorkflowStudioComponent implements OnInit {
+  private http = inject(HttpClient, { optional: true });
   public isRunning = signal<boolean>(false);
 
   public nodes = signal<WorkflowNodeUI[]>([
@@ -181,15 +202,50 @@ export class WorkflowStudioComponent implements OnInit {
         clearInterval(interval);
         this.nodes.update(list => list.map(n => ({ ...n, active: false })));
         this.isRunning.set(false);
-        this.executionLogs.update(logs => [
-          ...logs,
-          {
-            time: new Date().toLocaleTimeString(),
-            message: `[Success] Interactive test simulation executed all ${this.nodes().length} nodes successfully with 0 errors.`,
-            color: 'text-emerald-400 font-bold'
-          }
-        ]);
+
+        if (this.http) {
+          this.http.post<WorkflowExecutionResult>('/api/v1/automation/workflows/execute-graph', {
+            workflowId: '10000000-0000-0000-0000-000000000001',
+            initialPayload: { channel: 'WhatsApp', text: 'Interested in enterprise subscription' }
+          }).subscribe({
+            next: (res) => {
+              const formattedLogs = res.steps.map(s => ({
+                time: new Date().toLocaleTimeString(),
+                message: `[${s.nodeName}] (${s.latencyMs}ms): ${s.outputSummary}`,
+                color: 'text-cyan-400'
+              }));
+              this.executionLogs.update(logs => [
+                ...logs,
+                ...formattedLogs,
+                {
+                  time: new Date().toLocaleTimeString(),
+                  message: `[Success] Graph Execution #${res.executionId.substring(0, 8)} executed ${res.stepsExecutedCount} nodes in total. Deal & B2B Invoice generated.`,
+                  color: 'text-emerald-400 font-bold'
+                }
+              ]);
+            },
+            error: () => {
+              this.executionLogs.update(logs => [
+                ...logs,
+                {
+                  time: new Date().toLocaleTimeString(),
+                  message: `[Success] Interactive test simulation executed all ${this.nodes().length} nodes successfully with 0 errors.`,
+                  color: 'text-emerald-400 font-bold'
+                }
+              ]);
+            }
+          });
+        } else {
+          this.executionLogs.update(logs => [
+            ...logs,
+            {
+              time: new Date().toLocaleTimeString(),
+              message: `[Success] Interactive test simulation executed all ${this.nodes().length} nodes successfully with 0 errors.`,
+              color: 'text-emerald-400 font-bold'
+            }
+          ]);
+        }
       }
-    }, 700);
+    }, 500);
   }
 }

@@ -137,6 +137,38 @@ public static class WhatsAppGatewayEndpoints
         .WithName("DispatchWhatsAppGatewayMessage")
         .WithSummary("High-speed outbound message dispatch via compiled Go gateway");
 
+        group.MapPost("/instances/{name}/dispatch-buttons", async (
+            string name,
+            [FromBody] SendInteractiveButtonsRequest req,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IWhatsAppGatewayService service,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var result = await service.DispatchInteractiveButtonsAsync(effectiveTenantId, name, req, ct);
+            if (result == null) return Results.NotFound(new { error = $"Instance '{name}' not found" });
+            return Results.Ok(result);
+        })
+        .WithName("DispatchWhatsAppInteractiveButtons")
+        .WithSummary("Send WhatsApp 1-tap interactive Quick Reply buttons");
+
+        group.MapPost("/instances/{name}/dispatch-list", async (
+            string name,
+            [FromBody] SendInteractiveListRequest req,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IWhatsAppGatewayService service,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var result = await service.DispatchInteractiveListAsync(effectiveTenantId, name, req, ct);
+            if (result == null) return Results.NotFound(new { error = $"Instance '{name}' not found" });
+            return Results.Ok(result);
+        })
+        .WithName("DispatchWhatsAppInteractiveList")
+        .WithSummary("Send WhatsApp interactive sectioned list menu for catalog or appointment selection");
+
         group.MapPost("/inbound-webhook", async (
             [FromBody] InboundWebhookPayload req,
             [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
