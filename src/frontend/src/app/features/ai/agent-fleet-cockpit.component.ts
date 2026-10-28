@@ -93,7 +93,12 @@ export interface HeartbeatFinding {
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
               <h2 class="text-sm font-bold text-white">Autonomous Heartbeat Findings & Actions</h2>
             </div>
-            <span class="text-xs text-slate-400 font-mono">Last Cycle: Just Now</span>
+            <div class="flex items-center gap-3">
+              <button (click)="runRemediation()" [disabled]="isRemediating()" class="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5 shadow">
+                <span>⚡</span> {{ isRemediating() ? 'Executing Self-Healing...' : 'Execute Automated Remediation' }}
+              </button>
+              <span class="text-xs text-slate-400 font-mono">Last Cycle: Just Now</span>
+            </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -199,6 +204,7 @@ export class AgentFleetCockpitComponent {
   filterLayer = signal<'ALL' | 'Business' | 'Engineering'>('ALL');
   searchQuery = '';
   isSweeping = signal<boolean>(false);
+  isRemediating = signal<boolean>(false);
   activeModalAgent = signal<AgentPersona | null>(null);
   taskPrompt = 'Audit current deal profit margins and report any anomalies.';
   isTaskRunning = signal<boolean>(false);
@@ -329,6 +335,24 @@ export class AgentFleetCockpitComponent {
         ...list.slice(0, 3)
       ]);
     }, 1200);
+  }
+
+  runRemediation() {
+    this.isRemediating.set(true);
+    setTimeout(() => {
+      this.isRemediating.set(false);
+      this.findings.update(list => [
+        {
+          id: 'rem-' + Math.random().toString(36).substring(2, 6),
+          agentName: 'Logistics Controller',
+          status: 'Healthy',
+          summary: 'Auto-Replenished Sfax Regional Depot with 100 units (Manifest TRF-AUTO-8921).',
+          action: 'Buffer stock restored to 115 units.',
+          timestamp: new Date().toTimeString().split(' ')[0].substring(0, 5)
+        },
+        ...list.slice(0, 3)
+      ]);
+    }, 900);
   }
 
   runAgentTask(agent: AgentPersona) {

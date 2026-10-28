@@ -10,6 +10,9 @@ public interface IWorkflowGraphExecutorService
 {
     Task<WorkflowGraphExecutionResult> ExecuteGraphAsync(Guid tenantId, ExecuteWorkflowGraphRequest req, CancellationToken ct = default);
     Task<List<WorkflowNodeConfig>> GetActiveGraphNodesAsync(Guid tenantId, CancellationToken ct = default);
+    Task<WorkflowDefinitionRecord> SaveWorkflowDefinitionAsync(Guid tenantId, SaveWorkflowDefinitionRequest req, Guid? workflowId = null, CancellationToken ct = default);
+    Task<IEnumerable<WorkflowDefinitionRecord>> GetWorkflowDefinitionsAsync(Guid tenantId, CancellationToken ct = default);
+    Task<WorkflowDefinitionRecord?> GetWorkflowDefinitionByIdAsync(Guid tenantId, Guid workflowId, CancellationToken ct = default);
 }
 
 public class WorkflowGraphExecutorService : IWorkflowGraphExecutorService
@@ -140,5 +143,50 @@ public class WorkflowGraphExecutorService : IWorkflowGraphExecutorService
             FinalContext: context,
             CompletedAtUtc: DateTime.UtcNow
         );
+    }
+
+    public async Task<WorkflowDefinitionRecord> SaveWorkflowDefinitionAsync(Guid tenantId, SaveWorkflowDefinitionRequest req, Guid? workflowId = null, CancellationToken ct = default)
+    {
+        var nodesJson = req.Nodes != null ? System.Text.Json.JsonSerializer.Serialize(req.Nodes) : "[]";
+        var edgesJson = req.Edges != null ? System.Text.Json.JsonSerializer.Serialize(req.Edges) : "[]";
+
+        WorkflowDefinitionRecord record;
+        if (workflowId.HasValue && workflowId.Value != Guid.Empty)
+        {
+            record = await _db.WorkflowDefinitionRecords.FirstOrDefaultAsync(w => w.TenantId == tenantId && w.Id == workflowId.Value, ct)
+                     ?? new WorkflowDefinitionRecord { Id = workflowId.Value, TenantId = tenantId };
+            if (!_db.WorkflowDefinitionRecords.Local.Contains(record))
+                _db.WorkflowDefinitionRecords.Add(record);
+        }
+        else
+        {
+            record = new WorkflowDefinitionRecord { Id = Guid.NewGuid(), TenantId = tenantId };
+            _db.WorkflowDefinitionRecords.Add(record);
+        }
+
+        record.Name = req.Name;
+        record.Description = req.Description;
+        record.TriggerType = req.TriggerType;
+        record.NodesJson = nodesJson;
+        record.EdgesJson = edgesJson;
+        record.IsActive = req.IsActive;
+        record.UpdatedAtUtc = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync(ct);
+        return record;
+    }
+
+    public async Task<IEnumerable<WorkflowDefinitionRecord>> GetWorkflowDefinitionsAsync(Guid tenantId, CancellationToken ct = default)
+    {
+        return await _db.WorkflowDefinitionRecords
+            .Where(w => w.TenantId == tenantId)
+            .OrderByDescending(w => w.UpdatedAtUtc)
+            .ToListAsync(ct);
+    }
+
+    public async Task<WorkflowDefinitionRecord?> GetWorkflowDefinitionByIdAsync(Guid tenantId, Guid workflowId, CancellationToken ct = default)
+    {
+        return await _db.WorkflowDefinitionRecords
+            .FirstOrDefaultAsync(w => w.TenantId == tenantId && w.Id == workflowId, ct);
     }
 }

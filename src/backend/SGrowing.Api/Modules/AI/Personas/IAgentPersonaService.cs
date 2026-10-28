@@ -8,4 +8,5 @@ public interface IAgentPersonaService
     Task<AgentPersonaExecutionResult?> ExecutePersonaTaskAsync(Guid tenantId, string roleKey, RunPersonaTaskRequest req, CancellationToken ct = default);
     Task<AgentHeartbeatCycleResult> RunHeartbeatCycleAsync(Guid tenantId, CancellationToken ct = default);
     Task<IEnumerable<AgentHeartbeatRecord>> GetHeartbeatHistoryAsync(Guid tenantId, CancellationToken ct = default);
+    Task<List<AgentRemediationResult>> ExecuteAutomatedRemediationAsync(Guid tenantId, RunAgentRemediationRequest? req = null, CancellationToken ct = default);
 }

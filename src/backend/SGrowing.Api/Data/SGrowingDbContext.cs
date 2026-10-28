@@ -325,6 +325,7 @@ public class SGrowingDbContext : DbContext
     public DbSet<CurrencyRateRecord> CurrencyRates => Set<CurrencyRateRecord>();
     public DbSet<CustomFieldDefinition> CustomFieldDefinitions => Set<CustomFieldDefinition>();
     public DbSet<CustomFieldValueRecord> CustomFieldValues => Set<CustomFieldValueRecord>();
+    public DbSet<WorkflowDefinitionRecord> WorkflowDefinitionRecords => Set<WorkflowDefinitionRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

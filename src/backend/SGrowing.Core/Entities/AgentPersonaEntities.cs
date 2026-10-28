@@ -44,3 +44,16 @@ public record AgentHeartbeatCycleResult(
     int AnomaliesDetectedCount,
     List<AgentHeartbeatRecord> Reports,
     DateTime CycleCompletedAtUtc);
+
+public record AgentRemediationResult(
+    Guid RemediationId,
+    string RoleKey,
+    string AgentName,
+    string ActionTaken,
+    string EntityAffected,
+    bool Success,
+    string Details,
+    DateTime ExecutedAtUtc);
+
+public record RunAgentRemediationRequest(
+    string? RoleKey = null);

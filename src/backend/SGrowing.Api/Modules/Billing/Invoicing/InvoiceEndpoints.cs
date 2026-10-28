@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using SGrowing.Api.Modules.Documents;
 using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.Billing.Invoicing;
@@ -53,6 +54,47 @@ public static class InvoiceEndpoints
         })
         .WithName("GetInvoiceById")
         .WithSummary("Retrieve detailed invoice record with itemized line items and tax breakdown");
+
+        group.MapGet("/{id:guid}/pdf", async (
+            Guid id,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IInvoiceService service,
+            IDocumentPdfGeneratorService pdfService,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var invoice = await service.GetInvoiceByIdAsync(effectiveTenantId, id, ct);
+            if (invoice == null) return Results.NotFound(new { error = $"Invoice '{id}' not found" });
+
+            var items = invoice.LineItems.Select(li => new InvoiceLineItemDto(
+                Description: li.Description,
+                Quantity: li.Quantity,
+                UnitPrice: li.UnitPrice,
+                TotalPrice: li.TotalPrice
+            )).ToList();
+
+            if (!items.Any())
+            {
+                items.Add(new InvoiceLineItemDto("Enterprise Services & SaaS Subscription", 1, invoice.SubTotal, invoice.SubTotal));
+            }
+
+            var pdfBytes = pdfService.GenerateInvoicePdf(
+                invoiceId: invoice.Id,
+                invoiceNumber: invoice.InvoiceNumber,
+                sellerName: "SGrowing Enterprise Technologies SARL",
+                buyerName: invoice.ClientName,
+                subtotal: invoice.SubTotal,
+                taxAmount: invoice.TaxAmount,
+                totalAmount: invoice.TotalAmount,
+                currency: invoice.Currency,
+                items: items
+            );
+
+            return Results.File(pdfBytes, "application/pdf", $"Invoice-{invoice.InvoiceNumber}.pdf");
+        })
+        .WithName("DownloadInvoicePdf")
+        .WithSummary("Generate and stream compliant cryptographic PDF invoice with 19% VAT breakdown");
 
         group.MapPost("/", async (
             [FromBody] CreateInvoiceRequest req,

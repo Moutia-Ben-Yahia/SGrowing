@@ -26,7 +26,9 @@ public record InboundRoutingResult(
     Guid ContactId,
     bool IsNewConversation,
     string Status,
-    string? AiSuggestedReply = null
+    string? AiSuggestedReply = null,
+    Guid? AssignedOperatorId = null,
+    string? TranscribedText = null
 );
 
 public interface IInboundMessageRouterService
@@ -39,15 +41,21 @@ public class InboundMessageRouterService : IInboundMessageRouterService
     private readonly SGrowingDbContext _db;
     private readonly IRealtimeNotifier _notifier;
     private readonly IAiCopilotService _copilotService;
+    private readonly IAudioTranscriptionService _transcriptionService;
+    private readonly IOperatorAssignmentService _assignmentService;
 
     public InboundMessageRouterService(
         SGrowingDbContext db,
         IRealtimeNotifier notifier,
-        IAiCopilotService copilotService)
+        IAiCopilotService copilotService,
+        IAudioTranscriptionService? transcriptionService = null,
+        IOperatorAssignmentService? assignmentService = null)
     {
         _db = db;
         _notifier = notifier;
         _copilotService = copilotService;
+        _transcriptionService = transcriptionService ?? new AudioTranscriptionService();
+        _assignmentService = assignmentService ?? new OperatorAssignmentService(db);
     }
 
     public async Task<InboundRoutingResult> RouteInboundMessageAsync(InboundMessagePayload payload, CancellationToken ct = default)
@@ -112,14 +120,42 @@ public class InboundMessageRouterService : IInboundMessageRouterService
         {
             conversation = Conversation.Create(payload.TenantId, inbox.Id, contact.Id, AiMode.Copilot);
             _db.Conversations.Add(conversation);
+            await _db.SaveChangesAsync(ct);
             isNew = true;
         }
 
-        // 4. Create Inbound Message Record
-        var contentType = !string.IsNullOrWhiteSpace(payload.MediaUrl) ? MessageContentType.Image : MessageContentType.Text;
-        var finalContent = payload.InteractiveCallback != null
-            ? $"[Selected: {payload.InteractiveCallback.ButtonText ?? payload.InteractiveCallback.ButtonId}] {payload.Content}".Trim()
-            : payload.Content;
+        // 4. Create Inbound Message Record with Audio Transcription & Callback parsing
+        bool isAudio = payload.MediaUrl != null && (
+            payload.MediaUrl.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase) ||
+            payload.MediaUrl.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) ||
+            payload.MediaUrl.EndsWith(".m4a", StringComparison.OrdinalIgnoreCase) ||
+            payload.MediaUrl.EndsWith(".wav", StringComparison.OrdinalIgnoreCase) ||
+            payload.MediaUrl.Contains("/audio/")
+        );
+
+        var contentType = isAudio
+            ? MessageContentType.Audio
+            : !string.IsNullOrWhiteSpace(payload.MediaUrl) ? MessageContentType.Image : MessageContentType.Text;
+
+        string? detectedLanguage = null;
+        string? transcribedText = null;
+        string finalContent;
+
+        if (isAudio)
+        {
+            var transcription = await _transcriptionService.TranscribeAudioAsync(payload.MediaUrl!, null, ct);
+            detectedLanguage = transcription.DetectedLanguage;
+            transcribedText = transcription.TranscribedText;
+            finalContent = $"[Voice Note Transcribed ({transcription.DetectedLanguage})]: \"{transcription.TranscribedText}\"";
+        }
+        else if (payload.InteractiveCallback != null)
+        {
+            finalContent = $"[Selected: {payload.InteractiveCallback.ButtonText ?? payload.InteractiveCallback.ButtonId}] {payload.Content}".Trim();
+        }
+        else
+        {
+            finalContent = payload.Content;
+        }
 
         var message = Message.Create(
             tenantId: payload.TenantId,
@@ -133,6 +169,19 @@ public class InboundMessageRouterService : IInboundMessageRouterService
         );
 
         _db.Messages.Add(message);
+
+        // 5. Omnichannel Operator Auto-Assignment if unassigned
+        Guid? assignedOperatorId = conversation.AssigneeId;
+        if (assignedOperatorId == null)
+        {
+            var assignment = await _assignmentService.AssignConversationAsync(payload.TenantId, conversation.Id, detectedLanguage, ct);
+            if (assignment != null)
+            {
+                assignedOperatorId = assignment.OperatorId;
+                conversation.AssigneeId = assignment.OperatorId;
+            }
+        }
+
         conversation.LastMessageAtUtc = DateTime.UtcNow;
         conversation.UpdatedAtUtc = DateTime.UtcNow;
 
@@ -188,7 +237,9 @@ public class InboundMessageRouterService : IInboundMessageRouterService
             ContactId: contact.Id,
             IsNewConversation: isNew,
             Status: "Routed",
-            AiSuggestedReply: suggestedReply
+            AiSuggestedReply: suggestedReply,
+            AssignedOperatorId: assignedOperatorId,
+            TranscribedText: transcribedText
         );
     }
 }

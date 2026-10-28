@@ -179,11 +179,14 @@ export interface CurrencyRate {
                     </span>
                   </td>
                   <td class="p-3.5 text-slate-400">{{ inv.dueDateUtc | date:'shortDate' }}</td>
-                  <td class="p-3.5 text-right space-x-2">
-                    <button *ngIf="inv.status !== 'Paid'" (click)="markAsPaid(inv)" class="px-2.5 py-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 rounded text-[11px] font-medium transition">
-                      Pay
+                  <td class="p-3.5 text-right space-x-1.5">
+                    <button *ngIf="inv.status !== 'Paid'" (click)="simulateWebhookPayment(inv)" class="px-2 py-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 rounded text-[11px] font-medium transition" title="Simulate Instant Payment Webhook">
+                      💳 Reconcile
                     </button>
-                    <button (click)="viewDetails(inv)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-[11px] font-medium transition">
+                    <a [href]="'/api/v1/billing/invoices/' + inv.id + '/pdf'" target="_blank" class="px-2 py-1 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded text-[11px] font-medium transition inline-flex items-center gap-1" title="Download Cryptographic PDF">
+                      📄 PDF
+                    </a>
+                    <button (click)="viewDetails(inv)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-[11px] font-medium transition">
                       View
                     </button>
                   </td>
@@ -501,6 +504,12 @@ export class InvoiceManagementCockpitComponent {
   }
 
   markAsPaid(inv: InvoiceItem) {
+    this.invoices.update(list =>
+      list.map(i => i.id === inv.id ? { ...i, status: 'Paid', paidAtUtc: new Date().toISOString() } : i)
+    );
+  }
+
+  simulateWebhookPayment(inv: InvoiceItem) {
     this.invoices.update(list =>
       list.map(i => i.id === inv.id ? { ...i, status: 'Paid', paidAtUtc: new Date().toISOString() } : i)
     );

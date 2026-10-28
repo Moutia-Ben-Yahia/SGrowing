@@ -57,4 +57,24 @@ public static class SGrowingTelemetry
         "sgrowing_media_vault_uploads_total",
         "uploads",
         "Total number of pre-signed direct-to-S3 uploads generated");
+
+    public static readonly Counter<long> AudioTranscriptionsCounter = Meter.CreateCounter<long>(
+        "sgrowing_audio_transcriptions_total",
+        "transcriptions",
+        "Total number of WhatsApp inbound voice notes transcribed via Whisper");
+
+    public static readonly Counter<long> InvoicesReconciledCounter = Meter.CreateCounter<long>(
+        "sgrowing_invoices_reconciled_total",
+        "invoices",
+        "Total number of B2B invoices reconciled and settled via payment webhooks");
+
+    public static readonly Counter<long> WorkflowsExecutedCounter = Meter.CreateCounter<long>(
+        "sgrowing_workflows_executed_total",
+        "executions",
+        "Total number of visual node workflow graphs executed");
+
+    public static readonly Counter<long> AgentRemediationsCounter = Meter.CreateCounter<long>(
+        "sgrowing_agent_remediations_total",
+        "remediations",
+        "Total number of autonomous self-healing agent remediation actions executed");
 }

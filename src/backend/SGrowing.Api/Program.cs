@@ -316,6 +316,8 @@ builder.Services.AddScoped<IAutonomousFunnelPipelineService, AutonomousFunnelPip
 builder.Services.AddScoped<IAgentPersonaService, AgentPersonaService>();
 builder.Services.AddScoped<IMediaVaultService, MediaVaultService>();
 builder.Services.AddScoped<IInboundMessageRouterService, InboundMessageRouterService>();
+builder.Services.AddSingleton<IAudioTranscriptionService, AudioTranscriptionService>();
+builder.Services.AddScoped<IOperatorAssignmentService, OperatorAssignmentService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IGitHubAutomationService, GitHubAutomationService>();
 builder.Services.AddSingleton<ITokenRevocationService, TokenRevocationService>();
@@ -456,6 +458,7 @@ app.MapAutonomousFunnelEndpoints();
 app.MapAgentPersonaEndpoints();
 app.MapMediaVaultEndpoints();
 app.MapInvoiceEndpoints();
+app.MapPaymentWebhookEndpoints();
 app.MapConversationCopilotEndpoints();
 app.MapCustomFieldEndpoints();
 app.MapWorkflowGraphEndpoints();

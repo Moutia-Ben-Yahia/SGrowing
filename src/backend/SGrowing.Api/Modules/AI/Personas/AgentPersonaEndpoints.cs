@@ -62,6 +62,20 @@ public static class AgentPersonaEndpoints
         .WithName("RunAgentHeartbeatCycle")
         .WithSummary("Execute autonomous cron heartbeat cycle auditing margins, inventory, and tasks");
 
+        group.MapPost("/heartbeat/remediate", async (
+            [FromBody] RunAgentRemediationRequest? req,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IAgentPersonaService service,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var results = await service.ExecuteAutomatedRemediationAsync(effectiveTenantId, req, ct);
+            return Results.Ok(results);
+        })
+        .WithName("RunAgentAutomatedRemediation")
+        .WithSummary("Trigger autonomous self-healing remediation actions (stock transfer manifests, margin rebalancing, task escalation)");
+
         group.MapGet("/heartbeat/history", async (
             [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
             [FromQuery] Guid? tenantId,
