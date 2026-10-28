@@ -77,4 +77,29 @@ public static class SGrowingTelemetry
         "sgrowing_agent_remediations_total",
         "remediations",
         "Total number of autonomous self-healing agent remediation actions executed");
+
+    public static readonly Counter<long> EventFanoutsDispatchedCounter = Meter.CreateCounter<long>(
+        "sgrowing_event_fanouts_dispatched_total",
+        "events",
+        "Total real-time multi-broker events fanned out across webhooks, websockets, and queues");
+
+    public static readonly Counter<long> CartReservationsAcquiredCounter = Meter.CreateCounter<long>(
+        "sgrowing_cart_reservations_acquired_total",
+        "reservations",
+        "Total time-bound cart inventory reservation locks acquired");
+
+    public static readonly Counter<long> CartReservationsExpiredCounter = Meter.CreateCounter<long>(
+        "sgrowing_cart_reservations_expired_total",
+        "expirations",
+        "Total abandoned cart reservations swept and returned to available inventory");
+
+    public static readonly Counter<long> WhatsAppNewsletterBroadcastsCounter = Meter.CreateCounter<long>(
+        "sgrowing_whatsapp_newsletter_broadcasts_total",
+        "broadcasts",
+        "Total WhatsApp newsletter posts broadcasted to public channels");
+
+    public static readonly Counter<long> AiModelFallbacksTriggeredCounter = Meter.CreateCounter<long>(
+        "sgrowing_ai_model_fallbacks_total",
+        "fallbacks",
+        "Total AI multi-model dynamic failovers and provider fallback executions");
 }

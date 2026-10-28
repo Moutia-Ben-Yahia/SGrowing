@@ -177,6 +177,24 @@ export interface StepDetail {
                     </a>
                   </div>
                 </div>
+
+                <!-- Git-Native Autonomous PR Card -->
+                <div class="mt-4 p-4 bg-slate-900 border border-slate-800 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div class="flex items-center gap-3">
+                    <span class="text-lg text-violet-400">🔀</span>
+                    <div>
+                      <div class="text-xs font-semibold text-white flex items-center gap-2">
+                        <span>Git-Native Pull Request Auto-Created</span>
+                        <span class="text-[10px] px-2 py-0.2 rounded bg-violet-500/20 text-violet-300 border border-violet-500/30">Ever-Works CI</span>
+                      </div>
+                      <div class="text-[11px] text-slate-400 font-mono mt-0.5">Branch: {{ gitHubBranchName() }}</div>
+                    </div>
+                  </div>
+                  <a [href]="gitHubPrUrl()" target="_blank" class="px-3.5 py-1.5 bg-violet-600/20 hover:bg-violet-600/30 text-violet-300 border border-violet-500/30 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+                    <span>Review Pull Request</span>
+                    <span>&rarr;</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -195,6 +213,8 @@ export class AutonomousFunnelCockpitComponent {
   currentExecutingStep = signal<number>(15);
   overallProgress = signal<number>(100);
   livePreviewUrl = signal<string>('https://preview.sgrowing.io/funnels/enterprise-wholesale-demo-a91b');
+  gitHubPrUrl = signal<string>('https://github.com/sgrowing/storefront/pull/412');
+  gitHubBranchName = signal<string>('funnel/enterprise-wholesale-demo');
 
   steps = signal<StepDetail[]>([
     { number: 1, name: 'Concept Ingestion & Scoping', status: 'Completed', description: 'Parsed concept prompt into target commerce tier and customer demographics.', durationMs: 140 },

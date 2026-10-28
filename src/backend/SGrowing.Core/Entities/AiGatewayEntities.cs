@@ -58,3 +58,38 @@ public class ModelRoutingDecision
     public decimal EstimatedCostPerMillionTokens { get; set; }
     public int MaxOutputTokens { get; set; }
 }
+
+public record AiModelCatalogEntry(
+    string ModelId,
+    string Provider,
+    string DisplayName,
+    decimal CostPerMillionTokens,
+    int ContextWindowTokens,
+    bool IsAvailable,
+    string Tier
+);
+
+public record ModelRoutingExecutionResult<T>(
+    T Result,
+    string PrimaryModel,
+    string ActualModelUsed,
+    string Provider,
+    bool FallbackOccurred,
+    string? FallbackReason,
+    int LatencyMs
+);
+
+public record TenantTokenQuotaStatus(
+    Guid TenantId,
+    long MonthlyBudgetTokens,
+    long ConsumedTokens,
+    long RemainingTokens,
+    decimal UsagePercentage,
+    bool QuotaExceeded
+);
+
+public record ExecuteRoutedModelRequest(
+    string Prompt,
+    AiTaskComplexity Complexity = AiTaskComplexity.FastAndCheap,
+    string? TaskHint = null
+);

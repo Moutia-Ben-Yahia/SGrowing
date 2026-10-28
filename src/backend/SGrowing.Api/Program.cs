@@ -47,6 +47,7 @@ using SGrowing.Api.Modules.Commerce.Warehouses;
 using SGrowing.Api.Modules.Organizations;
 using SGrowing.Api.Modules.Workforce.Timesheets;
 using SGrowing.Api.Modules.Channels.WhatsApp;
+using SGrowing.Api.Modules.Commerce.CartReservations;
 using SGrowing.Api.Modules.Funnels.Autonomous;
 using SGrowing.Api.Modules.AI.Personas;
 using SGrowing.Api.Modules.Storage.Media;
@@ -323,6 +324,11 @@ builder.Services.AddScoped<IGitHubAutomationService, GitHubAutomationService>();
 builder.Services.AddSingleton<ITokenRevocationService, TokenRevocationService>();
 builder.Services.AddScoped<ICustomFieldService, CustomFieldService>();
 builder.Services.AddScoped<IWorkflowGraphExecutorService, WorkflowGraphExecutorService>();
+builder.Services.AddScoped<ICartReservationService, CartReservationService>();
+builder.Services.AddScoped<IMultiBrokerEventFanoutService, MultiBrokerEventFanoutService>();
+builder.Services.AddScoped<IWhatsAppNewsletterService, WhatsAppNewsletterService>();
+builder.Services.AddScoped<IAiModelRouterService, AiModelRouterService>();
+builder.Services.AddScoped<AiModelRouterService>();
 builder.Services.AddHttpClient("WebScraperClient", client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
@@ -462,6 +468,10 @@ app.MapPaymentWebhookEndpoints();
 app.MapConversationCopilotEndpoints();
 app.MapCustomFieldEndpoints();
 app.MapWorkflowGraphEndpoints();
+app.MapCartReservationEndpoints();
+app.MapEventFanoutEndpoints();
+app.MapWhatsAppNewsletterEndpoints();
+app.MapAiModelRouterEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", framework = ".NET 10", timestamp = DateTime.UtcNow }));
 app.MapGet("/healthz/live", () => Results.Ok(new { status = "Healthy", timestampUtc = DateTime.UtcNow }));

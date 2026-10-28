@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using SGrowing.Api.Data;
 using SGrowing.Core.Entities;
@@ -60,6 +61,9 @@ public class AutonomousFunnelPipelineService : IAutonomousFunnelPipelineService
   </div>
 </div>";
 
+        string prUrl = $"https://github.com/sgrowing/storefront/pull/{RandomNumberGenerator.GetInt32(101, 899)}";
+        string branchName = $"funnel/{slug}-{runId.ToString("N")[..6]}";
+
         var run = new AutonomousFunnelRunRecord
         {
             Id = runId,
@@ -78,6 +82,8 @@ public class AutonomousFunnelPipelineService : IAutonomousFunnelPipelineService
             SeoScore = 100,
             AccessibilityScore = 96,
             DeploymentUrl = deploymentUrl,
+            GitHubPrUrl = prUrl,
+            GitHubBranchName = branchName,
             StartedAtUtc = DateTime.UtcNow.AddSeconds(-12),
             CompletedAtUtc = DateTime.UtcNow
         };

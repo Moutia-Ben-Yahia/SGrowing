@@ -18,6 +18,8 @@ public class AutonomousFunnelRunRecord
     public int SeoScore { get; set; } = 100;
     public int AccessibilityScore { get; set; } = 96;
     public string DeploymentUrl { get; set; } = string.Empty;
+    public string? GitHubPrUrl { get; set; }
+    public string? GitHubBranchName { get; set; }
     public DateTime StartedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime? CompletedAtUtc { get; set; } = DateTime.UtcNow;
 }

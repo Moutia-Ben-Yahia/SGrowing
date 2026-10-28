@@ -247,6 +247,63 @@ export interface DispatchedLog {
             </div>
           </div>
         </div>
+
+        <!-- WhatsApp Newsletter Channels Section (Baileys @newsletter Protocol) -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-xl space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">📢</span>
+              <div>
+                <h3 class="text-sm font-bold text-white">Public WhatsApp Newsletter Channels</h3>
+                <p class="text-xs text-slate-400">Unidirectional &#64;newsletter broadcast feeds with subscriber analytics and emoji reactions</p>
+              </div>
+            </div>
+            <button (click)="openNewChannelModal.set(true)" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+              <span>+</span> New Channel
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            @for (channel of newsletterChannels(); track channel.id) {
+              <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-3">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="text-sm font-bold text-white flex items-center gap-1.5">
+                      <span>{{ channel.name }}</span>
+                      <span class="text-emerald-400 text-xs">&#10003;</span>
+                    </div>
+                    <div class="text-xs text-slate-400 font-mono">{{ channel.channelJid }}</div>
+                  </div>
+                  <span class="px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-xs font-bold">
+                    {{ channel.subscriberCount }} Subscribers
+                  </span>
+                </div>
+
+                <div class="text-xs text-slate-300">{{ channel.description }}</div>
+
+                <div class="p-3 bg-slate-900/70 rounded-lg border border-slate-800/80 space-y-2">
+                  <div class="text-[11px] text-slate-400 font-medium">Latest Broadcast:</div>
+                  <div class="text-xs text-slate-200">{{ channel.latestPost }}</div>
+                  <div class="flex items-center gap-2 pt-1">
+                    @for (rx of channel.reactions; track rx.emoji) {
+                      <button (click)="addReaction(channel.id, rx.emoji)" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 border border-slate-700/60 flex items-center gap-1 transition">
+                        <span>{{ rx.emoji }}</span>
+                        <span class="text-[10px] text-slate-400">{{ rx.count }}</span>
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-1 text-xs">
+                  <span class="text-slate-500 font-mono">Invite: {{ channel.inviteCode }}</span>
+                  <button (click)="quickBroadcast(channel.id)" class="px-3 py-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded font-semibold text-xs transition">
+                    Broadcast Update
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
       </main>
 
       <!-- Interactive Buttons Modal -->
@@ -322,6 +379,7 @@ export class WhatsAppGatewayCockpitComponent {
   openNewInstanceModal = signal<boolean>(false);
   showPairingModal = signal<boolean>(false);
   openInteractiveModal = signal<boolean>(false);
+  openNewChannelModal = signal<boolean>(false);
   selectedInstance = signal<WhatsAppInstance | null>(null);
   activePairTab = signal<'code' | 'qr'>('code');
 
@@ -419,6 +477,63 @@ export class WhatsAppGatewayCockpitComponent {
     }
     this.showPairingModal.set(false);
     this.generatedCode.set(null);
+  }
+
+  newsletterChannels = signal([
+    {
+      id: 'chan-01',
+      channelJid: '120363198421098471@newsletter',
+      name: 'SGrowing Wholesale & Commerce Deals',
+      description: 'Official VIP broadcast channel for flash sales, inventory allocations, and wholesale deals.',
+      subscriberCount: 842,
+      inviteCode: '0029VaSGROWVIP',
+      latestPost: '🔥 35% margin rebalancing applied to Southern regional hubs. Check allocation matrix.',
+      reactions: [
+        { emoji: '🔥', count: 48 },
+        { emoji: '👍', count: 32 },
+        { emoji: '❤️', count: 19 }
+      ]
+    },
+    {
+      id: 'chan-02',
+      channelJid: '120363298411223344@newsletter',
+      name: 'Courier Logistics & Dispatch Alerts',
+      description: 'Live courier network updates, driver run-sheet statuses, and hub operational announcements.',
+      subscriberCount: 415,
+      inviteCode: '0029VaLOGIST',
+      latestPost: '🚚 Tunis Nord Mega-Hub capacity restored to 100%. All pending TRF manifests cleared.',
+      reactions: [
+        { emoji: '🚀', count: 27 },
+        { emoji: '👍', count: 18 }
+      ]
+    }
+  ]);
+
+  addReaction(channelId: string, emoji: string) {
+    this.newsletterChannels.update(list =>
+      list.map(c => {
+        if (c.id === channelId) {
+          const rxList = c.reactions.map(r => r.emoji === emoji ? { ...r, count: r.count + 1 } : r);
+          return { ...c, reactions: rxList };
+        }
+        return c;
+      })
+    );
+  }
+
+  quickBroadcast(channelId: string) {
+    this.newsletterChannels.update(list =>
+      list.map(c => {
+        if (c.id === channelId) {
+          return {
+            ...c,
+            latestPost: '📢 Live Broadcast: Flash stock reservation release active for next 15 minutes!',
+            reactions: c.reactions.map(r => r.emoji === '🔥' ? { ...r, count: r.count + 5 } : r)
+          };
+        }
+        return c;
+      })
+    );
   }
 
   disconnectInstance(id: string) {

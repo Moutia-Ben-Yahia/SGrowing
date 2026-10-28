@@ -535,6 +535,70 @@ export interface SpatialSearchResult {
               </table>
             </div>
           </div>
+
+          <!-- 5. Cart Reservation Locks (Flash-Sale Protection & Auto-Sweeper) -->
+          <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800/80">
+              <div class="flex items-center gap-2">
+                <span class="text-base">🔒</span>
+                <div>
+                  <h3 class="text-sm font-bold text-white">Cart Reservation Locks & High-Velocity Flash-Sale WMS</h3>
+                  <p class="text-xs text-slate-400">15-minute sliding TTL locks preventing phantom allocation with automated background sweeper</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button (click)="sweepExpiredReservations()" class="px-3 py-1.5 bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+                  <span>🧹</span> Sweep Expired Locks
+                </button>
+                <button (click)="simulateCartReservation()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+                  <span>+</span> Test Cart Lock
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-300 font-sans">
+                <thead>
+                  <tr class="border-b border-slate-800 text-slate-400 font-medium bg-slate-950/40">
+                    <th class="py-2.5 px-3">Lock ID</th>
+                    <th class="py-2.5 px-3">Warehouse Hub</th>
+                    <th class="py-2.5 px-3">SKU</th>
+                    <th class="py-2.5 px-3 text-right">Qty Locked</th>
+                    <th class="py-2.5 px-3">Status</th>
+                    <th class="py-2.5 px-3">Expires</th>
+                    <th class="py-2.5 px-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60 font-mono">
+                  @for (lock of cartReservationLocks(); track lock.id) {
+                    <tr class="hover:bg-slate-800/20 transition">
+                      <td class="py-2.5 px-3 text-slate-400">{{ lock.id }}</td>
+                      <td class="py-2.5 px-3 font-sans text-slate-200">{{ lock.warehouseName }}</td>
+                      <td class="py-2.5 px-3 text-emerald-400">{{ lock.sku }}</td>
+                      <td class="py-2.5 px-3 text-right font-bold text-white">{{ lock.quantity }}</td>
+                      <td class="py-2.5 px-3">
+                        <span
+                          class="px-2 py-0.5 rounded text-[10px] font-mono border"
+                          [ngClass]="lock.status === 'Active' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : (lock.status === 'Committed' ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' : 'bg-slate-800 text-slate-400 border-slate-700')">
+                          {{ lock.status }}
+                        </span>
+                      </td>
+                      <td class="py-2.5 px-3 text-slate-300">{{ lock.expiresInMins }}m remaining</td>
+                      <td class="py-2.5 px-3 text-right">
+                        @if (lock.status === 'Active') {
+                          <button (click)="releaseLock(lock.id)" class="text-xs text-rose-400 hover:text-rose-300 underline font-sans">
+                            Release
+                          </button>
+                        } @else {
+                          <span class="text-xs text-slate-600 font-sans">—</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         <!-- Inter-Hub Stock Transfer Modal -->
@@ -768,6 +832,41 @@ export class MultiWarehouseCockpitComponent {
 
   routingResult = signal<ProximitySimulationResult | null>(null);
 
+  // Cart Reservation Locks (Flash-Sale WMS 15-min TTL sliding lock)
+  cartReservationLocks = signal<{
+    id: string;
+    warehouseName: string;
+    sku: string;
+    quantity: number;
+    status: string;
+    expiresInMins: number;
+  }[]>([
+    {
+      id: 'lck-901',
+      warehouseName: 'Tunis Nord Logistics Mega-Hub',
+      sku: 'SKU-GROW-PRO',
+      quantity: 5,
+      status: 'Active',
+      expiresInMins: 14
+    },
+    {
+      id: 'lck-902',
+      warehouseName: 'Sousse Sahel Distribution Center',
+      sku: 'SKU-SMART-CAM',
+      quantity: 2,
+      status: 'Active',
+      expiresInMins: 8
+    },
+    {
+      id: 'lck-903',
+      warehouseName: 'Cairo Central Fulfillment Hub',
+      sku: 'SKU-BARCODE-RUGGED',
+      quantity: 10,
+      status: 'Committed',
+      expiresInMins: 0
+    }
+  ]);
+
   // Spatial Radar State
   spatialCityPreset = 'Tunis';
   spatialOriginLat = 36.8065;
@@ -987,5 +1086,33 @@ export class MultiWarehouseCockpitComponent {
     const car = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
     const idx = Math.floor(((deg + 11.25) % 360) / 22.5);
     return car[idx];
+  }
+
+  sweepExpiredReservations(): void {
+    const expiredCount = this.cartReservationLocks().filter(l => l.status === 'Active' && l.expiresInMins <= 5).length;
+    this.cartReservationLocks.update(locks =>
+      locks.map(l => (l.status === 'Active' && l.expiresInMins <= 5) ? { ...l, status: 'Expired', expiresInMins: 0 } : l)
+    );
+    this.toastMessage.set(`Background sweeper evaluated active locks: ${expiredCount > 0 ? expiredCount + ' expired locks swept back to inventory' : 'All active locks within valid TTL'}.`);
+  }
+
+  simulateCartReservation(): void {
+    const newLock = {
+      id: `lck-${Math.floor(100 + Math.random() * 900)}`,
+      warehouseName: 'Tunis Nord Logistics Mega-Hub',
+      sku: 'SKU-GROW-PRO',
+      quantity: 3,
+      status: 'Active',
+      expiresInMins: 15
+    };
+    this.cartReservationLocks.update(locks => [newLock, ...locks]);
+    this.toastMessage.set(`Acquired 15-min sliding TTL cart lock [${newLock.id}] for 3x SKU-GROW-PRO.`);
+  }
+
+  releaseLock(id: string): void {
+    this.cartReservationLocks.update(locks =>
+      locks.map(l => l.id === id ? { ...l, status: 'Released', expiresInMins: 0 } : l)
+    );
+    this.toastMessage.set(`Cart lock [${id}] explicitly released. Reserved quantity restored to available warehouse stock.`);
   }
 }

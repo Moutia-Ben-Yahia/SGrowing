@@ -326,6 +326,9 @@ public class SGrowingDbContext : DbContext
     public DbSet<CustomFieldDefinition> CustomFieldDefinitions => Set<CustomFieldDefinition>();
     public DbSet<CustomFieldValueRecord> CustomFieldValues => Set<CustomFieldValueRecord>();
     public DbSet<WorkflowDefinitionRecord> WorkflowDefinitionRecords => Set<WorkflowDefinitionRecord>();
+    public DbSet<CartReservationLockRecord> CartReservationLocks => Set<CartReservationLockRecord>();
+    public DbSet<WhatsAppNewsletterChannelRecord> WhatsAppNewsletterChannels => Set<WhatsAppNewsletterChannelRecord>();
+    public DbSet<WhatsAppNewsletterPostRecord> WhatsAppNewsletterPosts => Set<WhatsAppNewsletterPostRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

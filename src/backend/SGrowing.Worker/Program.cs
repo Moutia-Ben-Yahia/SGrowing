@@ -73,6 +73,7 @@ builder.Services.AddHostedService<AutonomousAgentExecutionDaemon>();
 builder.Services.AddHostedService<OutwardWebhookDeliveryDaemon>();
 builder.Services.AddHostedService<DurableSocialPublishingDaemon>();
 builder.Services.AddHostedService<DealRottingWatchdogDaemon>();
+builder.Services.AddHostedService<CartReservationSweeperDaemon>();
 
 var host = builder.Build();
 host.Run();
