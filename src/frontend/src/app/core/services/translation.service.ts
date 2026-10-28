@@ -69,6 +69,7 @@ const EN_US_TRANSLATIONS: TranslationDictionary = {
   'nav.whatsapp_gateway': 'Native WhatsApp Gateway',
   'nav.autonomous_funnels': 'Autonomous Funnel Workshop',
   'nav.agent_fleet': 'Dual-Layer 38 Agent Fleet',
+  'nav.invoices': 'Multi-Currency Invoices & VAT',
 
   // Common Actions & Statuses
   'common.search': 'Search conversations...',

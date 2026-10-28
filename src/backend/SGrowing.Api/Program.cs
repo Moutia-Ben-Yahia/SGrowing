@@ -49,6 +49,9 @@ using SGrowing.Api.Modules.Channels.WhatsApp;
 using SGrowing.Api.Modules.Funnels.Autonomous;
 using SGrowing.Api.Modules.AI.Personas;
 using SGrowing.Api.Modules.Storage.Media;
+using SGrowing.Api.Modules.Billing.Invoicing;
+using SGrowing.Api.Modules.Agents.Git;
+using SGrowing.Api.Common;
 using Scalar.AspNetCore;
 using SGrowing.Core.Messaging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -311,6 +314,10 @@ builder.Services.AddScoped<IWhatsAppGatewayService, WhatsAppGatewayService>();
 builder.Services.AddScoped<IAutonomousFunnelPipelineService, AutonomousFunnelPipelineService>();
 builder.Services.AddScoped<IAgentPersonaService, AgentPersonaService>();
 builder.Services.AddScoped<IMediaVaultService, MediaVaultService>();
+builder.Services.AddScoped<IInboundMessageRouterService, InboundMessageRouterService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<IGitHubAutomationService, GitHubAutomationService>();
+builder.Services.AddSingleton<ITokenRevocationService, TokenRevocationService>();
 builder.Services.AddHttpClient("WebScraperClient", client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
@@ -384,6 +391,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 app.MapDefaultEndpoints();
 
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -444,6 +452,8 @@ app.MapWhatsAppGatewayEndpoints();
 app.MapAutonomousFunnelEndpoints();
 app.MapAgentPersonaEndpoints();
 app.MapMediaVaultEndpoints();
+app.MapInvoiceEndpoints();
+app.MapConversationCopilotEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", framework = ".NET 10", timestamp = DateTime.UtcNow }));
 app.MapGet("/healthz/live", () => Results.Ok(new { status = "Healthy", timestampUtc = DateTime.UtcNow }));

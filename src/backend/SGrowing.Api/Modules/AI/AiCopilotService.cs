@@ -1,6 +1,7 @@
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Services;
+using SGrowing.Api.Modules.Conversations;
 using SGrowing.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -92,5 +93,68 @@ public class AiCopilotService : IAiCopilotService
         }
 
         return draft;
+    }
+
+    public async Task<MessageDto?> AcceptDraftAsync(Guid tenantId, Guid draftId, string? editedReply = null, CancellationToken cancellationToken = default)
+    {
+        var draft = await _db.AiDrafts.FirstOrDefaultAsync(d => d.TenantId == tenantId && d.Id == draftId, cancellationToken);
+        if (draft == null || draft.Status == AiDraftStatus.Accepted)
+            return null;
+
+        var conv = await _db.Conversations.FirstOrDefaultAsync(c => c.TenantId == tenantId && c.Id == draft.ConversationId, cancellationToken);
+        if (conv == null)
+            return null;
+
+        var contentToSend = !string.IsNullOrWhiteSpace(editedReply) ? editedReply : draft.SuggestedReply;
+        draft.Status = AiDraftStatus.Accepted;
+
+        var agentMessage = Message.Create(
+            tenantId: tenantId,
+            conversationId: conv.Id,
+            senderType: MessageSenderType.Agent,
+            content: contentToSend,
+            deliveryStatus: DeliveryStatus.Sent
+        );
+
+        _db.Messages.Add(agentMessage);
+        conv.LastMessageAtUtc = DateTime.UtcNow;
+        conv.UpdatedAtUtc = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        var messageDto = new Modules.Conversations.MessageDto(
+            agentMessage.Id,
+            agentMessage.ConversationId,
+            agentMessage.SenderType,
+            agentMessage.SenderId,
+            agentMessage.ContentType,
+            agentMessage.Content,
+            agentMessage.MediaUrl,
+            agentMessage.DeliveryStatus,
+            agentMessage.CreatedAtUtc
+        );
+
+        await _notifier.NotifyNewMessageAsync(tenantId, messageDto);
+        return messageDto;
+    }
+
+    public async Task<bool> RejectDraftAsync(Guid tenantId, Guid draftId, string? reason = null, CancellationToken cancellationToken = default)
+    {
+        var draft = await _db.AiDrafts.FirstOrDefaultAsync(d => d.TenantId == tenantId && d.Id == draftId, cancellationToken);
+        if (draft == null)
+            return false;
+
+        draft.Status = AiDraftStatus.Rejected;
+        await _db.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    public async Task<IEnumerable<AiDraft>> GetDraftsAsync(Guid tenantId, Guid conversationId, CancellationToken cancellationToken = default)
+    {
+        return await _db.AiDrafts
+            .Where(d => d.TenantId == tenantId && d.ConversationId == conversationId)
+            .OrderByDescending(d => d.CreatedAtUtc)
+            .Take(20)
+            .ToListAsync(cancellationToken);
     }
 }

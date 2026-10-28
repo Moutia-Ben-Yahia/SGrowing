@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using SGrowing.Api.Modules.Agents.Git;
 using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.Funnels.Autonomous;
@@ -63,6 +64,37 @@ public static class AutonomousFunnelEndpoints
         })
         .WithName("GetAutonomousFunnelRunDetail")
         .WithSummary("Get full step-by-step audit trail and preview for a specific run");
+
+        group.MapPost("/runs/{id:guid}/git/detect-drift", async (
+            Guid id,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IGitHubAutomationService gitService,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var result = await gitService.DetectFunnelDriftAsync(effectiveTenantId, id, ct);
+            if (result == null) return Results.NotFound(new { error = "Autonomous funnel run not found" });
+            return Results.Ok(result);
+        })
+        .WithName("DetectAutonomousFunnelDrift")
+        .WithSummary("Analyze copy and pricing drift between repository template and autonomous funnel run");
+
+        group.MapPost("/runs/{id:guid}/git/create-pr", async (
+            Guid id,
+            [FromBody] CreateFunnelPrRequest req,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IGitHubAutomationService gitService,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var result = await gitService.CreatePullRequestForFunnelDriftAsync(effectiveTenantId, id, req, ct);
+            if (result == null) return Results.NotFound(new { error = "Autonomous funnel run not found" });
+            return Results.Ok(result);
+        })
+        .WithName("CreateFunnelDriftPullRequest")
+        .WithSummary("Auto-open GitHub PR with commit diffs and automated persona reviews to sync funnel drift");
 
         return app;
     }

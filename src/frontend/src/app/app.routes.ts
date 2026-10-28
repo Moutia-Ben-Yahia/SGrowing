@@ -60,6 +60,7 @@ import { TimesheetLaborCockpitComponent } from './features/workforce/timesheet-l
 import { WhatsAppGatewayCockpitComponent } from './features/channels/whatsapp-gateway-cockpit.component';
 import { AutonomousFunnelCockpitComponent } from './features/funnels/autonomous-funnel-cockpit.component';
 import { AgentFleetCockpitComponent } from './features/ai/agent-fleet-cockpit.component';
+import { InvoiceManagementCockpitComponent } from './features/billing/invoice-management-cockpit.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -73,6 +74,7 @@ export const routes: Routes = [
   { path: 'channels/whatsapp-gateway', component: WhatsAppGatewayCockpitComponent, canActivate: [authGuard] },
   { path: 'funnels/autonomous', component: AutonomousFunnelCockpitComponent, canActivate: [authGuard] },
   { path: 'ai/agent-fleet', component: AgentFleetCockpitComponent, canActivate: [authGuard] },
+  { path: 'billing/invoices', component: InvoiceManagementCockpitComponent, canActivate: [authGuard] },
   { path: 'onboarding', component: OnboardingWizardComponent, canActivate: [authGuard] },
   { path: 'agents/missions', component: AgentMissionCockpitComponent, canActivate: [authGuard] },
   { path: 'developer/webhooks', component: DeveloperWebhooksCockpitComponent, canActivate: [authGuard] },

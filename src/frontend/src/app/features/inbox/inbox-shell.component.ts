@@ -72,6 +72,11 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 <span class="flex items-center gap-2">🤖 Dual-Layer 38 Agent Fleet</span>
               </a>
               <a
+                routerLink="/billing/invoices"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-teal-400 hover:bg-teal-500/10 border border-teal-500/20 transition">
+                <span class="flex items-center gap-2">💳 Multi-Currency Invoices & VAT</span>
+              </a>
+              <a
                 routerLink="/courier"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
                 <span class="flex items-center gap-2">🛵 Courier Driver Companion</span>

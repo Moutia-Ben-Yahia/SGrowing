@@ -2,9 +2,20 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using SGrowing.Api.Modules.Conversations;
 using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.Channels.WhatsApp;
+
+public record InboundWebhookPayload(
+    string PhoneNumber,
+    string Content,
+    string? SenderName = null,
+    string? ChannelType = "WhatsApp",
+    string? ExternalMessageId = null,
+    string? MediaUrl = null,
+    string? InstanceName = null
+);
 
 public static class WhatsAppGatewayEndpoints
 {
@@ -125,6 +136,30 @@ public static class WhatsAppGatewayEndpoints
         })
         .WithName("DispatchWhatsAppGatewayMessage")
         .WithSummary("High-speed outbound message dispatch via compiled Go gateway");
+
+        group.MapPost("/inbound-webhook", async (
+            [FromBody] InboundWebhookPayload req,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IInboundMessageRouterService router,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var result = await router.RouteInboundMessageAsync(new InboundMessagePayload(
+                TenantId: effectiveTenantId,
+                PhoneNumber: req.PhoneNumber,
+                SenderName: req.SenderName,
+                Content: req.Content,
+                ChannelType: req.ChannelType ?? "WhatsApp",
+                ExternalMessageId: req.ExternalMessageId,
+                MediaUrl: req.MediaUrl,
+                InstanceName: req.InstanceName
+            ), ct);
+
+            return Results.Ok(result);
+        })
+        .WithName("ReceiveInboundWhatsAppGatewayWebhook")
+        .WithSummary("Inbound webhook router for compiled WhatsApp gateway events");
 
         return app;
     }

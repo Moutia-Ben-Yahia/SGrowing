@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
 namespace SGrowing.Api.Modules.Auth;
@@ -75,6 +76,29 @@ public static class AuthEndpoints
 
             return Results.Unauthorized();
         }).RequireAuthorization();
+
+        group.MapPost("/tokens/revoke", async (
+            [FromBody] RevokeTokenRequest req,
+            ITokenRevocationService revocationService,
+            CancellationToken ct) =>
+        {
+            var ttl = req.TtlSeconds.HasValue ? TimeSpan.FromSeconds(req.TtlSeconds.Value) : TimeSpan.FromDays(1);
+            await revocationService.RevokeTokenAsync(req.Jti, ttl, req.Reason, ct);
+            return Results.Ok(new { status = "Revoked", jti = req.Jti });
+        })
+        .WithName("RevokeAuthToken")
+        .WithSummary("Revoke JWT token by JTI adding it to the cluster blocklist");
+
+        group.MapGet("/tokens/{jti}/status", async (
+            string jti,
+            ITokenRevocationService revocationService,
+            CancellationToken ct) =>
+        {
+            var isRevoked = await revocationService.IsTokenRevokedAsync(jti, ct);
+            return Results.Ok(new { jti, isRevoked });
+        })
+        .WithName("CheckTokenRevocationStatus")
+        .WithSummary("Check if a token JTI has been revoked");
 
         return endpoints;
     }

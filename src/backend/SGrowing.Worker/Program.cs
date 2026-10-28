@@ -4,10 +4,12 @@ using Microsoft.Extensions.Hosting;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Messaging;
 using SGrowing.Api.Modules.AI;
+using SGrowing.Api.Modules.AI.Personas;
 using SGrowing.Core.Messaging;
 using SGrowing.Core.Diagnostics;
 using SGrowing.Api.Modules.Diagnostics;
 using SGrowing.Worker.Services;
+using SGrowing.Worker.BackgroundJobs;
 using StackExchange.Redis;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -55,9 +57,12 @@ builder.Services.AddHostedService<DaemonWatchdogService>();
 // Hosted background daemons
 builder.Services.AddScoped<IMcpServerRegistryService, McpServerRegistryService>();
 builder.Services.AddScoped<IAutonomousAgentMissionService, AutonomousAgentMissionService>();
+builder.Services.AddScoped<IAgentPersonaService, AgentPersonaService>();
 builder.Services.AddScoped<AdvancedWorkflowSchedulerService>();
 builder.Services.AddScoped<OutboundWebhookDispatcherService>();
 builder.Services.AddHostedService<OutboxProcessorDaemon>();
+builder.Services.AddHostedService<OutboxPublisherJob>();
+builder.Services.AddHostedService<AgentHeartbeatJob>();
 builder.Services.AddHostedService<RedisStreamConsumerDaemon>();
 builder.Services.AddHostedService<SlaWatchdogDaemon>();
 builder.Services.AddHostedService<ResilientDlqDaemon>();

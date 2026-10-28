@@ -319,6 +319,10 @@ public class SGrowingDbContext : DbContext
     public DbSet<AgentPersonaRecord> AgentPersonas => Set<AgentPersonaRecord>();
     public DbSet<AgentHeartbeatRecord> AgentHeartbeatRecords => Set<AgentHeartbeatRecord>();
     public DbSet<MediaVaultRecord> MediaVaultRecords => Set<MediaVaultRecord>();
+    public DbSet<InvoiceRecord> Invoices => Set<InvoiceRecord>();
+    public DbSet<InvoiceLineItemRecord> InvoiceLineItems => Set<InvoiceLineItemRecord>();
+    public DbSet<PaymentRecord> Payments => Set<PaymentRecord>();
+    public DbSet<CurrencyRateRecord> CurrencyRates => Set<CurrencyRateRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
