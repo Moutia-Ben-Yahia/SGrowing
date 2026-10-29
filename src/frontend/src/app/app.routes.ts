@@ -67,6 +67,10 @@ import { ProposalViewerComponent } from './features/documents/proposal-viewer.co
 import { VideoMeetingRoomComponent } from './features/calendar/video-meeting-room.component';
 import { MultiInboxCockpitComponent } from './features/deliverability/multi-inbox-cockpit.component';
 import { CarrierReconciliationCockpitComponent } from './features/commerce/carrier-reconciliation-cockpit.component';
+import { WhatsAppPairingCockpitComponent } from './features/channels/whatsapp-pairing-cockpit.component';
+import { FunnelBuilderCanvasComponent } from './features/funnels/funnel-builder-canvas.component';
+import { AgentWorkforceCockpitComponent } from './features/agents/agent-workforce-cockpit.component';
+import { SeoCrawlerStudioComponent } from './features/seo/seo-crawler-studio.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -83,7 +87,11 @@ export const routes: Routes = [
   { path: 'organizations/margin', component: OrganizationMarginCockpitComponent, canActivate: [authGuard] },
   { path: 'workforce/timesheets', component: TimesheetLaborCockpitComponent, canActivate: [authGuard] },
   { path: 'channels/whatsapp-gateway', component: WhatsAppGatewayCockpitComponent, canActivate: [authGuard] },
+  { path: 'channels/whatsapp-pairing', component: WhatsAppPairingCockpitComponent, canActivate: [authGuard] },
   { path: 'funnels/autonomous', component: AutonomousFunnelCockpitComponent, canActivate: [authGuard] },
+  { path: 'funnels/canvas', component: FunnelBuilderCanvasComponent, canActivate: [authGuard] },
+  { path: 'agents/workforce', component: AgentWorkforceCockpitComponent, canActivate: [authGuard] },
+  { path: 'seo/crawler', component: SeoCrawlerStudioComponent, canActivate: [authGuard] },
   { path: 'accounts/snapshots', component: AgencySnapshotCockpitComponent, canActivate: [authGuard] },
   { path: 'ai/agent-fleet', component: AgentFleetCockpitComponent, canActivate: [authGuard] },
   { path: 'billing/invoices', component: InvoiceManagementCockpitComponent, canActivate: [authGuard] },

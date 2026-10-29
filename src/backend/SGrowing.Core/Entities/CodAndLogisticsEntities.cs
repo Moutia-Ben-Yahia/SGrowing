@@ -72,6 +72,9 @@ public class CodOrder
     public DateTime? ConfirmedAtUtc { get; set; }
     public string ItemsJson { get; set; } = "[]";
     public string? Notes { get; set; }
+    public bool RequiresPhoneCall { get; set; } = false;
+    public string? ConfirmedVia { get; set; }
+    public DateTime? InteractiveConfirmationSentAtUtc { get; set; }
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
     public static CodOrder Create(

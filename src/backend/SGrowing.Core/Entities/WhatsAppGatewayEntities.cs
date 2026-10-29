@@ -84,3 +84,120 @@ public record WhatsAppInteractiveCallbackPayload(
     string? SelectedRowId = null,
     string? ButtonText = null,
     string? ContextMessageId = null);
+
+public class WhatsAppPairingSessionRecord
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid TenantId { get; set; }
+    public string InstanceName { get; set; } = "default";
+    public string PhoneNumber { get; set; } = string.Empty;
+    public string PairingCode { get; set; } = string.Empty;
+    public string Status { get; set; } = "PendingUserEntry"; // PendingUserEntry, Connected, Expired, Failed
+    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+    public DateTime ExpiresAtUtc { get; set; } = DateTime.UtcNow.AddMinutes(10);
+    public DateTime? ConnectedAtUtc { get; set; }
+    public string CompanionOs { get; set; } = "Chrome/Linux";
+    public string CompanionPlatform { get; set; } = "SGrowing-MultiDevice";
+
+    public bool IsExpired => DateTime.UtcNow > ExpiresAtUtc && Status == "PendingUserEntry";
+}
+
+public class WhatsAppInteractiveOrderConfirmationRecord
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid TenantId { get; set; }
+    public Guid OrderId { get; set; }
+    public string OrderNumber { get; set; } = string.Empty;
+    public string CustomerPhone { get; set; } = string.Empty;
+    public decimal TotalAmount { get; set; }
+    public string Currency { get; set; } = "TND";
+    public string MessageId { get; set; } = string.Empty;
+    public string Status { get; set; } = "Dispatched"; // Dispatched, Confirmed, AddressUpdated, Cancelled, TimedOut
+    public string? SelectedButtonId { get; set; }
+    public string? AddressUpdateNote { get; set; }
+    public DateTime DispatchedAtUtc { get; set; } = DateTime.UtcNow;
+    public DateTime? RespondedAtUtc { get; set; }
+    public bool FallbackToDialerTriggered { get; set; } = false;
+    public DateTime? FallbackTriggeredAtUtc { get; set; }
+}
+
+public record WhatsAppPairingRequest(
+    string PhoneNumber,
+    string InstanceName = "default");
+
+public record WhatsAppPairingResponse(
+    string PairingCode,
+    string FormattedCode,
+    string PhoneNumber,
+    string InstanceName,
+    string Status,
+    DateTime ExpiresAtUtc,
+    int ExpiresInSeconds,
+    string Protocol,
+    string StepInstructions);
+
+public record WhatsAppVerifyPairingRequest(
+    string PairingCode,
+    string InstanceName = "default");
+
+public record WhatsAppVerifyPairingResponse(
+    bool Success,
+    string Status,
+    string InstanceName,
+    string PhoneNumber,
+    DateTime ConnectedAtUtc,
+    string CompanionOs,
+    string CompanionPlatform,
+    string Message);
+
+public record WhatsAppPairingStatusResponse(
+    string InstanceName,
+    string Status,
+    string? PhoneNumber,
+    DateTime? ConnectedAtUtc,
+    bool IsConnected,
+    string? ActivePairingCode,
+    DateTime? PairingExpiresAtUtc,
+    int? RemainingSeconds);
+
+public record DispatchInteractiveCodRequest(
+    Guid OrderId,
+    string CustomerPhone,
+    decimal TotalAmount,
+    string Currency = "TND");
+
+public record WhatsAppInteractiveButtonDto(
+    string ButtonId,
+    string ButtonText);
+
+public record DispatchInteractiveCodResponse(
+    string MessageId,
+    Guid OrderId,
+    string CustomerPhone,
+    decimal TotalAmount,
+    string Currency,
+    string Status,
+    List<WhatsAppInteractiveButtonDto> Buttons,
+    DateTime DispatchedAtUtc);
+
+public record InteractiveWebhookRequest(
+    Guid OrderId,
+    string ButtonId,
+    string? UpdatedText = null);
+
+public record InteractiveWebhookResponse(
+    bool Success,
+    Guid OrderId,
+    string Status,
+    string ExecutedAction,
+    string? Notes,
+    DateTime ProcessedAtUtc);
+
+public record TimeoutSweepRequest(
+    double? TimeoutMinutes = 30);
+
+public record TimeoutSweepResponse(
+    int TotalEvaluated,
+    int EscalatedCount,
+    List<Guid> EscalatedOrderIds,
+    DateTime SweptAtUtc);

@@ -28,6 +28,8 @@ using SGrowing.Api.Modules.Funnels;
 using SGrowing.Api.Modules.Calendar;
 using SGrowing.Api.Modules.Deliverability;
 using SGrowing.Api.Modules.Telemetry;
+using SGrowing.Api.Modules.Agents;
+using SGrowing.Api.Modules.Channels.WhatsApp;
 using SGrowing.Api.Modules.Billing;
 using SGrowing.Api.Modules.Outbound.Spintax;
 using SGrowing.Api.Modules.Outbound.EmailVerification;
@@ -46,7 +48,6 @@ using SGrowing.Api.Modules.Outbound.Research;
 using SGrowing.Api.Modules.Commerce.Warehouses;
 using SGrowing.Api.Modules.Organizations;
 using SGrowing.Api.Modules.Workforce.Timesheets;
-using SGrowing.Api.Modules.Channels.WhatsApp;
 using SGrowing.Api.Modules.Commerce.CartReservations;
 using SGrowing.Api.Modules.Commerce.CallCenter;
 using SGrowing.Api.Modules.Conversations.PresenceAndCsat;
@@ -362,6 +363,13 @@ builder.Services.AddScoped<IMultiInboxRotationService, MultiInboxRotationService
 builder.Services.AddScoped<ICodCarrierAutoDispatchService, CodCarrierAutoDispatchService>();
 builder.Services.AddScoped<IPostgreSqlRlsService, PostgreSqlRlsService>();
 builder.Services.AddSingleton<TenantRlsConnectionInterceptor>();
+
+// Horizons 10-13: WhatsApp Pairing Code, Autonomous 15-Step Funnel, 38-Role Agent Fleet, Technical SEO Crawler
+builder.Services.AddWhatsAppPairingServices();
+builder.Services.AddScoped<IAutonomousFunnelBuilderService, AutonomousFunnelBuilderService>();
+builder.Services.AddAgentFleetOrchestration();
+builder.Services.AddScoped<ITechnicalSeoCrawlerService, TechnicalSeoCrawlerService>();
+builder.Services.AddHttpClient<TechnicalSeoCrawlerService>();
 
 builder.Services.AddHttpClient("WebScraperClient", client =>
 {
@@ -2195,6 +2203,12 @@ app.MapProposalPortalEndpoints();
 app.MapVideoMeetingEndpoints();
 app.MapMultiInboxRotationEndpoints();
 app.MapCarrierDispatchEndpoints();
+
+// Horizons 10-13 Endpoint Mappings
+app.MapWhatsAppPairingEndpoints();
+app.MapAutonomousFunnelEndpoints();
+app.MapAgentFleetEndpoints();
+app.MapTechnicalSeoCrawlerEndpoints();
 
 if (args.Contains("--seed"))
 {

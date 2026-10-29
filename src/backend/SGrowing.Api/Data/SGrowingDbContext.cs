@@ -330,6 +330,8 @@ public class SGrowingDbContext : DbContext
     public DbSet<CartReservationLockRecord> CartReservationLocks => Set<CartReservationLockRecord>();
     public DbSet<WhatsAppNewsletterChannelRecord> WhatsAppNewsletterChannels => Set<WhatsAppNewsletterChannelRecord>();
     public DbSet<WhatsAppNewsletterPostRecord> WhatsAppNewsletterPosts => Set<WhatsAppNewsletterPostRecord>();
+    public DbSet<WhatsAppPairingSessionRecord> WhatsAppPairingSessions => Set<WhatsAppPairingSessionRecord>();
+    public DbSet<WhatsAppInteractiveOrderConfirmationRecord> WhatsAppInteractiveOrderConfirmations => Set<WhatsAppInteractiveOrderConfirmationRecord>();
 
     // Enterprise Wiki Strategic Pillars (Waves 1-4)
     public DbSet<CallCenterOrderLockRecord> CallCenterOrderLocks => Set<CallCenterOrderLockRecord>();
@@ -548,6 +550,20 @@ public class SGrowingDbContext : DbContext
         {
             b.HasKey(w => w.Id);
             b.HasIndex(w => new { w.TenantId, w.InstanceName }).IsUnique();
+        });
+
+        modelBuilder.Entity<WhatsAppPairingSessionRecord>(b =>
+        {
+            b.HasKey(s => s.Id);
+            b.HasIndex(s => new { s.TenantId, s.PairingCode });
+            b.HasIndex(s => new { s.TenantId, s.InstanceName });
+        });
+
+        modelBuilder.Entity<WhatsAppInteractiveOrderConfirmationRecord>(b =>
+        {
+            b.HasKey(c => c.Id);
+            b.HasIndex(c => new { c.TenantId, c.OrderId });
+            b.HasIndex(c => new { c.TenantId, c.Status });
         });
 
         modelBuilder.Entity<AutonomousFunnelRunRecord>(b =>

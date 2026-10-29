@@ -100,7 +100,7 @@ public class ConversationalBiService : IConversationalBiService
         }
 
         return new ConversationalBiResponseDto(
-            Question: naturalLanguageQuery,
+            Question: naturalLanguageQuery ?? string.Empty,
             AnswerSummary: answer,
             KeyMetrics: metrics,
             ConfidenceScore: 0.95,

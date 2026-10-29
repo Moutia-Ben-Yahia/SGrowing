@@ -412,8 +412,8 @@ public class VoiceAiStreamService
             cancellationToken.ThrowIfCancellationRequested();
             var token = (i == 0 ? "" : " ") + words[i];
             yield return token;
-            await Task.Yield();
         }
+        await Task.CompletedTask;
     }
 
     // 5. Neural TTS Chunk Delivery with Instant Buffer Clear on Barge-In
@@ -445,10 +445,9 @@ public class VoiceAiStreamService
             byte[] syntheticFrame = GenerateSyntheticVoiceAudio(sentence);
             var base64Chunk = Convert.ToBase64String(syntheticFrame);
             audioChunks.Add(base64Chunk);
-
-            await Task.Yield();
         }
 
+        await Task.CompletedTask;
         return audioChunks;
     }
 

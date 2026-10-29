@@ -2,7 +2,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Agents.Git;
+using SGrowing.Api.Modules.Funnels.Autonomous;
 using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.Funnels.Autonomous;
@@ -18,10 +21,120 @@ public static class AutonomousFunnelEndpoints
         return DefaultTenantId;
     }
 
+    private static IAutonomousFunnelBuilderService ResolveBuilderService(IServiceProvider sp)
+    {
+        return sp.GetService<IAutonomousFunnelBuilderService>()
+            ?? new AutonomousFunnelBuilderService(sp.GetRequiredService<SGrowingDbContext>());
+    }
+
     public static IEndpointRouteBuilder MapAutonomousFunnelEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/v1/funnels/autonomous")
             .WithTags("15-Step Idea-to-Funnel Autonomous Workshop");
+
+        // =====================================================================
+        // 1. Horizon 11 Idea-to-Funnel 15-Step Pipeline & Liquid Section Engine
+        // =====================================================================
+
+        group.MapPost("/generate", async (
+            [FromBody] AutonomousFunnelGenerateRequest req,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IServiceProvider sp,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var builder = ResolveBuilderService(sp);
+            try
+            {
+                var spec = await builder.GenerateFunnelAsync(effectiveTenantId, req, ct);
+                return Results.Ok(spec);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("GenerateAutonomousFunnel")
+        .WithSummary("Execute the 15-step deterministic idea-to-funnel generation pipeline");
+
+        group.MapGet("/status/{jobId}", async (
+            string jobId,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IServiceProvider sp,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var builder = ResolveBuilderService(sp);
+            var status = await builder.GetJobStatusAsync(effectiveTenantId, jobId, ct);
+            if (status == null) return Results.NotFound(new { error = $"Job '{jobId}' not found" });
+            return Results.Ok(status);
+        })
+        .WithName("GetAutonomousFunnelJobStatus")
+        .WithSummary("Get step-by-step progress (1 to 15) with step names, durations and artifacts");
+
+        group.MapGet("/{funnelId:guid}", async (
+            Guid funnelId,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IServiceProvider sp,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var builder = ResolveBuilderService(sp);
+            var spec = await builder.GetFunnelByIdAsync(effectiveTenantId, funnelId, ct);
+            if (spec == null) return Results.NotFound(new { error = $"Funnel with ID '{funnelId}' not found" });
+            return Results.Ok(spec);
+        })
+        .WithName("GetAutonomousFunnelSpecification")
+        .WithSummary("Retrieve full compiled funnel specification, Liquid sections, and tokens");
+
+        group.MapPost("/{funnelId:guid}/publish", async (
+            Guid funnelId,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IServiceProvider sp,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var builder = ResolveBuilderService(sp);
+            try
+            {
+                var result = await builder.PublishFunnelAsync(effectiveTenantId, funnelId, ct);
+                return Results.Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                return Results.NotFound(new { error = $"Funnel with ID '{funnelId}' not found" });
+            }
+        })
+        .WithName("PublishAutonomousFunnel")
+        .WithSummary("Publish funnel to live public slug URL");
+
+        group.MapPost("/order-bump-roi", async (
+            [FromBody] EvaluateOrderBumpRoiRequest req,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IServiceProvider sp) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var builder = ResolveBuilderService(sp);
+            var roi = await builder.EvaluateOrderBumpRoiAsync(
+                effectiveTenantId,
+                req.BasePrice,
+                req.BumpPrice,
+                req.BumpMarginPct,
+                req.EstimatedTakeRate
+            );
+            return Results.Ok(roi);
+        })
+        .WithName("EvaluateAutonomousFunnelOrderBumpRoi")
+        .WithSummary("Evaluate expected value for an order bump proposal (EV_bump = P_bump * Price_bump * Margin - Friction)");
+
+        // =====================================================================
+        // 2. Legacy Runs, GitHub Drift & Split-Testing Endpoints
+        // =====================================================================
 
         group.MapPost("/execute", async (
             [FromBody] ExecuteAutonomousFunnelRequest req,
