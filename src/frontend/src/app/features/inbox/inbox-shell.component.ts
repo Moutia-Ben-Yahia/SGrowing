@@ -42,6 +42,11 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 <span class="flex items-center gap-2">🌐 Deep AI Web Research</span>
               </a>
               <a
+                routerLink="/commerce/callcenter"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
+                <span class="flex items-center gap-2">📞 Call Center & COD Ledger</span>
+              </a>
+              <a
                 routerLink="/commerce/warehouses"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
                 <span class="flex items-center gap-2">🏬 Multi-Warehouse Allocation</span>
@@ -50,6 +55,11 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 routerLink="/organizations/margin"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
                 <span class="flex items-center gap-2">🏢 Organization & Margin Tracker</span>
+              </a>
+              <a
+                routerLink="/accounts/snapshots"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-sky-400 hover:bg-sky-500/10 border border-sky-500/20 transition">
+                <span class="flex items-center gap-2">🏢 Agency Snapshots & Rebilling</span>
               </a>
               <a
                 routerLink="/workforce/timesheets"

@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SGrowing.Api.Data;
+using SGrowing.Api.Hubs;
 using SGrowing.Core.Diagnostics;
 using SGrowing.Core.Entities;
 
@@ -9,11 +11,13 @@ namespace SGrowing.Api.Modules.Commerce.CallCenter;
 public class CallCenterAntiCollisionService : ICallCenterAntiCollisionService
 {
     private readonly SGrowingDbContext _db;
+    private readonly IHubContext<OmniHub, IOmniClient>? _hubContext;
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new();
 
-    public CallCenterAntiCollisionService(SGrowingDbContext db)
+    public CallCenterAntiCollisionService(SGrowingDbContext db, IHubContext<OmniHub, IOmniClient>? hubContext = null)
     {
         _db = db;
+        _hubContext = hubContext;
     }
 
     public async Task<CallCenterLockResult> AcquireLockAsync(
@@ -45,6 +49,13 @@ public class CallCenterAntiCollisionService : ICallCenterAntiCollisionService
                     // Same agent: renew lock
                     activeLock.Renew(duration);
                     await _db.SaveChangesAsync();
+
+                    if (_hubContext != null)
+                    {
+                        await _hubContext.Clients.Group(OmniHub.GetTenantGroup(tenantId))
+                            .OnOrderLocked(orderId, userId.ToString(), userName, activeLock.ExpiresAtUtc);
+                    }
+
                     return new CallCenterLockResult(
                         true,
                         activeLock.Id,
@@ -74,6 +85,12 @@ public class CallCenterAntiCollisionService : ICallCenterAntiCollisionService
             var newLock = CallCenterOrderLockRecord.Create(tenantId, orderId, orderNumber, userId, userName, duration);
             _db.CallCenterOrderLocks.Add(newLock);
             await _db.SaveChangesAsync();
+
+            if (_hubContext != null)
+            {
+                await _hubContext.Clients.Group(OmniHub.GetTenantGroup(tenantId))
+                    .OnOrderLocked(orderId, userId.ToString(), userName, newLock.ExpiresAtUtc);
+            }
 
             SGrowingTelemetry.CallCenterCollisionLocksAcquiredCounter.Add(1,
                 new KeyValuePair<string, object?>("tenant_id", tenantId.ToString()));
@@ -106,6 +123,13 @@ public class CallCenterAntiCollisionService : ICallCenterAntiCollisionService
 
         activeLock.Renew(extension ?? TimeSpan.FromMinutes(3));
         await _db.SaveChangesAsync();
+
+        if (_hubContext != null)
+        {
+            await _hubContext.Clients.Group(OmniHub.GetTenantGroup(tenantId))
+                .OnOrderLocked(orderId, userId.ToString(), activeLock.LockedByUserName, activeLock.ExpiresAtUtc);
+        }
+
         return true;
     }
 
@@ -119,6 +143,13 @@ public class CallCenterAntiCollisionService : ICallCenterAntiCollisionService
 
         activeLock.Release();
         await _db.SaveChangesAsync();
+
+        if (_hubContext != null)
+        {
+            await _hubContext.Clients.Group(OmniHub.GetTenantGroup(tenantId))
+                .OnOrderUnlocked(orderId);
+        }
+
         return true;
     }
 

@@ -58,7 +58,9 @@ public class AndroidSmsDispatchRecord
     public string RecipientPhone { get; set; } = string.Empty;
     public string MessageBody { get; set; } = string.Empty;
     public string DispatchStatus { get; set; } = "Dispatched"; // "Queued", "Dispatched", "Delivered", "Failed"
+    public string? ErrorMessage { get; set; }
     public DateTime SentAtUtc { get; set; } = DateTime.UtcNow;
+    public DateTime? DeliveredAtUtc { get; set; }
 
     public static AndroidSmsDispatchRecord Create(
         Guid tenantId,

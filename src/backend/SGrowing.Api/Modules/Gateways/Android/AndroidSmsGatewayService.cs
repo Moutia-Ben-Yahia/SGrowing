@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SGrowing.Api.Data;
+using SGrowing.Api.Hubs;
 using SGrowing.Core.Diagnostics;
 using SGrowing.Core.Entities;
 
@@ -8,10 +10,12 @@ namespace SGrowing.Api.Modules.Gateways.Android;
 public class AndroidSmsGatewayService : IAndroidSmsGatewayService
 {
     private readonly SGrowingDbContext _db;
+    private readonly IHubContext<OmniHub, IOmniClient>? _hubContext;
 
-    public AndroidSmsGatewayService(SGrowingDbContext db)
+    public AndroidSmsGatewayService(SGrowingDbContext db, IHubContext<OmniHub, IOmniClient>? hubContext = null)
     {
         _db = db;
+        _hubContext = hubContext;
     }
 
     public async Task<AndroidSmsGatewayDevice> RegisterDeviceAsync(
@@ -134,5 +138,28 @@ public class AndroidSmsGatewayService : IAndroidSmsGatewayService
             .OrderByDescending(r => r.SentAtUtc)
             .Take(limit)
             .ToListAsync();
+    }
+
+    public async Task<bool> RecordDeliveryStatusAsync(Guid tenantId, Guid dispatchId, string status, string? errorMessage = null)
+    {
+        var record = await _db.AndroidSmsDispatchRecords
+            .FirstOrDefaultAsync(r => r.TenantId == tenantId && r.Id == dispatchId);
+        if (record == null) return false;
+
+        record.DispatchStatus = status.Trim();
+        record.ErrorMessage = errorMessage?.Trim();
+        if (status.Equals("Delivered", StringComparison.OrdinalIgnoreCase))
+        {
+            record.DeliveredAtUtc = DateTime.UtcNow;
+        }
+        await _db.SaveChangesAsync();
+
+        if (_hubContext != null)
+        {
+            await _hubContext.Clients.Group(OmniHub.GetTenantGroup(tenantId))
+                .OnAndroidSmsStatusUpdated(dispatchId, status, errorMessage);
+        }
+
+        return true;
     }
 }

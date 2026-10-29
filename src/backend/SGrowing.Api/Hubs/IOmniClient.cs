@@ -22,4 +22,7 @@ public interface IOmniClient
     Task OnOperatorPresenceChanged(Guid conversationId, string operatorId, string operatorName, bool isTyping);
     Task OnSlaBreachAlert(Guid conversationId, string priority, int minutesRemaining, bool isBreached);
     Task OnCallSessionStateChanged(Guid callSessionId, string status, string? callerPhone);
+    Task OnOrderLocked(Guid orderId, string lockedByAgentId, string lockedByAgentName, DateTime expiresAtUtc);
+    Task OnOrderUnlocked(Guid orderId);
+    Task OnAndroidSmsStatusUpdated(Guid dispatchId, string status, string? errorMessage);
 }

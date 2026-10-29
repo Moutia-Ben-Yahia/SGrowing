@@ -24,6 +24,12 @@ public record SendAndroidSmsRequest(
     int? PreferredSimSlot = null
 );
 
+public record SmsDeliveryStatusCallbackRequest(
+    Guid DispatchId,
+    string Status,
+    string? ErrorMessage = null
+);
+
 public static class AndroidSmsGatewayEndpoints
 {
     public static IEndpointRouteBuilder MapAndroidSmsGatewayEndpoints(this IEndpointRouteBuilder app)
@@ -77,6 +83,15 @@ public static class AndroidSmsGatewayEndpoints
         {
             var devices = await service.ListDevicesAsync(tenantId);
             return Results.Ok(devices);
+        });
+
+        group.MapPost("/status-callback", async (
+            Guid tenantId,
+            SmsDeliveryStatusCallbackRequest req,
+            IAndroidSmsGatewayService service) =>
+        {
+            var ok = await service.RecordDeliveryStatusAsync(tenantId, req.DispatchId, req.Status, req.ErrorMessage);
+            return ok ? Results.Ok(new { Success = true }) : Results.NotFound(new { Success = false, Error = "Dispatch record not found" });
         });
 
         group.MapGet("/history", async (

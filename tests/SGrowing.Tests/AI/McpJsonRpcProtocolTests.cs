@@ -59,7 +59,7 @@ public class McpJsonRpcProtocolTests
 
         var toolsArray = node["result"]?["tools"]?.AsArray();
         toolsArray.Should().NotBeNull();
-        toolsArray!.Count.Should().Be(5);
+        toolsArray!.Count.Should().Be(11);
 
         var names = toolsArray.Select(t => t?["name"]?.GetValue<string>()).ToList();
         names.Should().Contain("crm_search_leads");
@@ -67,6 +67,10 @@ public class McpJsonRpcProtocolTests
         names.Should().Contain("deliverability_run_placement_test");
         names.Should().Contain("contracts_dispatch_for_signature");
         names.Should().Contain("courier_generate_waybill");
+        names.Should().Contain("waterfall_enrich_lead");
+        names.Should().Contain("callcenter_acquire_order_lock");
+        names.Should().Contain("cod_calculate_net_margin");
+        names.Should().Contain("gateways_dispatch_android_sms");
     }
 
     [Fact]

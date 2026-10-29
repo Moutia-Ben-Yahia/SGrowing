@@ -38,4 +38,6 @@ public interface IAndroidSmsGatewayService
     Task<List<AndroidSmsGatewayDevice>> ListDevicesAsync(Guid tenantId);
 
     Task<List<AndroidSmsDispatchRecord>> GetDispatchHistoryAsync(Guid tenantId, int limit = 50);
+
+    Task<bool> RecordDeliveryStatusAsync(Guid tenantId, Guid dispatchId, string status, string? errorMessage = null);
 }

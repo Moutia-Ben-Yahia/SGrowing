@@ -62,6 +62,7 @@ import { AutonomousFunnelCockpitComponent } from './features/funnels/autonomous-
 import { AgentFleetCockpitComponent } from './features/ai/agent-fleet-cockpit.component';
 import { InvoiceManagementCockpitComponent } from './features/billing/invoice-management-cockpit.component';
 import { AgencySnapshotCockpitComponent } from './features/accounts/agency-snapshot-cockpit.component';
+import { CallCenterCockpitComponent } from './features/commerce/call-center-cockpit.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -70,6 +71,7 @@ export const routes: Routes = [
   { path: 'projects/tasks', component: ProjectTaskBoardComponent, canActivate: [authGuard] },
   { path: 'outbound/research', component: ProspectResearchCockpitComponent, canActivate: [authGuard] },
   { path: 'commerce/warehouses', component: MultiWarehouseCockpitComponent, canActivate: [authGuard] },
+  { path: 'commerce/callcenter', component: CallCenterCockpitComponent, canActivate: [authGuard] },
   { path: 'organizations/margin', component: OrganizationMarginCockpitComponent, canActivate: [authGuard] },
   { path: 'workforce/timesheets', component: TimesheetLaborCockpitComponent, canActivate: [authGuard] },
   { path: 'channels/whatsapp-gateway', component: WhatsAppGatewayCockpitComponent, canActivate: [authGuard] },

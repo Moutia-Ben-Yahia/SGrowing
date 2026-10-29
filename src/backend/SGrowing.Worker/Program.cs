@@ -74,6 +74,9 @@ builder.Services.AddHostedService<OutwardWebhookDeliveryDaemon>();
 builder.Services.AddHostedService<DurableSocialPublishingDaemon>();
 builder.Services.AddHostedService<DealRottingWatchdogDaemon>();
 builder.Services.AddHostedService<CartReservationSweeperDaemon>();
+builder.Services.AddHostedService<CallCenterLockSweeperDaemon>();
+builder.Services.AddHostedService<SerpRankScheduledTrackerDaemon>();
+builder.Services.AddHostedService<AndroidSmsQueueDispatcherDaemon>();
 
 var host = builder.Build();
 host.Run();

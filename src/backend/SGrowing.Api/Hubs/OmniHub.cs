@@ -50,6 +50,24 @@ public class OmniHub : Hub<IOmniClient>
             .OnCallSessionStateChanged(callSessionId, status, callerPhone);
     }
 
+    public async Task BroadcastOrderLock(Guid tenantId, Guid orderId, string lockedByAgentId, string lockedByAgentName, DateTime expiresAtUtc)
+    {
+        await Clients.Group(GetTenantGroup(tenantId))
+            .OnOrderLocked(orderId, lockedByAgentId, lockedByAgentName, expiresAtUtc);
+    }
+
+    public async Task BroadcastOrderUnlock(Guid tenantId, Guid orderId)
+    {
+        await Clients.Group(GetTenantGroup(tenantId))
+            .OnOrderUnlocked(orderId);
+    }
+
+    public async Task BroadcastAndroidSmsStatus(Guid tenantId, Guid dispatchId, string status, string? errorMessage)
+    {
+        await Clients.Group(GetTenantGroup(tenantId))
+            .OnAndroidSmsStatusUpdated(dispatchId, status, errorMessage);
+    }
+
     public static string GetConversationGroup(Guid conversationId) => $"conv_{conversationId}";
     public static string GetTenantGroup(Guid tenantId) => $"tenant_{tenantId}";
 }
