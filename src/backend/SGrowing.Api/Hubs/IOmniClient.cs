@@ -11,6 +11,19 @@ public record AiDraftDto(
     DateTime CreatedAtUtc
 );
 
+public record HighIntentProposalViewedEventDto(
+    Guid TenantId,
+    Guid ProposalId,
+    string ProposalTitle,
+    string ViewerEmail,
+    string ViewerIp,
+    int PageNumber,
+    double DwellSeconds,
+    int VisitCount,
+    string AlertReason,
+    DateTime TimestampUtc
+);
+
 public interface IOmniClient
 {
     Task OnMessageReceived(MessageDto message);
@@ -26,4 +39,5 @@ public interface IOmniClient
     Task OnOrderUnlocked(Guid orderId);
     Task OnAndroidSmsStatusUpdated(Guid dispatchId, string status, string? errorMessage);
     Task OnVoiceTranscriptionChunk(Guid callSessionId, string speaker, string chunkText, double sentimentScore, bool isFinal);
+    Task OnHighIntentProposalViewed(HighIntentProposalViewedEventDto alert);
 }

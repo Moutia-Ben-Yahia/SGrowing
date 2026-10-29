@@ -13,7 +13,8 @@ public enum RemittanceDiscrepancyType
     ShortPayment = 2,
     Overpayment = 3,
     UnaccountedParcel = 4,
-    FeeDispute = 5
+    FeeDispute = 5,
+    PhantomReturn = 6
 }
 
 public class CourierRemittanceStatement
@@ -47,6 +48,8 @@ public class RemittanceItemMatch
     public decimal DifferenceAmount { get; set; } // Reported - Expected
     public decimal CourierFeeDeducted { get; set; }
     public RemittanceDiscrepancyType DiscrepancyType { get; set; } = RemittanceDiscrepancyType.ExactMatch;
+    public string? DisputeTicketNumber { get; set; }
+    public decimal HoldbackAmount { get; set; }
     public string? ResolutionNotes { get; set; }
     public bool IsResolved { get; set; } = false;
 }

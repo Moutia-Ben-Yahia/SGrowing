@@ -181,7 +181,8 @@ public class ShippingManifest
     public string ManifestNumber { get; set; } = string.Empty;
     public int OrderCount { get; set; }
     public decimal TotalCashAmount { get; set; }
-    public string Status { get; set; } = "Generated"; // Generated, HandedOverToCourier
+    public decimal ExpectedFreightCost { get; set; }
+    public string Status { get; set; } = "PendingPickup"; // PendingPickup, Dispatched, Settled, Generated, HandedOverToCourier
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime? HandedOverAtUtc { get; set; }
     public string OrderIdsJson { get; set; } = "[]";

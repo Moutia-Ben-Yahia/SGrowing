@@ -74,6 +74,12 @@ public class OmniHub : Hub<IOmniClient>
             .OnVoiceTranscriptionChunk(callSessionId, speaker, chunkText, sentimentScore, isFinal);
     }
 
+    public async Task BroadcastHighIntentProposalViewed(HighIntentProposalViewedEventDto alert)
+    {
+        await Clients.Group(GetTenantGroup(alert.TenantId))
+            .OnHighIntentProposalViewed(alert);
+    }
+
     public static string GetConversationGroup(Guid conversationId) => $"conv_{conversationId}";
     public static string GetTenantGroup(Guid tenantId) => $"tenant_{tenantId}";
 }

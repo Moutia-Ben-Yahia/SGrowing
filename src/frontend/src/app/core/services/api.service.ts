@@ -20,8 +20,18 @@ import {
 import { SeoAuditReportDto, PageAuditResultDto, SerpKeywordTrackingDto, AeoBrandMentionDto, GeoScoreReportDto } from '../models/seo.models';
 import { SocialChannelMetadataDto, SocialAccountDto, SocialPostDto, DeflectCommentResultDto, TokenHealthAuditReportDto } from '../models/social.models';
 import { SalesFunnelDto, FunnelStepDto, OrderBumpOfferDto, OneClickUpsellOfferDto, FunnelPerformanceSummaryDto } from '../models/funnel.models';
-import { BookingEventTypeDto, CalendarBookingRecordDto, TimeSlotDto, HostAvailabilityScheduleDto, HostWeightDto } from '../models/calendar.models';
-import { DomainDnsHealthRecordDto, EmailSpamAnalysisReportDto, MailboxWarmupCadenceDto, WarmupExchangeLogDto } from '../models/deliverability.models';
+import { BookingEventTypeDto, CalendarBookingRecordDto, TimeSlotDto, HostAvailabilityScheduleDto, HostWeightDto, VideoMeetingSessionDto, WebRtcAccessTokenResultDto, ParticipantMediaStateDto, ParticipantStateDto, SalesBattleCardDto, ObjectionEvaluationResultDto, MeetingSessionSummaryDto } from '../models/calendar.models';
+import { 
+  DomainDnsHealthRecordDto, 
+  EmailSpamAnalysisReportDto, 
+  MailboxWarmupCadenceDto, 
+  WarmupExchangeLogDto,
+  MultiInboxAccountDto,
+  RegisterSenderInboxRequest,
+  SelectNextSenderResponse,
+  DeliverabilityRadarMetricsDto,
+  RotationSimulationResultDto
+} from '../models/deliverability.models';
 import { LiveTelemetrySummaryDto, TelemetryEventDto } from '../models/telemetry.models';
 import { SubscriptionDetailsDto, BillingInvoiceRecordDto } from '../models/billing.models';
 import { DigitalAssetDto, DigitalDownloadTokenDto, ProductLicenseKeyDto, PimVariantMatrixDto } from '../models/digital-goods.models';
@@ -1366,5 +1376,73 @@ export class ApiService {
 
   public evaluateCodFraud(tenantId: string, payload: any): Observable<CodFraudEvaluationResult> {
     return this.http.post<CodFraudEvaluationResult>(`${this.baseUrl}/v1/commerce/cod/evaluate-fraud?tenantId=${tenantId}`, payload);
+  }
+
+  // In-Browser WebRTC Video Consultation & In-Call AI Copilot (Calnode / DeskcommCRM / VoicEra)
+  public getMeetingRoom(roomToken: string, tenantId?: string, hostName?: string, attendeeName?: string): Observable<VideoMeetingSessionDto> {
+    let url = `${this.baseUrl}/v1/meetings/rooms/${encodeURIComponent(roomToken)}`;
+    const params: string[] = [];
+    if (tenantId) params.push(`tenantId=${tenantId}`);
+    if (hostName) params.push(`hostName=${encodeURIComponent(hostName)}`);
+    if (attendeeName) params.push(`attendeeName=${encodeURIComponent(attendeeName)}`);
+    if (params.length > 0) url += `?${params.join('&')}`;
+    return this.http.get<VideoMeetingSessionDto>(url);
+  }
+
+  public joinMeetingRoom(roomToken: string, payload: { participantIdentity: string; participantRole?: string; displayName?: string; isPublisher?: boolean }): Observable<{ token: WebRtcAccessTokenResultDto; room: VideoMeetingSessionDto }> {
+    return this.http.post<{ token: WebRtcAccessTokenResultDto; room: VideoMeetingSessionDto }>(`${this.baseUrl}/v1/meetings/rooms/${encodeURIComponent(roomToken)}/join`, payload);
+  }
+
+  public updateMeetingMediaState(roomToken: string, payload: { participantIdentity: string; state: ParticipantMediaStateDto }): Observable<ParticipantStateDto> {
+    return this.http.post<ParticipantStateDto>(`${this.baseUrl}/v1/meetings/rooms/${encodeURIComponent(roomToken)}/media-state`, payload);
+  }
+
+  public streamMeetingAudioChunk(roomToken: string, payload: { speakerIdentity: string; audioBase64?: string; transcriptHint?: string }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/v1/meetings/rooms/${encodeURIComponent(roomToken)}/audio-stream`, payload);
+  }
+
+  public evaluateMeetingObjections(roomToken: string, transcriptSegment: string): Observable<ObjectionEvaluationResultDto> {
+    return this.http.post<ObjectionEvaluationResultDto>(`${this.baseUrl}/v1/meetings/rooms/${encodeURIComponent(roomToken)}/battle-cards`, { transcriptSegment });
+  }
+
+  public endMeetingRoom(roomToken: string, summaryNotes = ''): Observable<MeetingSessionSummaryDto> {
+    return this.http.post<MeetingSessionSummaryDto>(`${this.baseUrl}/v1/meetings/rooms/${encodeURIComponent(roomToken)}/end`, { summaryNotes });
+  }
+
+  // Multi-Inbox Sender Rotation & Deliverability Radar (Instantly / Warmbly / Postal)
+  public getMultiInboxAccounts(tenantId?: string): Observable<MultiInboxAccountDto[]> {
+    const url = tenantId ? `${this.baseUrl}/v1/deliverability/inboxes?tenantId=${tenantId}` : `${this.baseUrl}/v1/deliverability/inboxes`;
+    return this.http.get<MultiInboxAccountDto[]>(url);
+  }
+
+  public registerSenderInbox(req: RegisterSenderInboxRequest): Observable<MultiInboxAccountDto> {
+    return this.http.post<MultiInboxAccountDto>(`${this.baseUrl}/v1/deliverability/inboxes`, req);
+  }
+
+  public selectNextSender(recipientEmail: string, tenantId?: string): Observable<SelectNextSenderResponse> {
+    return this.http.post<SelectNextSenderResponse>(`${this.baseUrl}/v1/deliverability/inboxes/select-next`, { recipientEmail, tenantId });
+  }
+
+  public quarantineSenderInbox(id: string, reason?: string, tenantId?: string): Observable<MultiInboxAccountDto> {
+    const url = tenantId ? `${this.baseUrl}/v1/deliverability/inboxes/${id}/quarantine?tenantId=${tenantId}` : `${this.baseUrl}/v1/deliverability/inboxes/${id}/quarantine`;
+    return this.http.post<MultiInboxAccountDto>(url, { reason, tenantId });
+  }
+
+  public thawSenderInbox(id: string, tenantId?: string): Observable<MultiInboxAccountDto> {
+    const url = tenantId ? `${this.baseUrl}/v1/deliverability/inboxes/${id}/thaw?tenantId=${tenantId}` : `${this.baseUrl}/v1/deliverability/inboxes/${id}/thaw`;
+    return this.http.post<MultiInboxAccountDto>(url, { tenantId });
+  }
+
+  public getDeliverabilityRadar(tenantId?: string): Observable<DeliverabilityRadarMetricsDto> {
+    const url = tenantId ? `${this.baseUrl}/v1/deliverability/inboxes/radar?tenantId=${tenantId}` : `${this.baseUrl}/v1/deliverability/inboxes/radar`;
+    return this.http.get<DeliverabilityRadarMetricsDto>(url);
+  }
+
+  public recordInboxDispatchEvent(id: string, payload: { wasDelivered: boolean; wasBounced: boolean; wasReplied: boolean; wasOpened?: boolean; isSpamComplaint?: boolean }): Observable<MultiInboxAccountDto> {
+    return this.http.post<MultiInboxAccountDto>(`${this.baseUrl}/v1/deliverability/inboxes/${id}/dispatch-event`, payload);
+  }
+
+  public simulateBatchRotation(req: { tenantId?: string; batchSize?: number; googleRatio?: number; microsoftRatio?: number; customRatio?: number }): Observable<RotationSimulationResultDto> {
+    return this.http.post<RotationSimulationResultDto>(`${this.baseUrl}/v1/deliverability/inboxes/simulate`, req);
   }
 }

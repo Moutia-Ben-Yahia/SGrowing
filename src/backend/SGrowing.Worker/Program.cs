@@ -77,6 +77,7 @@ builder.Services.AddHostedService<CartReservationSweeperDaemon>();
 builder.Services.AddHostedService<CallCenterLockSweeperDaemon>();
 builder.Services.AddHostedService<SerpRankScheduledTrackerDaemon>();
 builder.Services.AddHostedService<AndroidSmsQueueDispatcherDaemon>();
+builder.Services.AddHostedService<MultiInboxDispatchDaemon>();
 
 var host = builder.Build();
 host.Run();

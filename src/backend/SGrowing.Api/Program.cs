@@ -354,6 +354,15 @@ builder.Services.AddScoped<IInAppMicroSurveyService, InAppMicroSurveyService>();
 builder.Services.AddScoped<IAndroidSmsGatewayService, AndroidSmsGatewayService>();
 builder.Services.AddScoped<IVoiceCallAmdService, VoiceCallAmdService>();
 builder.Services.AddScoped<ICommunityFeedbackService, CommunityFeedbackService>();
+
+// Frontiers 5-9: Proposal Portal, WebRTC Video Meetings, Multi-Inbox Rotation, COD Carrier Auto-Dispatch & PostgreSql RLS
+builder.Services.AddScoped<IProposalPortalService, ProposalPortalService>();
+builder.Services.AddScoped<IVideoMeetingRoomService, VideoMeetingRoomService>();
+builder.Services.AddScoped<IMultiInboxRotationService, MultiInboxRotationService>();
+builder.Services.AddScoped<ICodCarrierAutoDispatchService, CodCarrierAutoDispatchService>();
+builder.Services.AddScoped<IPostgreSqlRlsService, PostgreSqlRlsService>();
+builder.Services.AddSingleton<TenantRlsConnectionInterceptor>();
+
 builder.Services.AddHttpClient("WebScraperClient", client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
@@ -2180,6 +2189,12 @@ app.MapHelpdeskCommercialContextEndpoints();
 app.MapCpqQuoteAndEavEndpoints();
 app.MapCryptographicSealingEndpoints();
 app.MapSegmentTelemetryEndpoints();
+
+// Frontiers 5-8 Endpoint Mappings
+app.MapProposalPortalEndpoints();
+app.MapVideoMeetingEndpoints();
+app.MapMultiInboxRotationEndpoints();
+app.MapCarrierDispatchEndpoints();
 
 if (args.Contains("--seed"))
 {

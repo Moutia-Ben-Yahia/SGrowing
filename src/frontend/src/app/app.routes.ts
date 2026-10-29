@@ -63,11 +63,19 @@ import { AgentFleetCockpitComponent } from './features/ai/agent-fleet-cockpit.co
 import { InvoiceManagementCockpitComponent } from './features/billing/invoice-management-cockpit.component';
 import { AgencySnapshotCockpitComponent } from './features/accounts/agency-snapshot-cockpit.component';
 import { CallCenterCockpitComponent } from './features/commerce/call-center-cockpit.component';
+import { ProposalViewerComponent } from './features/documents/proposal-viewer.component';
+import { VideoMeetingRoomComponent } from './features/calendar/video-meeting-room.component';
+import { MultiInboxCockpitComponent } from './features/deliverability/multi-inbox-cockpit.component';
+import { CarrierReconciliationCockpitComponent } from './features/commerce/carrier-reconciliation-cockpit.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', component: InboxShellComponent, canActivate: [authGuard] },
   { path: 'portal/onboarding/:token', component: ClientOnboardingPortalComponent },
+  { path: 'p/:token', component: ProposalViewerComponent },
+  { path: 'meet/:roomToken', component: VideoMeetingRoomComponent },
+  { path: 'deliverability/multi-inbox', component: MultiInboxCockpitComponent, canActivate: [authGuard] },
+  { path: 'commerce/reconciliation', component: CarrierReconciliationCockpitComponent, canActivate: [authGuard] },
   { path: 'projects/tasks', component: ProjectTaskBoardComponent, canActivate: [authGuard] },
   { path: 'outbound/research', component: ProspectResearchCockpitComponent, canActivate: [authGuard] },
   { path: 'commerce/warehouses', component: MultiWarehouseCockpitComponent, canActivate: [authGuard] },
