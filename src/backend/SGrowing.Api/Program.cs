@@ -386,6 +386,18 @@ builder.Services.AddScoped<ICpqQuotationService, CpqQuotationService>();
 // Horizon 21: B2B Wholesale Portal, Corporate Sub-Accounts & Credit Limit Ledger
 builder.Services.AddScoped<IB2BWholesalePortalService, B2BWholesalePortalService>();
 
+// Horizon 22: Self-Healing Outbound Webhook Mesh & Circuit Breaker Engine
+builder.Services.AddWebhookMesh();
+
+// Horizon 23: AI Predictive Sales Cadence & Optimal Contact Time Intelligence
+builder.Services.AddScoped<IPredictiveCadenceService, PredictiveCadenceService>();
+
+// Horizon 24: Autonomous Inventory Replenishment & Vendor Purchase Order Engine
+builder.Services.AddSingleton<IInventoryReplenishmentService, InventoryReplenishmentService>();
+
+// Horizon 25: Multi-Tenant Whitelabel Branding & Custom Domain SSL Provisioning Engine
+builder.Services.AddSingleton<IWhitelabelBrandingService, WhitelabelBrandingService>();
+
 builder.Services.AddHttpClient("WebScraperClient", client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
@@ -2240,6 +2252,18 @@ app.MapB2BWholesaleEndpoints();
 
 // Horizon 18: Configure, Price, Quote (CPQ) & Margin-Guarded Quotation Engine
 app.MapCpqQuotationEndpoints();
+
+// Horizon 22: Self-Healing Outbound Webhook Mesh & Circuit Breaker Engine
+app.MapWebhookMeshEndpoints();
+
+// Horizon 23: AI Predictive Sales Cadence & Optimal Contact Time Intelligence
+app.MapPredictiveCadenceEndpoints();
+
+// Horizon 24: Autonomous Inventory Replenishment & Vendor Purchase Order Engine
+app.MapInventoryReplenishmentEndpoints();
+
+// Horizon 25: Multi-Tenant Whitelabel Branding & Custom Domain SSL Provisioning Engine
+app.MapWhitelabelBrandingEndpoints();
 
 if (args.Contains("--seed"))
 {

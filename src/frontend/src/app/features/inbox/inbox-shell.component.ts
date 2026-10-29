@@ -37,6 +37,26 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 <span class="flex items-center gap-2">📋 Sprint Tasks & Onboarding</span>
               </a>
               <a
+                routerLink="/integrations/webhook-mesh"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 transition">
+                <span class="flex items-center gap-2">⚡ Webhook Mesh & Breakers</span>
+              </a>
+              <a
+                routerLink="/sales/predictive-cadence"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
+                <span class="flex items-center gap-2">🎯 Predictive Sales Cadence</span>
+              </a>
+              <a
+                routerLink="/commerce/inventory-replenishment"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
+                <span class="flex items-center gap-2">📦 Inventory Replenishment</span>
+              </a>
+              <a
+                routerLink="/tenancy/whitelabel-branding"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
+                <span class="flex items-center gap-2">🎨 Whitelabel Branding & SSL</span>
+              </a>
+              <a
                 routerLink="/outbound/research"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
                 <span class="flex items-center gap-2">🌐 Deep AI Web Research</span>
