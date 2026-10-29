@@ -18,9 +18,9 @@ import {
   UnifiedCustomer360Dto
 } from '../models/platform.models';
 import { SeoAuditReportDto, PageAuditResultDto, SerpKeywordTrackingDto, AeoBrandMentionDto, GeoScoreReportDto } from '../models/seo.models';
-import { SocialChannelMetadataDto, SocialAccountDto, SocialPostDto, DeflectCommentResultDto } from '../models/social.models';
+import { SocialChannelMetadataDto, SocialAccountDto, SocialPostDto, DeflectCommentResultDto, TokenHealthAuditReportDto } from '../models/social.models';
 import { SalesFunnelDto, FunnelStepDto, OrderBumpOfferDto, OneClickUpsellOfferDto, FunnelPerformanceSummaryDto } from '../models/funnel.models';
-import { BookingEventTypeDto, CalendarBookingRecordDto, TimeSlotDto, HostAvailabilityScheduleDto } from '../models/calendar.models';
+import { BookingEventTypeDto, CalendarBookingRecordDto, TimeSlotDto, HostAvailabilityScheduleDto, HostWeightDto } from '../models/calendar.models';
 import { DomainDnsHealthRecordDto, EmailSpamAnalysisReportDto, MailboxWarmupCadenceDto, WarmupExchangeLogDto } from '../models/deliverability.models';
 import { LiveTelemetrySummaryDto, TelemetryEventDto } from '../models/telemetry.models';
 import { SubscriptionDetailsDto, BillingInvoiceRecordDto } from '../models/billing.models';
@@ -68,7 +68,9 @@ import {
   CpqLineItemDto,
   EavAttributeDto,
   CryptographicSealResultDto,
-  CompletionCertificateDto
+  CompletionCertificateDto,
+  DocumentTelemetrySummaryDto,
+  SealVerificationResultDto
 } from '../models/inspiration.models';
 import {
   SpintaxPreviewResponse,
@@ -265,6 +267,25 @@ export class ApiService {
 
   public processVoiceTurn(payload: any): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/voice/dialer/process-turn`, payload);
+  }
+
+  // Frontier 1: Real-Time Voice AI & Telephony Stream
+  public streamVoiceTurn(payload: any, tenantId?: string): Observable<any> {
+    const query = tenantId ? `?tenantId=${tenantId}` : '';
+    return this.http.post<any>(`${this.baseUrl}/voice/amd/stream-turn${query}`, payload);
+  }
+
+  public analyzeVoiceSentiment(speechText: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/voice/amd/sentiment-analyze`, { speechText });
+  }
+
+  public sendVoiceTranscriptionChunk(payload: any, tenantId?: string): Observable<any> {
+    const query = tenantId ? `?tenantId=${tenantId}` : '';
+    return this.http.post<any>(`${this.baseUrl}/voice/amd/transcription-chunk${query}`, payload);
+  }
+
+  public getVoiceSessionTelemetry(sessionId: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/voice/amd/session/${sessionId}/telemetry`);
   }
 
   public createPickSlip(payload: any): Observable<any> {
@@ -963,6 +984,17 @@ export class ApiService {
     return this.http.post<CalendarBookingRecordDto>(`${this.baseUrl}/calendar/bookings/${bookingId}/reschedule`, { tenantId, newStartTimeUtc });
   }
 
+  public getEventHosts(tenantId: string, eventTypeId: string): Observable<HostWeightDto[]> {
+    return this.http.get<HostWeightDto[]>(`${this.baseUrl}/calendar/event-types/${eventTypeId}/hosts?tenantId=${tenantId}`);
+  }
+
+  public updateHostWeights(tenantId: string, eventTypeId: string, weights: Record<string, number>): Observable<{ success: boolean; message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(`${this.baseUrl}/calendar/event-types/${eventTypeId}/hosts/weights`, {
+      tenantId,
+      weights
+    });
+  }
+
   // SEO & Generative Engine Optimization (GEO)
   public computeGeoScore(tenantId: string, brandName: string, domainUrl: string): Observable<GeoScoreReportDto> {
     return this.http.post<GeoScoreReportDto>(`${this.baseUrl}/seo/geo/score`, { tenantId, brandName, domainUrl });
@@ -1108,9 +1140,14 @@ export class ApiService {
     return this.http.post<ViralHookSuggestionDto[]>(`${this.baseUrl}/v1/social/ai/viral-hooks?topic=${encodeURIComponent(topic)}`, {}, { headers });
   }
 
-  public rewritePostForPlatforms(masterDraft: string, platforms: number[], tenantId?: string): Observable<PlatformAdaptedPostDto[]> {
+  public rewritePostForPlatforms(masterDraft: string, platforms: number[], tenantId?: string, preferredAspectRatio?: string): Observable<PlatformAdaptedPostDto[]> {
     const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
-    return this.http.post<PlatformAdaptedPostDto[]>(`${this.baseUrl}/v1/social/ai/rewrite`, { masterDraft, platforms }, { headers });
+    return this.http.post<PlatformAdaptedPostDto[]>(`${this.baseUrl}/v1/social/ai/rewrite`, { masterDraft, platforms, preferredAspectRatio }, { headers });
+  }
+
+  public auditSocialTokenHealth(tenantId?: string): Observable<TokenHealthAuditReportDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<TokenHealthAuditReportDto>(`${this.baseUrl}/v1/social/accounts/audit-tokens`, {}, { headers });
   }
 
   // 7. Model Context Protocol (MCP) & Autonomous Fact Extraction
@@ -1190,6 +1227,39 @@ export class ApiService {
   public getCompletionCertificate(documentId: string, tenantId?: string): Observable<CompletionCertificateDto> {
     const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
     return this.http.get<CompletionCertificateDto>(`${this.baseUrl}/v1/documents/${documentId}/completion-certificate`, { headers });
+  }
+
+  public recordDocumentPageDwell(documentId: string, pageNumber: number, secondsDwell: number, viewerIp?: string, viewerEmail?: string, maxScrollPercent?: number, tenantId?: string): Observable<any> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<any>(`${this.baseUrl}/v1/documents/${documentId}/telemetry/dwell`, {
+      pageNumber,
+      secondsDwell,
+      viewerIp,
+      viewerEmail,
+      maxScrollPercent
+    }, { headers });
+  }
+
+  public getDocumentTelemetry(documentId: string, tenantId?: string): Observable<DocumentTelemetrySummaryDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.get<DocumentTelemetrySummaryDto>(`${this.baseUrl}/v1/documents/${documentId}/telemetry`, { headers });
+  }
+
+  public verifyDocumentSeal(documentId: string, token?: string, expectedHash?: string, tenantId?: string): Observable<SealVerificationResultDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    const params: string[] = [];
+    if (token) params.push(`token=${encodeURIComponent(token)}`);
+    if (expectedHash) params.push(`expectedHash=${encodeURIComponent(expectedHash)}`);
+    const qs = params.length > 0 ? `?${params.join('&')}` : '';
+    return this.http.get<SealVerificationResultDto>(`${this.baseUrl}/v1/documents/${documentId}/verify-seal${qs}`, { headers });
+  }
+
+  public verifyDocumentSealWithBytes(documentId: string, token?: string, pdfBase64?: string, tenantId?: string): Observable<SealVerificationResultDto> {
+    const headers = tenantId ? { 'X-Tenant-Id': tenantId } : undefined;
+    return this.http.post<SealVerificationResultDto>(`${this.baseUrl}/v1/documents/${documentId}/verify-seal`, {
+      verificationToken: token,
+      pdfBase64
+    }, { headers });
   }
 
   // 12. Seven Revenue Pillars

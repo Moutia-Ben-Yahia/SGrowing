@@ -25,4 +25,5 @@ public interface IOmniClient
     Task OnOrderLocked(Guid orderId, string lockedByAgentId, string lockedByAgentName, DateTime expiresAtUtc);
     Task OnOrderUnlocked(Guid orderId);
     Task OnAndroidSmsStatusUpdated(Guid dispatchId, string status, string? errorMessage);
+    Task OnVoiceTranscriptionChunk(Guid callSessionId, string speaker, string chunkText, double sentimentScore, bool isFinal);
 }

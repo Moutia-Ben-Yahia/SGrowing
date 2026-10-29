@@ -5,15 +5,49 @@ using Microsoft.Extensions.Logging;
 
 namespace SGrowing.Api.Modules.Voice;
 
+public record RichVoiceTurnResult(
+    string AgentResponse,
+    double SentimentScore,
+    List<string> BuyingSignals
+);
+
 public class RealtimeVoiceAgentService
 {
     private readonly SGrowingDbContext _db;
     private readonly ILogger<RealtimeVoiceAgentService>? _logger;
+    private readonly VoiceAiStreamService _streamService;
 
-    public RealtimeVoiceAgentService(SGrowingDbContext db, ILogger<RealtimeVoiceAgentService>? logger = null)
+    public RealtimeVoiceAgentService(
+        SGrowingDbContext db,
+        ILogger<RealtimeVoiceAgentService>? logger = null,
+        VoiceAiStreamService? streamService = null)
     {
         _db = db;
         _logger = logger;
+        _streamService = streamService ?? new VoiceAiStreamService(null, db, null, null);
+    }
+
+    public async Task<RichVoiceTurnResult> ProcessRichVoiceTurnAsync(
+        Guid tenantId,
+        Guid sessionId,
+        string callerSpeechTranscript,
+        CancellationToken cancellationToken = default)
+    {
+        var session = await _db.VoiceCallSessions.FirstOrDefaultAsync(
+            s => s.TenantId == tenantId && s.Id == sessionId, cancellationToken);
+
+        if (session == null)
+        {
+            throw new InvalidOperationException($"Voice call session {sessionId} not found for tenant {tenantId}.");
+        }
+
+        var speech = (callerSpeechTranscript ?? string.Empty).Trim();
+        var sentiment = _streamService.CalculateSentimentScore(speech);
+        var signals = _streamService.ExtractBuyingSignals(speech);
+
+        var agentResponse = await ProcessVoiceTurnAsync(tenantId, sessionId, speech, cancellationToken);
+
+        return new RichVoiceTurnResult(agentResponse, sentiment, signals);
     }
 
     public async Task<string> ProcessVoiceTurnAsync(

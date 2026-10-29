@@ -10,6 +10,7 @@ export interface BookingEventTypeDto {
   minimumNoticeHours: number;
   isRoundRobin: boolean;
   assignedHostIdsJson: string;
+  hostWeightsJson?: string;
   colorHex: string;
   isActive: boolean;
   createdAtUtc: string;
@@ -56,4 +57,12 @@ export interface CalendarBookingRecordDto {
   icsUid: string;
   notes: string;
   createdAtUtc: string;
+}
+
+export interface HostWeightDto {
+  hostUserId: string;
+  hostName: string;
+  weight: number;
+  assignedMeetingsCount: number;
+  score: number;
 }

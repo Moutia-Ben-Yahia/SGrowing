@@ -68,6 +68,12 @@ public class OmniHub : Hub<IOmniClient>
             .OnAndroidSmsStatusUpdated(dispatchId, status, errorMessage);
     }
 
+    public async Task BroadcastVoiceTranscription(Guid tenantId, Guid callSessionId, string speaker, string chunkText, double sentimentScore, bool isFinal)
+    {
+        await Clients.Group(GetTenantGroup(tenantId))
+            .OnVoiceTranscriptionChunk(callSessionId, speaker, chunkText, sentimentScore, isFinal);
+    }
+
     public static string GetConversationGroup(Guid conversationId) => $"conv_{conversationId}";
     public static string GetTenantGroup(Guid tenantId) => $"tenant_{tenantId}";
 }

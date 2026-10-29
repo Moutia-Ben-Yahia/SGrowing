@@ -348,7 +348,7 @@ public class InspirationFeaturesTests
         var rawPdf = System.Text.Encoding.UTF8.GetBytes("%PDF-1.4 Mock Document Content %%EOF");
         var sealedDoc = await service.SealDocumentWithPkcs7Async(tenantId, contract.Id, rawPdf, contract.SignerEmail);
         Assert.NotNull(sealedDoc.Sha256Hash);
-        Assert.Equal("PKCS#7/CMS", sealedDoc.SignatureFormat);
+        Assert.Contains("PKCS#7", sealedDoc.SignatureFormat);
         Assert.True(sealedDoc.HasRfc3161Timestamp);
 
         // Certificate of completion

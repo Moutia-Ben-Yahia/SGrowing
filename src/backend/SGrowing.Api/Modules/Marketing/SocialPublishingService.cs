@@ -139,6 +139,7 @@ public class SocialPublishingService
             SocialPlatform.X => content.Length > 280 ? content[..277] + "..." : content,
             SocialPlatform.LinkedIn => $"{content}\n\n#Business #Growth #Marketing",
             SocialPlatform.Instagram => $"{content}\n\n#marketing #growth #socialmedia",
+            SocialPlatform.TikTok => $"{content}\n\n#TikTokGrowth #TechTok #BusinessTips",
             SocialPlatform.Telegram => $"📢 {content}",
             SocialPlatform.Threads => content,
             SocialPlatform.Facebook => content,

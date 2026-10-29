@@ -147,6 +147,7 @@ builder.Services.AddScoped<SlaMonitoringService>();
 // 7. Voice & Telephony
 builder.Services.AddScoped<VoiceTelephonyService>();
 builder.Services.AddScoped<RealtimeVoiceAgentService>();
+builder.Services.AddScoped<VoiceAiStreamService>();
 
 // 8. Social Publishing & Deflection
 builder.Services.AddSingleton<ISocialPostRepository, InMemorySocialPostRepository>();
@@ -288,6 +289,7 @@ builder.Services.AddScoped<IMcpServerRegistryService, McpServerRegistryService>(
 builder.Services.AddScoped<IFrappeCrmEnhancementsService, FrappeCrmEnhancementsService>();
 builder.Services.AddScoped<IHelpdeskCommercialContextService, HelpdeskCommercialContextService>();
 builder.Services.AddScoped<ICpqQuoteAndEavService, CpqQuoteAndEavService>();
+builder.Services.AddScoped<IDocumentTelemetryService, DocumentTelemetryService>();
 builder.Services.AddScoped<ICryptographicPdfSealingService, CryptographicPdfSealingService>();
 builder.Services.AddScoped<ISegmentTelemetryAndJourneysService, SegmentTelemetryAndJourneysService>();
 

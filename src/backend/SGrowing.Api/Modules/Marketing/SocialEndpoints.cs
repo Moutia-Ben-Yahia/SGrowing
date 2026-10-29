@@ -21,7 +21,9 @@ public record ConnectSocialAccountDto(
     SocialPlatform Platform,
     string AccountName,
     string ExternalAccountId,
-    string? AccessToken = null
+    string? AccessToken = null,
+    DateTime? TokenExpiresAtUtc = null,
+    string? RefreshToken = null
 );
 
 public record DeflectCommentDto(
@@ -44,7 +46,8 @@ public static class SocialEndpoints
             new { platform = "X", id = (int)SocialPlatform.X, charLimit = 280, supportsMedia = true, icon = "🐦" },
             new { platform = "LinkedIn", id = (int)SocialPlatform.LinkedIn, charLimit = 3000, supportsMedia = true, icon = "💼" },
             new { platform = "Instagram", id = (int)SocialPlatform.Instagram, charLimit = 2200, supportsMedia = true, icon = "📸" },
-            new { platform = "Facebook", id = (int)SocialPlatform.Facebook, charLimit = 5000, supportsMedia = true, icon = "📘" },
+            new { platform = "Facebook", id = (int)SocialPlatform.Facebook, charLimit = 2200, supportsMedia = true, icon = "📘" },
+            new { platform = "TikTok", id = (int)SocialPlatform.TikTok, charLimit = 2200, supportsMedia = true, icon = "🎵" },
             new { platform = "Threads", id = (int)SocialPlatform.Threads, charLimit = 500, supportsMedia = true, icon = "🧵" },
             new { platform = "Telegram", id = (int)SocialPlatform.Telegram, charLimit = 4096, supportsMedia = true, icon = "✈️" }
         }));
@@ -103,6 +106,7 @@ public static class SocialEndpoints
                     new { id = Guid.NewGuid(), tenantId, platform = SocialPlatform.LinkedIn, accountName = "SGrowing Global", externalAccountId = "li_202", isActive = true },
                     new { id = Guid.NewGuid(), tenantId, platform = SocialPlatform.Instagram, accountName = "@sgrowing.official", externalAccountId = "ig_303", isActive = true },
                     new { id = Guid.NewGuid(), tenantId, platform = SocialPlatform.Facebook, accountName = "SGrowing Enterprise", externalAccountId = "fb_404", isActive = true },
+                    new { id = Guid.NewGuid(), tenantId, platform = SocialPlatform.TikTok, accountName = "@sgrowing_tok", externalAccountId = "tt_707", isActive = true },
                     new { id = Guid.NewGuid(), tenantId, platform = SocialPlatform.Threads, accountName = "@sgrowing", externalAccountId = "th_505", isActive = true },
                     new { id = Guid.NewGuid(), tenantId, platform = SocialPlatform.Telegram, accountName = "SGrowing VIP Broadcast", externalAccountId = "tg_606", isActive = true }
                 });
@@ -113,7 +117,15 @@ public static class SocialEndpoints
 
         group.MapPost("/accounts", async ([FromBody] ConnectSocialAccountDto req, SGrowingDbContext db) =>
         {
-            var account = SocialAccount.Create(req.TenantId, req.Platform, req.AccountName, req.ExternalAccountId, req.AccessToken);
+            var account = SocialAccount.Create(
+                req.TenantId,
+                req.Platform,
+                req.AccountName,
+                req.ExternalAccountId,
+                req.AccessToken,
+                true,
+                req.TokenExpiresAtUtc,
+                req.RefreshToken);
             db.SocialAccounts.Add(account);
             await db.SaveChangesAsync();
             return Results.Ok(account);

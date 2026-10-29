@@ -32,6 +32,7 @@ export class SignalRService {
   public operatorPresenceChanged$ = new Subject<{ conversationId: string; operatorId: string; operatorName: string; isTyping: boolean }>();
   public slaBreachAlert$ = new Subject<{ conversationId: string; priority: string; minutesRemaining: number; isBreached: boolean }>();
   public callSessionStateChanged$ = new Subject<{ callSessionId: string; status: string; callerPhone?: string }>();
+  public voiceTranscriptionChunk$ = new Subject<{ callSessionId: string; speaker: string; chunkText: string; sentimentScore: number; isFinal: boolean }>();
   public offlineMessageFlushed$ = new Subject<BufferedMessage>();
 
   public async startConnection(hubUrl = 'http://localhost:5000/hubs/omni'): Promise<void> {
@@ -97,6 +98,10 @@ export class SignalRService {
 
       this.hubConnection.on('OnCallSessionStateChanged', (callSessionId: string, status: string, callerPhone?: string) => {
         this.callSessionStateChanged$.next({ callSessionId, status, callerPhone });
+      });
+
+      this.hubConnection.on('OnVoiceTranscriptionChunk', (callSessionId: string, speaker: string, chunkText: string, sentimentScore: number, isFinal: boolean) => {
+        this.voiceTranscriptionChunk$.next({ callSessionId, speaker, chunkText, sentimentScore, isFinal });
       });
 
       await this.hubConnection.start();

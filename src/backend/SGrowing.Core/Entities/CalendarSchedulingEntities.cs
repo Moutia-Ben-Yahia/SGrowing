@@ -22,9 +22,33 @@ public class BookingEventType
     public int MinimumNoticeHours { get; set; } = 2;
     public bool IsRoundRobin { get; set; } = false;
     public string AssignedHostIdsJson { get; set; } = "[]"; // List<Guid>
+    public string HostWeightsJson { get; set; } = "{}"; // Dictionary<string, double>
     public string ColorHex { get; set; } = "#6366f1"; // Indigo
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+
+    public Dictionary<Guid, double> GetHostWeights()
+    {
+        if (string.IsNullOrWhiteSpace(HostWeightsJson) || HostWeightsJson == "{}")
+            return new Dictionary<Guid, double>();
+        try
+        {
+            var dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, double>>(HostWeightsJson);
+            if (dict == null) return new Dictionary<Guid, double>();
+            return dict.Where(kvp => Guid.TryParse(kvp.Key, out _))
+                       .ToDictionary(kvp => Guid.Parse(kvp.Key), kvp => kvp.Value);
+        }
+        catch
+        {
+            return new Dictionary<Guid, double>();
+        }
+    }
+
+    public void SetHostWeights(Dictionary<Guid, double> weights)
+    {
+        var dict = weights.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value);
+        HostWeightsJson = System.Text.Json.JsonSerializer.Serialize(dict);
+    }
 
     public static BookingEventType Create(
         Guid tenantId,
@@ -34,11 +58,16 @@ public class BookingEventType
         int durationMinutes = 30,
         bool isRoundRobin = false,
         string? colorHex = "#6366f1",
-        List<Guid>? hostIds = null)
+        List<Guid>? hostIds = null,
+        Dictionary<Guid, double>? hostWeights = null)
     {
         var hosts = hostIds != null 
             ? System.Text.Json.JsonSerializer.Serialize(hostIds) 
             : "[]";
+
+        var weightsJson = hostWeights != null
+            ? System.Text.Json.JsonSerializer.Serialize(hostWeights.ToDictionary(k => k.Key.ToString(), v => v.Value))
+            : "{}";
 
         return new BookingEventType
         {
@@ -51,6 +80,7 @@ public class BookingEventType
             IsRoundRobin = isRoundRobin,
             ColorHex = colorHex ?? "#6366f1",
             AssignedHostIdsJson = hosts,
+            HostWeightsJson = weightsJson,
             IsActive = true,
             CreatedAtUtc = DateTime.UtcNow
         };
@@ -66,6 +96,7 @@ public class HostAvailabilitySchedule
     public string TimeZone { get; set; } = "Africa/Tunis";
     public string WeeklyHoursJson { get; set; } = "[]"; // List of DayAvailability
     public string BlackoutDatesJson { get; set; } = "[]"; // List of "yyyy-MM-dd"
+    public double Weight { get; set; } = 1.0;
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
     public static HostAvailabilitySchedule Create(
@@ -73,7 +104,8 @@ public class HostAvailabilitySchedule
         Guid hostUserId,
         string hostName,
         string timeZone = "Africa/Tunis",
-        string? weeklyHoursJson = null)
+        string? weeklyHoursJson = null,
+        double weight = 1.0)
     {
         var defaultHours = weeklyHoursJson ?? System.Text.Json.JsonSerializer.Serialize(new List<DayAvailability>
         {
@@ -93,6 +125,7 @@ public class HostAvailabilitySchedule
             TimeZone = timeZone,
             WeeklyHoursJson = defaultHours,
             BlackoutDatesJson = "[]",
+            Weight = weight > 0 ? weight : 1.0,
             CreatedAtUtc = DateTime.UtcNow
         };
     }

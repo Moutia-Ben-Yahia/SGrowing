@@ -1,10 +1,17 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
-import { SocialPostDto, SocialPlatform, SocialAccountDto } from '../../core/models/social.models';
+import {
+  SocialPostDto,
+  SocialPlatform,
+  SocialAccountDto,
+  ViralHookSuggestionDto,
+  PlatformAdaptedPostDto,
+  TokenHealthAuditReportDto
+} from '../../core/models/social.models';
 
 export interface SocialAccountUI {
   id: string;
@@ -13,7 +20,10 @@ export interface SocialAccountUI {
   name: string;
   handle: string;
   avatarIcon: string;
+  charLimit: number;
+  aspectRatio: string;
   selected: boolean;
+  tokenExpiringSoon?: boolean;
 }
 
 export interface PublicCommentUI {
@@ -46,13 +56,22 @@ export interface PublicCommentUI {
             </div>
             <div>
               <h1 class="text-lg font-semibold text-white tracking-tight">Social Media Multi-Publishing Studio</h1>
-              <p class="text-xs text-slate-400">Postiz & Mixpost model: Unified cross-network publishing & viral lead deflector</p>
+              <p class="text-xs text-slate-400">Omnichannel publishing matrix, AI viral hooks & token health auditor</p>
             </div>
           </div>
           <div class="flex items-center gap-3">
-            <span class="text-xs text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20 font-medium">
-              ● {{ accounts().length }} Networks Connected
-            </span>
+            <!-- Token Health Status Pill -->
+            <button
+              (click)="runTokenAudit()"
+              [disabled]="isAuditingTokens()"
+              class="px-3 py-1.5 rounded-full text-xs font-medium border flex items-center gap-1.5 transition"
+              [class]="hasTokenAlerts() 
+                ? 'bg-rose-500/10 text-rose-400 border-rose-500/30 hover:bg-rose-500/20' 
+                : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'">
+              <span class="w-2 h-2 rounded-full" [class]="hasTokenAlerts() ? 'bg-rose-400 animate-ping' : 'bg-emerald-400'"></span>
+              <span>{{ tokenStatusText() }}</span>
+            </button>
+
             <button 
               (click)="triggerPublishDue()"
               [disabled]="isPublishing()"
@@ -73,16 +92,68 @@ export interface PublicCommentUI {
         <!-- Body -->
         <div class="flex-1 overflow-y-auto p-8 space-y-8">
           
-          <!-- Top Section: Multi-Platform Composer & Preview -->
+          <!-- Viral Hook Generator & Selector Bar -->
+          <div class="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-indigo-900/40 rounded-xl p-5 shadow-xl space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+                  <span class="text-indigo-400">⚡</span>
+                  Viral Hook Engine (Multi-Angle Generator)
+                </h3>
+                <p class="text-xs text-slate-400">Generate high-virality hooks (Contrarian, Statistical, Question, Story) and inject them directly into your draft.</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <input 
+                  [(ngModel)]="hookTopic" 
+                  placeholder="e.g. B2B SaaS Growth, AI SDR..." 
+                  class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+                <button 
+                  (click)="generateHooks()"
+                  [disabled]="isGeneratingHooks()"
+                  class="px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white transition shadow-sm">
+                  {{ isGeneratingHooks() ? 'Generating...' : '✨ Generate Hooks' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Hook Suggestions Chips -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+              @for (h of viralHooks(); track h.hookText) {
+                <div class="p-3 rounded-lg bg-slate-950/80 border border-slate-800 hover:border-indigo-500/50 transition flex flex-col justify-between space-y-2 group">
+                  <div class="space-y-1">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider"
+                        [class]="getAngleBadgeClass(h.angle)">
+                        {{ h.angle }}
+                      </span>
+                      <span class="text-[10px] font-mono text-emerald-400 font-medium">
+                        🔥 {{ h.estimatedViralityScore }}% virality
+                      </span>
+                    </div>
+                    <p class="text-xs text-slate-300 line-clamp-3 leading-snug">"{{ h.hookText }}"</p>
+                  </div>
+                  <button 
+                    (click)="injectHook(h.hookText)"
+                    class="w-full text-[11px] font-medium py-1 rounded bg-slate-900 group-hover:bg-indigo-600 text-slate-300 group-hover:text-white border border-slate-800 group-hover:border-indigo-500 transition text-center">
+                    + Inject Hook into Post
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Main Workspace: Composer (Left) + Multi-Platform Matrix (Right) -->
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- Composer (7 cols) -->
-            <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl space-y-5">
+            <!-- Composer (6 cols) -->
+            <div class="lg:col-span-6 bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl space-y-5">
               <div class="flex items-center justify-between">
                 <h2 class="text-base font-semibold text-white">Create Multi-Channel Post</h2>
-                <span class="text-xs text-slate-400 font-mono">
-                  Length: <strong [class.text-rose-400]="postText.length > 280 && isXSelected()" class="text-slate-200">{{ postText.length }}</strong>
-                  <span *ngIf="isXSelected()" class="text-slate-500"> / 280 (X limit)</span>
-                </span>
+                <button
+                  (click)="autoAdaptWithAi()"
+                  [disabled]="isAdaptingWithAi() || !postText.trim()"
+                  class="text-xs px-2.5 py-1 rounded-md bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 transition flex items-center gap-1">
+                  <span>{{ isAdaptingWithAi() ? 'Adapting...' : '🪄 AI Re-Adapt All Channels' }}</span>
+                </button>
               </div>
 
               <!-- Network Selector -->
@@ -96,6 +167,9 @@ export interface PublicCommentUI {
                       class="px-3 py-1.5 rounded-lg text-xs font-medium border flex items-center gap-1.5 transition">
                       <span>{{ acc.avatarIcon }}</span>
                       <span>{{ acc.name }}</span>
+                      @if (acc.tokenExpiringSoon) {
+                        <span class="w-1.5 h-1.5 rounded-full bg-rose-400" title="Token expires soon"></span>
+                      }
                     </button>
                   }
                 </div>
@@ -103,89 +177,69 @@ export interface PublicCommentUI {
 
               <!-- Content Textarea -->
               <div>
-                <label class="block text-xs font-medium text-slate-400 mb-1">Message Content (AI-optimized cross-network formatting)</label>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="text-xs font-medium text-slate-400">Master Draft Content</label>
+                  <span class="text-xs font-mono text-slate-400">Total Characters: <strong class="text-slate-100">{{ postText.length }}</strong></span>
+                </div>
                 <textarea 
                   [(ngModel)]="postText" 
-                  rows="5" 
+                  rows="6" 
                   placeholder="Announce product updates, launch campaigns, or customer promotions across all social channels..."
-                  class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+                  class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition leading-relaxed">
                 </textarea>
               </div>
 
-              <!-- Media URL -->
-              <div>
-                <label class="block text-xs font-medium text-slate-400 mb-1">Attached Media / CDN Asset URL</label>
-                <input 
-                  [(ngModel)]="mediaUrl" 
-                  placeholder="https://assets.sgrowing.com/banners/launch-2026.png" 
-                  class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono" />
+              <!-- Media URL & Aspect Ratio Preset -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Attached Media / CDN Asset URL</label>
+                  <input 
+                    [(ngModel)]="mediaUrl" 
+                    placeholder="https://assets.sgrowing.com/banners/launch-2026.png" 
+                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-400 mb-1">Preferred Aspect Ratio</label>
+                  <select 
+                    [(ngModel)]="selectedAspectRatio"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <option value="1:1 Square">1:1 Square (Feed Standard)</option>
+                    <option value="9:16 Vertical Reel/Story">9:16 Vertical Reel/Story (TikTok & IG)</option>
+                  </select>
+                </div>
               </div>
 
-              <!-- Buttons -->
+              <!-- Action Buttons -->
               <div class="flex items-center gap-3 pt-2">
                 <button 
                   (click)="publishNow()" 
                   [disabled]="!postText.trim() || isPublishing()"
-                  class="flex-1 bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:from-indigo-500 hover:to-fuchsia-500 disabled:opacity-40 text-white font-medium py-2.5 rounded-lg text-sm transition shadow-lg shadow-indigo-900/30">
-                  🚀 Publish Now to Selected Channels
+                  class="flex-1 bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:from-indigo-500 hover:to-fuchsia-500 disabled:opacity-40 text-white font-medium py-2.5 rounded-lg text-sm transition shadow-lg shadow-indigo-900/30 flex items-center justify-center gap-2">
+                  <span>🚀</span>
+                  <span>{{ isPublishing() ? 'Publishing...' : 'Publish to Target Networks' }}</span>
                 </button>
                 <button 
                   (click)="schedulePost()" 
                   [disabled]="!postText.trim() || isPublishing()"
                   class="bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 font-medium px-5 py-2.5 rounded-lg text-sm transition border border-slate-700">
-                  📅 Schedule for Later
+                  📅 Schedule
                 </button>
-              </div>
-            </div>
-
-            <!-- Preview Card (5 cols) -->
-            <div class="lg:col-span-5 space-y-4">
-              <h2 class="text-base font-semibold text-white">Live Multi-Network Preview</h2>
-              <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl space-y-4">
-                <div class="flex items-center gap-3 pb-3 border-b border-slate-800">
-                  <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center font-bold text-white text-xs">
-                    SG
-                  </div>
-                  <div>
-                    <div class="font-semibold text-sm text-white flex items-center gap-1.5">
-                      SGrowing Platform
-                      <span class="text-blue-400 text-xs">✓</span>
-                    </div>
-                    <div class="text-xs text-slate-400">@sgrowing_app • Previewing {{ getSelectedNames() }}</div>
-                  </div>
-                </div>
-
-                <p class="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed">
-                  {{ postText || 'Preview your multi-network post here. Formatting adapts automatically for X, LinkedIn, Instagram, Facebook, Threads, and Telegram.' }}
-                </p>
-
-                @if (mediaUrl) {
-                  <div class="rounded-lg overflow-hidden border border-slate-800 bg-slate-950/80 p-2 text-center text-xs text-slate-400 font-mono">
-                    🖼️ Attached Asset: {{ mediaUrl }}
-                  </div>
-                }
-
-                <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
-                  <span>💬 12 comments</span>
-                  <span>🔄 38 reposts</span>
-                  <span>❤️ 184 likes</span>
-                </div>
               </div>
 
               <!-- Scheduled Posts Feed -->
-              <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 space-y-3">
+              <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-3 pt-4">
                 <div class="flex items-center justify-between text-xs">
                   <span class="font-semibold text-white">Editorial Publishing Queue</span>
                   <span class="text-indigo-400 font-mono">{{ posts().length }} Posts</span>
                 </div>
-                <div class="space-y-2 max-h-48 overflow-y-auto">
+                <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
                   @for (p of posts(); track p.id) {
-                    <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between text-xs">
-                      <div class="truncate mr-3 max-w-[200px]">
+                    <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between text-xs">
+                      <div class="truncate mr-3 max-w-[240px]">
                         <p class="text-slate-200 truncate">{{ p.content }}</p>
                         <span class="text-[10px] text-slate-500">{{ p.createdAtUtc | date:'short' }}</span>
                       </div>
-                      <span [class]="p.status === 3 ? 'text-emerald-400 bg-emerald-500/10' : 'text-amber-400 bg-amber-500/10'" class="px-2 py-0.5 rounded text-[10px] font-medium border border-current/20">
+                      <span [class]="p.status === 3 ? 'text-emerald-400 bg-emerald-500/10' : 'text-amber-400 bg-amber-500/10'" class="px-2 py-0.5 rounded text-[10px] font-medium border border-current/20 shrink-0">
                         {{ p.status === 3 ? 'Published' : 'Scheduled' }}
                       </span>
                     </div>
@@ -194,6 +248,189 @@ export interface PublicCommentUI {
                   }
                 </div>
               </div>
+            </div>
+
+            <!-- Multi-Platform Live Preview Matrix (6 cols) -->
+            <div class="lg:col-span-6 space-y-4">
+              <!-- Matrix Header & Mode Switcher -->
+              <div class="flex items-center justify-between">
+                <div>
+                  <h2 class="text-base font-semibold text-white flex items-center gap-2">
+                    <span>Multi-Platform Live Preview Matrix</span>
+                  </h2>
+                  <p class="text-xs text-slate-400">Real-time character countdown, platform limits & aspect ratio rules</p>
+                </div>
+                <!-- View Mode Toggle -->
+                <div class="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5 text-xs">
+                  <button 
+                    (click)="previewMode.set('tabbed')"
+                    [class]="previewMode() === 'tabbed' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'"
+                    class="px-2.5 py-1 rounded font-medium transition">
+                    Tabbed
+                  </button>
+                  <button 
+                    (click)="previewMode.set('grid')"
+                    [class]="previewMode() === 'grid' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'"
+                    class="px-2.5 py-1 rounded font-medium transition">
+                    2x2 Grid
+                  </button>
+                </div>
+              </div>
+
+              <!-- TABBED VIEW -->
+              @if (previewMode() === 'tabbed') {
+                <div class="space-y-3">
+                  <!-- Platform Switcher Tabs -->
+                  <div class="flex items-center gap-1.5 border-b border-slate-800 pb-2 overflow-x-auto">
+                    @for (channel of previewChannels; track channel.platform) {
+                      <button 
+                        (click)="activePreviewPlatform.set(channel.platform)"
+                        [class]="activePreviewPlatform() === channel.platform 
+                          ? 'bg-slate-800 text-white border-indigo-500' 
+                          : 'bg-slate-900/50 text-slate-400 border-slate-800 hover:text-slate-200'"
+                        class="px-3 py-1.5 rounded-lg text-xs font-medium border flex items-center gap-1.5 transition whitespace-nowrap">
+                        <span>{{ channel.icon }}</span>
+                        <span>{{ channel.name }}</span>
+                        <!-- Status indicator dot -->
+                        <span 
+                          class="w-1.5 h-1.5 rounded-full"
+                          [class]="isContentWithinLimit(channel.platform) ? 'bg-emerald-400' : 'bg-rose-400 animate-pulse'">
+                        </span>
+                      </button>
+                    }
+                  </div>
+
+                  <!-- Active Platform Card Preview -->
+                  @for (channel of previewChannels; track channel.platform) {
+                    @if (activePreviewPlatform() === channel.platform) {
+                      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl space-y-4">
+                        <!-- Channel Header & Limit Meter -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-800 gap-2">
+                          <div class="flex items-center gap-2.5">
+                            <span class="text-xl">{{ channel.icon }}</span>
+                            <div>
+                              <div class="font-semibold text-sm text-white flex items-center gap-1.5">
+                                {{ channel.name }} Preview
+                                <span class="text-indigo-400 text-xs">✓ Verified</span>
+                              </div>
+                              <div class="text-[11px] text-slate-400">
+                                Aspect Ratio: <span class="text-slate-200 font-mono">{{ getPlatformAspectRatio(channel.platform) }}</span>
+                                • Hashtags: <span class="text-indigo-300 font-medium">{{ channel.hashtagRule }}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Live Character Countdown Meter -->
+                          <div class="text-right">
+                            <div class="text-xs font-mono font-medium flex items-center gap-1 justify-end"
+                              [class]="getMeterColorClass(channel.platform)">
+                              @if (getRemainingChars(channel.platform) >= 0) {
+                                <span>● {{ getRemainingChars(channel.platform) }} chars left</span>
+                              } @else {
+                                <span class="bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded border border-rose-500/40">
+                                  ⚠️ {{ Math.abs(getRemainingChars(channel.platform)) }} chars OVER limit!
+                                </span>
+                              }
+                            </div>
+                            <div class="text-[10px] text-slate-500 font-mono mt-0.5">
+                              {{ getAdaptedContent(channel.platform).length }} / {{ channel.charLimit }} limit
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden">
+                          <div 
+                            class="h-full transition-all duration-300"
+                            [style.width.%]="getUsagePercentage(channel.platform)"
+                            [class]="getProgressBarClass(channel.platform)">
+                          </div>
+                        </div>
+
+                        <!-- Platform Formatted Post Mock -->
+                        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                          <div class="flex items-center justify-between text-xs text-slate-400">
+                            <span class="font-medium text-slate-200">{{ channel.accountHandle }}</span>
+                            <span class="text-[10px] text-slate-500">Just now</span>
+                          </div>
+
+                          <p class="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed">
+                            {{ getAdaptedContent(channel.platform) }}
+                          </p>
+
+                          <!-- Hashtags Display -->
+                          <div class="flex flex-wrap gap-1.5 pt-1">
+                            @for (tag of getRecommendedHashtags(channel.platform); track tag) {
+                              <span class="text-[11px] text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded font-mono">
+                                {{ tag }}
+                              </span>
+                            }
+                          </div>
+
+                          @if (mediaUrl) {
+                            <div class="rounded-lg overflow-hidden border border-slate-800 bg-slate-900 p-2.5 text-center text-xs text-slate-400 font-mono">
+                              🖼️ Media Attached ({{ getPlatformAspectRatio(channel.platform) }}): {{ mediaUrl }}
+                            </div>
+                          }
+
+                          <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
+                            <span>💬 {{ channel.mockStats.comments }}</span>
+                            <span>🔄 {{ channel.mockStats.shares }}</span>
+                            <span>❤️ {{ channel.mockStats.likes }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  }
+                </div>
+              }
+
+              <!-- 2x2 GRID VIEW (Matrix) -->
+              @if (previewMode() === 'grid') {
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  @for (channel of previewChannels; track channel.platform) {
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl space-y-3 flex flex-col justify-between">
+                      <div class="space-y-2">
+                        <!-- Mini Channel Header -->
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                          <div class="flex items-center gap-1.5">
+                            <span class="text-base">{{ channel.icon }}</span>
+                            <span class="text-xs font-semibold text-white">{{ channel.name }}</span>
+                          </div>
+                          <!-- Live Countdown Badge -->
+                          <span 
+                            class="text-[10px] font-mono px-2 py-0.5 rounded font-medium border"
+                            [class]="getRemainingChars(channel.platform) >= 0 
+                              ? 'bg-slate-950 text-slate-300 border-slate-800' 
+                              : 'bg-rose-500/20 text-rose-300 border-rose-500/30'">
+                            {{ getRemainingChars(channel.platform) }} left
+                          </span>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="w-full bg-slate-950 h-1 rounded-full overflow-hidden">
+                          <div 
+                            class="h-full transition-all duration-300"
+                            [style.width.%]="getUsagePercentage(channel.platform)"
+                            [class]="getProgressBarClass(channel.platform)">
+                          </div>
+                        </div>
+
+                        <!-- Content Preview -->
+                        <p class="text-xs text-slate-300 line-clamp-4 leading-relaxed whitespace-pre-wrap">
+                          {{ getAdaptedContent(channel.platform) }}
+                        </p>
+                      </div>
+
+                      <!-- Footer Aspect Ratio & Tags -->
+                      <div class="pt-2 border-t border-slate-800/60 flex items-center justify-between text-[10px] text-slate-400">
+                        <span>{{ getPlatformAspectRatio(channel.platform) }}</span>
+                        <span class="text-indigo-400 font-mono">{{ getRecommendedHashtags(channel.platform).length }} tags</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
             </div>
           </div>
 
@@ -243,6 +480,7 @@ export interface PublicCommentUI {
   `
 })
 export class SocialStudioComponent implements OnInit {
+  public readonly Math = Math;
   private api = inject(ApiService);
   private auth = inject(AuthService);
 
@@ -250,16 +488,72 @@ export class SocialStudioComponent implements OnInit {
 
   public postText = 'Supercharge your B2B omnicommunication with autonomous AI agents across WhatsApp, Telegram, X, and Phone. What channel drives the highest ROI for your team?';
   public mediaUrl = 'https://assets.sgrowing.com/banner.png';
+  public selectedAspectRatio = '1:1 Square';
   public feedbackMessage = signal<string | null>(null);
   public isPublishing = signal<boolean>(false);
+  public isGeneratingHooks = signal<boolean>(false);
+  public isAdaptingWithAi = signal<boolean>(false);
+  public isAuditingTokens = signal<boolean>(false);
+  public tokenAuditReport = signal<TokenHealthAuditReportDto | null>(null);
+
+  public previewMode = signal<'tabbed' | 'grid'>('tabbed');
+  public activePreviewPlatform = signal<SocialPlatform>(SocialPlatform.X);
+  public hookTopic = 'B2B SaaS Growth';
+
+  public previewChannels = [
+    {
+      platform: SocialPlatform.X,
+      name: 'X (Twitter)',
+      icon: '🐦',
+      charLimit: 280,
+      hashtagRule: '1-2 hashtags',
+      accountHandle: '@sgrowing',
+      mockStats: { comments: 14, shares: 42, likes: 218 }
+    },
+    {
+      platform: SocialPlatform.LinkedIn,
+      name: 'LinkedIn',
+      icon: '💼',
+      charLimit: 3000,
+      hashtagRule: '3-5 hashtags',
+      accountHandle: 'SGrowing Global',
+      mockStats: { comments: 28, shares: 19, likes: 356 }
+    },
+    {
+      platform: SocialPlatform.Instagram,
+      name: 'Instagram',
+      icon: '📸',
+      charLimit: 2200,
+      hashtagRule: '3-5 hashtags',
+      accountHandle: '@sgrowing.ai',
+      mockStats: { comments: 45, shares: 12, likes: 612 }
+    },
+    {
+      platform: SocialPlatform.TikTok,
+      name: 'TikTok',
+      icon: '🎵',
+      charLimit: 2200,
+      hashtagRule: '3-5 hashtags',
+      accountHandle: '@sgrowing_tok',
+      mockStats: { comments: 88, shares: 74, likes: 1420 }
+    }
+  ];
 
   public accounts = signal<SocialAccountUI[]>([
-    { id: '1', platform: SocialPlatform.X, platformKey: 'x', name: 'X (Twitter)', handle: '@sgrowing', avatarIcon: '🐦', selected: true },
-    { id: '2', platform: SocialPlatform.LinkedIn, platformKey: 'linkedin', name: 'LinkedIn', handle: 'sgrowing', avatarIcon: '💼', selected: true },
-    { id: '3', platform: SocialPlatform.Instagram, platformKey: 'instagram', name: 'Instagram', handle: '@sgrowing.ai', avatarIcon: '📸', selected: true },
-    { id: '4', platform: SocialPlatform.Facebook, platformKey: 'facebook', name: 'Facebook', handle: 'SGrowing Page', avatarIcon: '📘', selected: false },
-    { id: '5', platform: SocialPlatform.Threads, platformKey: 'threads', name: 'Threads', handle: '@sgrowing', avatarIcon: '🧵', selected: true },
-    { id: '6', platform: SocialPlatform.Telegram, platformKey: 'telegram', name: 'Telegram VIP', handle: '@sgrowing_channel', avatarIcon: '✈️', selected: false },
+    { id: '1', platform: SocialPlatform.X, platformKey: 'x', name: 'X (Twitter)', handle: '@sgrowing', avatarIcon: '🐦', charLimit: 280, aspectRatio: '1:1 Square', selected: true },
+    { id: '2', platform: SocialPlatform.LinkedIn, platformKey: 'linkedin', name: 'LinkedIn', handle: 'sgrowing', avatarIcon: '💼', charLimit: 3000, aspectRatio: '1:1 Square', selected: true },
+    { id: '3', platform: SocialPlatform.Instagram, platformKey: 'instagram', name: 'Instagram', handle: '@sgrowing.ai', avatarIcon: '📸', charLimit: 2200, aspectRatio: '1:1 Square / 9:16 Reel', selected: true },
+    { id: '4', platform: SocialPlatform.TikTok, platformKey: 'tiktok', name: 'TikTok', handle: '@sgrowing_tok', avatarIcon: '🎵', charLimit: 2200, aspectRatio: '9:16 Vertical Reel', selected: true },
+    { id: '5', platform: SocialPlatform.Facebook, platformKey: 'facebook', name: 'Facebook', handle: 'SGrowing Page', avatarIcon: '📘', charLimit: 2200, aspectRatio: '1:1 Square', selected: false },
+    { id: '6', platform: SocialPlatform.Threads, platformKey: 'threads', name: 'Threads', handle: '@sgrowing', avatarIcon: '🧵', charLimit: 500, aspectRatio: '1:1 Square', selected: false },
+    { id: '7', platform: SocialPlatform.Telegram, platformKey: 'telegram', name: 'Telegram VIP', handle: '@sgrowing_channel', avatarIcon: '✈️', charLimit: 4096, aspectRatio: '1:1 Square', selected: false }
+  ]);
+
+  public viralHooks = signal<ViralHookSuggestionDto[]>([
+    { hookText: "90% of companies get B2B SaaS Growth completely wrong. Here's why:", angle: 'Contrarian', estimatedViralityScore: 94.5 },
+    { hookText: 'We scaled revenue by 340% using this single B2B SaaS Growth framework:', angle: 'Statistical', estimatedViralityScore: 91.2 },
+    { hookText: 'If you had to restart B2B SaaS Growth from scratch in 2026, what would you do differently?', angle: 'Question', estimatedViralityScore: 88.0 },
+    { hookText: 'Last year, our team made a critical mistake with B2B SaaS Growth. Here is what it taught us:', angle: 'Story', estimatedViralityScore: 92.8 }
   ]);
 
   public posts = signal<SocialPostDto[]>([]);
@@ -270,8 +564,25 @@ export class SocialStudioComponent implements OnInit {
     { id: 'c3', platform: SocialPlatform.LinkedIn, platformName: 'LinkedIn', author: 'Marcus Vance', postSnippet: 'AI Omnicommunication Launch', commentText: 'Interested in the CRM integration with HubSpot. Send link please.', deflected: true }
   ]);
 
+  public hasTokenAlerts = computed(() => {
+    const report = this.tokenAuditReport();
+    if (report && report.expiringOrRequiredRefreshCount > 0) return true;
+    return this.accounts().some(a => a.tokenExpiringSoon);
+  });
+
+  public tokenStatusText = computed(() => {
+    const report = this.tokenAuditReport();
+    if (report) {
+      return report.expiringOrRequiredRefreshCount > 0
+        ? `⚠️ ${report.expiringOrRequiredRefreshCount} Token Refresh Required`
+        : `🛡️ Tokens Healthy (${report.healthyAccountsCount}/${report.totalAccountsAudited})`;
+    }
+    return `🛡️ All Tokens Healthy`;
+  });
+
   ngOnInit(): void {
     this.loadPosts();
+    this.runTokenAudit();
   }
 
   public loadPosts(): void {
@@ -285,12 +596,149 @@ export class SocialStudioComponent implements OnInit {
     acc.selected = !acc.selected;
   }
 
-  public isXSelected(): boolean {
-    return !!this.accounts().find(a => a.platform === SocialPlatform.X && a.selected);
+  public runTokenAudit(): void {
+    this.isAuditingTokens.set(true);
+    this.api.auditSocialTokenHealth(this.tenantId).subscribe({
+      next: (report) => {
+        this.isAuditingTokens.set(false);
+        this.tokenAuditReport.set(report);
+        if (report.expiringOrRequiredRefreshCount > 0) {
+          this.feedbackMessage.set(`⚠️ Token Health Alert: ${report.expiringOrRequiredRefreshCount} accounts have expiring or required refresh tokens.`);
+        }
+      },
+      error: () => this.isAuditingTokens.set(false)
+    });
   }
 
-  public getSelectedNames(): string {
-    return this.accounts().filter(a => a.selected).map(a => a.name).join(', ') || 'None selected';
+  public generateHooks(): void {
+    this.isGeneratingHooks.set(true);
+    this.api.generateViralHooks(this.hookTopic || 'B2B SaaS Growth', this.tenantId).subscribe({
+      next: (hooks) => {
+        this.isGeneratingHooks.set(false);
+        if (hooks && hooks.length > 0) {
+          this.viralHooks.set(hooks);
+          this.feedbackMessage.set(`✨ Generated ${hooks.length} viral hook angles for "${this.hookTopic}".`);
+        }
+      },
+      error: () => {
+        this.isGeneratingHooks.set(false);
+      }
+    });
+  }
+
+  public injectHook(hookText: string): void {
+    this.postText = `${hookText}\n\n${this.postText.trim()}`;
+    this.feedbackMessage.set(`⚡ Injected viral hook into post content!`);
+  }
+
+  public autoAdaptWithAi(): void {
+    this.isAdaptingWithAi.set(true);
+    const selected = this.accounts().filter(a => a.selected).map(a => a.platform);
+    this.api.rewritePostForPlatforms(this.postText, selected, this.tenantId, this.selectedAspectRatio).subscribe({
+      next: (adapted) => {
+        this.isAdaptingWithAi.set(false);
+        this.feedbackMessage.set(`🪄 AI adapted post across ${adapted.length} target channels with character limits & aspect ratio rules!`);
+      },
+      error: () => this.isAdaptingWithAi.set(false)
+    });
+  }
+
+  public getAdaptedContent(platform: SocialPlatform): string {
+    const raw = this.postText.trim();
+    if (!raw) return 'Enter your master post content in the composer to preview...';
+
+    switch (platform) {
+      case SocialPlatform.X:
+        return raw.length > 270 ? raw.slice(0, 267) + '...' : raw;
+
+      case SocialPlatform.LinkedIn:
+        return `💡 Executive Takeaway:\n\n${raw}\n\nWhat are your thoughts on this approach?`;
+
+      case SocialPlatform.Instagram:
+        if (this.selectedAspectRatio.includes('9:16')) {
+          return `🔥 REEL HOOK: ${raw}\n.\n.\nSave this for later! 📌`;
+        }
+        return `${raw}\n.\n.\nDrop a comment below! 👇`;
+
+      case SocialPlatform.TikTok:
+        return `🚀 POV: ${raw}\n\nDouble tap if you agree! 🎯`;
+
+      default:
+        return raw;
+    }
+  }
+
+  public getRecommendedHashtags(platform: SocialPlatform): string[] {
+    switch (platform) {
+      case SocialPlatform.X:
+        return ['#Growth', '#Tech'];
+      case SocialPlatform.LinkedIn:
+        return ['#Leadership', '#B2B', '#SalesOps', '#Innovation'];
+      case SocialPlatform.Instagram:
+        return ['#marketing', '#growth', '#business', '#strategy'];
+      case SocialPlatform.TikTok:
+        return ['#TikTokGrowth', '#TechTok', '#BusinessTips', '#Viral'];
+      default:
+        return ['#growth'];
+    }
+  }
+
+  public getPlatformAspectRatio(platform: SocialPlatform): string {
+    if (platform === SocialPlatform.TikTok) return '9:16 Vertical Reel/Story';
+    if (platform === SocialPlatform.Instagram && this.selectedAspectRatio.includes('9:16')) {
+      return '9:16 Vertical Reel/Story';
+    }
+    return '1:1 Square';
+  }
+
+  public getPlatformLimit(platform: SocialPlatform): number {
+    switch (platform) {
+      case SocialPlatform.X: return 280;
+      case SocialPlatform.LinkedIn: return 3000;
+      case SocialPlatform.Instagram: return 2200;
+      case SocialPlatform.TikTok: return 2200;
+      default: return 280;
+    }
+  }
+
+  public getRemainingChars(platform: SocialPlatform): number {
+    const limit = this.getPlatformLimit(platform);
+    const length = this.getAdaptedContent(platform).length;
+    return limit - length;
+  }
+
+  public isContentWithinLimit(platform: SocialPlatform): boolean {
+    return this.getRemainingChars(platform) >= 0;
+  }
+
+  public getUsagePercentage(platform: SocialPlatform): number {
+    const limit = this.getPlatformLimit(platform);
+    const length = this.getAdaptedContent(platform).length;
+    return Math.min(100, Math.round((length / limit) * 100));
+  }
+
+  public getMeterColorClass(platform: SocialPlatform): string {
+    const remaining = this.getRemainingChars(platform);
+    if (remaining < 0) return 'text-rose-400';
+    if (remaining < 50) return 'text-amber-400';
+    return 'text-emerald-400';
+  }
+
+  public getProgressBarClass(platform: SocialPlatform): string {
+    const remaining = this.getRemainingChars(platform);
+    if (remaining < 0) return 'bg-rose-500';
+    if (remaining < 50) return 'bg-amber-500';
+    return 'bg-emerald-500';
+  }
+
+  public getAngleBadgeClass(angle: string): string {
+    switch (angle.toLowerCase()) {
+      case 'contrarian': return 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
+      case 'statistical': return 'bg-sky-500/20 text-sky-300 border border-sky-500/30';
+      case 'question': return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+      case 'story': return 'bg-purple-500/20 text-purple-300 border border-purple-500/30';
+      default: return 'bg-slate-800 text-slate-300';
+    }
   }
 
   public publishNow(): void {
@@ -308,7 +756,7 @@ export class SocialStudioComponent implements OnInit {
       scheduledAtUtc: new Date(Date.now() - 5000).toISOString(),
       mediaUrls: this.mediaUrl ? [this.mediaUrl] : []
     }).subscribe({
-      next: (createdPost) => {
+      next: () => {
         this.api.publishDueSocialPosts(this.tenantId).subscribe({
           next: () => {
             this.isPublishing.set(false);
@@ -341,7 +789,7 @@ export class SocialStudioComponent implements OnInit {
       scheduledAtUtc: scheduledDate.toISOString(),
       mediaUrls: this.mediaUrl ? [this.mediaUrl] : []
     }).subscribe({
-      next: (createdPost) => {
+      next: () => {
         this.isPublishing.set(false);
         this.feedbackMessage.set(`📅 Scheduled post for ${scheduledDate.toLocaleDateString()} at 15:00.`);
         this.loadPosts();

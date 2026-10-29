@@ -7,15 +7,17 @@ using SGrowing.Core.Entities;
 namespace SGrowing.Api.Modules.Calendar;
 
 public record TimeSlotDto(DateTime StartTimeUtc, DateTime EndTimeUtc, Guid HostUserId, string HostName);
+public record HostWeightDto(Guid HostUserId, string HostName, double Weight, int AssignedMeetingsCount, double Score);
 
 public interface ICalendarSchedulingService
 {
-    Task<BookingEventType> CreateEventTypeAsync(Guid tenantId, string title, string slug, string description = "", int duration = 30, bool isRoundRobin = false, string color = "#6366f1", List<Guid>? hosts = null);
+    Task<BookingEventType> CreateEventTypeAsync(Guid tenantId, string title, string slug, string description = "", int duration = 30, bool isRoundRobin = false, string color = "#6366f1", List<Guid>? hosts = null, Dictionary<Guid, double>? hostWeights = null);
     Task<List<BookingEventType>> GetEventTypesAsync(Guid tenantId);
     Task<BookingEventType?> GetEventTypeBySlugAsync(Guid tenantId, string slug);
-    Task<HostAvailabilitySchedule> SetHostAvailabilityAsync(Guid tenantId, Guid hostUserId, string hostName, string timeZone, List<DayAvailability> hours);
+    Task<HostAvailabilitySchedule> SetHostAvailabilityAsync(Guid tenantId, Guid hostUserId, string hostName, string timeZone, List<DayAvailability> hours, double weight = 1.0);
     Task<HostAvailabilitySchedule?> GetHostAvailabilityAsync(Guid tenantId, Guid hostUserId);
     Task<List<TimeSlotDto>> ComputeAvailableSlotsAsync(Guid tenantId, Guid eventTypeId, DateTime targetDateUtc);
+    Task<Guid> AssignHostViaRoundRobinAsync(Guid tenantId, Guid eventTypeId, DateTime meetingTimeUtc);
     Task<CalendarBookingRecord> BookAppointmentAsync(Guid tenantId, Guid eventTypeId, string attendeeName, string attendeeEmail, string attendeePhone, DateTime startTimeUtc, string timeZone = "Africa/Tunis", string notes = "");
     Task<CalendarBookingRecord> CancelBookingAsync(Guid tenantId, Guid bookingId, string reason = "");
     Task<CalendarBookingRecord> RescheduleBookingAsync(Guid tenantId, Guid bookingId, DateTime newStartTimeUtc);
@@ -23,6 +25,9 @@ public interface ICalendarSchedulingService
     Task<CalendarBookingRecord> BookPublicAppointmentAsync(string tenantSlug, string eventSlug, string attendeeName, string attendeeEmail, string attendeePhone, DateTime startTimeUtc, string timeZone = "Africa/Tunis", string notes = "");
     Task<List<CalendarBookingRecord>> GetBookingsAsync(Guid tenantId, DateTime? fromUtc = null, DateTime? toUtc = null);
     Task<string> GenerateIcsContentAsync(Guid tenantId, Guid bookingId);
+    Task<string> GenerateIcsContentAsync(Guid bookingId);
+    Task SetHostWeightsAsync(Guid tenantId, Guid eventTypeId, Dictionary<Guid, double> weights);
+    Task<List<HostWeightDto>> GetEventHostsWithStatsAsync(Guid tenantId, Guid eventTypeId);
 }
 
 public class CalendarSchedulingService : ICalendarSchedulingService
@@ -34,7 +39,16 @@ public class CalendarSchedulingService : ICalendarSchedulingService
         _db = db;
     }
 
-    public async Task<BookingEventType> CreateEventTypeAsync(Guid tenantId, string title, string slug, string description = "", int duration = 30, bool isRoundRobin = false, string color = "#6366f1", List<Guid>? hosts = null)
+    public async Task<BookingEventType> CreateEventTypeAsync(
+        Guid tenantId, 
+        string title, 
+        string slug, 
+        string description = "", 
+        int duration = 30, 
+        bool isRoundRobin = false, 
+        string color = "#6366f1", 
+        List<Guid>? hosts = null,
+        Dictionary<Guid, double>? hostWeights = null)
     {
         var existing = await _db.BookingEventTypes
             .FirstOrDefaultAsync(e => e.TenantId == tenantId && e.Slug == slug.ToLower().Trim());
@@ -44,7 +58,7 @@ public class CalendarSchedulingService : ICalendarSchedulingService
             return existing;
         }
 
-        var eventType = BookingEventType.Create(tenantId, title, slug, description, duration, isRoundRobin, color, hosts);
+        var eventType = BookingEventType.Create(tenantId, title, slug, description, duration, isRoundRobin, color, hosts, hostWeights);
         _db.BookingEventTypes.Add(eventType);
         await _db.SaveChangesAsync();
         return eventType;
@@ -64,7 +78,7 @@ public class CalendarSchedulingService : ICalendarSchedulingService
             .FirstOrDefaultAsync(e => e.TenantId == tenantId && e.Slug == slug.ToLower().Trim() && e.IsActive);
     }
 
-    public async Task<HostAvailabilitySchedule> SetHostAvailabilityAsync(Guid tenantId, Guid hostUserId, string hostName, string timeZone, List<DayAvailability> hours)
+    public async Task<HostAvailabilitySchedule> SetHostAvailabilityAsync(Guid tenantId, Guid hostUserId, string hostName, string timeZone, List<DayAvailability> hours, double weight = 1.0)
     {
         var existing = await _db.HostAvailabilitySchedules
             .FirstOrDefaultAsync(s => s.TenantId == tenantId && s.HostUserId == hostUserId);
@@ -76,11 +90,12 @@ public class CalendarSchedulingService : ICalendarSchedulingService
             existing.HostName = hostName.Trim();
             existing.TimeZone = timeZone;
             existing.WeeklyHoursJson = hoursJson;
+            existing.Weight = weight > 0 ? weight : 1.0;
             await _db.SaveChangesAsync();
             return existing;
         }
 
-        var schedule = HostAvailabilitySchedule.Create(tenantId, hostUserId, hostName, timeZone, hoursJson);
+        var schedule = HostAvailabilitySchedule.Create(tenantId, hostUserId, hostName, timeZone, hoursJson, weight);
         _db.HostAvailabilitySchedules.Add(schedule);
         await _db.SaveChangesAsync();
         return schedule;
@@ -106,9 +121,20 @@ public class CalendarSchedulingService : ICalendarSchedulingService
 
         if (hostIds.Count == 0)
         {
-            // Fallback to demo default host
-            hostIds.Add(Guid.Parse("11111111-1111-1111-1111-111111111111"));
+            var defaultHosts = await _db.HostAvailabilitySchedules
+                .Where(s => s.TenantId == tenantId)
+                .Select(s => s.HostUserId)
+                .ToListAsync();
+
+            if (defaultHosts.Count > 0)
+                hostIds = defaultHosts;
+            else
+                hostIds.Add(Guid.Parse("11111111-1111-1111-1111-111111111111"));
         }
+
+        var hostSchedules = await _db.HostAvailabilitySchedules
+            .Where(s => s.TenantId == tenantId && hostIds.Contains(s.HostUserId))
+            .ToDictionaryAsync(s => s.HostUserId, s => s);
 
         var availableSlots = new List<TimeSlotDto>();
         var dayDate = targetDateUtc.Date;
@@ -126,6 +152,9 @@ public class CalendarSchedulingService : ICalendarSchedulingService
         foreach (var hostId in hostIds)
         {
             var hostBookings = existingBookings.Where(b => b.HostUserId == hostId).ToList();
+            string hostName = hostSchedules.TryGetValue(hostId, out var sched) && !string.IsNullOrWhiteSpace(sched.HostName)
+                ? sched.HostName
+                : "Sales Specialist";
 
             for (int h = startHour; h < endHour; h++)
             {
@@ -144,13 +173,117 @@ public class CalendarSchedulingService : ICalendarSchedulingService
 
                     if (!hasConflict)
                     {
-                        availableSlots.Add(new TimeSlotDto(slotStart, slotEnd, hostId, "Sales Specialist"));
+                        availableSlots.Add(new TimeSlotDto(slotStart, slotEnd, hostId, hostName));
                     }
                 }
             }
         }
 
         return availableSlots;
+    }
+
+    public async Task<Guid> AssignHostViaRoundRobinAsync(Guid tenantId, Guid eventTypeId, DateTime meetingTimeUtc)
+    {
+        var eventType = await _db.BookingEventTypes.FirstOrDefaultAsync(e => e.TenantId == tenantId && e.Id == eventTypeId);
+        if (eventType == null)
+        {
+            throw new InvalidOperationException($"Event type {eventTypeId} not found.");
+        }
+
+        List<Guid> hostIds = new();
+        if (!string.IsNullOrWhiteSpace(eventType.AssignedHostIdsJson) && eventType.AssignedHostIdsJson != "[]")
+        {
+            try { hostIds = JsonSerializer.Deserialize<List<Guid>>(eventType.AssignedHostIdsJson) ?? new(); } catch { }
+        }
+
+        if (hostIds.Count == 0)
+        {
+            var fallbackHosts = await _db.HostAvailabilitySchedules
+                .Where(s => s.TenantId == tenantId)
+                .Select(s => s.HostUserId)
+                .ToListAsync();
+
+            if (fallbackHosts.Count > 0)
+                hostIds = fallbackHosts;
+            else
+                return Guid.Parse("11111111-1111-1111-1111-111111111111");
+        }
+
+        var duration = eventType.DurationMinutes;
+        var slotStart = meetingTimeUtc;
+        var slotEnd = slotStart.AddMinutes(duration);
+
+        // Filter out any host with a conflicting booking during the slot
+        var conflictingHostIds = await _db.CalendarBookingRecords
+            .Where(b => b.TenantId == tenantId &&
+                        hostIds.Contains(b.HostUserId) &&
+                        b.Status == CalendarBookingStatus.Scheduled &&
+                        ((slotStart >= b.StartTimeUtc && slotStart < b.EndTimeUtc) ||
+                         (slotEnd > b.StartTimeUtc && slotEnd <= b.EndTimeUtc) ||
+                         (slotStart <= b.StartTimeUtc && slotEnd >= b.EndTimeUtc)))
+            .Select(b => b.HostUserId)
+            .Distinct()
+            .ToListAsync();
+
+        var availableHostIds = hostIds.Where(h => !conflictingHostIds.Contains(h)).ToList();
+
+        if (availableHostIds.Count == 0)
+        {
+            throw new InvalidOperationException("No hosts are available for the selected time slot due to scheduling conflicts.");
+        }
+
+        if (availableHostIds.Count == 1)
+        {
+            return availableHostIds[0];
+        }
+
+        // Fetch host weights
+        var weightsDict = eventType.GetHostWeights();
+        var hostSchedules = await _db.HostAvailabilitySchedules
+            .Where(s => s.TenantId == tenantId && availableHostIds.Contains(s.HostUserId))
+            .ToDictionaryAsync(s => s.HostUserId, s => s);
+
+        // Fetch count of assigned scheduled meetings per host
+        var bookingCounts = await _db.CalendarBookingRecords
+            .Where(b => b.TenantId == tenantId &&
+                        availableHostIds.Contains(b.HostUserId) &&
+                        b.Status == CalendarBookingStatus.Scheduled)
+            .GroupBy(b => b.HostUserId)
+            .Select(g => new { HostId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.HostId, x => x.Count);
+
+        // Score formula: score = (assignedCount) / (hostWeight > 0 ? hostWeight : 1.0)
+        var scoredHosts = availableHostIds.Select(hostId =>
+        {
+            int assignedCount = bookingCounts.TryGetValue(hostId, out var count) ? count : 0;
+            double hostWeight = 1.0;
+            if (weightsDict.TryGetValue(hostId, out var w))
+            {
+                hostWeight = w;
+            }
+            else if (hostSchedules.TryGetValue(hostId, out var sched) && sched.Weight > 0)
+            {
+                hostWeight = sched.Weight;
+            }
+
+            double effectiveWeight = hostWeight > 0 ? hostWeight : 1.0;
+            double score = (double)assignedCount / effectiveWeight;
+
+            return new
+            {
+                HostId = hostId,
+                AssignedCount = assignedCount,
+                HostWeight = effectiveWeight,
+                Score = score
+            };
+        })
+        .OrderBy(x => x.Score)
+        .ThenByDescending(x => x.HostWeight) // higher weight preferred on score tie
+        .ThenBy(x => x.AssignedCount)
+        .ThenBy(x => x.HostId)
+        .ToList();
+
+        return scoredHosts.First().HostId;
     }
 
     public async Task<CalendarBookingRecord> BookAppointmentAsync(Guid tenantId, Guid eventTypeId, string attendeeName, string attendeeEmail, string attendeePhone, DateTime startTimeUtc, string timeZone = "Africa/Tunis", string notes = "")
@@ -172,19 +305,19 @@ public class CalendarSchedulingService : ICalendarSchedulingService
 
         if (eventType.IsRoundRobin && hostIds.Count > 1)
         {
-            // Pick host with lowest bookings
-            var bookingCounts = await _db.CalendarBookingRecords
-                .Where(b => b.TenantId == tenantId && hostIds.Contains(b.HostUserId))
-                .GroupBy(b => b.HostUserId)
-                .Select(g => new { HostId = g.Key, Count = g.Count() })
-                .ToDictionaryAsync(x => x.HostId, x => x.Count);
-
-            selectedHostId = hostIds.OrderBy(h => bookingCounts.ContainsKey(h) ? bookingCounts[h] : 0).First();
+            selectedHostId = await AssignHostViaRoundRobinAsync(tenantId, eventTypeId, startTimeUtc);
         }
         else
         {
             selectedHostId = hostIds.FirstOrDefault();
             if (selectedHostId == Guid.Empty) selectedHostId = Guid.NewGuid();
+        }
+
+        var hostSchedule = await _db.HostAvailabilitySchedules
+            .FirstOrDefaultAsync(s => s.TenantId == tenantId && s.HostUserId == selectedHostId);
+        if (hostSchedule != null && !string.IsNullOrWhiteSpace(hostSchedule.HostName))
+        {
+            selectedHostName = hostSchedule.HostName;
         }
 
         var endTimeUtc = startTimeUtc.AddMinutes(eventType.DurationMinutes);
@@ -307,7 +440,13 @@ public class CalendarSchedulingService : ICalendarSchedulingService
 
     public async Task<string> GenerateIcsContentAsync(Guid tenantId, Guid bookingId)
     {
-        var booking = await _db.CalendarBookingRecords.FirstOrDefaultAsync(b => b.TenantId == tenantId && b.Id == bookingId);
+        var query = _db.CalendarBookingRecords.AsQueryable();
+        if (tenantId != Guid.Empty)
+        {
+            query = query.Where(b => b.TenantId == tenantId);
+        }
+
+        var booking = await query.FirstOrDefaultAsync(b => b.Id == bookingId);
         if (booking == null) throw new InvalidOperationException("Booking not found");
 
         var eventType = await _db.BookingEventTypes.FirstOrDefaultAsync(e => e.Id == booking.EventTypeId);
@@ -334,5 +473,88 @@ public class CalendarSchedulingService : ICalendarSchedulingService
         sb.AppendLine("END:VCALENDAR");
 
         return sb.ToString();
+    }
+
+    public Task<string> GenerateIcsContentAsync(Guid bookingId)
+    {
+        return GenerateIcsContentAsync(Guid.Empty, bookingId);
+    }
+
+    public async Task SetHostWeightsAsync(Guid tenantId, Guid eventTypeId, Dictionary<Guid, double> weights)
+    {
+        var eventType = await _db.BookingEventTypes
+            .FirstOrDefaultAsync(e => e.TenantId == tenantId && e.Id == eventTypeId);
+        if (eventType == null) throw new KeyNotFoundException($"Event type {eventTypeId} not found.");
+
+        eventType.SetHostWeights(weights);
+
+        // Also update schedules if present
+        foreach (var (hostId, weight) in weights)
+        {
+            var sched = await _db.HostAvailabilitySchedules
+                .FirstOrDefaultAsync(s => s.TenantId == tenantId && s.HostUserId == hostId);
+            if (sched != null)
+            {
+                sched.Weight = weight > 0 ? weight : 1.0;
+            }
+        }
+
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task<List<HostWeightDto>> GetEventHostsWithStatsAsync(Guid tenantId, Guid eventTypeId)
+    {
+        var eventType = await _db.BookingEventTypes
+            .FirstOrDefaultAsync(e => e.TenantId == tenantId && e.Id == eventTypeId);
+        if (eventType == null) return new List<HostWeightDto>();
+
+        List<Guid> hostIds = new();
+        if (!string.IsNullOrWhiteSpace(eventType.AssignedHostIdsJson) && eventType.AssignedHostIdsJson != "[]")
+        {
+            try { hostIds = JsonSerializer.Deserialize<List<Guid>>(eventType.AssignedHostIdsJson) ?? new(); } catch { }
+        }
+
+        if (hostIds.Count == 0)
+        {
+            var allSchedules = await _db.HostAvailabilitySchedules.Where(s => s.TenantId == tenantId).ToListAsync();
+            hostIds = allSchedules.Select(s => s.HostUserId).ToList();
+        }
+
+        var weightsDict = eventType.GetHostWeights();
+        var schedules = await _db.HostAvailabilitySchedules
+            .Where(s => s.TenantId == tenantId && hostIds.Contains(s.HostUserId))
+            .ToDictionaryAsync(s => s.HostUserId, s => s);
+
+        var bookingCounts = await _db.CalendarBookingRecords
+            .Where(b => b.TenantId == tenantId && hostIds.Contains(b.HostUserId) && b.Status == CalendarBookingStatus.Scheduled)
+            .GroupBy(b => b.HostUserId)
+            .Select(g => new { HostId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.HostId, x => x.Count);
+
+        var result = new List<HostWeightDto>();
+        foreach (var hostId in hostIds)
+        {
+            string hostName = schedules.TryGetValue(hostId, out var sched) && !string.IsNullOrWhiteSpace(sched.HostName)
+                ? sched.HostName
+                : $"Host {hostId.ToString()[..6]}";
+
+            double weight = 1.0;
+            if (weightsDict.TryGetValue(hostId, out var w))
+            {
+                weight = w;
+            }
+            else if (sched != null && sched.Weight > 0)
+            {
+                weight = sched.Weight;
+            }
+
+            int count = bookingCounts.TryGetValue(hostId, out var c) ? c : 0;
+            double effectiveWeight = weight > 0 ? weight : 1.0;
+            double score = (double)count / effectiveWeight;
+
+            result.Add(new HostWeightDto(hostId, hostName, effectiveWeight, count, Math.Round(score, 2)));
+        }
+
+        return result.OrderByDescending(r => r.Weight).ThenBy(r => r.AssignedMeetingsCount).ToList();
     }
 }

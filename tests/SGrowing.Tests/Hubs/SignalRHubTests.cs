@@ -30,4 +30,20 @@ public class SignalRHubTests
         var act = async () => await mockClient.Object.OnMessageReceived(message);
         await act.Should().NotThrowAsync();
     }
+
+    [Fact]
+    public async Task IOmniClient_OnVoiceTranscriptionChunk_ShouldBeDefinedProperly()
+    {
+        var mockClient = new Mock<IOmniClient>();
+        var sessionId = Guid.NewGuid();
+
+        mockClient.Setup(c => c.OnVoiceTranscriptionChunk(
+            sessionId, "Caller", "What are your enterprise prices?", 0.75, true))
+            .Returns(Task.CompletedTask);
+
+        var act = async () => await mockClient.Object.OnVoiceTranscriptionChunk(
+            sessionId, "Caller", "What are your enterprise prices?", 0.75, true);
+
+        await act.Should().NotThrowAsync();
+    }
 }

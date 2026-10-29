@@ -7,7 +7,8 @@ public enum SocialPlatform
     Threads = 3,
     X = 4,
     LinkedIn = 5,
-    Telegram = 6
+    Telegram = 6,
+    TikTok = 7
 }
 
 public enum SocialPostStatus
@@ -26,6 +27,9 @@ public class SocialAccount
     public string AccountName { get; set; } = string.Empty;
     public string ExternalAccountId { get; set; } = string.Empty;
     public string? AccessToken { get; set; }
+    public string? RefreshToken { get; set; }
+    public DateTime? TokenExpiresAtUtc { get; set; }
+    public bool RefreshTokenRequired { get; set; } = false;
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
@@ -37,7 +41,10 @@ public class SocialAccount
         string accountName,
         string externalAccountId,
         string? accessToken = null,
-        bool isActive = true)
+        bool isActive = true,
+        DateTime? tokenExpiresAtUtc = null,
+        string? refreshToken = null,
+        bool refreshTokenRequired = false)
     {
         if (tenantId == Guid.Empty) throw new ArgumentException("TenantId is required.", nameof(tenantId));
         if (string.IsNullOrWhiteSpace(accountName)) throw new ArgumentException("AccountName is required.", nameof(accountName));
@@ -51,6 +58,9 @@ public class SocialAccount
             AccountName = accountName.Trim(),
             ExternalAccountId = externalAccountId.Trim(),
             AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            TokenExpiresAtUtc = tokenExpiresAtUtc,
+            RefreshTokenRequired = refreshTokenRequired,
             IsActive = isActive,
             CreatedAtUtc = DateTime.UtcNow
         };

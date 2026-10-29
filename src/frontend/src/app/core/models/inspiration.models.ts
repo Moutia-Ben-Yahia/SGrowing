@@ -267,3 +267,57 @@ export interface CompletionCertificateDto {
   tsaAuthorityName: string;
   verificationUrl: string;
 }
+
+export interface PageDwellMetricDto {
+  pageNumber: number;
+  totalDwellSeconds: number;
+  viewCount: number;
+  averageDwellSeconds: number;
+  attentionPercentage: number;
+  isPricingPage: boolean;
+  hasHighInterestAlert: boolean;
+}
+
+export interface DropOffHeatmapPointDto {
+  pageNumber: number;
+  viewersReached: number;
+  retentionRate: number;
+  dropOffRate: number;
+}
+
+export interface HighInterestAlertDto {
+  documentId: string;
+  pageNumber: number;
+  alertType: string;
+  message: string;
+  dwellSeconds: number;
+  detectedAtUtc: string;
+}
+
+export interface DocumentTelemetrySummaryDto {
+  documentId: string;
+  totalDocumentDwellSeconds: number;
+  totalViews: number;
+  uniqueViewers: number;
+  pageDwellBreakdown: PageDwellMetricDto[];
+  dropOffHeatmap: DropOffHeatmapPointDto[];
+  highInterestAlerts: HighInterestAlertDto[];
+  hasPricingHighInterestAlert: boolean;
+  lastViewedAtUtc: string | null;
+}
+
+export interface SealVerificationResultDto {
+  documentId: string;
+  isSealValid: boolean;
+  integrityIntact: boolean;
+  verificationTokenValid: boolean;
+  documentSha256: string;
+  computedByteRangeHash: string;
+  signatureFormat: string;
+  certificateIssuer: string;
+  hasRfc3161Timestamp: boolean;
+  timestampUtc: string;
+  status: string;
+  message: string;
+  certificate: CompletionCertificateDto;
+}
