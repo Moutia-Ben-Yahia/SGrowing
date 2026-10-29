@@ -58,6 +58,7 @@ using SGrowing.Api.Modules.Feedback.Community;
 using SGrowing.Api.Modules.Funnels.Autonomous;
 using SGrowing.Api.Modules.AI.Personas;
 using SGrowing.Api.Modules.Storage.Media;
+using SGrowing.Api.Modules.Sales;
 using SGrowing.Api.Modules.Billing.Invoicing;
 using SGrowing.Api.Modules.Agents.Git;
 using SGrowing.Api.Common;
@@ -199,6 +200,7 @@ builder.Services.AddScoped<ICourierLogisticsHubService, CourierLogisticsHubServi
 builder.Services.AddScoped<IDefensiveWmsService, DefensiveWmsService>();
 builder.Services.AddScoped<ISalesCadenceEngine, SalesCadenceEngine>();
 builder.Services.AddScoped<ICustomerIdentityGraphService, CustomerIdentityGraphService>();
+builder.Services.AddScoped<ICustomer360AttributionService, Customer360AttributionService>();
 builder.Services.AddScoped<ICustomerSelfServicePortalService, CustomerSelfServicePortalService>();
 
 // 15. Server-Side Ad Tracking, Courier Clearing, In-Chat Commerce & Storefront Mesh
@@ -286,6 +288,7 @@ builder.Services.AddScoped<IChatbotFlowEngineService, ChatbotFlowEngineService>(
 builder.Services.AddScoped<IInAppEngagementService, InAppEngagementService>();
 builder.Services.AddScoped<IInAppTourService, InAppTourService>();
 builder.Services.AddScoped<ICollisionDetectionAndSlaService, CollisionDetectionAndSlaService>();
+builder.Services.AddScoped<IOmnichannelUnifiedDeskService, OmnichannelUnifiedDeskService>();
 builder.Services.AddScoped<IWarmupPeerNetworkService, WarmupPeerNetworkService>();
 builder.Services.AddScoped<IAutonomousSdrFleetService, AutonomousSdrFleetService>();
 builder.Services.AddScoped<ISocialPublishingEngineService, SocialPublishingEngineService>();
@@ -376,6 +379,12 @@ builder.Services.AddHttpClient<TechnicalSeoCrawlerService>();
 
 // Horizon 16: Autonomous P2P Mailbox Warmup Network & ESP Spam Rescue Daemon
 builder.Services.AddScoped<IP2PWarmupRescueService, P2PWarmupRescueService>();
+
+// Horizon 18: Configure, Price, Quote (CPQ) & Margin-Guarded Quotation Engine
+builder.Services.AddScoped<ICpqQuotationService, CpqQuotationService>();
+
+// Horizon 21: B2B Wholesale Portal, Corporate Sub-Accounts & Credit Limit Ledger
+builder.Services.AddScoped<IB2BWholesalePortalService, B2BWholesalePortalService>();
 
 builder.Services.AddHttpClient("WebScraperClient", client =>
 {
@@ -2196,6 +2205,7 @@ app.MapChatbotFlowEndpoints();
 app.MapInAppEngagementEndpoints();
 app.MapInAppTourEndpoints();
 app.MapCollisionAndSlaEndpoints();
+app.MapUnifiedDeskEndpoints();
 app.MapWarmupNetworkEndpoints();
 app.MapAutonomousSdrFleetEndpoints();
 app.MapSocialPublishingEndpoints();
@@ -2221,6 +2231,15 @@ app.MapTechnicalSeoCrawlerEndpoints();
 
 // Horizon 16: Autonomous P2P Mailbox Warmup Network & ESP Spam Rescue Daemon
 app.MapWarmupRescueEndpoints();
+
+// Horizon 19: Customer 360 Unified Identity Graph & Multi-Touch Attribution Engine
+app.MapCustomer360Endpoints();
+
+// Horizon 21: B2B Wholesale Portal, Corporate Sub-Accounts & Credit Limit Ledger
+app.MapB2BWholesaleEndpoints();
+
+// Horizon 18: Configure, Price, Quote (CPQ) & Margin-Guarded Quotation Engine
+app.MapCpqQuotationEndpoints();
 
 if (args.Contains("--seed"))
 {

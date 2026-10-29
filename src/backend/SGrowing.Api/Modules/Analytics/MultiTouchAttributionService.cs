@@ -155,6 +155,7 @@ public class MultiTouchAttributionService
                 break;
             }
 
+            case AttributionModelType.UShaped:
             case AttributionModelType.WShaped:
             default:
             {

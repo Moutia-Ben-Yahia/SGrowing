@@ -4,7 +4,8 @@ public enum ConversationStatus
 {
     Open = 1,
     Snoozed = 2,
-    Resolved = 3
+    Resolved = 3,
+    WaitingOnCustomer = 4
 }
 
 public enum ConversationPriority
@@ -35,6 +36,8 @@ public class Conversation
     public bool IsSlaBreached { get; set; } = false;
     public DateTime? FirstResponseAtUtc { get; set; }
     public DateTime? LastMessageAtUtc { get; set; }
+    public DateTime? PausedAtUtc { get; set; }
+    public int AccumulatedPausedMinutes { get; set; } = 0;
     public DateTime CreatedAtUtc { get; private set; }
     public DateTime UpdatedAtUtc { get; set; }
 
@@ -62,6 +65,20 @@ public class Conversation
 
     public void ChangeStatus(ConversationStatus status)
     {
+        if (Status == ConversationStatus.WaitingOnCustomer && status != ConversationStatus.WaitingOnCustomer)
+        {
+            if (PausedAtUtc.HasValue)
+            {
+                var pausedDuration = (int)Math.Max(0, (DateTime.UtcNow - PausedAtUtc.Value).TotalMinutes);
+                AccumulatedPausedMinutes += pausedDuration;
+                PausedAtUtc = null;
+            }
+        }
+        else if (status == ConversationStatus.WaitingOnCustomer && Status != ConversationStatus.WaitingOnCustomer)
+        {
+            PausedAtUtc = DateTime.UtcNow;
+        }
+
         Status = status;
         UpdatedAtUtc = DateTime.UtcNow;
     }

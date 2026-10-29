@@ -2,6 +2,18 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
+  UnifiedConversationSummaryDto,
+  UnifiedConversationDetailDto,
+  UnifiedDeskMessageDto,
+  SendUnifiedDeskMessageRequest,
+  SendUnifiedDeskMessageResponse,
+  UpdateAgentPresenceRequest,
+  AgentPresenceReportDto,
+  CopilotSuggestedReplyDto,
+  AutopilotResolutionDto,
+  SlaOverviewReportDto
+} from '../models/unified-desk.models';
+import {
   ProductTourDto,
   TourStepDto,
   AnnouncementModalDto,
@@ -1648,6 +1660,64 @@ export class ApiService {
 
   public getJourneyDagInstances(id: string, tenantId?: string): Observable<JourneyInstanceDto[]> {
     return this.http.get<JourneyInstanceDto[]>(`${this.baseUrl}/v1/journeys/dag/${id}/instances`, {
+      headers: tenantId ? { 'X-Tenant-Id': tenantId } : {}
+    });
+  }
+
+  // --- Horizon 20: Omnichannel Unified Shared Desk & AI Autopilot ---
+  public getUnifiedDeskConversations(channel?: string, status?: number, tenantId?: string): Observable<UnifiedConversationSummaryDto[]> {
+    let url = `${this.baseUrl}/v1/inbox/unified-desk/conversations?`;
+    if (channel) url += `channel=${encodeURIComponent(channel)}&`;
+    if (status !== undefined) url += `status=${status}&`;
+    return this.http.get<UnifiedConversationSummaryDto[]>(url, {
+      headers: tenantId ? { 'X-Tenant-Id': tenantId } : {}
+    });
+  }
+
+  public getUnifiedDeskConversationDetail(id: string, tenantId?: string): Observable<UnifiedConversationDetailDto> {
+    return this.http.get<UnifiedConversationDetailDto>(`${this.baseUrl}/v1/inbox/unified-desk/conversations/${id}`, {
+      headers: tenantId ? { 'X-Tenant-Id': tenantId } : {}
+    });
+  }
+
+  public sendUnifiedDeskMessage(id: string, req: SendUnifiedDeskMessageRequest, tenantId?: string): Observable<SendUnifiedDeskMessageResponse> {
+    return this.http.post<SendUnifiedDeskMessageResponse>(`${this.baseUrl}/v1/inbox/unified-desk/conversations/${id}/messages`, req, {
+      headers: tenantId ? { 'X-Tenant-Id': tenantId } : {}
+    });
+  }
+
+  public updateUnifiedDeskPresence(id: string, req: UpdateAgentPresenceRequest, tenantId?: string): Observable<AgentPresenceReportDto> {
+    return this.http.post<AgentPresenceReportDto>(`${this.baseUrl}/v1/inbox/unified-desk/conversations/${id}/presence`, req, {
+      headers: tenantId ? { 'X-Tenant-Id': tenantId } : {}
+    });
+  }
+
+  public getUnifiedDeskPresence(id: string, tenantId?: string): Observable<AgentPresenceReportDto> {
+    return this.http.get<AgentPresenceReportDto>(`${this.baseUrl}/v1/inbox/unified-desk/conversations/${id}/presence`, {
+      headers: tenantId ? { 'X-Tenant-Id': tenantId } : {}
+    });
+  }
+
+  public generateUnifiedDeskCopilotSuggest(id: string, latestMessage?: string, tenantId?: string): Observable<CopilotSuggestedReplyDto[]> {
+    return this.http.post<CopilotSuggestedReplyDto[]>(`${this.baseUrl}/v1/inbox/unified-desk/conversations/${id}/copilot-suggest`, { latestMessage }, {
+      headers: tenantId ? { 'X-Tenant-Id': tenantId } : {}
+    });
+  }
+
+  public resolveUnifiedDeskAutopilot(id: string, customerMessageText: string, applyResolution: boolean = true, tenantId?: string): Observable<AutopilotResolutionDto> {
+    return this.http.post<AutopilotResolutionDto>(`${this.baseUrl}/v1/inbox/unified-desk/conversations/${id}/autopilot-resolve`, { customerMessageText, applyResolution }, {
+      headers: tenantId ? { 'X-Tenant-Id': tenantId } : {}
+    });
+  }
+
+  public updateUnifiedDeskStatus(id: string, status: number, tenantId?: string): Observable<UnifiedConversationSummaryDto> {
+    return this.http.post<UnifiedConversationSummaryDto>(`${this.baseUrl}/v1/inbox/unified-desk/conversations/${id}/status`, { status }, {
+      headers: tenantId ? { 'X-Tenant-Id': tenantId } : {}
+    });
+  }
+
+  public getUnifiedDeskSlaOverview(tenantId?: string): Observable<SlaOverviewReportDto> {
+    return this.http.get<SlaOverviewReportDto>(`${this.baseUrl}/v1/inbox/unified-desk/sla-status`, {
       headers: tenantId ? { 'X-Tenant-Id': tenantId } : {}
     });
   }

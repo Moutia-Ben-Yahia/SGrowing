@@ -16,6 +16,8 @@ public class Contact
     public Guid TenantId { get; private set; }
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
+    [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+    public string Name => string.IsNullOrWhiteSpace(LastName) ? FirstName : $"{FirstName} {LastName}".Trim();
     public string? Email { get; set; }
     public string? Phone { get; set; }
     public string? Country { get; set; }

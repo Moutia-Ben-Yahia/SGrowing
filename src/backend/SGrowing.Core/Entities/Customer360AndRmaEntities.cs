@@ -18,7 +18,8 @@ public enum CustomerChannelIdentityType
     InstagramHandle = 4,
     FacebookPsid = 5,
     TelegramId = 6,
-    WebCookieId = 7
+    WebCookieId = 7,
+    TikTokHandle = 8
 }
 
 public enum RmaStatus

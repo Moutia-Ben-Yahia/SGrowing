@@ -76,6 +76,7 @@ export const routes: Routes = [
   { path: 'meet/:roomToken', component: VideoMeetingRoomComponent },
   { path: 'deliverability/multi-inbox', component: MultiInboxCockpitComponent, canActivate: [authGuard] },
   { path: 'commerce/reconciliation', component: CarrierReconciliationCockpitComponent, canActivate: [authGuard] },
+  { path: 'commerce/b2b-wholesale', loadComponent: () => import('./features/commerce/b2b-wholesale-portal.component').then(m => m.B2BWholesalePortalComponent), canActivate: [authGuard] },
   { path: 'projects/tasks', component: ProjectTaskBoardComponent, canActivate: [authGuard] },
   { path: 'outbound/research', component: ProspectResearchCockpitComponent, canActivate: [authGuard] },
   { path: 'commerce/warehouses', component: MultiWarehouseCockpitComponent, canActivate: [authGuard] },
@@ -101,6 +102,7 @@ export const routes: Routes = [
   { path: 'deliverability/warmup-swarm', component: WarmupSwarmCockpitComponent, canActivate: [authGuard] },
   { path: 'deliverability/warmup-rescue', loadComponent: () => import('./features/deliverability/warmup-rescue-cockpit.component').then(m => m.WarmupRescueCockpitComponent), canActivate: [authGuard] },
   { path: 'inbox/omnichannel', component: OmnichannelCockpitComponent, canActivate: [authGuard] },
+  { path: 'inbox/unified-desk', loadComponent: () => import('./features/inbox/omnichannel-unified-desk.component').then(m => m.OmnichannelUnifiedDeskComponent), canActivate: [authGuard] },
   { path: 'accounts/csv-import', component: CsvImportCockpitComponent, canActivate: [authGuard] },
   { path: 'chatbots/simulator', component: BotSimulatorRunnerComponent, canActivate: [authGuard] },
   { path: 'contracts/multi-party', component: MultipartySigningCockpitComponent, canActivate: [authGuard] },
@@ -145,5 +147,7 @@ export const routes: Routes = [
   { path: 'softphone', component: SoftphoneDialerComponent, canActivate: [authGuard] },
   { path: 'cpq', component: CpqBuilderComponent, canActivate: [authGuard] },
   { path: 'sealing', component: SealingInspectorComponent, canActivate: [authGuard] },
+  { path: 'crm/customer-360', loadComponent: () => import('./features/crm/customer-360-cockpit.component').then(m => m.Customer360CockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/cpq', loadComponent: () => import('./features/sales/cpq-quotation-studio.component').then(m => m.CpqQuotationStudioComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

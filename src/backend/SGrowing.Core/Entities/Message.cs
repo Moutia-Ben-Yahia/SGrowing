@@ -5,7 +5,8 @@ public enum MessageSenderType
     Contact = 1,
     Agent = 2,
     Bot = 3,
-    System = 4
+    System = 4,
+    InternalNote = 5
 }
 
 public enum MessageContentType
@@ -38,6 +39,7 @@ public class Message
     public string? MediaUrl { get; set; }
     public string? ExternalMessageId { get; set; }
     public DeliveryStatus DeliveryStatus { get; set; } = DeliveryStatus.Queued;
+    public bool IsPrivateNote { get; set; } = false;
     public DateTime CreatedAtUtc { get; private set; }
 
     private Message() { }
@@ -51,7 +53,8 @@ public class Message
         MessageContentType contentType = MessageContentType.Text,
         string? mediaUrl = null,
         string? externalMessageId = null,
-        DeliveryStatus deliveryStatus = DeliveryStatus.Queued)
+        DeliveryStatus deliveryStatus = DeliveryStatus.Queued,
+        bool isPrivateNote = false)
     {
         if (tenantId == Guid.Empty) throw new ArgumentException("TenantId is required.", nameof(tenantId));
         if (conversationId == Guid.Empty) throw new ArgumentException("ConversationId is required.", nameof(conversationId));
@@ -61,13 +64,14 @@ public class Message
             Id = Guid.NewGuid(),
             TenantId = tenantId,
             ConversationId = conversationId,
-            SenderType = senderType,
+            SenderType = isPrivateNote ? MessageSenderType.InternalNote : senderType,
             SenderId = senderId,
             ContentType = contentType,
             Content = content,
             MediaUrl = mediaUrl,
             ExternalMessageId = externalMessageId,
             DeliveryStatus = deliveryStatus,
+            IsPrivateNote = isPrivateNote,
             CreatedAtUtc = DateTime.UtcNow
         };
     }
