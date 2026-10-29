@@ -330,6 +330,26 @@ public class SGrowingDbContext : DbContext
     public DbSet<WhatsAppNewsletterChannelRecord> WhatsAppNewsletterChannels => Set<WhatsAppNewsletterChannelRecord>();
     public DbSet<WhatsAppNewsletterPostRecord> WhatsAppNewsletterPosts => Set<WhatsAppNewsletterPostRecord>();
 
+    // Enterprise Wiki Strategic Pillars (Waves 1-4)
+    public DbSet<CallCenterOrderLockRecord> CallCenterOrderLocks => Set<CallCenterOrderLockRecord>();
+    public DbSet<CodNetMarginLedgerEntry> CodNetMarginLedgerEntries => Set<CodNetMarginLedgerEntry>();
+    public DbSet<ConversationPresenceSession> ConversationPresenceSessions => Set<ConversationPresenceSession>();
+    public DbSet<CsatSurveyResult> CsatSurveyResults => Set<CsatSurveyResult>();
+    public DbSet<TenantSnapshotRecord> TenantSnapshotRecords => Set<TenantSnapshotRecord>();
+    public DbSet<TenantRebillingConfig> TenantRebillingConfigs => Set<TenantRebillingConfig>();
+    public DbSet<WaterfallEnrichmentCascade> WaterfallEnrichmentCascades => Set<WaterfallEnrichmentCascade>();
+    public DbSet<EnrichmentExecutionLog> EnrichmentExecutionLogs => Set<EnrichmentExecutionLog>();
+    public DbSet<SeoMultipageGraphReport> SeoMultipageGraphReports => Set<SeoMultipageGraphReport>();
+    public DbSet<SerpRankHistoryRecord> SerpRankHistoryRecords => Set<SerpRankHistoryRecord>();
+    public DbSet<InAppMicroSurveyRecord> InAppMicroSurveyRecords => Set<InAppMicroSurveyRecord>();
+    public DbSet<MicroSurveyResponsePartial> MicroSurveyResponsePartials => Set<MicroSurveyResponsePartial>();
+    public DbSet<AndroidSmsGatewayDevice> AndroidSmsGatewayDevices => Set<AndroidSmsGatewayDevice>();
+    public DbSet<AndroidSmsDispatchRecord> AndroidSmsDispatchRecords => Set<AndroidSmsDispatchRecord>();
+    public DbSet<VoiceCallAmdRecord> VoiceCallAmdRecords => Set<VoiceCallAmdRecord>();
+    public DbSet<VoicemailDropTemplate> VoicemailDropTemplates => Set<VoicemailDropTemplate>();
+    public DbSet<CommunityFeedbackPost> CommunityFeedbackPosts => Set<CommunityFeedbackPost>();
+    public DbSet<FeedbackPostVote> FeedbackPostVotes => Set<FeedbackPostVote>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

@@ -48,6 +48,12 @@ using SGrowing.Api.Modules.Organizations;
 using SGrowing.Api.Modules.Workforce.Timesheets;
 using SGrowing.Api.Modules.Channels.WhatsApp;
 using SGrowing.Api.Modules.Commerce.CartReservations;
+using SGrowing.Api.Modules.Commerce.CallCenter;
+using SGrowing.Api.Modules.Conversations.PresenceAndCsat;
+using SGrowing.Api.Modules.Tenancy.SnapshotsAndRebilling;
+using SGrowing.Api.Modules.Feedback.MicroSurveys;
+using SGrowing.Api.Modules.Gateways.Android;
+using SGrowing.Api.Modules.Feedback.Community;
 using SGrowing.Api.Modules.Funnels.Autonomous;
 using SGrowing.Api.Modules.AI.Personas;
 using SGrowing.Api.Modules.Storage.Media;
@@ -329,6 +335,21 @@ builder.Services.AddScoped<IMultiBrokerEventFanoutService, MultiBrokerEventFanou
 builder.Services.AddScoped<IWhatsAppNewsletterService, WhatsAppNewsletterService>();
 builder.Services.AddScoped<IAiModelRouterService, AiModelRouterService>();
 builder.Services.AddScoped<AiModelRouterService>();
+
+// Enterprise Wiki Strategic Pillars (Waves 1-4)
+builder.Services.AddScoped<ICallCenterAntiCollisionService, CallCenterAntiCollisionService>();
+builder.Services.AddScoped<ICodNetMarginLedgerService, CodNetMarginLedgerService>();
+builder.Services.AddScoped<IConversationPresenceService, ConversationPresenceService>();
+builder.Services.AddScoped<ICsatSurveyService, CsatSurveyService>();
+builder.Services.AddScoped<ITenantSnapshotService, TenantSnapshotService>();
+builder.Services.AddScoped<ITenantRebillingService, TenantRebillingService>();
+builder.Services.AddScoped<IWaterfallEnrichmentService, WaterfallEnrichmentService>();
+builder.Services.AddScoped<ISeoMultipageGraphService, SeoMultipageGraphService>();
+builder.Services.AddScoped<ISerpRankTrackerService, SerpRankTrackerService>();
+builder.Services.AddScoped<IInAppMicroSurveyService, InAppMicroSurveyService>();
+builder.Services.AddScoped<IAndroidSmsGatewayService, AndroidSmsGatewayService>();
+builder.Services.AddScoped<IVoiceCallAmdService, VoiceCallAmdService>();
+builder.Services.AddScoped<ICommunityFeedbackService, CommunityFeedbackService>();
 builder.Services.AddHttpClient("WebScraperClient", client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
@@ -472,6 +493,21 @@ app.MapCartReservationEndpoints();
 app.MapEventFanoutEndpoints();
 app.MapWhatsAppNewsletterEndpoints();
 app.MapAiModelRouterEndpoints();
+
+// Enterprise Wiki Strategic Pillars Endpoints (Waves 1-4)
+app.MapCallCenterAntiCollisionEndpoints();
+app.MapCodNetMarginEndpoints();
+app.MapConversationPresenceEndpoints();
+app.MapCsatSurveyEndpoints();
+app.MapTenantSnapshotEndpoints();
+app.MapTenantRebillingEndpoints();
+app.MapWaterfallEnrichmentEndpoints();
+app.MapSeoMultipageGraphEndpoints();
+app.MapSerpRankTrackerEndpoints();
+app.MapInAppMicroSurveyEndpoints();
+app.MapAndroidSmsGatewayEndpoints();
+app.MapVoiceCallAmdEndpoints();
+app.MapCommunityFeedbackEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", framework = ".NET 10", timestamp = DateTime.UtcNow }));
 app.MapGet("/healthz/live", () => Results.Ok(new { status = "Healthy", timestampUtc = DateTime.UtcNow }));

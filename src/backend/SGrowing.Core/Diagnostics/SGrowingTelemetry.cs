@@ -102,4 +102,34 @@ public static class SGrowingTelemetry
         "sgrowing_ai_model_fallbacks_total",
         "fallbacks",
         "Total AI multi-model dynamic failovers and provider fallback executions");
+
+    public static readonly Counter<long> CallCenterCollisionLocksAcquiredCounter = Meter.CreateCounter<long>(
+        "sgrowing_callcenter_collision_locks_acquired_total",
+        "locks",
+        "Total call center order locks acquired to prevent multi-agent dialing collisions");
+
+    public static readonly Counter<long> CsatSurveysRecordedCounter = Meter.CreateCounter<long>(
+        "sgrowing_csat_surveys_recorded_total",
+        "surveys",
+        "Total post-resolution customer satisfaction survey responses recorded");
+
+    public static readonly Counter<long> TenantSnapshotsDeployedCounter = Meter.CreateCounter<long>(
+        "sgrowing_tenant_snapshots_deployed_total",
+        "deployments",
+        "Total agency tenant blueprint snapshots cloned and deployed to sub-accounts");
+
+    public static readonly Counter<long> WaterfallEnrichmentsExecutedCounter = Meter.CreateCounter<long>(
+        "sgrowing_waterfall_enrichments_executed_total",
+        "enrichments",
+        "Total multi-provider cascade prospect enrichment lookups completed");
+
+    public static readonly Counter<long> AndroidSmsDispatchedCounter = Meter.CreateCounter<long>(
+        "sgrowing_android_sms_dispatched_total",
+        "sms",
+        "Total hardware-powered SMS dispatches sent via connected Android phones");
+
+    public static readonly Counter<long> VoiceAmdDetectionsCounter = Meter.CreateCounter<long>(
+        "sgrowing_voice_amd_detections_total",
+        "detections",
+        "Total acoustic answering machine detection classifications evaluated on outbound calls");
 }
