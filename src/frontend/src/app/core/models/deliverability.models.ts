@@ -164,3 +164,173 @@ export interface RotationSimulationResultDto {
   allocations: RotationSimulationItemDto[];
 }
 
+// Horizon 16: Autonomous P2P Mailbox Warmup Network & ESP Spam Rescue Daemon
+export type WarmupProvider = 'GoogleWorkspace' | 'Microsoft365' | 'GenericSmtp';
+export type WarmupStatus = 'WarmingUp' | 'Healthy' | 'SpamAlert' | 'Paused';
+
+export interface EnrolledWarmupMailboxDto {
+  id: string;
+  tenantId: string;
+  email: string;
+  domain: string;
+  provider: WarmupProvider;
+  dailyVolumeCap: number;
+  currentRampDay: number;
+  recommendedVolumeToday: number;
+  sentToday: number;
+  receivedToday: number;
+  replyCount: number;
+  spamRescuesCount: number;
+  replyRate: number;
+  status: WarmupStatus;
+  enrolledAtUtc: string;
+  lastActiveAtUtc: string;
+}
+
+export interface EnrollMailboxRequest {
+  tenantId?: string;
+  email: string;
+  provider: string;
+  dailyVolumeCap?: number;
+  startingDay?: number;
+}
+
+export interface WarmupDialogueTurn {
+  turnIndex: number;
+  senderEmail: string;
+  recipientEmail: string;
+  subject: string;
+  body: string;
+  signature: string;
+  messageId: string;
+  inReplyTo?: string;
+  dwellDelaySeconds: number;
+  requiresReply: boolean;
+}
+
+export interface WarmupExchangeResult {
+  exchangeId: string;
+  subject: string;
+  senderEmail: string;
+  peerEmail: string;
+  warmupToken: string;
+  turns: WarmupDialogueTurn[];
+  createdAtUtc: string;
+}
+
+export interface SpamRescueLogEntry {
+  rescueId: string;
+  mailboxId: string;
+  mailboxEmail: string;
+  subject: string;
+  warmupToken: string;
+  movedToInbox: boolean;
+  flaggedNotSpam: boolean;
+  markedImportant: boolean;
+  starred: boolean;
+  humanReadingDelaySeconds: number;
+  positiveReplySent: boolean;
+  espMlClassifierSignal: string;
+  rescuedAtUtc: string;
+}
+
+export interface SpamRescueScanResult {
+  scannedMailboxesCount: number;
+  spamMessagesFound: number;
+  rescuedMessagesCount: number;
+  markedImportantCount: number;
+  starredCount: number;
+  repliesDrafted: number;
+  achievedReplyRatio: number;
+  espClassifierImpact: string;
+  rescueLogs: SpamRescueLogEntry[];
+}
+
+export interface SpfEvaluationResult {
+  hasSpf: boolean;
+  rawRecord?: string;
+  syntaxValid: boolean;
+  dnsLookupCount: number;
+  exceedsLookupLimit: boolean;
+  qualifier: string;
+  status: 'Pass' | 'Warning' | 'Fail';
+  details: string;
+}
+
+export interface DkimEvaluationResult {
+  hasDkim: boolean;
+  selector: string;
+  rawRecord?: string;
+  keyLengthBits: number;
+  isRecommendedLength: boolean;
+  status: 'Pass' | 'Warning' | 'Fail';
+  details: string;
+}
+
+export interface DmarcEvaluationResult {
+  hasDmarc: boolean;
+  rawRecord?: string;
+  policy: string;
+  percentage: number;
+  hasRua: boolean;
+  hasRuf: boolean;
+  status: 'Pass' | 'Warning' | 'Fail';
+  details: string;
+}
+
+export interface BimiEvaluationResult {
+  hasBimi: boolean;
+  rawRecord?: string;
+  svgUrl?: string;
+  hasValidSvgFormat: boolean;
+  hasVmcCertificate: boolean;
+  status: 'Pass' | 'Warning' | 'Fail';
+  details: string;
+}
+
+export interface BlacklistCheckResult {
+  name: string;
+  host: string;
+  isListed: boolean;
+  responseTimeMs: number;
+  category: string;
+  remediationUrl: string;
+}
+
+export interface DeliverabilityHealthScore {
+  score: number;
+  grade: string;
+  status: string;
+  factorScores: Record<string, number>;
+  recommendations: string[];
+}
+
+export interface DnsAndBlacklistAuditResult {
+  domain: string;
+  spf: SpfEvaluationResult;
+  dkim: DkimEvaluationResult;
+  dmarc: DmarcEvaluationResult;
+  bimi: BimiEvaluationResult;
+  blacklists: BlacklistCheckResult[];
+  totalBlacklistsChecked: number;
+  blacklistsCleanCount: number;
+  blacklistsListedCount: number;
+  overallHealthScore: DeliverabilityHealthScore;
+  auditedAtUtc: string;
+}
+
+export interface DeliverabilityNetworkMetrics {
+  totalEnrolledMailboxes: number;
+  activeWarmingMailboxes: number;
+  healthyMailboxes: number;
+  totalRescuedEmails: number;
+  totalSimulatedExchanges: number;
+  activeRampTargetVolume: number;
+  currentVolumeSentToday: number;
+  averageReplyRatioPercent: number;
+  averageHealthScore: number;
+  blacklistCleanRatePercent: number;
+  espClassifierTrainingStatus: string;
+}
+
+

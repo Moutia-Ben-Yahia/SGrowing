@@ -52,6 +52,12 @@ import { DomainDnsHealthRecordDto, EmailSpamAnalysisReportDto, MailboxWarmupCade
                 🔥 Peer-to-Peer Warmup
               </button>
             </div>
+
+            <a
+              routerLink="/deliverability/warmup-rescue"
+              class="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 rounded-lg text-xs font-semibold border border-emerald-500/30 transition flex items-center gap-1.5">
+              <span>🛡️</span> Autonomous Spam Rescue Cockpit →
+            </a>
           </div>
         </header>
 

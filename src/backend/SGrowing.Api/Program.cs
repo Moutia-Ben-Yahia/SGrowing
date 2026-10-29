@@ -112,6 +112,7 @@ builder.Services.AddScoped<IPowerDialerService, PowerDialerService>();
 
 // 4. Journeys, Feedback & Knowledge Base
 builder.Services.AddScoped<JourneyExecutionService>();
+builder.Services.AddScoped<IStatefulJourneyEngineService, StatefulJourneyEngineService>();
 builder.Services.AddScoped<FeedbackService>();
 builder.Services.AddScoped<HelpCenterRagService>();
 
@@ -154,6 +155,7 @@ builder.Services.AddScoped<VoiceAiStreamService>();
 builder.Services.AddSingleton<ISocialPostRepository, InMemorySocialPostRepository>();
 builder.Services.AddScoped<SocialPublishingService>();
 builder.Services.AddScoped<SocialCommentDeflectionService>();
+builder.Services.AddSingleton<ISocialCommentToDmService, SocialCommentToDmService>();
 
 // 9. Multi-Touch AI SDR
 builder.Services.AddScoped<LinkedInOutreachAdapter>();
@@ -282,6 +284,7 @@ builder.Services.AddScoped<ISemanticVectorRagService, SemanticVectorRagService>(
 // 27. Missing Core Inspiration Repository Services (Phases 1-4)
 builder.Services.AddScoped<IChatbotFlowEngineService, ChatbotFlowEngineService>();
 builder.Services.AddScoped<IInAppEngagementService, InAppEngagementService>();
+builder.Services.AddScoped<IInAppTourService, InAppTourService>();
 builder.Services.AddScoped<ICollisionDetectionAndSlaService, CollisionDetectionAndSlaService>();
 builder.Services.AddScoped<IWarmupPeerNetworkService, WarmupPeerNetworkService>();
 builder.Services.AddScoped<IAutonomousSdrFleetService, AutonomousSdrFleetService>();
@@ -370,6 +373,9 @@ builder.Services.AddScoped<IAutonomousFunnelBuilderService, AutonomousFunnelBuil
 builder.Services.AddAgentFleetOrchestration();
 builder.Services.AddScoped<ITechnicalSeoCrawlerService, TechnicalSeoCrawlerService>();
 builder.Services.AddHttpClient<TechnicalSeoCrawlerService>();
+
+// Horizon 16: Autonomous P2P Mailbox Warmup Network & ESP Spam Rescue Daemon
+builder.Services.AddScoped<IP2PWarmupRescueService, P2PWarmupRescueService>();
 
 builder.Services.AddHttpClient("WebScraperClient", client =>
 {
@@ -702,6 +708,7 @@ app.MapPost("/api/events", async ([FromQuery] Guid tenantId, [FromBody] IngestEv
 });
 
 app.MapJourneyEndpoints();
+app.MapJourneyDagEndpoints();
 
 // ----------------- Feedback & CSAT Endpoints -----------------
 app.MapGet("/api/feedback/surveys", async ([FromQuery] Guid tenantId, SGrowingDbContext db) =>
@@ -2187,10 +2194,12 @@ app.MapPost("/api/knowledge/index-articles", async ([FromBody] IndexKnowledgeReq
 // --- Phases 1-4 Core Inspiration Repositories Endpoint Mappings ---
 app.MapChatbotFlowEndpoints();
 app.MapInAppEngagementEndpoints();
+app.MapInAppTourEndpoints();
 app.MapCollisionAndSlaEndpoints();
 app.MapWarmupNetworkEndpoints();
 app.MapAutonomousSdrFleetEndpoints();
 app.MapSocialPublishingEndpoints();
+app.MapSocialCommentToDmEndpoints();
 app.MapMcpServerEndpoints();
 app.MapFrappeCrmEnhancementsEndpoints();
 app.MapHelpdeskCommercialContextEndpoints();
@@ -2209,6 +2218,9 @@ app.MapWhatsAppPairingEndpoints();
 app.MapAutonomousFunnelEndpoints();
 app.MapAgentFleetEndpoints();
 app.MapTechnicalSeoCrawlerEndpoints();
+
+// Horizon 16: Autonomous P2P Mailbox Warmup Network & ESP Spam Rescue Daemon
+app.MapWarmupRescueEndpoints();
 
 if (args.Contains("--seed"))
 {

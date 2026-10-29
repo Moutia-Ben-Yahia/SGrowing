@@ -31,11 +31,13 @@ public class SGrowingDbContext : DbContext
     public DbSet<ProspectEnrollment> ProspectEnrollments => Set<ProspectEnrollment>();
     public DbSet<Deal> Deals => Set<Deal>();
 
-    // Customer Journeys (Phase 3)
+    // Customer Journeys (Phase 3 & Horizon 15 DAG Engine)
     public DbSet<CustomerEvent> CustomerEvents => Set<CustomerEvent>();
     public DbSet<CustomerJourney> CustomerJourneys => Set<CustomerJourney>();
     public DbSet<JourneyStep> JourneySteps => Set<JourneyStep>();
     public DbSet<JourneyEnrollment> JourneyEnrollments => Set<JourneyEnrollment>();
+    public DbSet<JourneyDefinition> JourneyDefinitions => Set<JourneyDefinition>();
+    public DbSet<JourneyInstance> JourneyInstances => Set<JourneyInstance>();
 
     // Feedback & CSAT (Phase 4)
     public DbSet<SurveyForm> SurveyForms => Set<SurveyForm>();

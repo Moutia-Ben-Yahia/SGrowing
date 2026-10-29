@@ -1,6 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import {
+  ProductTourDto,
+  TourStepDto,
+  AnnouncementModalDto,
+  OnboardingMetricsSummaryDto,
+  CreateProductTourRequest,
+  CreateAnnouncementRequest
+} from '../models/onboarding-tour.models';
 import { ContactDto, ConversationDto, MessageDto } from '../models/chat.models';
 import { SenderAccountDto, CampaignDto, DealDto, DialerQueueItemDto, CallOutcomeResultDto } from '../models/outbound.models';
 import { 
@@ -15,10 +23,27 @@ import {
   AppointmentBookingDto,
   CheckoutLinkDto,
   SlaPolicyDto,
-  UnifiedCustomer360Dto
+  UnifiedCustomer360Dto,
+  JourneyDefinitionDto,
+  JourneyNodeDto,
+  JourneyInstanceDto,
+  JourneyMetricsResponseDto,
+  DagValidationResultDto,
+  JourneyEventIngestResultDto
 } from '../models/platform.models';
 import { SeoAuditReportDto, PageAuditResultDto, SerpKeywordTrackingDto, AeoBrandMentionDto, GeoScoreReportDto } from '../models/seo.models';
-import { SocialChannelMetadataDto, SocialAccountDto, SocialPostDto, DeflectCommentResultDto, TokenHealthAuditReportDto } from '../models/social.models';
+import { 
+  SocialChannelMetadataDto, 
+  SocialAccountDto, 
+  SocialPostDto, 
+  DeflectCommentResultDto, 
+  TokenHealthAuditReportDto,
+  SocialCommentRuleDto,
+  IncomingSocialCommentDto,
+  TwoPhaseReactionResultDto,
+  CommentProcessingLogDto,
+  SocialCommentFunnelMetricsDto
+} from '../models/social.models';
 import { SalesFunnelDto, FunnelStepDto, OrderBumpOfferDto, OneClickUpsellOfferDto, FunnelPerformanceSummaryDto } from '../models/funnel.models';
 import { BookingEventTypeDto, CalendarBookingRecordDto, TimeSlotDto, HostAvailabilityScheduleDto, HostWeightDto, VideoMeetingSessionDto, WebRtcAccessTokenResultDto, ParticipantMediaStateDto, ParticipantStateDto, SalesBattleCardDto, ObjectionEvaluationResultDto, MeetingSessionSummaryDto } from '../models/calendar.models';
 import { 
@@ -30,7 +55,14 @@ import {
   RegisterSenderInboxRequest,
   SelectNextSenderResponse,
   DeliverabilityRadarMetricsDto,
-  RotationSimulationResultDto
+  RotationSimulationResultDto,
+  EnrolledWarmupMailboxDto,
+  EnrollMailboxRequest,
+  WarmupExchangeResult,
+  SpamRescueScanResult,
+  SpamRescueLogEntry,
+  DnsAndBlacklistAuditResult,
+  DeliverabilityNetworkMetrics
 } from '../models/deliverability.models';
 import { LiveTelemetrySummaryDto, TelemetryEventDto } from '../models/telemetry.models';
 import { SubscriptionDetailsDto, BillingInvoiceRecordDto } from '../models/billing.models';
@@ -1444,5 +1476,179 @@ export class ApiService {
 
   public simulateBatchRotation(req: { tenantId?: string; batchSize?: number; googleRatio?: number; microsoftRatio?: number; customRatio?: number }): Observable<RotationSimulationResultDto> {
     return this.http.post<RotationSimulationResultDto>(`${this.baseUrl}/v1/deliverability/inboxes/simulate`, req);
+  }
+
+  // Horizon 14: Social Media Comment-to-DM Inbound Lead Conversion Engine
+  public getSocialCommentRules(tenantId?: string): Observable<SocialCommentRuleDto[]> {
+    const url = tenantId ? `${this.baseUrl}/v1/social/comment-to-dm/rules?tenantId=${tenantId}` : `${this.baseUrl}/v1/social/comment-to-dm/rules`;
+    return this.http.get<SocialCommentRuleDto[]>(url);
+  }
+
+  public saveSocialCommentRule(rule: Partial<SocialCommentRuleDto>, tenantId?: string): Observable<SocialCommentRuleDto> {
+    const url = tenantId ? `${this.baseUrl}/v1/social/comment-to-dm/rules?tenantId=${tenantId}` : `${this.baseUrl}/v1/social/comment-to-dm/rules`;
+    return this.http.post<SocialCommentRuleDto>(url, rule);
+  }
+
+  public deleteSocialCommentRule(id: string, tenantId?: string): Observable<{ success: boolean }> {
+    const url = tenantId ? `${this.baseUrl}/v1/social/comment-to-dm/rules/${id}?tenantId=${tenantId}` : `${this.baseUrl}/v1/social/comment-to-dm/rules/${id}`;
+    return this.http.delete<{ success: boolean }>(url);
+  }
+
+  public simulateSocialCommentWebhook(incoming: IncomingSocialCommentDto, tenantId?: string): Observable<TwoPhaseReactionResultDto> {
+    const url = tenantId ? `${this.baseUrl}/v1/social/comment-to-dm/webhook?tenantId=${tenantId}` : `${this.baseUrl}/v1/social/comment-to-dm/webhook`;
+    return this.http.post<TwoPhaseReactionResultDto>(url, incoming);
+  }
+
+  public getSocialCommentLogs(tenantId?: string, limit = 50): Observable<CommentProcessingLogDto[]> {
+    const url = tenantId ? `${this.baseUrl}/v1/social/comment-to-dm/logs?tenantId=${tenantId}&limit=${limit}` : `${this.baseUrl}/v1/social/comment-to-dm/logs?limit=${limit}`;
+    return this.http.get<CommentProcessingLogDto[]>(url);
+  }
+
+  public getSocialCommentFunnel(tenantId?: string): Observable<SocialCommentFunnelMetricsDto> {
+    const url = tenantId ? `${this.baseUrl}/v1/social/comment-to-dm/analytics?tenantId=${tenantId}` : `${this.baseUrl}/v1/social/comment-to-dm/analytics`;
+    return this.http.get<SocialCommentFunnelMetricsDto>(url);
+  }
+
+  public recordSocialCommentClick(couponCode: string, tenantId?: string): Observable<{ success: boolean }> {
+    const url = tenantId ? `${this.baseUrl}/v1/social/comment-to-dm/click?tenantId=${tenantId}` : `${this.baseUrl}/v1/social/comment-to-dm/click`;
+    return this.http.post<{ success: boolean }>(url, { couponCode });
+  }
+
+  public recordSocialCommentConversion(couponCode: string, orderValue: number, tenantId?: string): Observable<{ success: boolean }> {
+    const url = tenantId ? `${this.baseUrl}/v1/social/comment-to-dm/conversion?tenantId=${tenantId}` : `${this.baseUrl}/v1/social/comment-to-dm/conversion`;
+    return this.http.post<{ success: boolean }>(url, { couponCode, orderValue });
+  }
+
+  // Horizon 17: Interactive In-App Product Tours & Behavioral Announcement Modals
+  public getOnboardingTours(userId?: string, route?: string, role?: string): Observable<ProductTourDto[]> {
+    const params: string[] = [];
+    if (userId) params.push(`userId=${encodeURIComponent(userId)}`);
+    if (route) params.push(`route=${encodeURIComponent(route)}`);
+    if (role) params.push(`role=${encodeURIComponent(role)}`);
+    const qs = params.length > 0 ? `?${params.join('&')}` : '';
+    return this.http.get<ProductTourDto[]>(`${this.baseUrl}/v1/onboarding/tours${qs}`);
+  }
+
+  public createOnboardingTour(req: CreateProductTourRequest): Observable<ProductTourDto> {
+    return this.http.post<ProductTourDto>(`${this.baseUrl}/v1/onboarding/tours`, req);
+  }
+
+  public getOnboardingTourById(id: string): Observable<ProductTourDto> {
+    return this.http.get<ProductTourDto>(`${this.baseUrl}/v1/onboarding/tours/${id}`);
+  }
+
+  public setOnboardingTourSteps(id: string, steps: TourStepDto[]): Observable<{ tourId: string; stepsCount: number; steps: TourStepDto[] }> {
+    return this.http.post<{ tourId: string; stepsCount: number; steps: TourStepDto[] }>(`${this.baseUrl}/v1/onboarding/tours/${id}/steps`, steps);
+  }
+
+  public recordTourTelemetry(id: string, req: { userId: string; action: string; stepOrder: number }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/v1/onboarding/tours/${id}/telemetry`, req);
+  }
+
+  public getOnboardingAnnouncements(userId?: string, route?: string, role?: string, sessionCount?: number): Observable<AnnouncementModalDto[]> {
+    const params: string[] = [];
+    if (userId) params.push(`userId=${encodeURIComponent(userId)}`);
+    if (route) params.push(`route=${encodeURIComponent(route)}`);
+    if (role) params.push(`role=${encodeURIComponent(role)}`);
+    if (sessionCount !== undefined) params.push(`sessionCount=${sessionCount}`);
+    const qs = params.length > 0 ? `?${params.join('&')}` : '';
+    return this.http.get<AnnouncementModalDto[]>(`${this.baseUrl}/v1/onboarding/announcements${qs}`);
+  }
+
+  public createOnboardingAnnouncement(req: CreateAnnouncementRequest): Observable<AnnouncementModalDto> {
+    return this.http.post<AnnouncementModalDto>(`${this.baseUrl}/v1/onboarding/announcements`, req);
+  }
+
+  public dismissOnboardingAnnouncement(id: string, req: { userId: string; ctaClicked: boolean }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/v1/onboarding/announcements/${id}/dismiss`, req);
+  }
+
+  public getOnboardingMetrics(): Observable<OnboardingMetricsSummaryDto> {
+    return this.http.get<OnboardingMetricsSummaryDto>(`${this.baseUrl}/v1/onboarding/metrics`);
+  }
+
+  // Horizon 16: Autonomous P2P Mailbox Warmup Network & ESP Spam Rescue Daemon
+  public getWarmupMailboxes(): Observable<EnrolledWarmupMailboxDto[]> {
+    return this.http.get<EnrolledWarmupMailboxDto[]>(`${this.baseUrl}/v1/deliverability/warmup/mailboxes`);
+  }
+
+  public enrollWarmupMailbox(req: EnrollMailboxRequest): Observable<EnrolledWarmupMailboxDto> {
+    return this.http.post<EnrolledWarmupMailboxDto>(`${this.baseUrl}/v1/deliverability/warmup/mailboxes`, req);
+  }
+
+  public triggerWarmupExchange(req?: { senderMailboxId?: string; peerMailboxId?: string; topic?: string }): Observable<WarmupExchangeResult> {
+    return this.http.post<WarmupExchangeResult>(`${this.baseUrl}/v1/deliverability/warmup/run-exchange`, req ?? {});
+  }
+
+  public executeSpamRescueScan(): Observable<SpamRescueScanResult> {
+    return this.http.post<SpamRescueScanResult>(`${this.baseUrl}/v1/deliverability/warmup/spam-rescue/scan`, {});
+  }
+
+  public getSpamRescueLogs(limit = 50): Observable<SpamRescueLogEntry[]> {
+    return this.http.get<SpamRescueLogEntry[]>(`${this.baseUrl}/v1/deliverability/warmup/rescue-logs?limit=${limit}`);
+  }
+
+  public auditDomainDns(domain: string, simulateListings = false): Observable<DnsAndBlacklistAuditResult> {
+    return this.http.get<DnsAndBlacklistAuditResult>(`${this.baseUrl}/v1/deliverability/warmup/dns-audit/${encodeURIComponent(domain)}?simulateListings=${simulateListings}`);
+  }
+
+  public getWarmupMetrics(): Observable<DeliverabilityNetworkMetrics> {
+    return this.http.get<DeliverabilityNetworkMetrics>(`${this.baseUrl}/v1/deliverability/warmup/metrics`);
+  }
+
+  // =========================================================================
+  // Horizon 15: Event-Driven Customer Journey DAG & Stateful Wait-Until Engine
+  // =========================================================================
+
+  public getJourneyDags(tenantId?: string): Observable<JourneyDefinitionDto[]> {
+    return this.http.get<JourneyDefinitionDto[]>(`${this.baseUrl}/v1/journeys/dag`, {
+      headers: tenantId ? { 'X-Tenant-Id': tenantId } : {}
+    });
+  }
+
+  public getJourneyDagById(id: string, tenantId?: string): Observable<JourneyDefinitionDto> {
+    return this.http.get<JourneyDefinitionDto>(`${this.baseUrl}/v1/journeys/dag/${id}`, {
+      headers: tenantId ? { 'X-Tenant-Id': tenantId } : {}
+    });
+  }
+
+  public saveJourneyDag(req: any, tenantId?: string): Observable<JourneyDefinitionDto> {
+    return this.http.post<JourneyDefinitionDto>(`${this.baseUrl}/v1/journeys/dag`, req, {
+      headers: tenantId ? { 'X-Tenant-Id': tenantId } : {}
+    });
+  }
+
+  public validateJourneyDag(nodes: JourneyNodeDto[]): Observable<DagValidationResultDto> {
+    return this.http.post<DagValidationResultDto>(`${this.baseUrl}/v1/journeys/dag/validate-dag`, nodes);
+  }
+
+  public startJourneyDag(id: string, contactId: string, attributes?: Record<string, any>, tenantId?: string): Observable<JourneyInstanceDto> {
+    return this.http.post<JourneyInstanceDto>(`${this.baseUrl}/v1/journeys/dag/${id}/start`, { contactId, attributes }, {
+      headers: tenantId ? { 'X-Tenant-Id': tenantId } : {}
+    });
+  }
+
+  public ingestJourneyDagEvent(contactId: string, eventName: string, payload?: Record<string, any>, tenantId?: string): Observable<JourneyEventIngestResultDto> {
+    return this.http.post<JourneyEventIngestResultDto>(`${this.baseUrl}/v1/journeys/dag/events/ingest`, { contactId, eventName, payload }, {
+      headers: tenantId ? { 'X-Tenant-Id': tenantId } : {}
+    });
+  }
+
+  public sweepJourneyDagTimeouts(tenantId?: string): Observable<{ sweptCount: number; message: string }> {
+    return this.http.post<{ sweptCount: number; message: string }>(`${this.baseUrl}/v1/journeys/dag/sweep-timeouts`, {}, {
+      headers: tenantId ? { 'X-Tenant-Id': tenantId } : {}
+    });
+  }
+
+  public getJourneyDagMetrics(id: string, tenantId?: string): Observable<JourneyMetricsResponseDto> {
+    return this.http.get<JourneyMetricsResponseDto>(`${this.baseUrl}/v1/journeys/dag/${id}/metrics`, {
+      headers: tenantId ? { 'X-Tenant-Id': tenantId } : {}
+    });
+  }
+
+  public getJourneyDagInstances(id: string, tenantId?: string): Observable<JourneyInstanceDto[]> {
+    return this.http.get<JourneyInstanceDto[]>(`${this.baseUrl}/v1/journeys/dag/${id}/instances`, {
+      headers: tenantId ? { 'X-Tenant-Id': tenantId } : {}
+    });
   }
 }

@@ -151,3 +151,116 @@ export interface UnifiedCustomer360Dto {
   deals: any[];
   events: CustomerEventDto[];
 }
+
+// Horizon 15: Event-Driven Customer Journey DAG & Stateful Wait-Until Engine
+export enum JourneyNodeType {
+  Trigger = 1,
+  Delay = 2,
+  WaitUntilEvent = 3,
+  ConditionBranch = 4,
+  ChannelAction = 5,
+  Exit = 6
+}
+
+export enum JourneyInstanceStatus {
+  Active = 1,
+  WaitingForEvent = 2,
+  Completed = 3,
+  Unenrolled = 4
+}
+
+export interface JourneyNodeDto {
+  id: string;
+  name: string;
+  type: JourneyNodeType;
+  nextNodeId?: string | null;
+  successNextNodeId?: string | null;
+  timeoutNextNodeId?: string | null;
+  trueNextNodeId?: string | null;
+  falseNextNodeId?: string | null;
+  eventName?: string | null;
+  delaySeconds: number;
+  timezone?: string | null;
+  ttlSeconds: number;
+  conditionExpression?: string | null;
+  channelType?: string | null;
+  actionPayload?: string | null;
+  positionX: number;
+  positionY: number;
+}
+
+export interface JourneyDefinitionDto {
+  id: string;
+  tenantId: string;
+  name: string;
+  description: string;
+  triggerEvent: string;
+  conversionEvents: string[];
+  nodes: JourneyNodeDto[];
+  isActive: boolean;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+}
+
+export interface JourneyStepExecutionRecordDto {
+  nodeId: string;
+  nodeName: string;
+  nodeType: JourneyNodeType;
+  status: string;
+  details: string;
+  executedAtUtc: string;
+}
+
+export interface JourneyInstanceDto {
+  id: string;
+  tenantId: string;
+  journeyDefinitionId: string;
+  contactId: string;
+  currentNodeId: string;
+  status: JourneyInstanceStatus;
+  waitUntilEventName?: string | null;
+  waitUntilExpiresAtUtc?: string | null;
+  nextExecutionAtUtc?: string | null;
+  customerAttributes: Record<string, any>;
+  executionHistory: JourneyStepExecutionRecordDto[];
+  enrolledAtUtc: string;
+  completedAtUtc?: string | null;
+}
+
+export interface JourneyNodeMetricDto {
+  nodeId: string;
+  nodeName: string;
+  nodeType: JourneyNodeType;
+  executionsCount: number;
+  currentContactsCount: number;
+  conversionPercent: number;
+  dropOffCount: number;
+}
+
+export interface JourneyMetricsResponseDto {
+  journeyId: string;
+  journeyName: string;
+  totalEnrolled: number;
+  currentlyActive: number;
+  currentlyWaiting: number;
+  totalCompleted: number;
+  totalUnenrolled: number;
+  completionRate: number;
+  dropOffRate: number;
+  nodeMetrics: JourneyNodeMetricDto[];
+}
+
+export interface DagValidationResultDto {
+  isValid: boolean;
+  errorMessage?: string | null;
+  cyclePath?: string[] | null;
+}
+
+export interface JourneyEventIngestResultDto {
+  ingestedEventName: string;
+  unenrolledCount: number;
+  advancedCount: number;
+  enrolledCount: number;
+  message: string;
+}
+

@@ -72,6 +72,13 @@ export interface PublicCommentUI {
               <span>{{ tokenStatusText() }}</span>
             </button>
 
+            <a 
+              routerLink="/social/comment-to-dm"
+              class="px-3 py-1.5 rounded-lg text-xs bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/40 transition flex items-center gap-1.5">
+              <span>💬</span>
+              <span>Comment-to-DM Engine</span>
+            </a>
+
             <button 
               (click)="triggerPublishDue()"
               [disabled]="isPublishing()"

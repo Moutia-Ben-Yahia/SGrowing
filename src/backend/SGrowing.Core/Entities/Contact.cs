@@ -18,6 +18,7 @@ public class Contact
     public string LastName { get; set; } = string.Empty;
     public string? Email { get; set; }
     public string? Phone { get; set; }
+    public string? Country { get; set; }
     public LifecycleStage LifecycleStage { get; set; } = LifecycleStage.Lead;
     public Guid? CompanyId { get; set; }
     public string CustomFieldsJson { get; set; } = "{}";

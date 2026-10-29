@@ -58,11 +58,16 @@ import { CustomerJourneyDto } from '../../core/models/platform.models';
           </div>
         </div>
 
-        <div class="border-t border-slate-800 pt-4">
+        <div class="border-t border-slate-800 pt-4 space-y-2">
+          <a
+            routerLink="/journeys/canvas"
+            class="w-full py-2 px-3 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-cyan-500/20 transition flex items-center justify-center gap-2">
+            <span>⚡ Open Visual DAG Studio</span>
+          </a>
           <button
             (click)="triggerDispatch()"
             [disabled]="isDispatching()"
-            class="w-full py-2 px-3 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-cyan-500/20 transition flex items-center justify-center gap-2 disabled:opacity-50">
+            class="w-full py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 transition flex items-center justify-center gap-2 disabled:opacity-50">
             <span>⚡ Run Journey Dispatch</span>
           </button>
         </div>

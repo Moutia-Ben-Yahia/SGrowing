@@ -49,7 +49,8 @@ public static class SocialEndpoints
             new { platform = "Facebook", id = (int)SocialPlatform.Facebook, charLimit = 2200, supportsMedia = true, icon = "📘" },
             new { platform = "TikTok", id = (int)SocialPlatform.TikTok, charLimit = 2200, supportsMedia = true, icon = "🎵" },
             new { platform = "Threads", id = (int)SocialPlatform.Threads, charLimit = 500, supportsMedia = true, icon = "🧵" },
-            new { platform = "Telegram", id = (int)SocialPlatform.Telegram, charLimit = 4096, supportsMedia = true, icon = "✈️" }
+            new { platform = "Telegram", id = (int)SocialPlatform.Telegram, charLimit = 4096, supportsMedia = true, icon = "✈️" },
+            new { platform = "YouTube", id = (int)SocialPlatform.YouTube, charLimit = 10000, supportsMedia = true, icon = "▶️" }
         }));
 
         // Posts

@@ -5,7 +5,8 @@ export enum SocialPlatform {
   X = 4,
   LinkedIn = 5,
   Telegram = 6,
-  TikTok = 7
+  TikTok = 7,
+  YouTube = 8
 }
 
 export enum SocialPostStatus {
@@ -95,4 +96,131 @@ export interface CharacterLimitValidationResultDto {
   actualLength: number;
   isValid: boolean;
   remainingCharacters: number;
+}
+
+export enum SocialRuleMatchType {
+  Exact = 1,
+  Contains = 2,
+  Regex = 3,
+  IntentSentiment = 4
+}
+
+export enum CommentProcessingStatus {
+  NoMatch = 0,
+  RepliedPublicly = 1,
+  DmDelivered = 2,
+  DuplicateSkipped = 3,
+  RateLimitThrottled = 4,
+  Failed = 5
+}
+
+export interface SocialCommentRuleDto {
+  id: string;
+  tenantId: string;
+  name: string;
+  platform?: SocialPlatform | null;
+  matchType: SocialRuleMatchType;
+  keywords: string[];
+  regexPattern?: string | null;
+  publicReplyTemplates: string[];
+  privateDmTemplate: string;
+  discountPrefix: string;
+  discountPercent: number;
+  baseCheckoutUrl: string;
+  utmSource: string;
+  utmMedium: string;
+  utmCampaign: string;
+  minJitterSeconds: number;
+  maxJitterSeconds: number;
+  maxDmsPerHour: number;
+  maxDmsPerMinute: number;
+  isEnabled: boolean;
+  priority: number;
+  createdAtUtc?: string;
+  updatedAtUtc?: string;
+}
+
+export interface IncomingSocialCommentDto {
+  tenantId: string;
+  platform: string;
+  postId: string;
+  commentId: string;
+  commenterId: string;
+  commenterUsername: string;
+  commentText: string;
+  postTitle?: string;
+  postUrl?: string;
+  timestampUtc?: string;
+}
+
+export interface TwoPhaseReactionResultDto {
+  logId: string;
+  tenantId: string;
+  platform: SocialPlatform;
+  postId: string;
+  commentId: string;
+  commenterUsername: string;
+  matched: boolean;
+  matchedRuleId?: string | null;
+  matchedRuleName?: string | null;
+  matchedKeyword?: string | null;
+  status: CommentProcessingStatus;
+  publicReply?: string | null;
+  privateDm?: string | null;
+  couponCode?: string | null;
+  checkoutUrl?: string | null;
+  jitterDelaySeconds: number;
+  processedAtUtc: string;
+  message?: string | null;
+}
+
+export interface CommentProcessingLogDto {
+  id: string;
+  tenantId: string;
+  platform: SocialPlatform;
+  postId: string;
+  commentId: string;
+  commenterId: string;
+  commenterUsername: string;
+  commentText: string;
+  matchedRuleId?: string | null;
+  matchedRuleName?: string | null;
+  matchedKeyword?: string | null;
+  status: CommentProcessingStatus;
+  publicReply?: string | null;
+  privateDm?: string | null;
+  couponCode?: string | null;
+  checkoutUrl?: string | null;
+  jitterSeconds: number;
+  processedAtUtc: string;
+  hasClicked: boolean;
+  hasConverted: boolean;
+  orderValue?: number | null;
+}
+
+export interface PlatformFunnelBreakdownDto {
+  platform: string;
+  comments: number;
+  matched: number;
+  dmsSent: number;
+  clicks: number;
+  conversions: number;
+  revenue: number;
+}
+
+export interface SocialCommentFunnelMetricsDto {
+  totalComments: number;
+  matchedIntent: number;
+  publicRepliesSent: number;
+  dmsDelivered: number;
+  duplicateSkipped: number;
+  rateLimited: number;
+  linkClicks: number;
+  conversions: number;
+  totalRevenue: number;
+  matchRatePercentage: number;
+  clickThroughRatePercentage: number;
+  conversionRatePercentage: number;
+  byPlatform: Record<string, PlatformFunnelBreakdownDto>;
+  recentLogs: CommentProcessingLogDto[];
 }

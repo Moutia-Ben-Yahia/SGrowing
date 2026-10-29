@@ -67,10 +67,6 @@ import { ProposalViewerComponent } from './features/documents/proposal-viewer.co
 import { VideoMeetingRoomComponent } from './features/calendar/video-meeting-room.component';
 import { MultiInboxCockpitComponent } from './features/deliverability/multi-inbox-cockpit.component';
 import { CarrierReconciliationCockpitComponent } from './features/commerce/carrier-reconciliation-cockpit.component';
-import { WhatsAppPairingCockpitComponent } from './features/channels/whatsapp-pairing-cockpit.component';
-import { FunnelBuilderCanvasComponent } from './features/funnels/funnel-builder-canvas.component';
-import { AgentWorkforceCockpitComponent } from './features/agents/agent-workforce-cockpit.component';
-import { SeoCrawlerStudioComponent } from './features/seo/seo-crawler-studio.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -87,20 +83,23 @@ export const routes: Routes = [
   { path: 'organizations/margin', component: OrganizationMarginCockpitComponent, canActivate: [authGuard] },
   { path: 'workforce/timesheets', component: TimesheetLaborCockpitComponent, canActivate: [authGuard] },
   { path: 'channels/whatsapp-gateway', component: WhatsAppGatewayCockpitComponent, canActivate: [authGuard] },
-  { path: 'channels/whatsapp-pairing', component: WhatsAppPairingCockpitComponent, canActivate: [authGuard] },
+  { path: 'channels/whatsapp-pairing', loadComponent: () => import('./features/channels/whatsapp-pairing-cockpit.component').then(m => m.WhatsAppPairingCockpitComponent), canActivate: [authGuard] },
   { path: 'funnels/autonomous', component: AutonomousFunnelCockpitComponent, canActivate: [authGuard] },
-  { path: 'funnels/canvas', component: FunnelBuilderCanvasComponent, canActivate: [authGuard] },
-  { path: 'agents/workforce', component: AgentWorkforceCockpitComponent, canActivate: [authGuard] },
-  { path: 'seo/crawler', component: SeoCrawlerStudioComponent, canActivate: [authGuard] },
+  { path: 'funnels/canvas', loadComponent: () => import('./features/funnels/funnel-builder-canvas.component').then(m => m.FunnelBuilderCanvasComponent), canActivate: [authGuard] },
+  { path: 'agents/workforce', loadComponent: () => import('./features/agents/agent-workforce-cockpit.component').then(m => m.AgentWorkforceCockpitComponent), canActivate: [authGuard] },
+  { path: 'seo/crawler', loadComponent: () => import('./features/seo/seo-crawler-studio.component').then(m => m.SeoCrawlerStudioComponent), canActivate: [authGuard] },
   { path: 'accounts/snapshots', component: AgencySnapshotCockpitComponent, canActivate: [authGuard] },
   { path: 'ai/agent-fleet', component: AgentFleetCockpitComponent, canActivate: [authGuard] },
   { path: 'billing/invoices', component: InvoiceManagementCockpitComponent, canActivate: [authGuard] },
+  { path: 'onboarding/tours', loadComponent: () => import('./features/onboarding/in-app-tour-studio.component').then(m => m.InAppTourStudioComponent), canActivate: [authGuard] },
+  { path: 'onboarding/studio', loadComponent: () => import('./features/onboarding/in-app-tour-studio.component').then(m => m.InAppTourStudioComponent), canActivate: [authGuard] },
   { path: 'onboarding', component: OnboardingWizardComponent, canActivate: [authGuard] },
   { path: 'agents/missions', component: AgentMissionCockpitComponent, canActivate: [authGuard] },
   { path: 'developer/webhooks', component: DeveloperWebhooksCockpitComponent, canActivate: [authGuard] },
   { path: 'analytics/attribution', component: FunnelAttributionCockpitComponent, canActivate: [authGuard] },
   { path: 'outbound/spintax', component: SpintaxEngineComponent, canActivate: [authGuard] },
   { path: 'deliverability/warmup-swarm', component: WarmupSwarmCockpitComponent, canActivate: [authGuard] },
+  { path: 'deliverability/warmup-rescue', loadComponent: () => import('./features/deliverability/warmup-rescue-cockpit.component').then(m => m.WarmupRescueCockpitComponent), canActivate: [authGuard] },
   { path: 'inbox/omnichannel', component: OmnichannelCockpitComponent, canActivate: [authGuard] },
   { path: 'accounts/csv-import', component: CsvImportCockpitComponent, canActivate: [authGuard] },
   { path: 'chatbots/simulator', component: BotSimulatorRunnerComponent, canActivate: [authGuard] },
@@ -130,12 +129,14 @@ export const routes: Routes = [
   { path: 'outbound', component: OutboundStudioComponent, canActivate: [authGuard] },
   { path: 'broadcasts', component: BroadcastStudioComponent, canActivate: [authGuard] },
   { path: 'sla', component: SlaStudioComponent, canActivate: [authGuard] },
+  { path: 'social/comment-to-dm', loadComponent: () => import('./features/social/social-comment-dm-studio.component').then(m => m.SocialCommentDmStudioComponent), canActivate: [authGuard] },
   { path: 'social', component: SocialStudioComponent, canActivate: [authGuard] },
   { path: 'voice', component: VoiceStudioComponent, canActivate: [authGuard] },
   { path: 'accounts', component: AccountsStudioComponent, canActivate: [authGuard] },
   { path: 'workflows', component: WorkflowStudioComponent, canActivate: [authGuard] },
   { path: 'contracts', component: ContractsStudioComponent, canActivate: [authGuard] },
   { path: 'rag', component: RagStudioComponent, canActivate: [authGuard] },
+  { path: 'journeys/canvas', loadComponent: () => import('./features/journeys/journey-canvas-studio.component').then(m => m.JourneyCanvasStudioComponent), canActivate: [authGuard] },
   { path: 'journeys', component: JourneyStudioComponent, canActivate: [authGuard] },
   { path: 'feedback', component: FeedbackStudioComponent, canActivate: [authGuard] },
   { path: 'help', component: KnowledgeStudioComponent, canActivate: [authGuard] },

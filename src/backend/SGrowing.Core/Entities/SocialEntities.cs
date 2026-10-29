@@ -8,7 +8,8 @@ public enum SocialPlatform
     X = 4,
     LinkedIn = 5,
     Telegram = 6,
-    TikTok = 7
+    TikTok = 7,
+    YouTube = 8
 }
 
 public enum SocialPostStatus
