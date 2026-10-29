@@ -8,6 +8,7 @@ using Xunit;
 
 namespace SGrowing.Tests.Telemetry;
 
+[Collection("ClickstreamBuffer")]
 public class ClickstreamAndPartitioningTests
 {
     private readonly SGrowingDbContext _db;

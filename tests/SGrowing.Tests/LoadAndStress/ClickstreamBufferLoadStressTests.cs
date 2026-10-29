@@ -9,6 +9,7 @@ using Xunit;
 
 namespace SGrowing.Tests.LoadAndStress;
 
+[Collection("ClickstreamBuffer")]
 public class ClickstreamBufferLoadStressTests
 {
     private SGrowingDbContext CreateDbContext(string dbName)
