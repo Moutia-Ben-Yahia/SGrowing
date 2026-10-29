@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SGrowing.Api.Data;
+using SGrowing.Core.Common;
 using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.Commerce.Warehouses;
@@ -7,10 +8,12 @@ namespace SGrowing.Api.Modules.Commerce.Warehouses;
 public class WarehouseRoutingService : IWarehouseRoutingService
 {
     private readonly SGrowingDbContext _db;
+    private readonly IConcurrencyLockService? _lockService;
 
-    public WarehouseRoutingService(SGrowingDbContext db)
+    public WarehouseRoutingService(SGrowingDbContext db, IConcurrencyLockService? lockService = null)
     {
         _db = db;
+        _lockService = lockService;
     }
 
     public async Task<WarehouseRoutingResult> RouteOrderAsync(RoutingRequest req, CancellationToken ct = default)
@@ -54,7 +57,28 @@ public class WarehouseRoutingService : IWarehouseRoutingService
             );
         }
 
-        // Calculate distances using Haversine formula
+        var acquiredLocks = new List<IConcurrencyLockHandle>();
+        try
+        {
+            if (_lockService != null)
+            {
+                foreach (var item in req.Items.Where(i => i.Quantity > 0))
+                {
+                    string lockKey = $"lock:tenant:{req.TenantId}:sku:{item.Sku.Trim().ToUpperInvariant()}";
+                    var handle = await _lockService.TryAcquireLockAsync(
+                        lockKey,
+                        TimeSpan.FromSeconds(10),
+                        TimeSpan.FromSeconds(2),
+                        ct);
+
+                    if (handle != null)
+                    {
+                        acquiredLocks.Add(handle);
+                    }
+                }
+            }
+
+            // Calculate distances using Haversine formula
         var warehousesByDistance = activeWarehouses
             .Select(w => new
             {
@@ -168,6 +192,14 @@ public class WarehouseRoutingService : IWarehouseRoutingService
             triggeredTransfers,
             reason
         );
+        }
+        finally
+        {
+            foreach (var handle in acquiredLocks)
+            {
+                await handle.DisposeAsync();
+            }
+        }
     }
 
     public async Task<IEnumerable<WarehouseRecord>> GetWarehousesAsync(Guid tenantId, CancellationToken ct = default)

@@ -316,6 +316,7 @@ public class SGrowingDbContext : DbContext
     public DbSet<TimesheetEntryRecord> TimesheetEntries => Set<TimesheetEntryRecord>();
     public DbSet<WhatsAppInstanceRecord> WhatsAppInstances => Set<WhatsAppInstanceRecord>();
     public DbSet<AutonomousFunnelRunRecord> AutonomousFunnelRuns => Set<AutonomousFunnelRunRecord>();
+    public DbSet<FunnelSplitTestRecord> FunnelSplitTests => Set<FunnelSplitTestRecord>();
     public DbSet<AgentPersonaRecord> AgentPersonas => Set<AgentPersonaRecord>();
     public DbSet<AgentHeartbeatRecord> AgentHeartbeatRecords => Set<AgentHeartbeatRecord>();
     public DbSet<MediaVaultRecord> MediaVaultRecords => Set<MediaVaultRecord>();

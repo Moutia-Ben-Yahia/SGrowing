@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SGrowing.Core.Common;
 
 namespace SGrowing.Api.Common;
 
@@ -40,6 +41,7 @@ public class GlobalExceptionHandlingMiddleware
             ArgumentException => (StatusCodes.Status400BadRequest, "Bad Request", "https://sgrowing.io/errors/bad-request"),
             KeyNotFoundException => (StatusCodes.Status404NotFound, "Resource Not Found", "https://sgrowing.io/errors/not-found"),
             UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized", "https://sgrowing.io/errors/unauthorized"),
+            ConcurrencyLockConflictException => (StatusCodes.Status409Conflict, "Concurrency Lock Conflict", "https://sgrowing.io/errors/concurrency-lock-conflict"),
             InvalidOperationException => (StatusCodes.Status409Conflict, "Operation Conflict", "https://sgrowing.io/errors/conflict"),
             _ => (StatusCodes.Status500InternalServerError, "Internal Server Error", "https://sgrowing.io/errors/internal-error")
         };

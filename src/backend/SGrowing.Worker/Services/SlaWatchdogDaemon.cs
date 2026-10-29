@@ -1,4 +1,5 @@
 using SGrowing.Api.Data;
+using SGrowing.Core.Diagnostics;
 using SGrowing.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -125,6 +126,7 @@ public class SlaWatchdogDaemon : BackgroundService
         if (breachCount > 0)
         {
             await db.SaveChangesAsync(cancellationToken);
+            SGrowingTelemetry.SlaBreachesEscalatedCounter.Add(breachCount);
         }
 
         return breachCount;

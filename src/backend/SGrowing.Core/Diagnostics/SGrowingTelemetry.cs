@@ -73,6 +73,11 @@ public static class SGrowingTelemetry
         "executions",
         "Total number of visual node workflow graphs executed");
 
+    public static readonly Counter<long> SlaBreachesEscalatedCounter = Meter.CreateCounter<long>(
+        "sgrowing_sla_breaches_escalated_total",
+        "breaches",
+        "Total number of customer SLA breaches escalated to Urgent with supervisor alert");
+
     public static readonly Counter<long> AgentRemediationsCounter = Meter.CreateCounter<long>(
         "sgrowing_agent_remediations_total",
         "remediations",

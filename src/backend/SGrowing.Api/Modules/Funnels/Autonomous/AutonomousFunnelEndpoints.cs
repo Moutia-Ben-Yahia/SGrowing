@@ -96,6 +96,67 @@ public static class AutonomousFunnelEndpoints
         .WithName("CreateFunnelDriftPullRequest")
         .WithSummary("Auto-open GitHub PR with commit diffs and automated persona reviews to sync funnel drift");
 
+        group.MapGet("/runs/{id:guid}/split-test", async (
+            Guid id,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IFunnelSplitTestService splitService,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var test = await splitService.GetSplitTestAsync(effectiveTenantId, id, ct);
+            if (test == null) return Results.NotFound(new { error = "No active split test found for this funnel run" });
+            return Results.Ok(test);
+        })
+        .WithName("GetFunnelSplitTest")
+        .WithSummary("Get A/B split-testing metrics, Bayesian conversion probabilities, and winning variant");
+
+        group.MapPost("/runs/{id:guid}/split-test", async (
+            Guid id,
+            [FromBody] CreateFunnelSplitTestRequest req,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IFunnelSplitTestService splitService,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var test = await splitService.CreateOrGetSplitTestAsync(effectiveTenantId, id, req, ct);
+            return Results.Ok(test);
+        })
+        .WithName("CreateOrConfigureFunnelSplitTest")
+        .WithSummary("Create or configure an A/B split-testing campaign with traffic allocation ratios");
+
+        group.MapPost("/runs/{id:guid}/split-test/event", async (
+            Guid id,
+            [FromBody] RecordSplitTestEventRequest req,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IFunnelSplitTestService splitService,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var test = await splitService.RecordEventAsync(effectiveTenantId, id, req, ct);
+            if (test == null) return Results.NotFound(new { error = "No active split test found for this funnel run" });
+            return Results.Ok(test);
+        })
+        .WithName("RecordFunnelSplitTestEvent")
+        .WithSummary("Record view impression or successful checkout conversion for A/B variant");
+
+        group.MapPost("/runs/{id:guid}/split-test/conclude", async (
+            Guid id,
+            [FromQuery] string winningVariant,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IFunnelSplitTestService splitService,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            bool ok = await splitService.ConcludeTestAsync(effectiveTenantId, id, winningVariant, ct);
+            return ok ? Results.Ok(new { success = true, winningVariant }) : Results.NotFound(new { error = "Split test not found" });
+        })
+        .WithName("ConcludeFunnelSplitTest")
+        .WithSummary("Conclude split test and promote chosen variant to 100% traffic");
+
         return app;
     }
 }

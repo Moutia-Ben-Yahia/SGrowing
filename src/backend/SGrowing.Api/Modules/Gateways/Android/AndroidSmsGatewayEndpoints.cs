@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using SGrowing.Api.Modules.Messaging;
 
 namespace SGrowing.Api.Modules.Gateways.Android;
 
@@ -88,10 +89,25 @@ public static class AndroidSmsGatewayEndpoints
         group.MapPost("/status-callback", async (
             Guid tenantId,
             SmsDeliveryStatusCallbackRequest req,
-            IAndroidSmsGatewayService service) =>
+            IAndroidSmsGatewayService service,
+            IEventDeduplicationService dedupService) =>
         {
+            string eventId = $"sms-callback:{req.DispatchId}:{req.Status.Trim()}";
+            bool acquired = await dedupService.TryAcquireAsync(tenantId, eventId, req.ErrorMessage, TimeSpan.FromHours(24));
+            if (!acquired)
+            {
+                // Idempotent duplicate: already processed or currently being processed
+                return Results.Ok(new { Success = true, IdempotentDuplicate = true });
+            }
+
             var ok = await service.RecordDeliveryStatusAsync(tenantId, req.DispatchId, req.Status, req.ErrorMessage);
-            return ok ? Results.Ok(new { Success = true }) : Results.NotFound(new { Success = false, Error = "Dispatch record not found" });
+            if (ok)
+            {
+                await dedupService.MarkProcessedAsync(tenantId, eventId);
+                return Results.Ok(new { Success = true, IdempotentDuplicate = false });
+            }
+
+            return Results.NotFound(new { Success = false, Error = "Dispatch record not found" });
         });
 
         group.MapGet("/history", async (

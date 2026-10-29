@@ -316,10 +316,12 @@ builder.Services.AddScoped<IWarehouseRoutingService, WarehouseRoutingService>();
 builder.Services.AddScoped<IOrganizationHierarchyService, OrganizationHierarchyService>();
 
 // Ingested Capability Expansion & Strategic Next Steps
+builder.Services.AddSingleton<SGrowing.Core.Common.IConcurrencyLockService, SGrowing.Core.Common.DistributedMemoryLockService>();
 builder.Services.AddSingleton<IEventDeduplicationService, EventDeduplicationService>();
 builder.Services.AddScoped<ITimesheetService, TimesheetService>();
 builder.Services.AddScoped<IWhatsAppGatewayService, WhatsAppGatewayService>();
 builder.Services.AddScoped<IAutonomousFunnelPipelineService, AutonomousFunnelPipelineService>();
+builder.Services.AddScoped<IFunnelSplitTestService, FunnelSplitTestService>();
 builder.Services.AddScoped<IAgentPersonaService, AgentPersonaService>();
 builder.Services.AddScoped<IMediaVaultService, MediaVaultService>();
 builder.Services.AddScoped<IInboundMessageRouterService, InboundMessageRouterService>();

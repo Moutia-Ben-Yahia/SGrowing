@@ -195,6 +195,109 @@ export interface StepDetail {
                     <span>&rarr;</span>
                   </a>
                 </div>
+
+                <!-- Autonomous Funnel A/B Split-Testing Cockpit Card -->
+                <div class="mt-4 p-5 bg-gradient-to-br from-slate-900 via-slate-900/90 to-slate-950 border border-violet-500/30 rounded-xl space-y-4 shadow-xl">
+                  <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div class="flex items-center gap-2.5">
+                      <span class="p-1.5 rounded-lg bg-violet-500/20 text-violet-400 text-sm">⚖️</span>
+                      <div>
+                        <h3 class="text-xs font-bold text-white uppercase tracking-wider">Autonomous A/B Split-Testing Engine</h3>
+                        <p class="text-[11px] text-slate-400">Bayesian Conversion Probability & Real-Time Traffic Routing</p>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        {{ confidenceScore() }}% Statistical Confidence
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Traffic Allocation Slider -->
+                  <div class="space-y-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="text-slate-400">Traffic Distribution:</span>
+                      <span class="font-mono font-bold text-violet-300">{{ 100 - trafficSplitRatio() }}% {{ variantAName() }} / {{ trafficSplitRatio() }}% {{ variantBName() }}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="10"
+                      max="90"
+                      step="5"
+                      [ngModel]="trafficSplitRatio()"
+                      (ngModelChange)="trafficSplitRatio.set($event)"
+                      class="w-full accent-violet-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer" />
+                  </div>
+
+                  <!-- Variant Comparison Grid -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- Variant A Card -->
+                    <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-300">Variant A (Control)</span>
+                        <span class="text-[10px] text-slate-500 font-mono">{{ 100 - trafficSplitRatio() }}% traffic</span>
+                      </div>
+                      <div class="text-[11px] text-slate-400 truncate">Headline: Direct wholesale benefit statement</div>
+                      <div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800/80 text-center">
+                        <div>
+                          <div class="text-[10px] text-slate-500">Views</div>
+                          <div class="text-sm font-mono font-bold text-slate-200">{{ viewsA() }}</div>
+                        </div>
+                        <div>
+                          <div class="text-[10px] text-slate-500">Orders</div>
+                          <div class="text-sm font-mono font-bold text-slate-200">{{ conversionsA() }}</div>
+                        </div>
+                        <div>
+                          <div class="text-[10px] text-slate-500">Conv. %</div>
+                          <div class="text-sm font-mono font-bold text-slate-300">{{ conversionRateA() | number:'1.1-1' }}%</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Variant B Card -->
+                    <div class="p-3.5 rounded-xl bg-slate-950 border border-violet-500/40 relative space-y-2">
+                      <span class="absolute -top-2 right-3 px-2 py-0.2 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500 text-slate-950 shadow-sm">
+                        Winner (+{{ conversionLift() | number:'1.0-0' }}% Lift)
+                      </span>
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-violet-300">Variant B (Challenger)</span>
+                        <span class="text-[10px] text-violet-400 font-mono">{{ trafficSplitRatio() }}% traffic</span>
+                      </div>
+                      <div class="text-[11px] text-slate-400 truncate">Headline: Urgency & Doorstep COD Guarantee</div>
+                      <div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800/80 text-center">
+                        <div>
+                          <div class="text-[10px] text-slate-500">Views</div>
+                          <div class="text-sm font-mono font-bold text-violet-200">{{ viewsB() }}</div>
+                        </div>
+                        <div>
+                          <div class="text-[10px] text-slate-500">Orders</div>
+                          <div class="text-sm font-mono font-bold text-emerald-400">{{ conversionsB() }}</div>
+                        </div>
+                        <div>
+                          <div class="text-[10px] text-slate-500">Conv. %</div>
+                          <div class="text-sm font-mono font-bold text-emerald-400">{{ conversionRateB() | number:'1.1-1' }}%</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+                    <button
+                      (click)="simulateVisitors()"
+                      class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition flex items-center gap-1.5">
+                      <span>⚡ Simulate 50 Inbound Visitors</span>
+                    </button>
+
+                    <button
+                      (click)="promoteWinner()"
+                      [disabled]="winnerPromoted()"
+                      class="px-4 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 text-xs font-bold shadow-md transition disabled:opacity-50">
+                      {{ winnerPromoted() ? '✓ Variant B Promoted to 100%' : '🏆 Promote Variant B to 100%' }}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -215,6 +318,46 @@ export class AutonomousFunnelCockpitComponent {
   livePreviewUrl = signal<string>('https://preview.sgrowing.io/funnels/enterprise-wholesale-demo-a91b');
   gitHubPrUrl = signal<string>('https://github.com/sgrowing/storefront/pull/412');
   gitHubBranchName = signal<string>('funnel/enterprise-wholesale-demo');
+
+  // A/B Split-Testing Signals & Metrics
+  variantAName = signal<string>('Variant A (Direct Value)');
+  variantBName = signal<string>('Variant B (Urgency & COD Proof)');
+  trafficSplitRatio = signal<number>(50);
+  viewsA = signal<number>(140);
+  conversionsA = signal<number>(16);
+  viewsB = signal<number>(145);
+  conversionsB = signal<number>(28);
+  confidenceScore = signal<number>(96.8);
+  winnerPromoted = signal<boolean>(false);
+
+  conversionRateA = computed(() => (this.viewsA() > 0 ? (this.conversionsA() / this.viewsA()) * 100 : 0));
+  conversionRateB = computed(() => (this.viewsB() > 0 ? (this.conversionsB() / this.viewsB()) * 100 : 0));
+  conversionLift = computed(() =>
+    this.conversionRateA() > 0 ? ((this.conversionRateB() - this.conversionRateA()) / this.conversionRateA()) * 100 : 0
+  );
+
+  simulateVisitors() {
+    const totalNew = 50;
+    const split = this.trafficSplitRatio();
+    const countB = Math.round((totalNew * split) / 100);
+    const countA = totalNew - countB;
+
+    this.viewsA.update(v => v + countA);
+    this.viewsB.update(v => v + countB);
+
+    // Simulate realistic conversion distributions
+    const convA = Math.round(countA * 0.11);
+    const convB = Math.round(countB * 0.19);
+
+    this.conversionsA.update(c => c + convA);
+    this.conversionsB.update(c => c + convB);
+    this.confidenceScore.set(98.4);
+  }
+
+  promoteWinner() {
+    this.trafficSplitRatio.set(100);
+    this.winnerPromoted.set(true);
+  }
 
   steps = signal<StepDetail[]>([
     { number: 1, name: 'Concept Ingestion & Scoping', status: 'Completed', description: 'Parsed concept prompt into target commerce tier and customer demographics.', durationMs: 140 },

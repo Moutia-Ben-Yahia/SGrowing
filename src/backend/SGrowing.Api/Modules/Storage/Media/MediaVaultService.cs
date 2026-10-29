@@ -97,6 +97,37 @@ public class MediaVaultService : IMediaVaultService
             .ToListAsync(ct);
     }
 
+    public Task<PreSignedUploadUrlResult> GeneratePodSignatureUploadUrlAsync(Guid tenantId, Guid deliveryId, CancellationToken ct = default)
+    {
+        return GeneratePreSignedUploadUrlAsync(tenantId, new CreateUploadUrlRequest(
+            FileName: $"pod-signature-{deliveryId:N}.png",
+            ContentType: "image/png",
+            FileSizeBytes: 150_000,
+            ExpiryMinutes: 60
+        ), ct);
+    }
+
+    public Task<PreSignedUploadUrlResult> GenerateCallRecordingUploadUrlAsync(Guid tenantId, Guid callId, CancellationToken ct = default)
+    {
+        return GeneratePreSignedUploadUrlAsync(tenantId, new CreateUploadUrlRequest(
+            FileName: $"call-recording-{callId:N}.mp3",
+            ContentType: "audio/mpeg",
+            FileSizeBytes: 5_000_000,
+            ExpiryMinutes: 120
+        ), ct);
+    }
+
+    public Task<PreSignedUploadUrlResult> GenerateWhatsAppMediaUploadUrlAsync(Guid tenantId, string instanceName, string fileName, string contentType, CancellationToken ct = default)
+    {
+        string safeName = Path.GetFileName(fileName);
+        return GeneratePreSignedUploadUrlAsync(tenantId, new CreateUploadUrlRequest(
+            FileName: $"wa-{instanceName}-{safeName}",
+            ContentType: string.IsNullOrWhiteSpace(contentType) ? "application/octet-stream" : contentType,
+            FileSizeBytes: 20_000_000,
+            ExpiryMinutes: 60
+        ), ct);
+    }
+
     private static string GenerateSignature(string payload)
     {
         using var hmac = new HMACSHA256(HmacKey);

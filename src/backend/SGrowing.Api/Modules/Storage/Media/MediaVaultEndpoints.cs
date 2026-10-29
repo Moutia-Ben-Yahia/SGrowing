@@ -80,6 +80,50 @@ public static class MediaVaultEndpoints
         .WithName("GetMediaVaultItems")
         .WithSummary("List tenant media records stored in direct S3 vault");
 
+        group.MapPost("/pod-signature-url", async (
+            [FromQuery] Guid deliveryId,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IMediaVaultService service,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var result = await service.GeneratePodSignatureUploadUrlAsync(effectiveTenantId, deliveryId, ct);
+            return Results.Ok(result);
+        })
+        .WithName("GeneratePodSignatureUploadUrl")
+        .WithSummary("Generate pre-signed S3 URL specifically for courier delivery POD glass signature");
+
+        group.MapPost("/call-recording-url", async (
+            [FromQuery] Guid callId,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IMediaVaultService service,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var result = await service.GenerateCallRecordingUploadUrlAsync(effectiveTenantId, callId, ct);
+            return Results.Ok(result);
+        })
+        .WithName("GenerateCallRecordingUploadUrl")
+        .WithSummary("Generate pre-signed S3 URL for tele-operator softphone call recording audio");
+
+        group.MapPost("/whatsapp-media-url", async (
+            [FromQuery] string instanceName,
+            [FromQuery] string fileName,
+            [FromQuery] string? contentType,
+            [FromHeader(Name = "X-Tenant-Id")] Guid? headerTenantId,
+            [FromQuery] Guid? tenantId,
+            IMediaVaultService service,
+            CancellationToken ct) =>
+        {
+            var effectiveTenantId = ResolveTenantId(tenantId, headerTenantId);
+            var result = await service.GenerateWhatsAppMediaUploadUrlAsync(effectiveTenantId, instanceName, fileName, contentType ?? "application/octet-stream", ct);
+            return Results.Ok(result);
+        })
+        .WithName("GenerateWhatsAppMediaUploadUrl")
+        .WithSummary("Generate pre-signed S3 URL for WhatsApp inbound/outbound audio and photo media");
+
         return app;
     }
 }
