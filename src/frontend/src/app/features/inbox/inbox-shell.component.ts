@@ -57,6 +57,26 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 <span class="flex items-center gap-2">🎨 Whitelabel Branding & SSL</span>
               </a>
               <a
+                routerLink="/finance/cashflow-forecasting"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
+                <span class="flex items-center gap-2">💰 Cash Flow & Working Capital</span>
+              </a>
+              <a
+                routerLink="/security/rate-limiting"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-fuchsia-400 hover:bg-fuchsia-500/10 border border-fuchsia-500/20 transition">
+                <span class="flex items-center gap-2">🛡️ Rate Limiting & Token Bucket</span>
+              </a>
+              <a
+                routerLink="/crm/churn-retention"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-pink-400 hover:bg-pink-500/10 border border-pink-500/20 transition">
+                <span class="flex items-center gap-2">🔄 Churn Prediction & Retention</span>
+              </a>
+              <a
+                routerLink="/security/compliance-audit-ledger"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-sky-400 hover:bg-sky-500/10 border border-sky-500/20 transition">
+                <span class="flex items-center gap-2">⛓️ Merkle Audit Ledger & SOC 2</span>
+              </a>
+              <a
                 routerLink="/outbound/research"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
                 <span class="flex items-center gap-2">🌐 Deep AI Web Research</span>

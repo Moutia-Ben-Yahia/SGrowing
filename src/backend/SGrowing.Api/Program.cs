@@ -398,6 +398,18 @@ builder.Services.AddSingleton<IInventoryReplenishmentService, InventoryReplenish
 // Horizon 25: Multi-Tenant Whitelabel Branding & Custom Domain SSL Provisioning Engine
 builder.Services.AddSingleton<IWhitelabelBrandingService, WhitelabelBrandingService>();
 
+// Horizon 26: Autonomous Cash Flow Forecasting & Working Capital Float Engine
+builder.Services.AddScoped<ICashflowForecastingService, CashflowForecastingService>();
+
+// Horizon 27: Distributed Rate Limiting & Sliding Window Token Bucket Guard
+builder.Services.AddSingleton<IDistributedRateLimiterService, DistributedRateLimiterService>();
+
+// Horizon 28: Predictive Customer Churn & Automated Retention Winback Daemon
+builder.Services.AddScoped<ICustomerRetentionDaemonService, CustomerRetentionDaemonService>();
+
+// Horizon 29: Tamper-Evident Immutable Audit Ledger with Merkle Tree Cryptographic Sealing
+builder.Services.AddSingleton<IMerkleAuditLedgerService, MerkleAuditLedgerService>();
+
 builder.Services.AddHttpClient("WebScraperClient", client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
@@ -2264,6 +2276,18 @@ app.MapInventoryReplenishmentEndpoints();
 
 // Horizon 25: Multi-Tenant Whitelabel Branding & Custom Domain SSL Provisioning Engine
 app.MapWhitelabelBrandingEndpoints();
+
+// Horizon 26: Autonomous Cash Flow Forecasting & Working Capital Float Engine
+app.MapCashflowForecastingEndpoints();
+
+// Horizon 27: Distributed Rate Limiting & Sliding Window Token Bucket Guard
+app.MapRateLimiterEndpoints();
+
+// Horizon 28: Predictive Customer Churn & Automated Retention Winback Daemon
+app.MapRetentionEndpoints();
+
+// Horizon 29: Tamper-Evident Immutable Audit Ledger with Merkle Tree Cryptographic Sealing
+app.MapMerkleAuditEndpoints();
 
 if (args.Contains("--seed"))
 {
