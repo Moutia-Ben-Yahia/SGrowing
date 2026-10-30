@@ -77,6 +77,11 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 <span class="flex items-center gap-2">⛓️ Merkle Audit Ledger & SOC 2</span>
               </a>
               <a
+                routerLink="/security/idempotency-ledger"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-violet-400 hover:bg-violet-500/10 border border-violet-500/20 transition">
+                <span class="flex items-center gap-2">⚡ Idempotency & Safe Replay</span>
+              </a>
+              <a
                 routerLink="/feedback/board"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
                 <span class="flex items-center gap-2">💡 Feedback & Feature Roadmap</span>
@@ -95,6 +100,21 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 routerLink="/documents/telemetry"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 transition">
                 <span class="flex items-center gap-2">📊 Document Dwell & Buying Radar</span>
+              </a>
+              <a
+                routerLink="/commerce/dynamic-pricing"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-indigo-400 hover:bg-indigo-500/10 border border-indigo-500/20 transition">
+                <span class="flex items-center gap-2">🏷️ Dynamic Pricing & Bandit</span>
+              </a>
+              <a
+                routerLink="/crm/lead-enrichment"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
+                <span class="flex items-center gap-2">🎯 Lead Radar & DNS Verification</span>
+              </a>
+              <a
+                routerLink="/sla/monitor"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
+                <span class="flex items-center gap-2">⏱️ Predictive SLA Breach Monitor</span>
               </a>
               <a
                 routerLink="/outbound/research"

@@ -131,6 +131,7 @@ export const routes: Routes = [
   { path: 'outbound', component: OutboundStudioComponent, canActivate: [authGuard] },
   { path: 'broadcasts', component: BroadcastStudioComponent, canActivate: [authGuard] },
   { path: 'sla', component: SlaStudioComponent, canActivate: [authGuard] },
+  { path: 'sla/monitor', loadComponent: () => import('./features/sla/sla-breach-monitor-cockpit.component').then(m => m.SlaBreachMonitorCockpitComponent), canActivate: [authGuard] },
   { path: 'social/comment-to-dm', loadComponent: () => import('./features/social/social-comment-dm-studio.component').then(m => m.SocialCommentDmStudioComponent), canActivate: [authGuard] },
   { path: 'social', component: SocialStudioComponent, canActivate: [authGuard] },
   { path: 'voice', component: VoiceStudioComponent, canActivate: [authGuard] },
@@ -161,5 +162,8 @@ export const routes: Routes = [
   { path: 'billing/tax-invoicing', loadComponent: () => import('./features/billing/tax-invoice-ledger-studio.component').then(m => m.TaxInvoiceLedgerStudioComponent), canActivate: [authGuard] },
   { path: 'knowledge/rag-autopilot', loadComponent: () => import('./features/knowledge/hybrid-rag-autopilot-studio.component').then(m => m.HybridRagAutopilotStudioComponent), canActivate: [authGuard] },
   { path: 'documents/telemetry', loadComponent: () => import('./features/documents/document-telemetry-studio.component').then(m => m.DocumentTelemetryStudioComponent), canActivate: [authGuard] },
+  { path: 'commerce/dynamic-pricing', loadComponent: () => import('./features/commerce/dynamic-pricing-studio.component').then(m => m.DynamicPricingStudioComponent), canActivate: [authGuard] },
+  { path: 'crm/lead-enrichment', loadComponent: () => import('./features/crm/lead-enrichment-studio.component').then(m => m.LeadEnrichmentStudioComponent), canActivate: [authGuard] },
+  { path: 'security/idempotency-ledger', loadComponent: () => import('./features/security/idempotency-ledger-cockpit.component').then(m => m.IdempotencyLedgerCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

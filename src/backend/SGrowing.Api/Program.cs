@@ -423,6 +423,18 @@ builder.Services.AddScoped<IHybridRagAutopilotService, HybridRagAutopilotService
 // Horizon 33: Document Page-by-Page Reading Telemetry & Heatmap Analytics Engine
 builder.Services.AddScoped<IDocumentTelemetryHeatmapService, DocumentTelemetryHeatmapService>();
 
+// Horizon 34: Algorithmic Dynamic Pricing & Multi-Armed Bandit Markdown Optimization
+builder.Services.AddSingleton<IDynamicPricingBanditService, DynamicPricingBanditService>();
+
+// Horizon 35: Automated Lead Enrichment, Domain DNS/MX Verification & Intent Scoring Radar Engine
+builder.Services.AddSingleton<ILeadEnrichmentRadarService, LeadEnrichmentRadarService>();
+
+// Horizon 36: Real-Time Predictive SLA Breach Monitor & Automated Escalation Engine
+builder.Services.AddSingleton<IPredictiveSlaMonitorService, PredictiveSlaMonitorService>();
+
+// Horizon 37: Distributed Multi-Tenant Idempotency Key & Safe Replay Ledger
+builder.Services.AddSingleton<IDistributedIdempotencyService, DistributedIdempotencyService>();
+
 builder.Services.AddHttpClient("WebScraperClient", client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
@@ -2313,6 +2325,18 @@ app.MapHybridRagEndpoints();
 
 // Horizon 33: Document Page-by-Page Reading Telemetry & Heatmap Analytics Engine
 app.MapDocumentTelemetryEndpoints();
+
+// Horizon 34: Algorithmic Dynamic Pricing & Multi-Armed Bandit Markdown Optimization
+app.MapDynamicPricingEndpoints();
+
+// Horizon 35: Automated Lead Enrichment, Domain DNS/MX Verification & Intent Scoring Radar Engine
+app.MapLeadEnrichmentEndpoints();
+
+// Horizon 36: Real-Time Predictive SLA Breach Monitor & Automated Escalation Engine
+app.MapSlaMonitorEndpoints();
+
+// Horizon 37: Distributed Multi-Tenant Idempotency Key & Safe Replay Ledger
+app.MapIdempotencyEndpoints();
 
 if (args.Contains("--seed"))
 {
