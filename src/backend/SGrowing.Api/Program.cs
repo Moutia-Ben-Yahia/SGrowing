@@ -11,6 +11,7 @@ using SGrowing.Api.Modules.CRM;
 using SGrowing.Api.Modules.Feedback;
 using SGrowing.Api.Modules.Journeys;
 using SGrowing.Api.Modules.KnowledgeBase;
+using SGrowing.Api.Modules.KnowledgeBase.Autopilot;
 using SGrowing.Api.Modules.Outbound;
 using SGrowing.Api.Modules.Automation;
 using SGrowing.Api.Modules.Commerce;
@@ -409,6 +410,18 @@ builder.Services.AddScoped<ICustomerRetentionDaemonService, CustomerRetentionDae
 
 // Horizon 29: Tamper-Evident Immutable Audit Ledger with Merkle Tree Cryptographic Sealing
 builder.Services.AddSingleton<IMerkleAuditLedgerService, MerkleAuditLedgerService>();
+
+// Horizon 30: Multi-Channel Public Feedback & Feature Voting Board Engine
+builder.Services.AddScoped<IFeedbackBoardService, FeedbackBoardService>();
+
+// Horizon 31: Dynamic Multi-Currency Invoicing, Cross-Border VAT & Credit Note Ledger
+builder.Services.AddScoped<ITaxAndInvoiceLedgerService, TaxAndInvoiceLedgerService>();
+
+// Horizon 32: Hybrid Vector RAG Knowledge Base & Automated Ticket Autopilot
+builder.Services.AddScoped<IHybridRagAutopilotService, HybridRagAutopilotService>();
+
+// Horizon 33: Document Page-by-Page Reading Telemetry & Heatmap Analytics Engine
+builder.Services.AddScoped<IDocumentTelemetryHeatmapService, DocumentTelemetryHeatmapService>();
 
 builder.Services.AddHttpClient("WebScraperClient", client =>
 {
@@ -2288,6 +2301,18 @@ app.MapRetentionEndpoints();
 
 // Horizon 29: Tamper-Evident Immutable Audit Ledger with Merkle Tree Cryptographic Sealing
 app.MapMerkleAuditEndpoints();
+
+// Horizon 30: Multi-Channel Public Feedback & Feature Voting Board Engine
+app.MapFeedbackBoardEndpoints();
+
+// Horizon 31: Dynamic Multi-Currency Invoicing, Cross-Border VAT & Credit Note Ledger
+app.MapTaxInvoiceEndpoints();
+
+// Horizon 32: Hybrid Vector RAG Knowledge Base & Automated Ticket Autopilot
+app.MapHybridRagEndpoints();
+
+// Horizon 33: Document Page-by-Page Reading Telemetry & Heatmap Analytics Engine
+app.MapDocumentTelemetryEndpoints();
 
 if (args.Contains("--seed"))
 {

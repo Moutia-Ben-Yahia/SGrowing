@@ -77,6 +77,26 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 <span class="flex items-center gap-2">⛓️ Merkle Audit Ledger & SOC 2</span>
               </a>
               <a
+                routerLink="/feedback/board"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
+                <span class="flex items-center gap-2">💡 Feedback & Feature Roadmap</span>
+              </a>
+              <a
+                routerLink="/billing/tax-invoicing"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-teal-400 hover:bg-teal-500/10 border border-teal-500/20 transition">
+                <span class="flex items-center gap-2">📑 Multi-Currency & ZATCA Tax</span>
+              </a>
+              <a
+                routerLink="/knowledge/rag-autopilot"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-violet-400 hover:bg-violet-500/10 border border-violet-500/20 transition">
+                <span class="flex items-center gap-2">🤖 Hybrid RAG & Ticket Autopilot</span>
+              </a>
+              <a
+                routerLink="/documents/telemetry"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 transition">
+                <span class="flex items-center gap-2">📊 Document Dwell & Buying Radar</span>
+              </a>
+              <a
                 routerLink="/outbound/research"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
                 <span class="flex items-center gap-2">🌐 Deep AI Web Research</span>
