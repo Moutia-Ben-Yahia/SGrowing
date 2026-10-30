@@ -323,6 +323,7 @@ builder.Services.AddScoped<IProjectTaskService, ProjectTaskService>();
 builder.Services.AddScoped<IScraperVaultService, ScraperVaultService>();
 builder.Services.AddScoped<IDeepWebResearchService, DeepWebResearchService>();
 builder.Services.AddScoped<IWarehouseRoutingService, WarehouseRoutingService>();
+builder.Services.AddSingleton<IGeodeticFleetDispatchService, GeodeticFleetDispatchService>();
 builder.Services.AddScoped<IOrganizationHierarchyService, OrganizationHierarchyService>();
 
 // Ingested Capability Expansion & Strategic Next Steps
@@ -361,6 +362,7 @@ builder.Services.AddScoped<ISerpRankTrackerService, SerpRankTrackerService>();
 builder.Services.AddScoped<IInAppMicroSurveyService, InAppMicroSurveyService>();
 builder.Services.AddScoped<IAndroidSmsGatewayService, AndroidSmsGatewayService>();
 builder.Services.AddScoped<IVoiceCallAmdService, VoiceCallAmdService>();
+builder.Services.AddSingleton<IVoiceTranscriptionDiarizationService, VoiceTranscriptionDiarizationService>();
 builder.Services.AddScoped<ICommunityFeedbackService, CommunityFeedbackService>();
 
 // Frontiers 5-9: Proposal Portal, WebRTC Video Meetings, Multi-Inbox Rotation, COD Carrier Auto-Dispatch & PostgreSql RLS
@@ -434,6 +436,12 @@ builder.Services.AddSingleton<IPredictiveSlaMonitorService, PredictiveSlaMonitor
 
 // Horizon 37: Distributed Multi-Tenant Idempotency Key & Safe Replay Ledger
 builder.Services.AddSingleton<IDistributedIdempotencyService, DistributedIdempotencyService>();
+
+// Horizon 38: Continuous AB Multi-Armed Funnel Routing & Dirichlet-Multinomial Split-Testing Engine
+builder.Services.AddSingleton<IFunnelSplitTestingBanditService, FunnelSplitTestingBanditService>();
+
+// Horizon 41: Autonomous Continuous Compliance, SOC 2 / ISO 27001 Evidence Collector & Auditor Vault
+builder.Services.AddSingleton<IContinuousComplianceAuditorService, ContinuousComplianceAuditorService>();
 
 builder.Services.AddHttpClient("WebScraperClient", client =>
 {
@@ -563,6 +571,7 @@ app.MapWhatsAppCloudWebhookEndpoints();
 app.MapProjectTaskEndpoints();
 app.MapDeepWebResearchEndpoints();
 app.MapWarehouseRoutingEndpoints();
+app.MapFleetDispatchEndpoints();
 app.MapOrganizationHierarchyEndpoints();
 app.MapTimesheetEndpoints();
 app.MapWhatsAppGatewayEndpoints();
@@ -592,6 +601,7 @@ app.MapSerpRankTrackerEndpoints();
 app.MapInAppMicroSurveyEndpoints();
 app.MapAndroidSmsGatewayEndpoints();
 app.MapVoiceCallAmdEndpoints();
+app.MapVoiceDiarizationEndpoints();
 app.MapCommunityFeedbackEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", framework = ".NET 10", timestamp = DateTime.UtcNow }));
@@ -2337,6 +2347,12 @@ app.MapSlaMonitorEndpoints();
 
 // Horizon 37: Distributed Multi-Tenant Idempotency Key & Safe Replay Ledger
 app.MapIdempotencyEndpoints();
+
+// Horizon 38: Continuous AB Multi-Armed Funnel Routing & Dirichlet-Multinomial Split-Testing Engine
+app.MapFunnelSplitTestingEndpoints();
+
+// Horizon 41: Autonomous Continuous Compliance, SOC 2 / ISO 27001 Evidence Collector & Auditor Vault
+app.MapComplianceAuditorEndpoints();
 
 if (args.Contains("--seed"))
 {

@@ -117,6 +117,26 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 <span class="flex items-center gap-2">⏱️ Predictive SLA Breach Monitor</span>
               </a>
               <a
+                routerLink="/funnels/split-testing"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-fuchsia-400 hover:bg-fuchsia-500/10 border border-fuchsia-500/20 transition">
+                <span class="flex items-center gap-2">🧪 Dirichlet Funnel Split-Testing</span>
+              </a>
+              <a
+                routerLink="/voice/transcription"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-blue-400 hover:bg-blue-500/10 border border-blue-500/20 transition">
+                <span class="flex items-center gap-2">🎙️ Voice Diarization & Sentiment</span>
+              </a>
+              <a
+                routerLink="/courier/fleet-dispatch"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
+                <span class="flex items-center gap-2">🚚 Geodetic Fleet Dispatch & TSP</span>
+              </a>
+              <a
+                routerLink="/security/continuous-compliance"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
+                <span class="flex items-center gap-2">🛡️ SOC 2 Continuous Compliance</span>
+              </a>
+              <a
                 routerLink="/outbound/research"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
                 <span class="flex items-center gap-2">🌐 Deep AI Web Research</span>

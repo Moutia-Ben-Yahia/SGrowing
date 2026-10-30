@@ -86,6 +86,7 @@ export const routes: Routes = [
   { path: 'channels/whatsapp-gateway', component: WhatsAppGatewayCockpitComponent, canActivate: [authGuard] },
   { path: 'channels/whatsapp-pairing', loadComponent: () => import('./features/channels/whatsapp-pairing-cockpit.component').then(m => m.WhatsAppPairingCockpitComponent), canActivate: [authGuard] },
   { path: 'funnels/autonomous', component: AutonomousFunnelCockpitComponent, canActivate: [authGuard] },
+  { path: 'funnels/split-testing', loadComponent: () => import('./features/funnels/funnel-split-testing-studio.component').then(m => m.FunnelSplitTestingStudioComponent), canActivate: [authGuard] },
   { path: 'funnels/canvas', loadComponent: () => import('./features/funnels/funnel-builder-canvas.component').then(m => m.FunnelBuilderCanvasComponent), canActivate: [authGuard] },
   { path: 'agents/workforce', loadComponent: () => import('./features/agents/agent-workforce-cockpit.component').then(m => m.AgentWorkforceCockpitComponent), canActivate: [authGuard] },
   { path: 'seo/crawler', loadComponent: () => import('./features/seo/seo-crawler-studio.component').then(m => m.SeoCrawlerStudioComponent), canActivate: [authGuard] },
@@ -107,6 +108,7 @@ export const routes: Routes = [
   { path: 'chatbots/simulator', component: BotSimulatorRunnerComponent, canActivate: [authGuard] },
   { path: 'contracts/multi-party', component: MultipartySigningCockpitComponent, canActivate: [authGuard] },
   { path: 'courier/cod-fraud', component: CodLogisticsFraudCockpitComponent, canActivate: [authGuard] },
+  { path: 'courier/fleet-dispatch', loadComponent: () => import('./features/courier/geodetic-fleet-dispatch-cockpit.component').then(m => m.GeodeticFleetDispatchCockpitComponent), canActivate: [authGuard] },
   { path: 'agents/console', component: AgentConsoleComponent, canActivate: [authGuard] },
   { path: 'documents', component: DocumentsStudioComponent, canActivate: [authGuard] },
   { path: 'publications', component: PublicationStudioComponent, canActivate: [authGuard] },
@@ -135,6 +137,8 @@ export const routes: Routes = [
   { path: 'social/comment-to-dm', loadComponent: () => import('./features/social/social-comment-dm-studio.component').then(m => m.SocialCommentDmStudioComponent), canActivate: [authGuard] },
   { path: 'social', component: SocialStudioComponent, canActivate: [authGuard] },
   { path: 'voice', component: VoiceStudioComponent, canActivate: [authGuard] },
+  { path: 'voice/transcription', loadComponent: () => import('./features/voice/voice-transcription-studio.component').then(m => m.VoiceTranscriptionStudioComponent), canActivate: [authGuard] },
+  { path: 'voice/diarization', redirectTo: 'voice/transcription', pathMatch: 'full' },
   { path: 'accounts', component: AccountsStudioComponent, canActivate: [authGuard] },
   { path: 'workflows', component: WorkflowStudioComponent, canActivate: [authGuard] },
   { path: 'contracts', component: ContractsStudioComponent, canActivate: [authGuard] },
@@ -165,5 +169,6 @@ export const routes: Routes = [
   { path: 'commerce/dynamic-pricing', loadComponent: () => import('./features/commerce/dynamic-pricing-studio.component').then(m => m.DynamicPricingStudioComponent), canActivate: [authGuard] },
   { path: 'crm/lead-enrichment', loadComponent: () => import('./features/crm/lead-enrichment-studio.component').then(m => m.LeadEnrichmentStudioComponent), canActivate: [authGuard] },
   { path: 'security/idempotency-ledger', loadComponent: () => import('./features/security/idempotency-ledger-cockpit.component').then(m => m.IdempotencyLedgerCockpitComponent), canActivate: [authGuard] },
+  { path: 'security/continuous-compliance', loadComponent: () => import('./features/security/continuous-compliance-studio.component').then(m => m.ContinuousComplianceStudioComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];
