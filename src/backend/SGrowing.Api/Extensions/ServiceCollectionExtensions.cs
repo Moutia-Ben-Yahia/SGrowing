@@ -76,6 +76,10 @@ using SGrowing.Api.Modules.Commerce.Fulfillment;
 using SGrowing.Api.Modules.CRM.Pipeline;
 using SGrowing.Api.Modules.Documents.Security;
 using SGrowing.Api.Modules.Social.Listening;
+using SGrowing.Api.Modules.Analytics.PredictiveLtv;
+using SGrowing.Api.Modules.Voice.IVR;
+using SGrowing.Api.Modules.Security.SyntheticData;
+using SGrowing.Api.Modules.Search.Universal;
 using SGrowing.Api.Modules.Storage.Media;
 using SGrowing.Api.Modules.Telemetry;
 using SGrowing.Api.Modules.Tenancy;
@@ -474,6 +478,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDealSlippageRadarService, DealSlippageRadarService>();
         services.AddSingleton<ISocialListeningSentinelService, SocialListeningSentinelService>();
         services.AddSingleton<ISplitShipmentRoutingService, SplitShipmentRoutingService>();
+        services.AddSingleton<IPredictiveLtvService, PredictiveLtvService>();
+        services.AddSingleton<IVoiceIvrEngineService, VoiceIvrEngineService>();
+        services.AddSingleton<ISyntheticDataGeneratorService, SyntheticDataGeneratorService>();
+        services.AddSingleton<IUniversalSearchEngineService, UniversalSearchEngineService>();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

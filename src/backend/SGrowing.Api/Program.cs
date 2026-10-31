@@ -84,6 +84,10 @@ using SGrowing.Api.Modules.Commerce.Fulfillment;
 using SGrowing.Api.Modules.CRM.Pipeline;
 using SGrowing.Api.Modules.Documents.Security;
 using SGrowing.Api.Modules.Social.Listening;
+using SGrowing.Api.Modules.Analytics.PredictiveLtv;
+using SGrowing.Api.Modules.Voice.IVR;
+using SGrowing.Api.Modules.Security.SyntheticData;
+using SGrowing.Api.Modules.Search.Universal;
 using SGrowing.Api.Modules.Workforce.Timesheets;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -288,6 +292,10 @@ app.MapDocumentSecurityEndpoints();
 app.MapDealSlippageRadarEndpoints();
 app.MapSocialListeningEndpoints();
 app.MapSplitShipmentRoutingEndpoints();
+app.MapPredictiveLtvEndpoints();
+app.MapVoiceIvrEndpoints();
+app.MapSyntheticDataEndpoints();
+app.MapUniversalSearchEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

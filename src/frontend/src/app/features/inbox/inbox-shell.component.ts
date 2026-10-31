@@ -177,6 +177,26 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 <span class="flex items-center gap-2">📦 Split-Shipment Routing</span>
               </a>
               <a
+                routerLink="/analytics/pltv"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
+                <span class="flex items-center gap-2">📊 Predictive Customer LTV (pLTV)</span>
+              </a>
+              <a
+                routerLink="/voice/ivr-flow"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-indigo-400 hover:bg-indigo-500/10 border border-indigo-500/20 transition">
+                <span class="flex items-center gap-2">📞 Voice IVR Flow Builder</span>
+              </a>
+              <a
+                routerLink="/security/synthetic-data"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-purple-400 hover:bg-purple-500/10 border border-purple-500/20 transition">
+                <span class="flex items-center gap-2">🧪 Synthetic Test Data & Masking</span>
+              </a>
+              <a
+                routerLink="/search/universal"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
+                <span class="flex items-center gap-2">🔍 Universal Knowledge Search</span>
+              </a>
+              <a
                 routerLink="/funnels/split-testing"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-fuchsia-400 hover:bg-fuchsia-500/10 border border-fuchsia-500/20 transition">
                 <span class="flex items-center gap-2">🧪 Dirichlet Funnel Split-Testing</span>
