@@ -78,6 +78,10 @@ using SGrowing.Api.Modules.Tenancy;
 using SGrowing.Api.Modules.Tenancy.SnapshotsAndRebilling;
 using SGrowing.Api.Modules.Voice;
 using SGrowing.Api.Modules.Voice.Streaming;
+using SGrowing.Api.Modules.Conversations.Incidents;
+using SGrowing.Api.Modules.Conversations.Hierarchy;
+using SGrowing.Api.Modules.Notifications;
+using SGrowing.Api.Modules.Workforce.Shifts;
 using SGrowing.Api.Modules.Workforce.Timesheets;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
@@ -458,6 +462,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IProductAnalyticsService, ProductAnalyticsService>();
         services.AddSingleton<IAgentPresenceCollisionService, AgentPresenceCollisionService>();
         services.AddSingleton<IHeadlessFormService, HeadlessFormService>();
+        services.AddSingleton<IIncidentOnCallService, IncidentOnCallService>();
+        services.AddSingleton<INotificationOrchestratorService, NotificationOrchestratorService>();
+        services.AddSingleton<IConversationHierarchyService, ConversationHierarchyService>();
+        services.AddSingleton<IWorkforceShiftService, WorkforceShiftService>();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

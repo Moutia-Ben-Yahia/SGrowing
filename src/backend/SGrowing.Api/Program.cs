@@ -76,6 +76,10 @@ using SGrowing.Api.Modules.Tenancy;
 using SGrowing.Api.Modules.Tenancy.SnapshotsAndRebilling;
 using SGrowing.Api.Modules.Voice;
 using SGrowing.Api.Modules.Voice.Streaming;
+using SGrowing.Api.Modules.Conversations.Incidents;
+using SGrowing.Api.Modules.Conversations.Hierarchy;
+using SGrowing.Api.Modules.Notifications;
+using SGrowing.Api.Modules.Workforce.Shifts;
 using SGrowing.Api.Modules.Workforce.Timesheets;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -272,6 +276,10 @@ app.MapJourneyEndpoints();
 app.MapJourneyDagEndpoints();
 app.MapHeadlessFormEndpoints();
 app.MapAffiliateCommissionEndpoints();
+app.MapIncidentOnCallEndpoints();
+app.MapNotificationEndpoints();
+app.MapConversationHierarchyEndpoints();
+app.MapWorkforceShiftEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

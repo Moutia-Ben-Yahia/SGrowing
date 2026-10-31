@@ -137,6 +137,26 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 <span class="flex items-center gap-2">🛡️ Agent Presence & Collision Shield</span>
               </a>
               <a
+                routerLink="/conversations/incidents"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 transition">
+                <span class="flex items-center gap-2">🚨 On-Call Incident Paging Matrix</span>
+              </a>
+              <a
+                routerLink="/notifications/orchestrator"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-indigo-400 hover:bg-indigo-500/10 border border-indigo-500/20 transition">
+                <span class="flex items-center gap-2">🔔 Cascading Notification Fallback</span>
+              </a>
+              <a
+                routerLink="/conversations/hierarchy"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-purple-400 hover:bg-purple-500/10 border border-purple-500/20 transition">
+                <span class="flex items-center gap-2">🔀 Ticket Split, Merge & Lineage</span>
+              </a>
+              <a
+                routerLink="/workforce/shifts"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-teal-400 hover:bg-teal-500/10 border border-teal-500/20 transition">
+                <span class="flex items-center gap-2">⏱️ Workforce Shifts & Capacity Mesh</span>
+              </a>
+              <a
                 routerLink="/funnels/split-testing"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-fuchsia-400 hover:bg-fuchsia-500/10 border border-fuchsia-500/20 transition">
                 <span class="flex items-center gap-2">🧪 Dirichlet Funnel Split-Testing</span>

@@ -187,5 +187,9 @@ export const routes: Routes = [
   { path: 'telemetry/analytics', loadComponent: () => import('./features/telemetry/product-analytics-cockpit.component').then(m => m.ProductAnalyticsCockpitComponent), canActivate: [authGuard] },
   { path: 'lifecycle/journeys', loadComponent: () => import('./features/lifecycle/customer-lifecycle-studio.component').then(m => m.CustomerLifecycleStudioComponent), canActivate: [authGuard] },
   { path: 'conversations/agent-presence', loadComponent: () => import('./features/conversations/agent-presence-cockpit.component').then(m => m.AgentPresenceCockpitComponent), canActivate: [authGuard] },
+  { path: 'conversations/incidents', loadComponent: () => import('./features/conversations/incident-matrix-studio.component').then(m => m.IncidentMatrixStudioComponent), canActivate: [authGuard] },
+  { path: 'notifications/orchestrator', loadComponent: () => import('./features/notifications/notification-orchestrator-studio.component').then(m => m.NotificationOrchestratorStudioComponent), canActivate: [authGuard] },
+  { path: 'conversations/hierarchy', loadComponent: () => import('./features/conversations/conversation-hierarchy-studio.component').then(m => m.ConversationHierarchyStudioComponent), canActivate: [authGuard] },
+  { path: 'workforce/shifts', loadComponent: () => import('./features/workforce/shift-scheduling-studio.component').then(m => m.ShiftSchedulingStudioComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];
