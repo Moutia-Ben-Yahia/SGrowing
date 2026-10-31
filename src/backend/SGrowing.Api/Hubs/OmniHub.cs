@@ -80,6 +80,23 @@ public class OmniHub : Hub<IOmniClient>
             .OnHighIntentProposalViewed(alert);
     }
 
+    public async Task JoinOrder(Guid orderId)
+    {
+        await Groups.AddToGroupAsync(Context.ConnectionId, GetOrderGroup(orderId));
+    }
+
+    public async Task LeaveOrder(Guid orderId)
+    {
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, GetOrderGroup(orderId));
+    }
+
+    public async Task BroadcastOrderTyping(Guid orderId, string operatorId, string operatorName, bool isTyping, string? draftSnippet = null)
+    {
+        await Clients.Group(GetOrderGroup(orderId))
+            .OnOrderTypingBeacon(orderId, operatorId, operatorName, isTyping, draftSnippet);
+    }
+
     public static string GetConversationGroup(Guid conversationId) => $"conv_{conversationId}";
     public static string GetTenantGroup(Guid tenantId) => $"tenant_{tenantId}";
+    public static string GetOrderGroup(Guid orderId) => $"order_{orderId}";
 }

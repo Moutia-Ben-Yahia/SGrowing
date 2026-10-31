@@ -37,6 +37,7 @@ public interface IOmniClient
     Task OnCallSessionStateChanged(Guid callSessionId, string status, string? callerPhone);
     Task OnOrderLocked(Guid orderId, string lockedByAgentId, string lockedByAgentName, DateTime expiresAtUtc);
     Task OnOrderUnlocked(Guid orderId);
+    Task OnOrderTypingBeacon(Guid orderId, string operatorId, string operatorName, bool isTyping, string? draftSnippet);
     Task OnAndroidSmsStatusUpdated(Guid dispatchId, string status, string? errorMessage);
     Task OnVoiceTranscriptionChunk(Guid callSessionId, string speaker, string chunkText, double sentimentScore, bool isFinal);
     Task OnHighIntentProposalViewed(HighIntentProposalViewedEventDto alert);
