@@ -20,6 +20,7 @@ using SGrowing.Api.Modules.Marketing;
 using SGrowing.Api.Modules.Security;
 using SGrowing.Api.Modules.Tenancy;
 using SGrowing.Api.Modules.Voice;
+using SGrowing.Api.Modules.Voice.Streaming;
 using SGrowing.Api.Modules.Finance;
 using SGrowing.Api.Modules.Auth;
 using SGrowing.Api.Modules.Messaging;
@@ -35,6 +36,7 @@ using SGrowing.Api.Modules.Telemetry;
 using SGrowing.Api.Modules.Agents;
 using SGrowing.Api.Modules.Channels.WhatsApp;
 using SGrowing.Api.Modules.Channels.WhatsApp.Catalog;
+using SGrowing.Api.Modules.Channels.Telegram;
 using SGrowing.Api.Modules.Billing;
 using SGrowing.Api.Modules.Outbound.Spintax;
 using SGrowing.Api.Modules.Outbound.EmailVerification;
@@ -67,6 +69,7 @@ using SGrowing.Api.Modules.Sales;
 using SGrowing.Api.Modules.Billing.Invoicing;
 using SGrowing.Api.Modules.Agents.Git;
 using SGrowing.Api.Modules.Social;
+using SGrowing.Api.Modules.Lifecycle;
 using SGrowing.Api.Common;
 using Scalar.AspNetCore;
 using SGrowing.Core.Messaging;
@@ -353,6 +356,7 @@ builder.Services.AddScoped<IMultiBrokerEventFanoutService, MultiBrokerEventFanou
 builder.Services.AddScoped<IWhatsAppNewsletterService, WhatsAppNewsletterService>();
 builder.Services.AddSingleton<IWhatsAppBroadcastPacingService, WhatsAppBroadcastPacingService>();
 builder.Services.AddSingleton<IWhatsAppCatalogCartService, WhatsAppCatalogCartService>();
+builder.Services.AddSingleton<ITelegramMarketingBotService, TelegramMarketingBotService>();
 builder.Services.AddScoped<IAiModelRouterService, AiModelRouterService>();
 builder.Services.AddScoped<AiModelRouterService>();
 
@@ -370,6 +374,7 @@ builder.Services.AddScoped<IInAppMicroSurveyService, InAppMicroSurveyService>();
 builder.Services.AddScoped<IAndroidSmsGatewayService, AndroidSmsGatewayService>();
 builder.Services.AddScoped<IVoiceCallAmdService, VoiceCallAmdService>();
 builder.Services.AddSingleton<IVoiceTranscriptionDiarizationService, VoiceTranscriptionDiarizationService>();
+builder.Services.AddSingleton<IVoiceAiStreamingBridgeService, VoiceAiStreamingBridgeService>();
 builder.Services.AddScoped<ICommunityFeedbackService, CommunityFeedbackService>();
 
 // Frontiers 5-9: Proposal Portal, WebRTC Video Meetings, Multi-Inbox Rotation, COD Carrier Auto-Dispatch & PostgreSql RLS
@@ -467,6 +472,12 @@ builder.Services.AddSingleton<IAppointmentSchedulingService, AppointmentScheduli
 
 // Horizon 49: Multi-Platform Social Media Content Calendar & Automated Publishing Dispatcher
 builder.Services.AddSingleton<ISocialPublishingService, SGrowing.Api.Modules.Social.SocialPublishingService>();
+
+// Horizon 52: Durable Customer Lifecycle Journey DAG Orchestrator & Delayed Automation
+builder.Services.AddSingleton<ICustomerLifecycleJourneyService, CustomerLifecycleJourneyService>();
+
+// Horizon 51: High-Velocity Product Telemetry & Cohort Retention Analytics Engine
+builder.Services.AddSingleton<IProductAnalyticsService, ProductAnalyticsService>();
 
 builder.Services.AddHttpClient("WebScraperClient", client =>
 {
@@ -613,6 +624,7 @@ app.MapEventFanoutEndpoints();
 app.MapWhatsAppNewsletterEndpoints();
 app.MapWhatsAppBroadcastPacingEndpoints();
 app.MapWhatsAppCatalogCartEndpoints();
+app.MapTelegramBotEndpoints();
 app.MapAiModelRouterEndpoints();
 
 // Enterprise Wiki Strategic Pillars Endpoints (Waves 1-4)
@@ -629,6 +641,7 @@ app.MapInAppMicroSurveyEndpoints();
 app.MapAndroidSmsGatewayEndpoints();
 app.MapVoiceCallAmdEndpoints();
 app.MapVoiceDiarizationEndpoints();
+app.MapVoiceAiStreamingEndpoints();
 app.MapCommunityFeedbackEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "Healthy", framework = ".NET 10", timestamp = DateTime.UtcNow }));
@@ -2398,6 +2411,12 @@ app.MapAppointmentSchedulingEndpoints();
 
 // Horizon 49: Multi-Platform Social Media Content Calendar & Automated Publishing Dispatcher
 SGrowing.Api.Modules.Social.SocialPublishingEndpoints.MapSocialPublishingEndpoints(app);
+
+// Horizon 52: Durable Customer Lifecycle Journey DAG Orchestrator & Delayed Automation
+app.MapCustomerLifecycleJourneyEndpoints();
+
+// Horizon 51: High-Velocity Product Telemetry & Cohort Retention Analytics Engine
+app.MapProductAnalyticsEndpoints();
 
 if (args.Contains("--seed"))
 {

@@ -122,6 +122,11 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 <span class="flex items-center gap-2">🧪 Dirichlet Funnel Split-Testing</span>
               </a>
               <a
+                routerLink="/voice/streaming-cockpit"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
+                <span class="flex items-center gap-2">⚡ Full-Duplex Voice AI Streaming</span>
+              </a>
+              <a
                 routerLink="/voice/transcription"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-blue-400 hover:bg-blue-500/10 border border-blue-500/20 transition">
                 <span class="flex items-center gap-2">🎙️ Voice Diarization & Sentiment</span>
@@ -160,6 +165,11 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 routerLink="/channels/whatsapp-catalog"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
                 <span class="flex items-center gap-2">🛒 WhatsApp Catalog & Cart</span>
+              </a>
+              <a
+                routerLink="/channels/telegram-bot"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-sky-400 hover:bg-sky-500/10 border border-sky-500/20 transition">
+                <span class="flex items-center gap-2">✈️ Telegram Marketing Bot & Mini-App</span>
               </a>
               <a
                 routerLink="/attribution/capi-cockpit"
@@ -272,6 +282,11 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 <span class="flex items-center gap-2">📡 Live Product Telemetry</span>
               </a>
               <a
+                routerLink="/telemetry/analytics"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
+                <span class="flex items-center gap-2">📈 Cohort Retention & Analytics</span>
+              </a>
+              <a
                 routerLink="/billing"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
                 <span class="flex items-center gap-2">💳 SaaS Billing & Plans</span>
@@ -355,6 +370,11 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 routerLink="/journeys"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-purple-400 hover:bg-purple-500/10 border border-purple-500/20 transition">
                 <span class="flex items-center gap-2">🎯 Customer Journeys</span>
+              </a>
+              <a
+                routerLink="/lifecycle/journeys"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-fuchsia-400 hover:bg-fuchsia-500/10 border border-fuchsia-500/20 transition">
+                <span class="flex items-center gap-2">⚡ Lifecycle DAG Studio</span>
               </a>
               <a
                 routerLink="/feedback"
