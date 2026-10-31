@@ -482,6 +482,7 @@ public class SGrowingDbContext : DbContext
         {
             b.HasKey(w => w.Id);
             b.HasIndex(w => new { w.TenantId, w.Code });
+            b.HasIndex(w => new { w.TenantId, w.IsActive, w.Latitude, w.Longitude });
         });
 
         modelBuilder.Entity<WarehouseStockRecord>(b =>
@@ -590,6 +591,30 @@ public class SGrowingDbContext : DbContext
         {
             b.HasKey(m => m.Id);
             b.HasIndex(m => new { m.TenantId, m.StorageKey });
+        });
+
+        modelBuilder.Entity<VoiceCallSession>(b =>
+        {
+            b.HasKey(s => s.Id);
+            b.Property(s => s.CallSid).IsRequired().HasMaxLength(100);
+            b.Property(s => s.FromNumber).HasMaxLength(50);
+            b.Property(s => s.ToNumber).HasMaxLength(50);
+            b.HasIndex(s => new { s.TenantId, s.CallSid });
+            b.HasIndex(s => new { s.TenantId, s.ContactId });
+        });
+
+        modelBuilder.Entity<CadenceTouchpoint>(b =>
+        {
+            b.HasKey(t => t.Id);
+            b.Property(t => t.BodyTemplate).IsRequired();
+            b.HasIndex(t => new { t.TenantId, t.CampaignId });
+        });
+
+        modelBuilder.Entity<TouchpointExecution>(b =>
+        {
+            b.HasKey(e => e.Id);
+            b.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            b.HasIndex(e => new { e.TenantId, e.Status, e.ScheduledAtUtc });
         });
     }
 }

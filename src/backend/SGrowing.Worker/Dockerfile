@@ -4,12 +4,14 @@ WORKDIR /src
 
 # Copy project files and restore dependencies
 COPY ["src/backend/SGrowing.Core/SGrowing.Core.csproj", "src/backend/SGrowing.Core/"]
+COPY ["src/backend/SGrowing.ServiceDefaults/SGrowing.ServiceDefaults.csproj", "src/backend/SGrowing.ServiceDefaults/"]
 COPY ["src/backend/SGrowing.Api/SGrowing.Api.csproj", "src/backend/SGrowing.Api/"]
 COPY ["src/backend/SGrowing.Worker/SGrowing.Worker.csproj", "src/backend/SGrowing.Worker/"]
 RUN dotnet restore "src/backend/SGrowing.Worker/SGrowing.Worker.csproj"
 
 # Copy source code and build
 COPY ["src/backend/SGrowing.Core/", "src/backend/SGrowing.Core/"]
+COPY ["src/backend/SGrowing.ServiceDefaults/", "src/backend/SGrowing.ServiceDefaults/"]
 COPY ["src/backend/SGrowing.Api/", "src/backend/SGrowing.Api/"]
 COPY ["src/backend/SGrowing.Worker/", "src/backend/SGrowing.Worker/"]
 WORKDIR "/src/src/backend/SGrowing.Worker"
