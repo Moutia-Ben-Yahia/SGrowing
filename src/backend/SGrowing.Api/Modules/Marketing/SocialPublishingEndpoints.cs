@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Mvc;
 using SGrowing.Core.Entities;
 
@@ -5,7 +8,7 @@ namespace SGrowing.Api.Modules.Marketing;
 
 public static class SocialPublishingEndpoints
 {
-    public static IEndpointRouteBuilder MapSocialPublishingEndpoints(this IEndpointRouteBuilder app)
+    public static IEndpointRouteBuilder MapMarketingSocialPublishingEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/v1/social")
             .WithTags("Social Publishing & AI Copilot");

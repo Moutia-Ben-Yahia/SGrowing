@@ -28,10 +28,13 @@ using SGrowing.Api.Modules.Dev;
 using SGrowing.Api.Modules.SEO;
 using SGrowing.Api.Modules.Funnels;
 using SGrowing.Api.Modules.Calendar;
+using SGrowing.Api.Modules.Scheduling;
+using SGrowing.Api.Modules.Attribution;
 using SGrowing.Api.Modules.Deliverability;
 using SGrowing.Api.Modules.Telemetry;
 using SGrowing.Api.Modules.Agents;
 using SGrowing.Api.Modules.Channels.WhatsApp;
+using SGrowing.Api.Modules.Channels.WhatsApp.Catalog;
 using SGrowing.Api.Modules.Billing;
 using SGrowing.Api.Modules.Outbound.Spintax;
 using SGrowing.Api.Modules.Outbound.EmailVerification;
@@ -63,6 +66,7 @@ using SGrowing.Api.Modules.Storage.Media;
 using SGrowing.Api.Modules.Sales;
 using SGrowing.Api.Modules.Billing.Invoicing;
 using SGrowing.Api.Modules.Agents.Git;
+using SGrowing.Api.Modules.Social;
 using SGrowing.Api.Common;
 using Scalar.AspNetCore;
 using SGrowing.Core.Messaging;
@@ -156,7 +160,7 @@ builder.Services.AddScoped<VoiceAiStreamService>();
 
 // 8. Social Publishing & Deflection
 builder.Services.AddSingleton<ISocialPostRepository, InMemorySocialPostRepository>();
-builder.Services.AddScoped<SocialPublishingService>();
+builder.Services.AddScoped<SGrowing.Api.Modules.Marketing.SocialPublishingService>();
 builder.Services.AddScoped<SocialCommentDeflectionService>();
 builder.Services.AddSingleton<ISocialCommentToDmService, SocialCommentToDmService>();
 
@@ -348,6 +352,7 @@ builder.Services.AddScoped<ICartReservationService, CartReservationService>();
 builder.Services.AddScoped<IMultiBrokerEventFanoutService, MultiBrokerEventFanoutService>();
 builder.Services.AddScoped<IWhatsAppNewsletterService, WhatsAppNewsletterService>();
 builder.Services.AddSingleton<IWhatsAppBroadcastPacingService, WhatsAppBroadcastPacingService>();
+builder.Services.AddSingleton<IWhatsAppCatalogCartService, WhatsAppCatalogCartService>();
 builder.Services.AddScoped<IAiModelRouterService, AiModelRouterService>();
 builder.Services.AddScoped<AiModelRouterService>();
 
@@ -453,6 +458,15 @@ builder.Services.AddSingleton<IContractElectronicSignatureService, ContractElect
 
 // Horizon 45: High-Velocity Distributed Event Mesh & Multi-Broker Streaming Bridge
 builder.Services.AddSingleton<IDistributedEventMeshService, DistributedEventMeshService>();
+
+// Horizon 47: Server-Side Ad Attribution Postback Engine & CAPI Gateway (Meta, TikTok, Google)
+builder.Services.AddSingleton<IServerSideAttributionService, ServerSideAttributionService>();
+
+// Horizon 48: High-Speed Temporal Appointment Scheduling & Round-Robin Calendar Engine
+builder.Services.AddSingleton<IAppointmentSchedulingService, AppointmentSchedulingService>();
+
+// Horizon 49: Multi-Platform Social Media Content Calendar & Automated Publishing Dispatcher
+builder.Services.AddSingleton<ISocialPublishingService, SGrowing.Api.Modules.Social.SocialPublishingService>();
 
 builder.Services.AddHttpClient("WebScraperClient", client =>
 {
@@ -598,6 +612,7 @@ app.MapCartReservationEndpoints();
 app.MapEventFanoutEndpoints();
 app.MapWhatsAppNewsletterEndpoints();
 app.MapWhatsAppBroadcastPacingEndpoints();
+app.MapWhatsAppCatalogCartEndpoints();
 app.MapAiModelRouterEndpoints();
 
 // Enterprise Wiki Strategic Pillars Endpoints (Waves 1-4)
@@ -953,13 +968,13 @@ app.MapGet("/api/social/posts", async ([FromQuery] Guid tenantId, SGrowingDbCont
     return Results.Ok(posts);
 });
 
-app.MapPost("/api/social/posts", async ([FromQuery] Guid tenantId, [FromBody] CreateSocialPostDto req, SocialPublishingService publishingService) =>
+app.MapPost("/api/social/posts", async ([FromQuery] Guid tenantId, [FromBody] CreateSocialPostDto req, SGrowing.Api.Modules.Marketing.SocialPublishingService publishingService) =>
 {
     var post = await publishingService.CreatePostAsync(tenantId, req.Content, req.Platforms, req.ScheduledAtUtc, req.MediaUrls);
     return Results.Ok(post);
 });
 
-app.MapPost("/api/social/publish-due", async ([FromQuery] Guid tenantId, SocialPublishingService publishingService) =>
+app.MapPost("/api/social/publish-due", async ([FromQuery] Guid tenantId, SGrowing.Api.Modules.Marketing.SocialPublishingService publishingService) =>
 {
     var count = await publishingService.PublishDuePostsAsync(tenantId);
     return Results.Ok(new { publishedCount = count });
@@ -2279,7 +2294,7 @@ app.MapCollisionAndSlaEndpoints();
 app.MapUnifiedDeskEndpoints();
 app.MapWarmupNetworkEndpoints();
 app.MapAutonomousSdrFleetEndpoints();
-app.MapSocialPublishingEndpoints();
+SGrowing.Api.Modules.Marketing.SocialPublishingEndpoints.MapMarketingSocialPublishingEndpoints(app);
 app.MapSocialCommentToDmEndpoints();
 app.MapMcpServerEndpoints();
 app.MapFrappeCrmEnhancementsEndpoints();
@@ -2374,6 +2389,15 @@ app.MapContractSignatureEndpoints();
 
 // Horizon 45: High-Velocity Distributed Event Mesh & Multi-Broker Streaming Bridge
 app.MapEventMeshEndpoints();
+
+// Horizon 47: Server-Side Ad Attribution Postback Engine & CAPI Gateway (Meta, TikTok, Google)
+app.MapServerSideAttributionEndpoints();
+
+// Horizon 48: High-Speed Temporal Appointment Scheduling & Round-Robin Calendar Engine
+app.MapAppointmentSchedulingEndpoints();
+
+// Horizon 49: Multi-Platform Social Media Content Calendar & Automated Publishing Dispatcher
+SGrowing.Api.Modules.Social.SocialPublishingEndpoints.MapSocialPublishingEndpoints(app);
 
 if (args.Contains("--seed"))
 {
