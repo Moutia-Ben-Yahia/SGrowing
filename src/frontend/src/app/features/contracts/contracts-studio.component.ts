@@ -48,6 +48,9 @@ export interface DigitalContractUi {
               <a routerLink="/contracts" class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-medium">
                 <span>✍️ In-Chat E-Signatures</span>
               </a>
+              <a routerLink="/contracts/e-sign" class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-violet-400 hover:bg-violet-500/10 border border-violet-500/20 transition">
+                <span>🛡️ Multi-Signer E-Sign Studio</span>
+              </a>
               <a routerLink="/rag" class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-purple-400 hover:bg-purple-500/10 border border-purple-500/20 transition">
                 <span>🧠 Vector RAG Knowledge</span>
               </a>

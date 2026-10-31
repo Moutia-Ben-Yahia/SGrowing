@@ -23,6 +23,7 @@ using SGrowing.Api.Modules.Voice;
 using SGrowing.Api.Modules.Finance;
 using SGrowing.Api.Modules.Auth;
 using SGrowing.Api.Modules.Messaging;
+using SGrowing.Api.Modules.Contracts;
 using SGrowing.Api.Modules.Dev;
 using SGrowing.Api.Modules.SEO;
 using SGrowing.Api.Modules.Funnels;
@@ -346,6 +347,7 @@ builder.Services.AddScoped<IWorkflowGraphExecutorService, WorkflowGraphExecutorS
 builder.Services.AddScoped<ICartReservationService, CartReservationService>();
 builder.Services.AddScoped<IMultiBrokerEventFanoutService, MultiBrokerEventFanoutService>();
 builder.Services.AddScoped<IWhatsAppNewsletterService, WhatsAppNewsletterService>();
+builder.Services.AddSingleton<IWhatsAppBroadcastPacingService, WhatsAppBroadcastPacingService>();
 builder.Services.AddScoped<IAiModelRouterService, AiModelRouterService>();
 builder.Services.AddScoped<AiModelRouterService>();
 
@@ -442,6 +444,15 @@ builder.Services.AddSingleton<IFunnelSplitTestingBanditService, FunnelSplitTesti
 
 // Horizon 41: Autonomous Continuous Compliance, SOC 2 / ISO 27001 Evidence Collector & Auditor Vault
 builder.Services.AddSingleton<IContinuousComplianceAuditorService, ContinuousComplianceAuditorService>();
+
+// Horizon 42: Multi-Tenant Whitelabel Custom Email Sending Domain & Automated DKIM/CNAME Provisioner
+builder.Services.AddSingleton<ICustomEmailDomainService, CustomEmailDomainService>();
+
+// Horizon 43: Interactive Multi-Signer Contract E-Signature & Audit Certificate Engine
+builder.Services.AddSingleton<IContractElectronicSignatureService, ContractElectronicSignatureService>();
+
+// Horizon 45: High-Velocity Distributed Event Mesh & Multi-Broker Streaming Bridge
+builder.Services.AddSingleton<IDistributedEventMeshService, DistributedEventMeshService>();
 
 builder.Services.AddHttpClient("WebScraperClient", client =>
 {
@@ -586,6 +597,7 @@ app.MapWorkflowGraphEndpoints();
 app.MapCartReservationEndpoints();
 app.MapEventFanoutEndpoints();
 app.MapWhatsAppNewsletterEndpoints();
+app.MapWhatsAppBroadcastPacingEndpoints();
 app.MapAiModelRouterEndpoints();
 
 // Enterprise Wiki Strategic Pillars Endpoints (Waves 1-4)
@@ -2353,6 +2365,15 @@ app.MapFunnelSplitTestingEndpoints();
 
 // Horizon 41: Autonomous Continuous Compliance, SOC 2 / ISO 27001 Evidence Collector & Auditor Vault
 app.MapComplianceAuditorEndpoints();
+
+// Horizon 42: Multi-Tenant Whitelabel Custom Email Sending Domain & Automated DKIM/CNAME Provisioner
+app.MapCustomEmailDomainEndpoints();
+
+// Horizon 43: Interactive Multi-Signer Contract E-Signature & Audit Certificate Engine
+app.MapContractSignatureEndpoints();
+
+// Horizon 45: High-Velocity Distributed Event Mesh & Multi-Broker Streaming Bridge
+app.MapEventMeshEndpoints();
 
 if (args.Contains("--seed"))
 {

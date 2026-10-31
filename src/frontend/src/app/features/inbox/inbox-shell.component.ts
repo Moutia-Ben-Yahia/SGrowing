@@ -137,6 +137,26 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 <span class="flex items-center gap-2">🛡️ SOC 2 Continuous Compliance</span>
               </a>
               <a
+                routerLink="/deliverability/custom-domains"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-teal-400 hover:bg-teal-500/10 border border-teal-500/20 transition">
+                <span class="flex items-center gap-2">🌐 Custom Sending Domains & DKIM</span>
+              </a>
+              <a
+                routerLink="/contracts/e-sign"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-violet-400 hover:bg-violet-500/10 border border-violet-500/20 transition">
+                <span class="flex items-center gap-2">✍️ Multi-Signer Contract E-Sign</span>
+              </a>
+              <a
+                routerLink="/channels/whatsapp-pacing"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
+                <span class="flex items-center gap-2">💬 WhatsApp Broadcast Pacing & Anti-Ban</span>
+              </a>
+              <a
+                routerLink="/integrations/event-mesh"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
+                <span class="flex items-center gap-2">⚡ Distributed Event Mesh</span>
+              </a>
+              <a
                 routerLink="/outbound/research"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
                 <span class="flex items-center gap-2">🌐 Deep AI Web Research</span>

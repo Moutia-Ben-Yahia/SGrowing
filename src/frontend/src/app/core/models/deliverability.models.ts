@@ -333,4 +333,119 @@ export interface DeliverabilityNetworkMetrics {
   espClassifierTrainingStatus: string;
 }
 
+// ==========================================
+// Horizon 42: Whitelabel Custom Email Domains
+// ==========================================
+
+export type CustomDomainStatus = 'PendingDns' | 'Verifying' | 'Active' | 'DnsDegraded' | 'FailedVerification';
+export type DnsRecordType = 'TXT' | 'CNAME' | 'MX';
+export type DnsRecordStatus = 'Matched' | 'Missing' | 'Mismatch' | 'PropagationPending';
+export type DmarcPolicyType = 'none' | 'quarantine' | 'reject';
+
+export interface DkimKeyPairDto {
+  selector: string;
+  keyLengthBits: number;
+  publicKeyBase64: string;
+  privateKeyPemOrBase64?: string;
+  keyFingerprint: string;
+  txtRecordValue: string;
+}
+
+export interface CustomDnsRecordDto {
+  id: string;
+  recordType: DnsRecordType;
+  hostname: string;
+  expectedValue: string;
+  currentValue?: string | null;
+  status: DnsRecordStatus;
+  ttl: number;
+  priority?: number | null;
+  purpose: string;
+  lastCheckedUtc?: string | null;
+  errorDetails?: string | null;
+}
+
+export interface CustomEmailDomainDetailDto {
+  id: string;
+  tenantId: string;
+  domain: string;
+  returnPathPrefix: string;
+  returnPathCnameTarget: string;
+  dmarcPolicy: string;
+  dmarcReportEmail: string;
+  status: CustomDomainStatus;
+  healthScore: number;
+  dkim: DkimKeyPairDto;
+  records: CustomDnsRecordDto[];
+  createdAtUtc: string;
+  lastVerifiedAtUtc?: string | null;
+  verificationError?: string | null;
+}
+
+export interface CustomDomainSummaryDto {
+  id: string;
+  tenantId: string;
+  domain: string;
+  returnPathPrefix: string;
+  status: CustomDomainStatus;
+  healthScore: number;
+  totalRecords: number;
+  matchedRecords: number;
+  dkimSelector: string;
+  dkimFingerprint: string;
+  createdAtUtc: string;
+  lastVerifiedAtUtc?: string | null;
+}
+
+export interface RegisterCustomDomainRequestDto {
+  domain: string;
+  tenantId?: string | null;
+  returnPathPrefix?: string;
+  dmarcPolicy?: string;
+  customDmarcReportEmail?: string | null;
+}
+
+export interface DomainVerificationResultDto {
+  domainId: string;
+  domain: string;
+  previousStatus: CustomDomainStatus;
+  newStatus: CustomDomainStatus;
+  healthScore: number;
+  recordsChecked: number;
+  recordsMatched: number;
+  allMatched: boolean;
+  verificationDurationMs: number;
+  updatedRecords: CustomDnsRecordDto[];
+  summary: string;
+}
+
+export interface RegistrarExportRecordDto {
+  type: string;
+  hostname: string;
+  value: string;
+  ttl: number;
+  priority?: number | null;
+}
+
+export interface RegistrarExportDto {
+  registrar: string;
+  domain: string;
+  format: string;
+  rawOutput: string;
+  instructions: string;
+  records: RegistrarExportRecordDto[];
+}
+
+export interface DeliverabilityDomainMetricsDto {
+  totalDomains: number;
+  activeDomains: number;
+  pendingDnsDomains: number;
+  degradedDomains: number;
+  verifyingDomains: number;
+  averageHealthScore: number;
+  totalDkimKeysGenerated: number;
+  fullyAlignedRatePercent: number;
+}
+
+
 

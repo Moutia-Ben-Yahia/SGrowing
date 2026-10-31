@@ -54,6 +54,12 @@ import { DomainDnsHealthRecordDto, EmailSpamAnalysisReportDto, MailboxWarmupCade
             </div>
 
             <a
+              routerLink="/deliverability/custom-domains"
+              class="px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 rounded-lg text-xs font-semibold border border-indigo-500/30 transition flex items-center gap-1.5">
+              <span>🌐</span> Custom Domains & DKIM →
+            </a>
+
+            <a
               routerLink="/deliverability/warmup-rescue"
               class="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 rounded-lg text-xs font-semibold border border-emerald-500/30 transition flex items-center gap-1.5">
               <span>🛡️</span> Autonomous Spam Rescue Cockpit →
