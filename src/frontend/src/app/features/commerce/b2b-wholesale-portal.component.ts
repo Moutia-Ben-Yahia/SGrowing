@@ -959,13 +959,13 @@ export class B2BWholesalePortalComponent implements OnInit {
 
   // Matrix configuration
   productStyles = signal([
-    { name: 'Workwear Industrial Heavy Duty Polo', basePrice: 28.0, baseSku: 'WWR-POLO' },
+    { name: 'Workwear Industrial Heavy Duty Polo', basePrice: 28.5, baseSku: 'WWR-POLO' },
     { name: 'Tactical High-Durability Cargo Trousers', basePrice: 42.0, baseSku: 'TAC-PANTS' },
     { name: 'All-Weather Waterproof Softshell Jacket', basePrice: 65.0, baseSku: 'ALL-SOFT' },
     { name: 'High-Visibility Thermal Reflective Vest', basePrice: 22.0, baseSku: 'HIV-VEST' }
   ]);
   selectedProductStyle = signal('Workwear Industrial Heavy Duty Polo');
-  baseUnitPrice = signal(28.0);
+  baseUnitPrice = signal(28.5);
   colors = signal(['Navy', 'Charcoal', 'Black', 'Royal Blue']);
   sizes = signal(['S', 'M', 'L', 'XL', '2XL']);
 

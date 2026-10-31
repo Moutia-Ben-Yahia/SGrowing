@@ -20,6 +20,13 @@ var worker = builder.AddProject<Projects.SGrowing_Worker>("worker")
     .WithReference(redis);
 
 // SGrowing MCP Autonomous AI Server
-var mcpserver = builder.AddProject<Projects.SGrowing_McpServer>("mcpserver");
+var mcpserver = builder.AddProject<Projects.SGrowing_McpServer>("mcpserver")
+    .WithReference(db);
+
+// SGrowing Frontend Angular Application
+var frontend = builder.AddNpmApp("frontend", "../../frontend", "start")
+    .WithReference(api)
+    .WithEnvironment("PORT", "4200")
+    .WithHttpEndpoint(targetPort: 4200, name: "http");
 
 builder.Build().Run();

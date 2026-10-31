@@ -145,7 +145,10 @@ public record BulkMatrixCalculationRequest(
     List<string> Sizes,
     List<MatrixCellInputDto> MatrixQuantities,
     decimal TaxRatePercent = 19.0m,
-    decimal ShippingFee = 45.0m);
+    decimal ShippingFee = 45.0m,
+    int MinimumOrderQuantity = 1,
+    int? MinimumUnitsPerSku = null,
+    decimal AccountTierBonusDiscountPercent = 0.0m);
 
 public record BulkMatrixCalculationResultDto(
     string ProductStyle,
@@ -163,7 +166,10 @@ public record BulkMatrixCalculationResultDto(
     decimal ShippingFee,
     decimal GrandTotal,
     List<MatrixCalculatedItemDto> MatrixItems,
-    List<BulkPricingTierDto> AvailableTiers);
+    List<BulkPricingTierDto> AvailableTiers,
+    int MinimumOrderQuantity = 1,
+    bool SatisfiesMoq = true,
+    decimal AccountTierBonusDiscountPercent = 0.0m);
 
 public record SubmitBulkMatrixOrderRequest(
     Guid CorporateAccountId,
@@ -179,7 +185,10 @@ public record SubmitBulkMatrixOrderRequest(
     decimal TaxRatePercent = 19.0m,
     decimal ShippingFee = 45.0m,
     string? ShippingNotes = null,
-    bool AllowCreditOverride = false);
+    bool AllowCreditOverride = false,
+    int MinimumOrderQuantity = 1,
+    int? MinimumUnitsPerSku = null,
+    decimal AccountTierBonusDiscountPercent = 0.0m);
 
 public record WholesaleOrderDto(
     Guid Id,
@@ -982,13 +991,34 @@ public class B2BWholesalePortalService : IB2BWholesalePortalService
             totalUnits += input.Quantity;
         }
 
-        // Determine applicable volume tier
+        // MOQ Validation
+        if (request.MinimumOrderQuantity > 1 && totalUnits < request.MinimumOrderQuantity)
+        {
+            throw new ArgumentException(
+                $"Total order units ({totalUnits}) is below the required Minimum Order Quantity (MOQ: {request.MinimumOrderQuantity}).",
+                nameof(request.MatrixQuantities));
+        }
+
+        if (request.MinimumUnitsPerSku.HasValue && request.MinimumUnitsPerSku.Value > 1)
+        {
+            foreach (var input in matrixInputs)
+            {
+                if (input.Quantity > 0 && input.Quantity < request.MinimumUnitsPerSku.Value)
+                {
+                    throw new ArgumentException(
+                        $"Variant '{input.Color} - {input.Size}' quantity ({input.Quantity}) is below variant MOQ of {request.MinimumUnitsPerSku.Value}.",
+                        nameof(request.MatrixQuantities));
+                }
+            }
+        }
+
+        // Determine applicable volume tier + account tier bonus
         var activeTier = DefaultPricingTiers
             .FirstOrDefault(t => totalUnits >= t.MinQuantity && (!t.MaxQuantity.HasValue || totalUnits <= t.MaxQuantity.Value))
             ?? DefaultPricingTiers[0];
 
-        decimal discountPercent = activeTier.DiscountPercent;
-        decimal discountedUnitPrice = Math.Round(request.BaseUnitPrice * (1.0m - (discountPercent / 100.0m)), 2);
+        decimal totalDiscountPercent = Math.Min(50.0m, activeTier.DiscountPercent + Math.Max(0m, request.AccountTierBonusDiscountPercent));
+        decimal discountedUnitPrice = Math.Round(request.BaseUnitPrice * (1.0m - (totalDiscountPercent / 100.0m)), 2);
 
         foreach (var input in matrixInputs)
         {
@@ -1018,14 +1048,18 @@ public class B2BWholesalePortalService : IB2BWholesalePortalService
         decimal shippingFee = totalUnits >= 500 ? 0m : request.ShippingFee; // Free freight for 500+ bulk orders
         decimal grandTotal = subtotal + taxAmount + shippingFee;
 
+        var tierLabel = request.AccountTierBonusDiscountPercent > 0
+            ? $"{activeTier.TierLabel} + Tier Bonus ({request.AccountTierBonusDiscountPercent:0.#}%)"
+            : activeTier.TierLabel;
+
         var result = new BulkMatrixCalculationResultDto(
             ProductStyle: request.ProductStyle,
             BaseSku: request.BaseSku,
             TotalUnits: totalUnits,
             BaseUnitPrice: request.BaseUnitPrice,
             DiscountedUnitPrice: discountedUnitPrice,
-            VolumeDiscountPercent: discountPercent,
-            AppliedTierLabel: activeTier.TierLabel,
+            VolumeDiscountPercent: totalDiscountPercent,
+            AppliedTierLabel: tierLabel,
             SubtotalBeforeDiscount: subtotalBeforeDiscount,
             DiscountAmount: discountAmount,
             Subtotal: subtotal,
@@ -1034,7 +1068,10 @@ public class B2BWholesalePortalService : IB2BWholesalePortalService
             ShippingFee: shippingFee,
             GrandTotal: grandTotal,
             MatrixItems: calculatedItems,
-            AvailableTiers: DefaultPricingTiers);
+            AvailableTiers: DefaultPricingTiers,
+            MinimumOrderQuantity: request.MinimumOrderQuantity,
+            SatisfiesMoq: totalUnits >= request.MinimumOrderQuantity,
+            AccountTierBonusDiscountPercent: request.AccountTierBonusDiscountPercent);
 
         return Task.FromResult(result);
     }
@@ -1069,7 +1106,10 @@ public class B2BWholesalePortalService : IB2BWholesalePortalService
             Sizes: request.Sizes,
             MatrixQuantities: request.MatrixQuantities,
             TaxRatePercent: request.TaxRatePercent,
-            ShippingFee: request.ShippingFee);
+            ShippingFee: request.ShippingFee,
+            MinimumOrderQuantity: request.MinimumOrderQuantity,
+            MinimumUnitsPerSku: request.MinimumUnitsPerSku,
+            AccountTierBonusDiscountPercent: request.AccountTierBonusDiscountPercent);
 
         var calc = await CalculateBulkMatrixOrderAsync(tenantId, calcReq);
         if (calc.TotalUnits <= 0)

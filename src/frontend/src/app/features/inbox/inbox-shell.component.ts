@@ -157,6 +157,26 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 <span class="flex items-center gap-2">⏱️ Workforce Shifts & Capacity Mesh</span>
               </a>
               <a
+                routerLink="/documents/security"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
+                <span class="flex items-center gap-2">🛡️ Document Security & Redaction</span>
+              </a>
+              <a
+                routerLink="/crm/deal-slippage"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
+                <span class="flex items-center gap-2">🎯 Deal Velocity & Stage-Gates</span>
+              </a>
+              <a
+                routerLink="/social/listening"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 transition">
+                <span class="flex items-center gap-2">📡 Brand Social Crisis Sentinel</span>
+              </a>
+              <a
+                routerLink="/commerce/fulfillment-routing"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-cyan-400 hover:bg-cyan-500/10 border border-cyan-500/20 transition">
+                <span class="flex items-center gap-2">📦 Split-Shipment Routing</span>
+              </a>
+              <a
                 routerLink="/funnels/split-testing"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-fuchsia-400 hover:bg-fuchsia-500/10 border border-fuchsia-500/20 transition">
                 <span class="flex items-center gap-2">🧪 Dirichlet Funnel Split-Testing</span>

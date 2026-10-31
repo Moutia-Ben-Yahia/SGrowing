@@ -72,6 +72,10 @@ using SGrowing.Api.Modules.Scheduling;
 using SGrowing.Api.Modules.Security;
 using SGrowing.Api.Modules.SEO;
 using SGrowing.Api.Modules.Social;
+using SGrowing.Api.Modules.Commerce.Fulfillment;
+using SGrowing.Api.Modules.CRM.Pipeline;
+using SGrowing.Api.Modules.Documents.Security;
+using SGrowing.Api.Modules.Social.Listening;
 using SGrowing.Api.Modules.Storage.Media;
 using SGrowing.Api.Modules.Telemetry;
 using SGrowing.Api.Modules.Tenancy;
@@ -466,6 +470,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<INotificationOrchestratorService, NotificationOrchestratorService>();
         services.AddSingleton<IConversationHierarchyService, ConversationHierarchyService>();
         services.AddSingleton<IWorkforceShiftService, WorkforceShiftService>();
+        services.AddSingleton<IDocumentSecurityService, DocumentSecurityService>();
+        services.AddSingleton<IDealSlippageRadarService, DealSlippageRadarService>();
+        services.AddSingleton<ISocialListeningSentinelService, SocialListeningSentinelService>();
+        services.AddSingleton<ISplitShipmentRoutingService, SplitShipmentRoutingService>();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

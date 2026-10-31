@@ -80,6 +80,10 @@ using SGrowing.Api.Modules.Conversations.Incidents;
 using SGrowing.Api.Modules.Conversations.Hierarchy;
 using SGrowing.Api.Modules.Notifications;
 using SGrowing.Api.Modules.Workforce.Shifts;
+using SGrowing.Api.Modules.Commerce.Fulfillment;
+using SGrowing.Api.Modules.CRM.Pipeline;
+using SGrowing.Api.Modules.Documents.Security;
+using SGrowing.Api.Modules.Social.Listening;
 using SGrowing.Api.Modules.Workforce.Timesheets;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -280,6 +284,10 @@ app.MapIncidentOnCallEndpoints();
 app.MapNotificationEndpoints();
 app.MapConversationHierarchyEndpoints();
 app.MapWorkforceShiftEndpoints();
+app.MapDocumentSecurityEndpoints();
+app.MapDealSlippageRadarEndpoints();
+app.MapSocialListeningEndpoints();
+app.MapSplitShipmentRoutingEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

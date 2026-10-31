@@ -191,5 +191,9 @@ export const routes: Routes = [
   { path: 'notifications/orchestrator', loadComponent: () => import('./features/notifications/notification-orchestrator-studio.component').then(m => m.NotificationOrchestratorStudioComponent), canActivate: [authGuard] },
   { path: 'conversations/hierarchy', loadComponent: () => import('./features/conversations/conversation-hierarchy-studio.component').then(m => m.ConversationHierarchyStudioComponent), canActivate: [authGuard] },
   { path: 'workforce/shifts', loadComponent: () => import('./features/workforce/shift-scheduling-studio.component').then(m => m.ShiftSchedulingStudioComponent), canActivate: [authGuard] },
+  { path: 'documents/security', loadComponent: () => import('./features/documents/document-security-studio.component').then(m => m.DocumentSecurityStudioComponent), canActivate: [authGuard] },
+  { path: 'crm/deal-slippage', loadComponent: () => import('./features/crm/deal-slippage-studio.component').then(m => m.DealSlippageStudioComponent), canActivate: [authGuard] },
+  { path: 'social/listening', loadComponent: () => import('./features/social/social-listening-studio.component').then(m => m.SocialListeningStudioComponent), canActivate: [authGuard] },
+  { path: 'commerce/fulfillment-routing', loadComponent: () => import('./features/commerce/split-shipment-studio.component').then(m => m.SplitShipmentStudioComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

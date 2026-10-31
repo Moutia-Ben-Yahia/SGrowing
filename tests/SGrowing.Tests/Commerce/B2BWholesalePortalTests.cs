@@ -650,4 +650,105 @@ public class B2BWholesalePortalTests
     }
 
     #endregion
+
+    #region 8. Minimum Order Quantity (MOQ) & Account Tier Pricing
+
+    [Fact]
+    public async Task BulkMatrixCalculation_Should_Enforce_MinimumOrderQuantity()
+    {
+        // Request with MOQ of 50 units, but only 20 units provided
+        var calcReq = new BulkMatrixCalculationRequest(
+            ProductStyle: "High-Visibility Safety Vest",
+            BaseSku: "SAFE-VEST",
+            BaseUnitPrice: 25.0m,
+            Colors: new List<string> { "Yellow" },
+            Sizes: new List<string> { "L", "XL" },
+            MatrixQuantities: new List<MatrixCellInputDto>
+            {
+                new("L", "Yellow", 10),
+                new("XL", "Yellow", 10)
+            },
+            MinimumOrderQuantity: 50);
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.CalculateBulkMatrixOrderAsync(_tenantId, calcReq));
+
+        Assert.Contains("Minimum Order Quantity (MOQ: 50)", ex.Message);
+    }
+
+    [Fact]
+    public async Task BulkMatrixCalculation_Should_Enforce_MinimumUnitsPerSku()
+    {
+        // Total order 60 units (satisfies total MOQ 50), but one variant has only 3 units (< SKU MOQ 5)
+        var calcReq = new BulkMatrixCalculationRequest(
+            ProductStyle: "High-Visibility Safety Vest",
+            BaseSku: "SAFE-VEST",
+            BaseUnitPrice: 25.0m,
+            Colors: new List<string> { "Yellow", "Orange" },
+            Sizes: new List<string> { "L", "XL" },
+            MatrixQuantities: new List<MatrixCellInputDto>
+            {
+                new("L", "Yellow", 30),
+                new("XL", "Yellow", 27),
+                new("L", "Orange", 3) // Below SKU MOQ of 5!
+            },
+            MinimumOrderQuantity: 50,
+            MinimumUnitsPerSku: 5);
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.CalculateBulkMatrixOrderAsync(_tenantId, calcReq));
+
+        Assert.Contains("below variant MOQ of 5", ex.Message);
+    }
+
+    [Fact]
+    public async Task BulkMatrixCalculation_Should_Apply_AccountTierBonusDiscount()
+    {
+        // 100 units = Tier 2 (10% standard discount) + 5% Gold Account Tier bonus = 15% discount
+        var calcReq = new BulkMatrixCalculationRequest(
+            ProductStyle: "High-Visibility Safety Vest",
+            BaseSku: "SAFE-VEST",
+            BaseUnitPrice: 100.0m,
+            Colors: new List<string> { "Yellow" },
+            Sizes: new List<string> { "L" },
+            MatrixQuantities: new List<MatrixCellInputDto>
+            {
+                new("L", "Yellow", 100)
+            },
+            MinimumOrderQuantity: 50,
+            AccountTierBonusDiscountPercent: 5.0m);
+
+        var result = await _service.CalculateBulkMatrixOrderAsync(_tenantId, calcReq);
+
+        Assert.NotNull(result);
+        Assert.Equal(100, result.TotalUnits);
+        Assert.True(result.SatisfiesMoq);
+        Assert.Equal(15.0m, result.VolumeDiscountPercent); // 10% + 5%
+        Assert.Equal(85.0m, result.DiscountedUnitPrice); // $100 * (1 - 0.15)
+        Assert.Equal(8500.0m, result.Subtotal);
+        Assert.Contains("Tier Bonus", result.AppliedTierLabel);
+    }
+
+    [Fact]
+    public async Task BulkMatrixCalculation_SatisfiesMoq_Flag_True_When_Above_Moq()
+    {
+        var calcReq = new BulkMatrixCalculationRequest(
+            ProductStyle: "Safety Vest",
+            BaseSku: "VEST",
+            BaseUnitPrice: 50.0m,
+            Colors: new List<string> { "Blue" },
+            Sizes: new List<string> { "M" },
+            MatrixQuantities: new List<MatrixCellInputDto>
+            {
+                new("M", "Blue", 60)
+            },
+            MinimumOrderQuantity: 50);
+
+        var result = await _service.CalculateBulkMatrixOrderAsync(_tenantId, calcReq);
+
+        Assert.True(result.SatisfiesMoq);
+        Assert.Equal(50, result.MinimumOrderQuantity);
+    }
+
+    #endregion
 }
