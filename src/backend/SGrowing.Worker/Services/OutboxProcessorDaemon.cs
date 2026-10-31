@@ -1,4 +1,5 @@
 using SGrowing.Api.Data;
+using SGrowing.Core.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -10,15 +11,18 @@ public class OutboxProcessorDaemon : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<OutboxProcessorDaemon> _logger;
+    private readonly IConcurrencyLockService? _lockService;
     private readonly TimeSpan _pollingInterval;
 
     public OutboxProcessorDaemon(
         IServiceProvider serviceProvider,
         ILogger<OutboxProcessorDaemon> logger,
-        TimeSpan? pollingInterval = null)
+        TimeSpan? pollingInterval = null,
+        IConcurrencyLockService? lockService = null)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _lockService = lockService;
         _pollingInterval = pollingInterval ?? TimeSpan.FromSeconds(5);
     }
 
@@ -30,7 +34,28 @@ public class OutboxProcessorDaemon : BackgroundService
         {
             try
             {
-                await ProcessBatchAsync(stoppingToken);
+                var lockService = _lockService ?? _serviceProvider.GetService<IConcurrencyLockService>();
+                if (lockService != null)
+                {
+                    await using var lockHandle = await lockService.TryAcquireLockAsync(
+                        "sweeper:OutboxProcessor",
+                        TimeSpan.FromSeconds(10),
+                        TimeSpan.FromMilliseconds(200),
+                        stoppingToken);
+
+                    if (lockHandle == null || !lockHandle.IsAcquired)
+                    {
+                        _logger.LogDebug("OutboxProcessorDaemon: Another worker holds the outbox processing lease. Skipping.");
+                    }
+                    else
+                    {
+                        await ProcessBatchAsync(stoppingToken);
+                    }
+                }
+                else
+                {
+                    await ProcessBatchAsync(stoppingToken);
+                }
             }
             catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
             {

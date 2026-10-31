@@ -1,4 +1,5 @@
 using SGrowing.Api.Data;
+using SGrowing.Core.Common;
 using SGrowing.Core.Diagnostics;
 using SGrowing.Core.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -12,15 +13,18 @@ public class SlaWatchdogDaemon : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<SlaWatchdogDaemon> _logger;
+    private readonly IConcurrencyLockService? _lockService;
     private readonly TimeSpan _checkInterval;
 
     public SlaWatchdogDaemon(
         IServiceProvider serviceProvider,
         ILogger<SlaWatchdogDaemon> logger,
-        TimeSpan? checkInterval = null)
+        TimeSpan? checkInterval = null,
+        IConcurrencyLockService? lockService = null)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _lockService = lockService;
         _checkInterval = checkInterval ?? TimeSpan.FromSeconds(30);
     }
 
@@ -32,7 +36,28 @@ public class SlaWatchdogDaemon : BackgroundService
         {
             try
             {
-                await CheckSlaBreachesAsync(stoppingToken);
+                var lockService = _lockService ?? _serviceProvider.GetService<IConcurrencyLockService>();
+                if (lockService != null)
+                {
+                    await using var lockHandle = await lockService.TryAcquireLockAsync(
+                        "sweeper:SlaWatchdog",
+                        TimeSpan.FromSeconds(25),
+                        TimeSpan.FromMilliseconds(200),
+                        stoppingToken);
+
+                    if (lockHandle == null || !lockHandle.IsAcquired)
+                    {
+                        _logger.LogDebug("SlaWatchdogDaemon: Another worker instance holds the leader lease. Skipping breach check.");
+                    }
+                    else
+                    {
+                        await CheckSlaBreachesAsync(stoppingToken);
+                    }
+                }
+                else
+                {
+                    await CheckSlaBreachesAsync(stoppingToken);
+                }
             }
             catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
             {

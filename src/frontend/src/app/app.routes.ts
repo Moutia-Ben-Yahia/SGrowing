@@ -25,6 +25,7 @@ import { TelemetryStudioComponent } from './features/telemetry/telemetry-studio.
 import { BillingStudioComponent } from './features/billing/billing-studio.component';
 import { DigitalGoodsStudioComponent } from './features/digital-goods/digital-goods-studio.component';
 import { FormsStudioComponent } from './features/forms/forms-studio.component';
+import { HeadlessFormBuilderComponent } from './features/forms/headless-form-builder.component';
 import { DeveloperStudioComponent } from './features/developer/developer-studio.component';
 import { CourierCompanionComponent } from './features/courier/courier-companion.component';
 import { CheckoutWidgetComponent } from './features/checkout/checkout-widget.component';
@@ -77,6 +78,7 @@ export const routes: Routes = [
   { path: 'deliverability/multi-inbox', component: MultiInboxCockpitComponent, canActivate: [authGuard] },
   { path: 'commerce/reconciliation', component: CarrierReconciliationCockpitComponent, canActivate: [authGuard] },
   { path: 'commerce/b2b-wholesale', loadComponent: () => import('./features/commerce/b2b-wholesale-portal.component').then(m => m.B2BWholesalePortalComponent), canActivate: [authGuard] },
+  { path: 'commerce/affiliates', loadComponent: () => import('./features/commerce/affiliate-commission-cockpit.component').then(m => m.AffiliateCommissionCockpitComponent), canActivate: [authGuard] },
   { path: 'projects/tasks', component: ProjectTaskBoardComponent, canActivate: [authGuard] },
   { path: 'outbound/research', component: ProspectResearchCockpitComponent, canActivate: [authGuard] },
   { path: 'commerce/warehouses', component: MultiWarehouseCockpitComponent, canActivate: [authGuard] },
@@ -88,6 +90,7 @@ export const routes: Routes = [
   { path: 'channels/whatsapp-pacing', loadComponent: () => import('./features/channels/whatsapp-broadcast-pacing-studio.component').then(m => m.WhatsAppBroadcastPacingStudioComponent), canActivate: [authGuard] },
   { path: 'channels/whatsapp-catalog', loadComponent: () => import('./features/channels/whatsapp-catalog-cart-studio.component').then(m => m.WhatsAppCatalogCartStudioComponent), canActivate: [authGuard] },
   { path: 'channels/telegram-bot', loadComponent: () => import('./features/channels/telegram-bot-studio.component').then(m => m.TelegramBotStudioComponent), canActivate: [authGuard] },
+  { path: 'channels/whatsapp-companion', loadComponent: () => import('./features/channels/whatsapp-companion-studio.component').then(m => m.WhatsAppCompanionStudioComponent), canActivate: [authGuard] },
   { path: 'funnels/autonomous', component: AutonomousFunnelCockpitComponent, canActivate: [authGuard] },
   { path: 'funnels/split-testing', loadComponent: () => import('./features/funnels/funnel-split-testing-studio.component').then(m => m.FunnelSplitTestingStudioComponent), canActivate: [authGuard] },
   { path: 'funnels/canvas', loadComponent: () => import('./features/funnels/funnel-builder-canvas.component').then(m => m.FunnelBuilderCanvasComponent), canActivate: [authGuard] },
@@ -124,6 +127,7 @@ export const routes: Routes = [
   { path: 'creatives', component: CreativeRadarStudioComponent, canActivate: [authGuard] },
   { path: 'digital-goods', component: DigitalGoodsStudioComponent, canActivate: [authGuard] },
   { path: 'forms', component: FormsStudioComponent, canActivate: [authGuard] },
+  { path: 'forms/headless', component: HeadlessFormBuilderComponent, canActivate: [authGuard] },
   { path: 'developer', component: DeveloperStudioComponent, canActivate: [authGuard] },
   { path: 'calendar', component: CalendarStudioComponent, canActivate: [authGuard] },
   { path: 'deliverability', component: DeliverabilityStudioComponent, canActivate: [authGuard] },
@@ -182,5 +186,6 @@ export const routes: Routes = [
   { path: 'attribution/capi-cockpit', loadComponent: () => import('./features/attribution/server-side-attribution-cockpit.component').then(m => m.ServerSideAttributionCockpitComponent), canActivate: [authGuard] },
   { path: 'telemetry/analytics', loadComponent: () => import('./features/telemetry/product-analytics-cockpit.component').then(m => m.ProductAnalyticsCockpitComponent), canActivate: [authGuard] },
   { path: 'lifecycle/journeys', loadComponent: () => import('./features/lifecycle/customer-lifecycle-studio.component').then(m => m.CustomerLifecycleStudioComponent), canActivate: [authGuard] },
+  { path: 'conversations/agent-presence', loadComponent: () => import('./features/conversations/agent-presence-cockpit.component').then(m => m.AgentPresenceCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

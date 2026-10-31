@@ -117,6 +117,26 @@ import { LanguageSwitcherComponent } from '../../core/components/language-switch
                 <span class="flex items-center gap-2">⏱️ Predictive SLA Breach Monitor</span>
               </a>
               <a
+                routerLink="/forms/headless"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition">
+                <span class="flex items-center gap-2">📝 Headless Forms & Turnstile</span>
+              </a>
+              <a
+                routerLink="/channels/whatsapp-companion"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition">
+                <span class="flex items-center gap-2">📱 WhatsApp Companion & Pairing</span>
+              </a>
+              <a
+                routerLink="/commerce/affiliates"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-indigo-400 hover:bg-indigo-500/10 border border-indigo-500/20 transition">
+                <span class="flex items-center gap-2">🤝 B2B Affiliate & Commission Ledger</span>
+              </a>
+              <a
+                routerLink="/conversations/agent-presence"
+                class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 transition">
+                <span class="flex items-center gap-2">🛡️ Agent Presence & Collision Shield</span>
+              </a>
+              <a
                 routerLink="/funnels/split-testing"
                 class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-fuchsia-400 hover:bg-fuchsia-500/10 border border-fuchsia-500/20 transition">
                 <span class="flex items-center gap-2">🧪 Dirichlet Funnel Split-Testing</span>

@@ -20,7 +20,9 @@ using SGrowing.Api.Modules.Channels;
 using SGrowing.Api.Modules.Channels.Telegram;
 using SGrowing.Api.Modules.Channels.WhatsApp;
 using SGrowing.Api.Modules.Channels.WhatsApp.Catalog;
+using SGrowing.Api.Modules.Channels.WhatsApp.Companion;
 using SGrowing.Api.Modules.Commerce;
+using SGrowing.Api.Modules.Commerce.Affiliates;
 using SGrowing.Api.Modules.Commerce.AntiFraud;
 using SGrowing.Api.Modules.Commerce.CallCenter;
 using SGrowing.Api.Modules.Commerce.CartReservations;
@@ -31,12 +33,14 @@ using SGrowing.Api.Modules.Contracts;
 using SGrowing.Api.Modules.Conversations;
 using SGrowing.Api.Modules.Conversations.Macros;
 using SGrowing.Api.Modules.Conversations.Mime;
+using SGrowing.Api.Modules.Conversations.Presence;
 using SGrowing.Api.Modules.Conversations.PresenceAndCsat;
 using SGrowing.Api.Modules.Conversations.Sla;
 using SGrowing.Api.Modules.CRM;
 using SGrowing.Api.Modules.CRM.ContractSigning;
 using SGrowing.Api.Modules.CRM.CustomFields;
 using SGrowing.Api.Modules.CRM.Import;
+using SGrowing.Api.Modules.Forms;
 using SGrowing.Api.Modules.Deliverability;
 using SGrowing.Api.Modules.Dev;
 using SGrowing.Api.Modules.Diagnostics;
@@ -118,7 +122,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ChannelIngressService>();
 
         // Concurrency, Deduplication & Events
-        services.AddSingleton<SGrowing.Core.Common.IConcurrencyLockService, SGrowing.Core.Common.DistributedMemoryLockService>();
+        services.AddSingleton<SGrowing.Core.Common.IConcurrencyLockService, SGrowing.Api.Common.Concurrency.RedisConcurrencyLockService>();
         services.AddSingleton<IEventDeduplicationService, EventDeduplicationService>();
         services.AddSingleton<IEventStreamBroker, InMemoryEventStreamBroker>();
         services.AddScoped<IMultiBrokerEventFanoutService, MultiBrokerEventFanoutService>();
@@ -254,6 +258,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICodNetMarginLedgerService, CodNetMarginLedgerService>();
         services.AddScoped<ICodCarrierAutoDispatchService, CodCarrierAutoDispatchService>();
         services.AddScoped<ICartReservationService, CartReservationService>();
+        services.AddSingleton<IAffiliateCommissionService, AffiliateCommissionService>();
 
         // Customer 360, RMA & Self-Service Portal
         services.AddScoped<ICustomerIdentityGraphService, CustomerIdentityGraphService>();
@@ -419,6 +424,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IVideoMeetingRoomService, VideoMeetingRoomService>();
         services.AddScoped<IMultiInboxRotationService, MultiInboxRotationService>();
         services.AddWhatsAppPairingServices();
+        services.AddWhatsAppCompanionServices();
         services.AddAgentFleetOrchestration();
         services.AddScoped<ITechnicalSeoCrawlerService, TechnicalSeoCrawlerService>();
         services.AddHttpClient<TechnicalSeoCrawlerService>();
@@ -450,6 +456,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAppointmentSchedulingService, AppointmentSchedulingService>();
         services.AddSingleton<ICustomerLifecycleJourneyService, CustomerLifecycleJourneyService>();
         services.AddSingleton<IProductAnalyticsService, ProductAnalyticsService>();
+        services.AddSingleton<IAgentPresenceCollisionService, AgentPresenceCollisionService>();
+        services.AddSingleton<IHeadlessFormService, HeadlessFormService>();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

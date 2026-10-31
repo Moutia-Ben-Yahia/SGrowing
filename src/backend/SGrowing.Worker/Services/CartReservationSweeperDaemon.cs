@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SGrowing.Api.Data;
+using SGrowing.Core.Common;
 using SGrowing.Core.Diagnostics;
 using SGrowing.Core.Entities;
 
@@ -13,16 +14,19 @@ public class CartReservationSweeperDaemon : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<CartReservationSweeperDaemon>? _logger;
     private readonly IDaemonHeartbeatService? _heartbeatService;
+    private readonly IConcurrencyLockService? _lockService;
     private readonly TimeSpan _pollInterval = TimeSpan.FromSeconds(30);
 
     public CartReservationSweeperDaemon(
         IServiceProvider serviceProvider,
         ILogger<CartReservationSweeperDaemon>? logger = null,
-        IDaemonHeartbeatService? heartbeatService = null)
+        IDaemonHeartbeatService? heartbeatService = null,
+        IConcurrencyLockService? lockService = null)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
         _heartbeatService = heartbeatService;
+        _lockService = lockService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -39,9 +43,32 @@ public class CartReservationSweeperDaemon : BackgroundService
                     await heartbeat.RecordHeartbeatAsync("CartReservationSweeperDaemon", stoppingToken);
                 }
 
-                using var scope = _serviceProvider.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<SGrowingDbContext>();
-                await SweepExpiredCartReservationsAsync(db, stoppingToken);
+                var lockService = _lockService ?? _serviceProvider.GetService<IConcurrencyLockService>();
+                if (lockService != null)
+                {
+                    await using var lockHandle = await lockService.TryAcquireLockAsync(
+                        "sweeper:CartReservations",
+                        TimeSpan.FromSeconds(25),
+                        TimeSpan.FromMilliseconds(200),
+                        stoppingToken);
+
+                    if (lockHandle == null || !lockHandle.IsAcquired)
+                    {
+                        _logger?.LogDebug("CartReservationSweeperDaemon: Another worker instance holds the leader lease. Skipping sweep.");
+                        await Task.Delay(_pollInterval, stoppingToken);
+                        continue;
+                    }
+
+                    using var scope = _serviceProvider.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<SGrowingDbContext>();
+                    await SweepExpiredCartReservationsAsync(db, stoppingToken);
+                }
+                else
+                {
+                    using var scope = _serviceProvider.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<SGrowingDbContext>();
+                    await SweepExpiredCartReservationsAsync(db, stoppingToken);
+                }
             }
             catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
             {
@@ -82,8 +109,6 @@ public class CartReservationSweeperDaemon : BackgroundService
         }
 
         await db.SaveChangesAsync(cancellationToken);
-        SGrowingTelemetry.CartReservationsExpiredCounter.Add(stockReturned);
-
         return stockReturned;
     }
 }

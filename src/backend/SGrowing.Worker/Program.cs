@@ -50,6 +50,9 @@ else
     builder.Services.AddSingleton<IRedisStreamBroker, InMemoryStreamBroker>();
 }
 
+// Concurrency & Distributed Lock Provider
+builder.Services.AddSingleton<SGrowing.Core.Common.IConcurrencyLockService, SGrowing.Api.Common.Concurrency.RedisConcurrencyLockService>();
+
 // Daemon Heartbeat & Watchdog
 builder.Services.AddSingleton<IDaemonHeartbeatService, DaemonHeartbeatService>();
 builder.Services.AddHostedService<DaemonWatchdogService>();

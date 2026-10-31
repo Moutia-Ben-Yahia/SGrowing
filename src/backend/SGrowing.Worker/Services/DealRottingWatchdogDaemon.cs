@@ -3,8 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SGrowing.Api.Data;
-using SGrowing.Core.Entities;
+using SGrowing.Core.Common;
 using SGrowing.Core.Diagnostics;
+using SGrowing.Core.Entities;
 
 namespace SGrowing.Worker.Services;
 
@@ -13,16 +14,19 @@ public class DealRottingWatchdogDaemon : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<DealRottingWatchdogDaemon>? _logger;
     private readonly IDaemonHeartbeatService? _heartbeatService;
+    private readonly IConcurrencyLockService? _lockService;
     private readonly TimeSpan _pollInterval = TimeSpan.FromMinutes(1);
 
     public DealRottingWatchdogDaemon(
         IServiceProvider serviceProvider,
         ILogger<DealRottingWatchdogDaemon>? logger = null,
-        IDaemonHeartbeatService? heartbeatService = null)
+        IDaemonHeartbeatService? heartbeatService = null,
+        IConcurrencyLockService? lockService = null)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
         _heartbeatService = heartbeatService;
+        _lockService = lockService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -39,9 +43,32 @@ public class DealRottingWatchdogDaemon : BackgroundService
                     await heartbeat.RecordHeartbeatAsync("DealRottingWatchdogDaemon", stoppingToken);
                 }
 
-                using var scope = _serviceProvider.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<SGrowingDbContext>();
-                await ProcessRottenDealsAsync(db, 7, stoppingToken);
+                var lockService = _lockService ?? _serviceProvider.GetService<IConcurrencyLockService>();
+                if (lockService != null)
+                {
+                    await using var lockHandle = await lockService.TryAcquireLockAsync(
+                        "sweeper:DealRottingWatchdog",
+                        TimeSpan.FromSeconds(50),
+                        TimeSpan.FromMilliseconds(200),
+                        stoppingToken);
+
+                    if (lockHandle == null || !lockHandle.IsAcquired)
+                    {
+                        _logger?.LogDebug("DealRottingWatchdogDaemon: Another worker instance holds the leader lease. Skipping check.");
+                        await Task.Delay(_pollInterval, stoppingToken);
+                        continue;
+                    }
+
+                    using var scope = _serviceProvider.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<SGrowingDbContext>();
+                    await ProcessRottenDealsAsync(db, 7, stoppingToken);
+                }
+                else
+                {
+                    using var scope = _serviceProvider.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<SGrowingDbContext>();
+                    await ProcessRottenDealsAsync(db, 7, stoppingToken);
+                }
             }
             catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
             {

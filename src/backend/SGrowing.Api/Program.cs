@@ -18,7 +18,9 @@ using SGrowing.Api.Modules.Channels;
 using SGrowing.Api.Modules.Channels.Telegram;
 using SGrowing.Api.Modules.Channels.WhatsApp;
 using SGrowing.Api.Modules.Channels.WhatsApp.Catalog;
+using SGrowing.Api.Modules.Channels.WhatsApp.Companion;
 using SGrowing.Api.Modules.Commerce;
+using SGrowing.Api.Modules.Commerce.Affiliates;
 using SGrowing.Api.Modules.Commerce.AntiFraud;
 using SGrowing.Api.Modules.Commerce.CallCenter;
 using SGrowing.Api.Modules.Commerce.CartReservations;
@@ -29,12 +31,14 @@ using SGrowing.Api.Modules.Contracts;
 using SGrowing.Api.Modules.Conversations;
 using SGrowing.Api.Modules.Conversations.Macros;
 using SGrowing.Api.Modules.Conversations.Mime;
+using SGrowing.Api.Modules.Conversations.Presence;
 using SGrowing.Api.Modules.Conversations.PresenceAndCsat;
 using SGrowing.Api.Modules.Conversations.Sla;
 using SGrowing.Api.Modules.CRM;
 using SGrowing.Api.Modules.CRM.ContractSigning;
 using SGrowing.Api.Modules.CRM.CustomFields;
 using SGrowing.Api.Modules.CRM.Import;
+using SGrowing.Api.Modules.Forms;
 using SGrowing.Api.Modules.Deliverability;
 using SGrowing.Api.Modules.Dev;
 using SGrowing.Api.Modules.Diagnostics;
@@ -228,6 +232,7 @@ app.MapCarrierDispatchEndpoints();
 
 // Horizons 10-13 Endpoint Mappings
 app.MapWhatsAppPairingEndpoints();
+app.MapWhatsAppCompanionEndpoints();
 app.MapAgentFleetEndpoints();
 app.MapTechnicalSeoCrawlerEndpoints();
 
@@ -262,8 +267,11 @@ app.MapAppointmentSchedulingEndpoints();
 SGrowing.Api.Modules.Social.SocialPublishingEndpoints.MapSocialPublishingEndpoints(app);
 app.MapCustomerLifecycleJourneyEndpoints();
 app.MapProductAnalyticsEndpoints();
+app.MapAgentPresenceEndpoints();
 app.MapJourneyEndpoints();
 app.MapJourneyDagEndpoints();
+app.MapHeadlessFormEndpoints();
+app.MapAffiliateCommissionEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
