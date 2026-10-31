@@ -46,8 +46,8 @@ public class SyntheticDataGeneratorServiceTests
         // Validate sample record keys
         var first = result.SampleRecords[0];
         first["FullName"].Should().NotBeNull();
-        first["Email"].ToString().Should().Contain("@");
-        first["Id"].ToString().Should().HaveLength(16);
+        first["Email"]!.ToString()!.Should().Contain("@");
+        first["Id"]!.ToString()!.Should().HaveLength(16);
     }
 
     [Fact]
