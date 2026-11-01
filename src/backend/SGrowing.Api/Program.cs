@@ -10,6 +10,11 @@ using SGrowing.Api.Modules.Commerce.DynamicPricing;
 using SGrowing.Api.Modules.Commerce.LiveStreaming;
 using SGrowing.Api.Modules.Field.Sync;
 using SGrowing.Api.Modules.Finance.Ledger;
+using SGrowing.Api.Modules.SupplyChain.Replenishment;
+using SGrowing.Api.Modules.DataArchitecture.EventSourcing;
+using SGrowing.Api.Modules.Security.GraphFraud;
+using SGrowing.Api.Modules.Documents.Idp;
+using SGrowing.Api.Modules.FrontendArchitecture.MicroFrontends;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -319,6 +324,13 @@ app.MapDynamicElasticityPricingEndpoints();
 app.MapDoubleEntryLedgerEndpoints();
 app.MapCrdtDeltaSyncEndpoints();
 app.MapLiveCommerceEndpoints();
+
+// Horizons 21-25 Endpoint Mappings
+app.MapSupplyChainEndpoints();
+app.MapEventSourcingCqrsEndpoints();
+app.MapIdentityGraphFraudEndpoints();
+app.MapIdpEndpoints();
+app.MapMicroFrontendEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

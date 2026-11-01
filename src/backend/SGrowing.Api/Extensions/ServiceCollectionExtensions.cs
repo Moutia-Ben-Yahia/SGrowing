@@ -12,6 +12,11 @@ using SGrowing.Api.Modules.Commerce.DynamicPricing;
 using SGrowing.Api.Modules.Commerce.LiveStreaming;
 using SGrowing.Api.Modules.Field.Sync;
 using SGrowing.Api.Modules.Finance.Ledger;
+using SGrowing.Api.Modules.SupplyChain.Replenishment;
+using SGrowing.Api.Modules.DataArchitecture.EventSourcing;
+using SGrowing.Api.Modules.Security.GraphFraud;
+using SGrowing.Api.Modules.Documents.Idp;
+using SGrowing.Api.Modules.FrontendArchitecture.MicroFrontends;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -557,6 +562,13 @@ public static class ServiceCollectionExtensions
         services.AddDoubleEntryLedgerServices();
         services.AddCrdtDeltaSyncServices();
         services.AddLiveCommerceServices();
+
+        // Horizons 21-25 Services
+        services.AddSupplyChainReplenishmentServices();
+        services.AddEventSourcingCqrsServices();
+        services.AddIdentityGraphFraudServices();
+        services.AddIdpServices();
+        services.AddMicroFrontendServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
