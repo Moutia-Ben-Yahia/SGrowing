@@ -17,6 +17,11 @@ using SGrowing.Api.Modules.DataArchitecture.EventSourcing;
 using SGrowing.Api.Modules.Security.GraphFraud;
 using SGrowing.Api.Modules.Documents.Idp;
 using SGrowing.Api.Modules.FrontendArchitecture.MicroFrontends;
+using SGrowing.Api.Modules.SupplyChain.Procurement;
+using SGrowing.Api.Modules.Security.ZeroKnowledge;
+using SGrowing.Api.Modules.Tenancy.MultiRegion;
+using SGrowing.Api.Modules.Commerce.Robotics;
+using SGrowing.Api.Modules.Marketing.Retention;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -569,6 +574,13 @@ public static class ServiceCollectionExtensions
         services.AddIdentityGraphFraudServices();
         services.AddIdpServices();
         services.AddMicroFrontendServices();
+
+        // Horizons 26-30 Services
+        services.AddProcurementBiddingServices();
+        services.AddZeroKnowledgeSolvencyServices();
+        services.AddMultiRegionSovereignServices();
+        services.AddAmrRoboticsBinPackingServices();
+        services.AddPredictiveRetentionServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

@@ -15,6 +15,11 @@ using SGrowing.Api.Modules.DataArchitecture.EventSourcing;
 using SGrowing.Api.Modules.Security.GraphFraud;
 using SGrowing.Api.Modules.Documents.Idp;
 using SGrowing.Api.Modules.FrontendArchitecture.MicroFrontends;
+using SGrowing.Api.Modules.SupplyChain.Procurement;
+using SGrowing.Api.Modules.Security.ZeroKnowledge;
+using SGrowing.Api.Modules.Tenancy.MultiRegion;
+using SGrowing.Api.Modules.Commerce.Robotics;
+using SGrowing.Api.Modules.Marketing.Retention;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -331,6 +336,13 @@ app.MapEventSourcingCqrsEndpoints();
 app.MapIdentityGraphFraudEndpoints();
 app.MapIdpEndpoints();
 app.MapMicroFrontendEndpoints();
+
+// Horizons 26-30 Endpoint Mappings
+app.MapProcurementEndpoints();
+app.MapZeroKnowledgeEndpoints();
+app.MapMultiRegionEndpoints();
+app.MapRoboticsEndpoints();
+app.MapPredictiveRetentionEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
