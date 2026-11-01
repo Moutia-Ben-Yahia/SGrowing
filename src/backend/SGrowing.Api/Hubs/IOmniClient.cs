@@ -38,6 +38,17 @@ public record FunnelSlippageAlertDto(
     DateTime DetectedAtUtc
 );
 
+public record WorkflowApprovalTaskDto(
+    Guid Id,
+    Guid TenantId,
+    Guid ExecutionId,
+    string NodeId,
+    string Description,
+    decimal? FinancialRiskAmount,
+    string Status,
+    DateTime CreatedAtUtc
+);
+
 public interface IOmniClient
 {
     Task OnMessageReceived(MessageDto message);
@@ -56,4 +67,5 @@ public interface IOmniClient
     Task OnVoiceTranscriptionChunk(Guid callSessionId, string speaker, string chunkText, double sentimentScore, bool isFinal);
     Task OnHighIntentProposalViewed(HighIntentProposalViewedEventDto alert);
     Task OnFunnelSlippageAlert(FunnelSlippageAlertDto alert);
+    Task OnApprovalTaskCreated(WorkflowApprovalTaskDto task);
 }

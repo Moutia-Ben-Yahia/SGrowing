@@ -86,6 +86,12 @@ public class OmniHub : Hub<IOmniClient>
             .OnFunnelSlippageAlert(alert);
     }
 
+    public async Task BroadcastApprovalTaskCreated(WorkflowApprovalTaskDto task)
+    {
+        await Clients.Group(GetTenantGroup(task.TenantId))
+            .OnApprovalTaskCreated(task);
+    }
+
     public async Task JoinOrder(Guid orderId)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, GetOrderGroup(orderId));

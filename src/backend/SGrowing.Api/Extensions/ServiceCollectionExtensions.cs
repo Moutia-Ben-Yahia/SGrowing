@@ -8,6 +8,7 @@ using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
 using SGrowing.Api.Modules.Agents.Git;
 using SGrowing.Api.Modules.AI;
+using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
 using SGrowing.Api.Modules.Analytics;
 using SGrowing.Api.Modules.Attribution;
@@ -40,6 +41,7 @@ using SGrowing.Api.Modules.Conversations.Sla;
 using SGrowing.Api.Modules.CRM;
 using SGrowing.Api.Modules.CRM.ContractSigning;
 using SGrowing.Api.Modules.CRM.CustomFields;
+using SGrowing.Api.Modules.CRM.CustomObjects;
 using SGrowing.Api.Modules.CRM.Import;
 using SGrowing.Api.Modules.Forms;
 using SGrowing.Api.Modules.Deliverability;
@@ -71,6 +73,7 @@ using SGrowing.Api.Modules.Projects;
 using SGrowing.Api.Modules.Sales;
 using SGrowing.Api.Modules.Scheduling;
 using SGrowing.Api.Modules.Security;
+using SGrowing.Api.Modules.Security.Vault;
 using SGrowing.Api.Modules.SEO;
 using SGrowing.Api.Modules.Social;
 using SGrowing.Api.Modules.Commerce.Fulfillment;
@@ -316,6 +319,16 @@ public static class ServiceCollectionExtensions
         services.AddScoped<WorkflowEngineService>();
         services.AddScoped<IWorkflowGraphExecutorService, WorkflowGraphExecutorService>();
 
+        // Phase 11: Autonomous Visual Workflow DAG Orchestrator & Temporal State Replay
+        services.AddSingleton<IWorkflowEventStore, InMemoryWorkflowEventStore>();
+        services.AddSingleton<IWorkflowExecutionStore, InMemoryWorkflowExecutionStore>();
+        services.AddSingleton<IWorkflowApprovalTaskStore, InMemoryWorkflowApprovalTaskStore>();
+        services.AddScoped<IWorkflowActionExecutor, DefaultWorkflowActionExecutor>();
+        services.AddScoped<IAiPromptTransformer, DefaultAiPromptTransformer>();
+        services.AddScoped<IDurableWorkflowExecutionEngine, DurableWorkflowExecutionEngine>();
+        services.AddScoped<IHumanInTheLoopApprovalService, HumanInTheLoopApprovalService>();
+        services.AddScoped<ILocalTimezonePacingService, LocalTimezonePacingService>();
+
         // Security & Encryption Vault
         services.AddSingleton<AesEncryptionService>();
         services.AddScoped<ITenantSecretsVaultService, TenantSecretsVaultService>();
@@ -326,6 +339,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<CustomerPrivacyService>();
         services.AddScoped<ISecurityAuditAndRbacService, SecurityAuditAndRbacService>();
         services.AddSingleton<ITokenRevocationService, TokenRevocationService>();
+
+        // Phase 15: SOC2 & GDPR Sovereign Compliance Vault
+        services.AddSingleton<IMerkleComplianceAuditLedgerService, MerkleComplianceAuditLedgerService>();
+        services.AddScoped<IGdprRightToBeForgottenCascadeService, GdprRightToBeForgottenCascadeService>();
+        services.AddSingleton<IEnvelopeEncryptionService, EnvelopeEncryptionService>();
+        services.AddScoped<IComplianceCertificateGeneratorService, ComplianceCertificateGeneratorService>();
 
         // Attribution & SaaS Metering
         services.AddScoped<MultiTouchAttributionService>();
@@ -342,6 +361,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISalesFunnelService, SalesFunnelService>();
         services.AddScoped<ISeoMultipageGraphService, SeoMultipageGraphService>();
         services.AddScoped<ISerpRankTrackerService, SerpRankTrackerService>();
+        services.AddScoped<IProgrammaticSeoGeneratorService, ProgrammaticSeoGeneratorService>();
+        services.AddScoped<ISchemaOrgJsonLdGeneratorService, SchemaOrgJsonLdGeneratorService>();
+        services.AddScoped<ISerpPositionTrackerService, SerpPositionTrackerService>();
         services.AddScoped<IAutonomousFunnelPipelineService, AutonomousFunnelPipelineService>();
         services.AddScoped<IFunnelSplitTestService, FunnelSplitTestService>();
         services.AddScoped<IAutonomousFunnelBuilderService, AutonomousFunnelBuilderService>();
@@ -370,6 +392,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAgentPersonaService, AgentPersonaService>();
         services.AddScoped<IAiModelRouterService, AiModelRouterService>();
         services.AddScoped<AiModelRouterService>();
+
+        // Phase 14: Autonomous Multi-Agent Swarm Defense, Semantic Vector Tool Caching & Prompt Firewalls
+        services.AddSingleton<ICryptographicPromptCanaryService, CryptographicPromptCanaryService>();
+        services.AddSingleton<ISemanticVectorToolCacheService, SemanticVectorToolCacheService>();
+        services.AddSingleton<ICascadingModelRouterService, CascadingModelRouterService>();
+        services.AddSingleton<IPiiSanitizationGatewayService, PiiSanitizationGatewayService>();
 
         // PDF Generation, Gateways & Semantic RAG
         services.AddSingleton<IDocumentPdfGeneratorService, DocumentPdfGeneratorService>();
@@ -429,6 +457,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IInvoiceService, InvoiceService>();
         services.AddScoped<IGitHubAutomationService, GitHubAutomationService>();
         services.AddScoped<ICustomFieldService, CustomFieldService>();
+        services.AddSingleton<IEavDynamicSchemaValidator, EavDynamicSchemaValidator>();
+        services.AddSingleton<IDynamicCustomObjectQueryBuilder, DynamicCustomObjectQueryBuilder>();
+        services.AddSingleton<IDynamicCustomObjectService, DynamicCustomObjectService>();
         services.AddScoped<IWhatsAppNewsletterService, WhatsAppNewsletterService>();
         services.AddSingleton<IWhatsAppBroadcastPacingService, WhatsAppBroadcastPacingService>();
         services.AddSingleton<IWhatsAppCatalogCartService, WhatsAppCatalogCartService>();

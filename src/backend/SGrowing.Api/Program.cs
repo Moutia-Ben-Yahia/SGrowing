@@ -6,6 +6,7 @@ using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
 using SGrowing.Api.Modules.Agents.Git;
 using SGrowing.Api.Modules.AI;
+using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
 using SGrowing.Api.Modules.Analytics;
 using SGrowing.Api.Modules.Attribution;
@@ -38,6 +39,7 @@ using SGrowing.Api.Modules.Conversations.Sla;
 using SGrowing.Api.Modules.CRM;
 using SGrowing.Api.Modules.CRM.ContractSigning;
 using SGrowing.Api.Modules.CRM.CustomFields;
+using SGrowing.Api.Modules.CRM.CustomObjects;
 using SGrowing.Api.Modules.CRM.Import;
 using SGrowing.Api.Modules.Forms;
 using SGrowing.Api.Modules.Deliverability;
@@ -69,6 +71,7 @@ using SGrowing.Api.Modules.Projects;
 using SGrowing.Api.Modules.Sales;
 using SGrowing.Api.Modules.Scheduling;
 using SGrowing.Api.Modules.Security;
+using SGrowing.Api.Modules.Security.Vault;
 using SGrowing.Api.Modules.SEO;
 using SGrowing.Api.Modules.Social;
 using SGrowing.Api.Modules.Storage.Media;
@@ -154,6 +157,7 @@ app.MapDeveloperGatewayEndpoints();
 // ----------------- Enterprise Strategic Horizon Endpoints -----------------
 app.MapDevEndpoints();
 app.MapSeoEndpoints();
+app.MapProgrammaticSeoEndpoints();
 app.MapFunnelEndpoints();
 app.MapCalendarEndpoints();
 app.MapDeliverabilityEndpoints();
@@ -194,7 +198,9 @@ app.MapInvoiceEndpoints();
 app.MapPaymentWebhookEndpoints();
 app.MapConversationCopilotEndpoints();
 app.MapCustomFieldEndpoints();
+app.MapCustomObjectEndpoints();
 app.MapWorkflowGraphEndpoints();
+app.MapWorkflowDagReplayEndpoints();
 app.MapCartReservationEndpoints();
 app.MapEventFanoutEndpoints();
 app.MapWhatsAppNewsletterEndpoints();
@@ -203,6 +209,7 @@ app.MapWhatsAppCatalogCartEndpoints();
 app.MapWhatsAppClusterAndPacingEndpoints();
 app.MapTelegramBotEndpoints();
 app.MapAiModelRouterEndpoints();
+app.MapPromptFirewallEndpoints();
 
 // Enterprise Wiki Strategic Pillars Endpoints (Waves 1-4)
 app.MapCallCenterAntiCollisionEndpoints();
@@ -299,6 +306,7 @@ app.MapVoiceIvrEndpoints();
 app.MapSyntheticDataEndpoints();
 app.MapUniversalSearchEndpoints();
 app.MapLogisticsAndReverseCodEndpoints();
+app.MapComplianceVaultEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
