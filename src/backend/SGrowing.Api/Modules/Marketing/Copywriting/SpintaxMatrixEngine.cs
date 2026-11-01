@@ -84,7 +84,7 @@ public sealed class SpintaxMatrixEngine : ISpintaxMatrixEngine
         }
 
         // Attempt to find an unseen variation within retry limits
-        int maxAttempts = Math.Min(100, Math.Max(20, (int)Math.Min(permutationSpace * 2, 100)));
+        int maxAttempts = (int)Math.Min(Math.Max(500, permutationSpace * 20), 2000);
         string candidate = string.Empty;
 
         for (int attempt = 0; attempt < maxAttempts; attempt++)

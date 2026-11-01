@@ -30,6 +30,11 @@ using SGrowing.Api.Modules.Security.Confidential;
 using SGrowing.Api.Modules.Commerce.VisualSearch;
 using SGrowing.Api.Modules.Voice.Synthesis;
 using SGrowing.Api.Modules.Infrastructure.Autopilot;
+using SGrowing.Api.Modules.Finance.Factoring;
+using SGrowing.Api.Modules.Logistics.ColdChain;
+using SGrowing.Api.Modules.Commerce.QualityGate;
+using SGrowing.Api.Modules.CRM.SupportSwarm;
+using SGrowing.Api.Modules.Infrastructure.MultiCloud;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -367,6 +372,13 @@ app.MapConfidentialEndpoints();
 app.MapVisualSearchEndpoints();
 app.MapVoiceSynthesisEndpoints();
 app.MapAutopilotEndpoints();
+
+// Horizons 41-45 Endpoint Mappings
+app.MapFactoringEndpoints();
+app.MapColdChainEndpoints();
+app.MapQualityGateEndpoints();
+app.MapSupportSwarmEndpoints();
+app.MapMultiCloudEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
