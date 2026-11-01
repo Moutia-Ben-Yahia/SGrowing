@@ -5,6 +5,11 @@ using SGrowing.Api.Extensions;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
 using SGrowing.Api.Modules.Agents.Git;
+using SGrowing.Api.Modules.Agents.Swarm;
+using SGrowing.Api.Modules.Commerce.DynamicPricing;
+using SGrowing.Api.Modules.Commerce.LiveStreaming;
+using SGrowing.Api.Modules.Field.Sync;
+using SGrowing.Api.Modules.Finance.Ledger;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -307,6 +312,13 @@ app.MapSyntheticDataEndpoints();
 app.MapUniversalSearchEndpoints();
 app.MapLogisticsAndReverseCodEndpoints();
 app.MapComplianceVaultEndpoints();
+
+// Horizons 16-20 Endpoint Mappings
+app.MapMultiAgentSwarmEndpoints();
+app.MapDynamicElasticityPricingEndpoints();
+app.MapDoubleEntryLedgerEndpoints();
+app.MapCrdtDeltaSyncEndpoints();
+app.MapLiveCommerceEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

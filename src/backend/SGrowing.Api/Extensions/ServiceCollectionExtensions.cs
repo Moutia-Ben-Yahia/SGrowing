@@ -7,6 +7,11 @@ using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
 using SGrowing.Api.Modules.Agents.Git;
+using SGrowing.Api.Modules.Agents.Swarm;
+using SGrowing.Api.Modules.Commerce.DynamicPricing;
+using SGrowing.Api.Modules.Commerce.LiveStreaming;
+using SGrowing.Api.Modules.Field.Sync;
+using SGrowing.Api.Modules.Finance.Ledger;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -545,6 +550,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IVoiceIvrEngineService, VoiceIvrEngineService>();
         services.AddSingleton<ISyntheticDataGeneratorService, SyntheticDataGeneratorService>();
         services.AddSingleton<IUniversalSearchEngineService, UniversalSearchEngineService>();
+
+        // Horizons 16-20 Services
+        services.AddMultiAgentSwarmServices();
+        services.AddDynamicElasticityPricingServices();
+        services.AddDoubleEntryLedgerServices();
+        services.AddCrdtDeltaSyncServices();
+        services.AddLiveCommerceServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
