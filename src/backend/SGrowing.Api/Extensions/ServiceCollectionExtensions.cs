@@ -52,6 +52,11 @@ using SGrowing.Api.Modules.SupplyChain.ZkTraceability;
 using SGrowing.Api.Modules.Logistics.Routing;
 using SGrowing.Api.Modules.CRM.RetentionConcierge;
 using SGrowing.Api.Modules.Security.ConfidentialEnclave;
+using SGrowing.Api.Modules.Revenue.YieldManagement;
+using SGrowing.Api.Modules.AI.KnowledgeHypergraph;
+using SGrowing.Api.Modules.SupplyChain.DisruptionSimulator;
+using SGrowing.Api.Modules.Security.VoiceLiveness;
+using SGrowing.Api.Modules.Infrastructure.FinOps;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -653,6 +658,13 @@ public static class ServiceCollectionExtensions
         services.AddRouteOptimizationServices();
         services.AddRetentionConciergeServices();
         services.AddConfidentialEnclaveServices();
+
+        // Horizons 61-65 Services
+        services.AddYieldManagementServices();
+        services.AddKnowledgeHypergraphServices();
+        services.AddDisruptionSimulationServices();
+        services.AddVoiceLivenessServices();
+        services.AddFinOpsArbitrageServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

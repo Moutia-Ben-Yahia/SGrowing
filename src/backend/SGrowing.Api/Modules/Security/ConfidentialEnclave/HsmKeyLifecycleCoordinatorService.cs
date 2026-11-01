@@ -10,8 +10,6 @@ namespace SGrowing.Api.Modules.Security.ConfidentialEnclave;
 /// </summary>
 public sealed class HsmKeyLifecycleCoordinatorService
 {
-    private const int PrimeModulo = 257; // Prime for byte-level Shamir Secret Sharing
-
     private readonly ConcurrentDictionary<string, (HsmKeyMetadata Metadata, byte[] KeyMaterial)> _keys = new(StringComparer.OrdinalIgnoreCase);
     private readonly System.Threading.Lock _lock = new();
 
@@ -142,25 +140,25 @@ public sealed class HsmKeyLifecycleCoordinatorService
             shares.Add(new byte[secretBytes.Length]);
         }
 
-        // Split byte by byte using polynomials of degree M - 1
-        var coeffs = new int[request.ThresholdM];
+        // Split byte by byte using polynomials of degree M - 1 over GF(2^8)
+        var coeffs = new byte[request.ThresholdM];
 
         for (var byteIdx = 0; byteIdx < secretBytes.Length; byteIdx++)
         {
             coeffs[0] = secretBytes[byteIdx]; // f(0) = secret byte
 
-            // Generate random coefficients in [0, PrimeModulo - 1]
+            // Generate random coefficients in GF(2^8) [0, 255]
             for (var c = 1; c < request.ThresholdM; c++)
             {
-                coeffs[c] = RandomNumberGenerator.GetInt32(0, PrimeModulo);
+                coeffs[c] = (byte)RandomNumberGenerator.GetInt32(0, 256);
             }
 
             // Evaluate f(x) for x = 1 .. N
             for (var shareIdx = 0; shareIdx < request.TotalSharesN; shareIdx++)
             {
-                var x = shareIdx + 1;
-                var y = EvaluatePolynomialMod(coeffs, x, PrimeModulo);
-                shares[shareIdx][byteIdx] = (byte)(y % 256);
+                var x = (byte)(shareIdx + 1);
+                var y = EvaluatePolynomialGf(coeffs, x);
+                shares[shareIdx][byteIdx] = y;
             }
         }
 
@@ -219,15 +217,15 @@ public sealed class HsmKeyLifecycleCoordinatorService
 
         for (var b = 0; b < secretLen; b++)
         {
-            var ys = new int[threshold];
+            var ys = new byte[threshold];
             for (var i = 0; i < threshold; i++)
             {
                 ys[i] = shareByteArrays[i][b];
             }
 
-            // Lagrange interpolation at x = 0 modulo PrimeModulo
-            var secretByte = InterpolateLagrangeAtZero(xs, ys, PrimeModulo);
-            reconstructed[b] = (byte)(secretByte % 256);
+            // Lagrange interpolation at x = 0 over GF(2^8)
+            var secretByte = InterpolateLagrangeGfAtZero(xs, ys);
+            reconstructed[b] = secretByte;
         }
 
         return Convert.ToHexString(reconstructed).ToLowerInvariant();
@@ -241,52 +239,65 @@ public sealed class HsmKeyLifecycleCoordinatorService
         return _keys.TryGetValue(keyId, out var entry) ? entry.Metadata : null;
     }
 
-    private static int EvaluatePolynomialMod(int[] coeffs, int x, int mod)
+    private static byte EvaluatePolynomialGf(byte[] coeffs, byte x)
     {
-        var result = 0;
-        var xPower = 1;
+        byte result = 0;
+        byte xPower = 1;
         foreach (var c in coeffs)
         {
-            result = (result + (c * xPower)) % mod;
-            xPower = (xPower * x) % mod;
+            result ^= Gf256Mul(c, xPower);
+            xPower = Gf256Mul(xPower, x);
         }
-        return (result + mod) % mod;
+        return result;
     }
 
-    private static int InterpolateLagrangeAtZero(int[] xs, int[] ys, int mod)
+    private static byte InterpolateLagrangeGfAtZero(int[] xs, byte[] ys)
     {
         var k = xs.Length;
-        var result = 0;
+        byte result = 0;
 
         for (var j = 0; j < k; j++)
         {
-            var num = 1;
-            var den = 1;
+            byte num = 1;
+            byte den = 1;
 
             for (var m = 0; m < k; m++)
             {
                 if (m == j) continue;
-                num = (num * (-xs[m])) % mod;
-                den = (den * (xs[j] - xs[m])) % mod;
+                num = Gf256Mul(num, (byte)xs[m]);
+                den = Gf256Mul(den, (byte)(xs[j] ^ xs[m]));
             }
 
-            num = (num + mod) % mod;
-            den = (den + mod) % mod;
-
-            var denInv = ModInverse(den, mod);
-            var term = (ys[j] * num % mod) * denInv % mod;
-            result = (result + term) % mod;
+            var denInv = Gf256Inv(den);
+            var weight = Gf256Mul(num, denInv);
+            result ^= Gf256Mul(ys[j], weight);
         }
 
-        return (result + mod) % mod;
+        return result;
     }
 
-    private static int ModInverse(int a, int m)
+    private static byte Gf256Mul(byte a, byte b)
     {
-        a = (a % m + m) % m;
-        for (var x = 1; x < m; x++)
+        byte p = 0;
+        while (a != 0 && b != 0)
         {
-            if ((a * x) % m == 1) return x;
+            if ((b & 1) != 0)
+                p ^= a;
+            if ((a & 0x80) != 0)
+                a = (byte)((a << 1) ^ 0x11B);
+            else
+                a = (byte)(a << 1);
+            b >>= 1;
+        }
+        return p;
+    }
+
+    private static byte Gf256Inv(byte a)
+    {
+        if (a == 0) return 0;
+        for (var x = 1; x < 256; x++)
+        {
+            if (Gf256Mul(a, (byte)x) == 1) return (byte)x;
         }
         return 1;
     }

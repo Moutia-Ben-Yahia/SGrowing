@@ -50,6 +50,11 @@ using SGrowing.Api.Modules.SupplyChain.ZkTraceability;
 using SGrowing.Api.Modules.Logistics.Routing;
 using SGrowing.Api.Modules.CRM.RetentionConcierge;
 using SGrowing.Api.Modules.Security.ConfidentialEnclave;
+using SGrowing.Api.Modules.Revenue.YieldManagement;
+using SGrowing.Api.Modules.AI.KnowledgeHypergraph;
+using SGrowing.Api.Modules.SupplyChain.DisruptionSimulator;
+using SGrowing.Api.Modules.Security.VoiceLiveness;
+using SGrowing.Api.Modules.Infrastructure.FinOps;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -415,6 +420,13 @@ app.MapZkTraceabilityEndpoints();
 app.MapRouteOptimizationEndpoints();
 app.MapRetentionConciergeEndpoints();
 app.MapConfidentialEnclaveEndpoints();
+
+// Horizons 61-65 Endpoint Mappings
+app.MapYieldManagementEndpoints();
+app.MapKnowledgeHypergraphEndpoints();
+app.MapDisruptionSimulationEndpoints();
+app.MapVoiceLivenessEndpoints();
+app.MapFinOpsArbitrageEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
