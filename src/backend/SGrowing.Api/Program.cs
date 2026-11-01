@@ -40,6 +40,11 @@ using SGrowing.Api.Modules.Security.PostQuantum;
 using SGrowing.Api.Modules.Commerce.Shrinkage;
 using SGrowing.Api.Modules.Marketing.AdSpend;
 using SGrowing.Api.Modules.Tenancy.Governance;
+using SGrowing.Api.Modules.Logistics.Satellite;
+using SGrowing.Api.Modules.Commerce.Neuromorphic;
+using SGrowing.Api.Modules.Finance.SettlementBridge;
+using SGrowing.Api.Modules.Commerce.CoOp;
+using SGrowing.Api.Modules.Infrastructure.EdgeObservability;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -391,6 +396,13 @@ app.MapPostQuantumEndpoints();
 app.MapShrinkageEndpoints();
 app.MapAdSpendEndpoints();
 app.MapGovernanceEndpoints();
+
+// Horizons 51-55 Endpoint Mappings
+app.MapSatelliteCommsEndpoints();
+app.MapNeuromorphicVisionEndpoints();
+app.MapSettlementBridgeEndpoints();
+app.MapCollaborativeCommerceEndpoints();
+app.MapEdgeObservabilityEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
