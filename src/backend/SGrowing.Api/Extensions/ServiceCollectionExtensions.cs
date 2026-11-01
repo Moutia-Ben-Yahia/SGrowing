@@ -47,6 +47,11 @@ using SGrowing.Api.Modules.Commerce.Neuromorphic;
 using SGrowing.Api.Modules.Finance.SettlementBridge;
 using SGrowing.Api.Modules.Commerce.CoOp;
 using SGrowing.Api.Modules.Infrastructure.EdgeObservability;
+using SGrowing.Api.Modules.Commerce.DigitalTwin;
+using SGrowing.Api.Modules.SupplyChain.ZkTraceability;
+using SGrowing.Api.Modules.Logistics.Routing;
+using SGrowing.Api.Modules.CRM.RetentionConcierge;
+using SGrowing.Api.Modules.Security.ConfidentialEnclave;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -641,6 +646,13 @@ public static class ServiceCollectionExtensions
         services.AddSettlementBridgeServices();
         services.AddCollaborativeCommerceServices();
         services.AddEdgeObservabilityServices();
+
+        // Horizons 56-60 Services
+        services.AddDigitalTwinServices();
+        services.AddZkTraceabilityServices();
+        services.AddRouteOptimizationServices();
+        services.AddRetentionConciergeServices();
+        services.AddConfidentialEnclaveServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
