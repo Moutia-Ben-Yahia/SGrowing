@@ -35,6 +35,11 @@ using SGrowing.Api.Modules.Logistics.ColdChain;
 using SGrowing.Api.Modules.Commerce.QualityGate;
 using SGrowing.Api.Modules.CRM.SupportSwarm;
 using SGrowing.Api.Modules.Infrastructure.MultiCloud;
+using SGrowing.Api.Modules.Logistics.Esg;
+using SGrowing.Api.Modules.Security.PostQuantum;
+using SGrowing.Api.Modules.Commerce.Shrinkage;
+using SGrowing.Api.Modules.Marketing.AdSpend;
+using SGrowing.Api.Modules.Tenancy.Governance;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -379,6 +384,13 @@ app.MapColdChainEndpoints();
 app.MapQualityGateEndpoints();
 app.MapSupportSwarmEndpoints();
 app.MapMultiCloudEndpoints();
+
+// Horizons 46-50 Endpoint Mappings
+app.MapEsgEndpoints();
+app.MapPostQuantumEndpoints();
+app.MapShrinkageEndpoints();
+app.MapAdSpendEndpoints();
+app.MapGovernanceEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
