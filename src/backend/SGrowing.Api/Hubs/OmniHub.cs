@@ -80,6 +80,12 @@ public class OmniHub : Hub<IOmniClient>
             .OnHighIntentProposalViewed(alert);
     }
 
+    public async Task BroadcastFunnelSlippageAlert(FunnelSlippageAlertDto alert)
+    {
+        await Clients.Group(GetTenantGroup(alert.TenantId))
+            .OnFunnelSlippageAlert(alert);
+    }
+
     public async Task JoinOrder(Guid orderId)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, GetOrderGroup(orderId));

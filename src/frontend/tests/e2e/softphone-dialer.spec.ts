@@ -2,6 +2,21 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Autonomous SDR Fleet & Softphone Dialer E2E', () => {
   test.beforeEach(async ({ page }) => {
+    await page.route('**/api/v1/voice/**', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          callSessionId: 'cs_mock_123',
+          prospectPhone: '+213 555 019 28358',
+          agentPhone: '+1 800 555 0199',
+          webRtcRoomToken: 'livekit_tok_mock',
+          status: 'CONNECTED',
+          durationSeconds: 0
+        })
+      });
+    });
+
     await page.addInitScript(() => {
       localStorage.setItem('sgrowing_access_token', 'mock_jwt_token_for_e2e_tests');
       localStorage.setItem('sgrowing_tenant_id', '00000000-0000-0000-0000-000000000001');

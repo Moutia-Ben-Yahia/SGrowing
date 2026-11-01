@@ -24,6 +24,20 @@ public record HighIntentProposalViewedEventDto(
     DateTime TimestampUtc
 );
 
+public record FunnelSlippageAlertDto(
+    Guid AlertId,
+    Guid TenantId,
+    string StepFrom,
+    string StepTo,
+    double CurrentRate,
+    double BaselineMeanRate,
+    double StandardDeviation,
+    double ZScore,
+    string Severity,
+    string Message,
+    DateTime DetectedAtUtc
+);
+
 public interface IOmniClient
 {
     Task OnMessageReceived(MessageDto message);
@@ -41,4 +55,5 @@ public interface IOmniClient
     Task OnAndroidSmsStatusUpdated(Guid dispatchId, string status, string? errorMessage);
     Task OnVoiceTranscriptionChunk(Guid callSessionId, string speaker, string chunkText, double sentimentScore, bool isFinal);
     Task OnHighIntentProposalViewed(HighIntentProposalViewedEventDto alert);
+    Task OnFunnelSlippageAlert(FunnelSlippageAlertDto alert);
 }

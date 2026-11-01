@@ -27,6 +27,7 @@ using SGrowing.Api.Modules.Commerce.AntiFraud;
 using SGrowing.Api.Modules.Commerce.CallCenter;
 using SGrowing.Api.Modules.Commerce.CartReservations;
 using SGrowing.Api.Modules.Commerce.Connectors;
+using SGrowing.Api.Modules.Commerce.Logistics;
 using SGrowing.Api.Modules.Commerce.Shipping;
 using SGrowing.Api.Modules.Commerce.Warehouses;
 using SGrowing.Api.Modules.Contracts;
@@ -221,6 +222,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IVoiceTranscriptionDiarizationService, VoiceTranscriptionDiarizationService>();
         services.AddSingleton<IVoiceAiStreamingBridgeService, VoiceAiStreamingBridgeService>();
         services.AddSingleton<IAudioTranscriptionService, AudioTranscriptionService>();
+        services.AddSingleton<ILowLatencyAudioStreamingEngine, LowLatencyAudioStreamingEngine>();
+        services.AddSingleton<IBargeInInterruptionManager, BargeInInterruptionManager>();
+        services.AddSingleton<INeuralAnsweringMachineDetector, NeuralAnsweringMachineDetector>();
+        services.AddSingleton<ILiveCallToolExecutor, LiveCallToolExecutor>();
 
         // Outbound SDR
         services.AddScoped<MailboxService>();
@@ -256,7 +261,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ILiveCommerceOverlayService, LiveCommerceOverlayService>();
         services.AddScoped<ITreasuryFloatService, TreasuryFloatService>();
         services.AddScoped<ICreatorAffiliateService, CreatorAffiliateService>();
-        services.AddScoped<IReverseExchangeService, ReverseExchangeService>();
+        services.AddScoped<SGrowing.Api.Modules.Commerce.IReverseExchangeService, SGrowing.Api.Modules.Commerce.ReverseExchangeService>();
         services.AddScoped<ICrossBorderTradeService, CrossBorderTradeService>();
         services.AddScoped<IDemandForecastingService, DemandForecastingService>();
         services.AddScoped<IAdSpendOptimizerService, AdSpendOptimizerService>();
@@ -271,6 +276,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICodCarrierAutoDispatchService, CodCarrierAutoDispatchService>();
         services.AddScoped<ICartReservationService, CartReservationService>();
         services.AddSingleton<IAffiliateCommissionService, AffiliateCommissionService>();
+
+        // Autonomous Multi-Carrier Logistics & Reverse COD Orchestration
+        services.AddSingleton<ICodFraudPredictorService, CodFraudPredictorService>();
+        services.AddSingleton<ICarrierSmartRouterService, CarrierSmartRouterService>();
+        services.AddSingleton<SGrowing.Api.Modules.Commerce.Logistics.IReverseExchangeService, SGrowing.Api.Modules.Commerce.Logistics.ReverseExchangeService>();
+        services.AddSingleton<ICourierRemittanceService, CourierRemittanceService>();
 
         // Customer 360, RMA & Self-Service Portal
         services.AddScoped<ICustomerIdentityGraphService, CustomerIdentityGraphService>();
@@ -423,6 +434,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IWhatsAppCatalogCartService, WhatsAppCatalogCartService>();
         services.AddSingleton<ITelegramMarketingBotService, TelegramMarketingBotService>();
 
+        // Phase 9: WhatsApp Baileys Multi-Device Cluster & Anti-Ban Message Pacing
+        services.AddSingleton<IWhatsAppSessionClusterService, WhatsAppSessionClusterService>();
+        services.AddSingleton<IAntiBanMessagePacingService, AntiBanMessagePacingService>();
+        services.AddSingleton<IWhatsAppFlowsAndCatalogService, WhatsAppFlowsAndCatalogService>();
+        services.AddScoped<ISmtpEmailSender, SmtpEmailSender>();
+        services.AddScoped<IOmnichannelFailoverService, OmnichannelFailoverService>();
+
         // Presence, Snapshots & Rebilling
         services.AddScoped<IConversationPresenceService, ConversationPresenceService>();
         services.AddScoped<ICsatSurveyService, CsatSurveyService>();
@@ -463,13 +481,27 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IContinuousComplianceAuditorService, ContinuousComplianceAuditorService>();
         services.AddSingleton<ICustomEmailDomainService, CustomEmailDomainService>();
         services.AddSingleton<IContractElectronicSignatureService, ContractElectronicSignatureService>();
+        services.AddSingleton<IMultiPartySigningWorkflowService, MultiPartySigningWorkflowService>();
+        services.AddSingleton<ICryptographicDocumentSealingService, CryptographicDocumentSealingService>();
+        services.AddSingleton<IDocumentViewerTelemetryAndHeatmapService, DocumentViewerTelemetryAndHeatmapService>();
         services.AddSingleton<IDistributedEventMeshService, DistributedEventMeshService>();
         services.AddSingleton<IServerSideAttributionService, ServerSideAttributionService>();
+        services.AddScoped<IDeterministicIdentityStitchingService, DeterministicIdentityStitchingService>();
+        services.AddScoped<IMultiModelRevenueAttributionService, MultiModelRevenueAttributionService>();
+        services.AddSingleton<IServerSideCapiFanoutService>(sp =>
+            new ServerSideCapiFanoutService(
+                sp.GetService<IHttpClientFactory>()?.CreateClient() ?? new HttpClient(),
+                sp.GetService<ILogger<ServerSideCapiFanoutService>>()));
+        services.AddSingleton<IFunnelSlippageMonitorService, FunnelSlippageMonitorService>();
         services.AddSingleton<IAppointmentSchedulingService, AppointmentSchedulingService>();
         services.AddSingleton<ICustomerLifecycleJourneyService, CustomerLifecycleJourneyService>();
         services.AddSingleton<IProductAnalyticsService, ProductAnalyticsService>();
         services.AddSingleton<IAgentPresenceCollisionService, AgentPresenceCollisionService>();
         services.AddSingleton<IHeadlessFormService, HeadlessFormService>();
+        services.AddSingleton<IInAppMicroSurveyEngine, InAppMicroSurveyEngine>();
+        services.AddSingleton<IProgressiveProfilingEngine, ProgressiveProfilingEngine>();
+        services.AddSingleton<IConditionalBranchingEvaluator, ConditionalBranchingEvaluator>();
+        services.AddSingleton<IFormSpamDefenseService, FormSpamDefenseService>();
         services.AddSingleton<IIncidentOnCallService, IncidentOnCallService>();
         services.AddSingleton<INotificationOrchestratorService, NotificationOrchestratorService>();
         services.AddSingleton<IConversationHierarchyService, ConversationHierarchyService>();

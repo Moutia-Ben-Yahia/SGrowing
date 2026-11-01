@@ -25,6 +25,7 @@ using SGrowing.Api.Modules.Commerce.AntiFraud;
 using SGrowing.Api.Modules.Commerce.CallCenter;
 using SGrowing.Api.Modules.Commerce.CartReservations;
 using SGrowing.Api.Modules.Commerce.Connectors;
+using SGrowing.Api.Modules.Commerce.Logistics;
 using SGrowing.Api.Modules.Commerce.Shipping;
 using SGrowing.Api.Modules.Commerce.Warehouses;
 using SGrowing.Api.Modules.Contracts;
@@ -199,6 +200,7 @@ app.MapEventFanoutEndpoints();
 app.MapWhatsAppNewsletterEndpoints();
 app.MapWhatsAppBroadcastPacingEndpoints();
 app.MapWhatsAppCatalogCartEndpoints();
+app.MapWhatsAppClusterAndPacingEndpoints();
 app.MapTelegramBotEndpoints();
 app.MapAiModelRouterEndpoints();
 
@@ -296,6 +298,7 @@ app.MapPredictiveLtvEndpoints();
 app.MapVoiceIvrEndpoints();
 app.MapSyntheticDataEndpoints();
 app.MapUniversalSearchEndpoints();
+app.MapLogisticsAndReverseCodEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
