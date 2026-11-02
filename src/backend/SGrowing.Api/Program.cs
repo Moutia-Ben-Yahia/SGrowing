@@ -80,6 +80,11 @@ using SGrowing.Api.Modules.Logistics.MaritimeEcoRouting;
 using SGrowing.Api.Modules.Insurance.ParametricUnderwriting;
 using SGrowing.Api.Modules.Manufacturing.OpticalQualityControl;
 using SGrowing.Api.Modules.Security.MpcThresholdSigner;
+using SGrowing.Api.Modules.Sustainability.CircularRemanufacturing;
+using SGrowing.Api.Modules.Robotics.AgvFlockingCoordinator;
+using SGrowing.Api.Modules.Finance.CreditRiskUnderwriting;
+using SGrowing.Api.Modules.AI.DocumentGrounding;
+using SGrowing.Api.Modules.Security.ZkIdentityVerification;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -487,6 +492,13 @@ app.MapMaritimeEcoRoutingEndpoints();
 app.MapParametricInsuranceEndpoints();
 app.MapOpticalQualityControlEndpoints();
 app.MapMpcThresholdSignerEndpoints();
+
+// Horizons 91-95 Endpoint Mappings
+app.MapCircularRemanufacturingEndpoints();
+app.MapAgvFlockingEndpoints();
+app.MapCreditRiskUnderwritingEndpoints();
+app.MapDocumentGroundingEndpoints();
+app.MapZkIdentityVerificationEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

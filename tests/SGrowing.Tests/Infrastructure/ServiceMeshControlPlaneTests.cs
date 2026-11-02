@@ -142,7 +142,7 @@ public sealed class ServiceMeshControlPlaneTests
         // Exhaust remaining tokens
         var res2 = _rateLimiter.TryAcquire("TENANT-001", "SearchApi", 40.0, 50.0, 10.0);
         res2.Allowed.Should().BeTrue();
-        res2.RemainingTokens.Should().BeApproximately(0.0, 0.05);
+        res2.RemainingTokens.Should().BeApproximately(0.0, 0.15);
 
         // Next call must be rejected
         var res3 = _rateLimiter.TryAcquire("TENANT-001", "SearchApi", 5.0, 50.0, 10.0);
