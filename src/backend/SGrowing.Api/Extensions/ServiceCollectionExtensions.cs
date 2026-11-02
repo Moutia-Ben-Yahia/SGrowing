@@ -77,6 +77,11 @@ using SGrowing.Api.Modules.Security.HomomorphicAnalytics;
 using SGrowing.Api.Modules.Finance.ConcentratedLiquidity;
 using SGrowing.Api.Modules.Media.ProsodyDubbing;
 using SGrowing.Api.Modules.Security.ZkRollupBridge;
+using SGrowing.Api.Modules.Energy.BessArbitrage;
+using SGrowing.Api.Modules.Logistics.MaritimeEcoRouting;
+using SGrowing.Api.Modules.Insurance.ParametricUnderwriting;
+using SGrowing.Api.Modules.Manufacturing.OpticalQualityControl;
+using SGrowing.Api.Modules.Security.MpcThresholdSigner;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -713,6 +718,13 @@ public static class ServiceCollectionExtensions
         services.AddConcentratedLiquidityServices();
         services.AddProsodyDubbingServices();
         services.AddZkRollupBridgeServices();
+
+        // Horizons 86-90 Services
+        services.AddBessArbitrageServices();
+        services.AddMaritimeEcoRoutingServices();
+        services.AddParametricInsuranceServices();
+        services.AddOpticalQualityControlServices();
+        services.AddMpcThresholdSignerServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

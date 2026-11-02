@@ -75,6 +75,11 @@ using SGrowing.Api.Modules.Security.HomomorphicAnalytics;
 using SGrowing.Api.Modules.Finance.ConcentratedLiquidity;
 using SGrowing.Api.Modules.Media.ProsodyDubbing;
 using SGrowing.Api.Modules.Security.ZkRollupBridge;
+using SGrowing.Api.Modules.Energy.BessArbitrage;
+using SGrowing.Api.Modules.Logistics.MaritimeEcoRouting;
+using SGrowing.Api.Modules.Insurance.ParametricUnderwriting;
+using SGrowing.Api.Modules.Manufacturing.OpticalQualityControl;
+using SGrowing.Api.Modules.Security.MpcThresholdSigner;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -475,6 +480,13 @@ app.MapHomomorphicAnalyticsEndpoints();
 app.MapConcentratedLiquidityEndpoints();
 app.MapProsodyDubbingEndpoints();
 app.MapZkRollupBridgeEndpoints();
+
+// Horizons 86-90 Endpoint Mappings
+app.MapBessArbitrageEndpoints();
+app.MapMaritimeEcoRoutingEndpoints();
+app.MapParametricInsuranceEndpoints();
+app.MapOpticalQualityControlEndpoints();
+app.MapMpcThresholdSignerEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
