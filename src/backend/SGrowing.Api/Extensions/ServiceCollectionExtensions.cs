@@ -152,6 +152,11 @@ using SGrowing.Api.Modules.Energy.HtsRebcoCableDelamination;
 using SGrowing.Api.Modules.BioTech.AntibodyAffinityMaturation;
 using SGrowing.Api.Modules.Finance.ZkSolvencyMerkleSumTree;
 using SGrowing.Api.Modules.Aerospace.HypersonicBltCrossflow;
+using SGrowing.Api.Modules.Energy.SoecCoElectrolysis;
+using SGrowing.Api.Modules.Aerospace.OislLaserPointingJitter;
+using SGrowing.Api.Modules.BioTech.SpatialTranscriptomicsDeconvolution;
+using SGrowing.Api.Modules.Finance.PqcCrossChainHtlc;
+using SGrowing.Api.Modules.Energy.PlasmaRunawayElectronSuppression;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -893,6 +898,13 @@ public static class ServiceCollectionExtensions
         services.AddAntibodyAffinityServices();
         services.AddZkSolvencyServices();
         services.AddHypersonicBltServices();
+
+        // Horizons 161-165 Services (SOEC Co-Electrolysis, OISL Laser Jitter, Spatial Transcriptomics, PQC-HTLC & Tokamak Runaway Suppression)
+        services.AddSoecCoElectrolysisServices();
+        services.AddOislLaserServices();
+        services.AddSpatialTranscriptomicsServices();
+        services.AddPqcCrossChainHtlcServices();
+        services.AddPlasmaRunawaySuppressionServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
