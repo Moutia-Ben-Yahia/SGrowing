@@ -292,6 +292,11 @@ using SGrowing.Api.Modules.BioTech.NanoporeSquiggleBasecalling;
 using SGrowing.Api.Modules.Aerospace.AerobrakingAtmosphericDrag;
 using SGrowing.Api.Modules.Finance.AlmgrenChrissOptimalLiquidation;
 using SGrowing.Api.Modules.Energy.TokamakNtmEccdSuppression;
+using SGrowing.Api.Modules.Quantum.ContinuousVariableClusterTeleportation;
+using SGrowing.Api.Modules.BioTech.CryoEtSubtomogramAveraging;
+using SGrowing.Api.Modules.Aerospace.SolarCmeShockArrival;
+using SGrowing.Api.Modules.Finance.FxLocalStochasticVolatility;
+using SGrowing.Api.Modules.Energy.PemElectrolyzerGasCrossover;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1229,6 +1234,13 @@ public static class ServiceCollectionExtensions
         services.AddAerobrakingDragServices();
         services.AddAlmgrenChrissLiquidationServices();
         services.AddTokamakNtmEccdServices();
+
+        // Horizons 301-305 Services (CV Cluster Teleportation, Cryo-ET Subtomogram Averaging, Solar CME Shock Arrival, FX LSV Barrier Options & PEM Electrolyzer Gas Crossover)
+        services.AddCvClusterTeleportationServices();
+        services.AddCryoEtTomographyServices();
+        services.AddSolarCmeShockServices();
+        services.AddFxLsvBarrierServices();
+        services.AddPemElectrolyzerGasCrossoverServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

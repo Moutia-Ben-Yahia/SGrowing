@@ -290,6 +290,11 @@ using SGrowing.Api.Modules.BioTech.NanoporeSquiggleBasecalling;
 using SGrowing.Api.Modules.Aerospace.AerobrakingAtmosphericDrag;
 using SGrowing.Api.Modules.Finance.AlmgrenChrissOptimalLiquidation;
 using SGrowing.Api.Modules.Energy.TokamakNtmEccdSuppression;
+using SGrowing.Api.Modules.Quantum.ContinuousVariableClusterTeleportation;
+using SGrowing.Api.Modules.BioTech.CryoEtSubtomogramAveraging;
+using SGrowing.Api.Modules.Aerospace.SolarCmeShockArrival;
+using SGrowing.Api.Modules.Finance.FxLocalStochasticVolatility;
+using SGrowing.Api.Modules.Energy.PemElectrolyzerGasCrossover;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -991,6 +996,13 @@ app.MapNanoporeSquiggleEndpoints();
 app.MapAerobrakingDragEndpoints();
 app.MapAlmgrenChrissLiquidationEndpoints();
 app.MapTokamakNtmEccdEndpoints();
+
+// Horizons 301-305 Endpoint Mappings (CV Cluster Teleportation, Cryo-ET Subtomogram Averaging, Solar CME Shock Arrival, FX LSV Barrier Options & PEM Electrolyzer Gas Crossover)
+app.MapCvClusterTeleportationEndpoints();
+app.MapCryoEtTomographyEndpoints();
+app.MapSolarCmeShockEndpoints();
+app.MapFxLsvBarrierEndpoints();
+app.MapPemElectrolyzerGasCrossoverEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
