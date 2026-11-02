@@ -262,6 +262,11 @@ using SGrowing.Api.Modules.BioTech.EngineeredExosomeCargoLoading;
 using SGrowing.Api.Modules.Aerospace.AsteroidKineticImpactorDeflection;
 using SGrowing.Api.Modules.Finance.HierarchicalRiskParityClustering;
 using SGrowing.Api.Modules.Energy.VanadiumRedoxFlowBatteryBalancing;
+using SGrowing.Api.Modules.Quantum.SuperconductingTwpaReadout;
+using SGrowing.Api.Modules.BioTech.ProtacTernaryComplexKinetics;
+using SGrowing.Api.Modules.Aerospace.HypersonicScramjetIsolatorShockTrain;
+using SGrowing.Api.Modules.Finance.CrossCurrencyFxBasisSwapCip;
+using SGrowing.Api.Modules.Energy.CompressedGasGeothermalEnergyStorage;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1157,6 +1162,13 @@ public static class ServiceCollectionExtensions
         services.AddAsteroidKineticImpactorServices();
         services.AddHierarchicalRiskParityClusteringServices();
         services.AddVanadiumRedoxFlowBatteryBalancingServices();
+
+        // Horizons 271-275 Services (TWPA Readout, PROTAC Kinetics, Scramjet Isolator, FX Basis CIP & Compressed Gas Geothermal)
+        services.AddSuperconductingTwpaReadoutServices();
+        services.AddProtacTernaryComplexServices();
+        services.AddHypersonicScramjetIsolatorServices();
+        services.AddCrossCurrencyFxBasisSwapCipServices();
+        services.AddCompressedGasGeothermalServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

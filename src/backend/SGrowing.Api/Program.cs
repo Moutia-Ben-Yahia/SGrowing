@@ -260,6 +260,11 @@ using SGrowing.Api.Modules.BioTech.EngineeredExosomeCargoLoading;
 using SGrowing.Api.Modules.Aerospace.AsteroidKineticImpactorDeflection;
 using SGrowing.Api.Modules.Finance.HierarchicalRiskParityClustering;
 using SGrowing.Api.Modules.Energy.VanadiumRedoxFlowBatteryBalancing;
+using SGrowing.Api.Modules.Quantum.SuperconductingTwpaReadout;
+using SGrowing.Api.Modules.BioTech.ProtacTernaryComplexKinetics;
+using SGrowing.Api.Modules.Aerospace.HypersonicScramjetIsolatorShockTrain;
+using SGrowing.Api.Modules.Finance.CrossCurrencyFxBasisSwapCip;
+using SGrowing.Api.Modules.Energy.CompressedGasGeothermalEnergyStorage;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -919,6 +924,13 @@ app.MapEngineeredExosomeEndpoints();
 app.MapAsteroidKineticImpactorEndpoints();
 app.MapHierarchicalRiskParityEndpoints();
 app.MapVanadiumFlowBatteryEndpoints();
+
+// Horizons 271-275 Endpoint Mappings (TWPA Readout, PROTAC Kinetics, Scramjet Isolator, FX Basis CIP & Compressed Gas Geothermal)
+app.MapSuperconductingTwpaEndpoints();
+app.MapProtacTernaryComplexEndpoints();
+app.MapHypersonicScramjetEndpoints();
+app.MapCrossCurrencyFxBasisEndpoints();
+app.MapCompressedGasGeothermalEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
