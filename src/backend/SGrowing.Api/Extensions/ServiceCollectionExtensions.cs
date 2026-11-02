@@ -197,6 +197,11 @@ using SGrowing.Api.Modules.BioTech.CrisprBaseEditorDeaminaseBystander;
 using SGrowing.Api.Modules.Aerospace.HaleSolarEnergyBalance;
 using SGrowing.Api.Modules.Security.ZkRecursiveFoldingScheme;
 using SGrowing.Api.Modules.Energy.McfcCarbonCapturePolygeneration;
+using SGrowing.Api.Modules.Transportation.MaglevInductrackNullFlux;
+using SGrowing.Api.Modules.BioTech.OpticalCoherenceElastographyBiomechanics;
+using SGrowing.Api.Modules.Marine.MhdMarineSilentPropulsion;
+using SGrowing.Api.Modules.Finance.ZkRollupCensorshipResistance;
+using SGrowing.Api.Modules.Energy.SupercriticalThermosiphonGeothermal;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1001,6 +1006,13 @@ public static class ServiceCollectionExtensions
         services.AddHaleSolarEnergyServices();
         services.AddZkRecursiveFoldingServices();
         services.AddMcfcCarbonCaptureServices();
+
+        // Horizons 206-210 Services (Maglev Inductrack EDS, Optical Coherence Elastography, Superconducting Marine MHD, ZK Rollup Censorship Resistance & Supercritical Thermosiphon Geothermal)
+        services.AddMaglevInductrackServices();
+        services.AddOpticalElastographyServices();
+        services.AddMhdMarinePropulsionServices();
+        services.AddZkRollupCensorshipServices();
+        services.AddSupercriticalThermosiphonServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

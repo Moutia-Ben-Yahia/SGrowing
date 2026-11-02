@@ -195,6 +195,11 @@ using SGrowing.Api.Modules.BioTech.CrisprBaseEditorDeaminaseBystander;
 using SGrowing.Api.Modules.Aerospace.HaleSolarEnergyBalance;
 using SGrowing.Api.Modules.Security.ZkRecursiveFoldingScheme;
 using SGrowing.Api.Modules.Energy.McfcCarbonCapturePolygeneration;
+using SGrowing.Api.Modules.Transportation.MaglevInductrackNullFlux;
+using SGrowing.Api.Modules.BioTech.OpticalCoherenceElastographyBiomechanics;
+using SGrowing.Api.Modules.Marine.MhdMarineSilentPropulsion;
+using SGrowing.Api.Modules.Finance.ZkRollupCensorshipResistance;
+using SGrowing.Api.Modules.Energy.SupercriticalThermosiphonGeothermal;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -763,6 +768,13 @@ app.MapCrisprBaseEditorEndpoints();
 app.MapHaleSolarEnergyEndpoints();
 app.MapZkRecursiveFoldingEndpoints();
 app.MapMcfcCarbonCaptureEndpoints();
+
+// Horizons 206-210 Endpoint Mappings (Maglev Inductrack EDS, Optical Coherence Elastography, Superconducting Marine MHD, ZK Rollup Censorship Resistance & Supercritical Thermosiphon Geothermal)
+app.MapMaglevInductrackEndpoints();
+app.MapOpticalElastographyEndpoints();
+app.MapMhdMarinePropulsionEndpoints();
+app.MapZkRollupCensorshipEndpoints();
+app.MapSupercriticalThermosiphonEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
