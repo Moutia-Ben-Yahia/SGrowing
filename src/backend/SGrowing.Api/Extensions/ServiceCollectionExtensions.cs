@@ -252,6 +252,11 @@ using SGrowing.Api.Modules.BioTech.CytidineBaseEditingBystanderMutagenesis;
 using SGrowing.Api.Modules.Aerospace.HypersonicAerocaptureOrbitalInsertion;
 using SGrowing.Api.Modules.Finance.StatisticalArbitrageOrnsteinUhlenbeck;
 using SGrowing.Api.Modules.Energy.SolidOxideCoElectrolysisSyngas;
+using SGrowing.Api.Modules.Quantum.NvCenterNuclearSpinRegister;
+using SGrowing.Api.Modules.BioTech.LentiviralVectorIntegrationOncogenesis;
+using SGrowing.Api.Modules.Aerospace.LunarCraterTetherRappelling;
+using SGrowing.Api.Modules.Finance.SabrVolatilitySurfaceCalibration;
+using SGrowing.Api.Modules.Energy.LfpBatteryThermalRunawaySuppression;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1133,6 +1138,13 @@ public static class ServiceCollectionExtensions
         services.AddHypersonicAerocaptureServices();
         services.AddStatisticalArbitrageOrnsteinUhlenbeckServices();
         services.AddSolidOxideCoElectrolysisServices();
+
+        // Horizons 261-265 Services (NV Center Nuclear Spin Register, Lentiviral Integration Oncogenesis, Lunar Crater Tether, SABR Volatility Surface & LFP Battery Thermal Runaway)
+        services.AddNvCenterNuclearSpinRegisterServices();
+        services.AddLentiviralIntegrationServices();
+        services.AddLunarCraterTetherRappellingServices();
+        services.AddSabrVolatilitySurfaceCalibrationServices();
+        services.AddLfpBatteryThermalRunawayServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

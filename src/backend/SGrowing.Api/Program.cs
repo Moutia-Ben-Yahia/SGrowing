@@ -250,6 +250,11 @@ using SGrowing.Api.Modules.BioTech.CytidineBaseEditingBystanderMutagenesis;
 using SGrowing.Api.Modules.Aerospace.HypersonicAerocaptureOrbitalInsertion;
 using SGrowing.Api.Modules.Finance.StatisticalArbitrageOrnsteinUhlenbeck;
 using SGrowing.Api.Modules.Energy.SolidOxideCoElectrolysisSyngas;
+using SGrowing.Api.Modules.Quantum.NvCenterNuclearSpinRegister;
+using SGrowing.Api.Modules.BioTech.LentiviralVectorIntegrationOncogenesis;
+using SGrowing.Api.Modules.Aerospace.LunarCraterTetherRappelling;
+using SGrowing.Api.Modules.Finance.SabrVolatilitySurfaceCalibration;
+using SGrowing.Api.Modules.Energy.LfpBatteryThermalRunawaySuppression;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -895,6 +900,13 @@ app.MapCytidineBaseEditingEndpoints();
 app.MapHypersonicAerocaptureEndpoints();
 app.MapStatisticalArbitrageEndpoints();
 app.MapSolidOxideCoElectrolysisEndpoints();
+
+// Horizons 261-265 Endpoint Mappings (NV Center Nuclear Spin Register, Lentiviral Integration Oncogenesis, Lunar Crater Tether, SABR Volatility Surface & LFP Battery Thermal Runaway)
+app.MapNvCenterNuclearSpinEndpoints();
+app.MapLentiviralIntegrationEndpoints();
+app.MapLunarCraterTetherEndpoints();
+app.MapSabrVolatilityEndpoints();
+app.MapLfpBatteryThermalRunawayEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
