@@ -159,6 +159,11 @@ using SGrowing.Api.Modules.Finance.TipsRealYieldBreakevenInflation;
 using SGrowing.Api.Modules.Finance.CdsIndexTrancheCorrelation;
 using SGrowing.Api.Modules.Finance.CrossCurrencyBasisConvexity;
 using SGrowing.Api.Modules.Finance.SviVolatilitySurfaceCalibration;
+using SGrowing.Api.Modules.Manufacturing.MaterialRequirementsPlanning;
+using SGrowing.Api.Modules.Finance.AccountsPayableThreeWayMatching;
+using SGrowing.Api.Modules.SupplyChain.WarehouseBinCycleCounting;
+using SGrowing.Api.Modules.Workforce.MultiTierPayrollEngine;
+using SGrowing.Api.Modules.Logistics.CashOnDeliverySettlement;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -973,6 +978,13 @@ public static class ServiceCollectionExtensions
 
         // Horizons 321-325 Services (Dual-Species Tweezers, CODEX Proteomics, Spacecraft RCS Plume Impingement, SVI Volatility Surface & SOEC Steam Electrolysis)
         services.AddSviVolatilityServices();
+
+        // Horizons 326-330 Core ERP Suite (MRP II, AP 3-Way Match, Warehouse Bin Cycle Counting, Multi-Tier Payroll & COD Settlement)
+        services.AddMrpServices();
+        services.AddApThreeWayMatchServices();
+        services.AddWarehouseBinAuditServices();
+        services.AddMultiTierPayrollServices();
+        services.AddCodSettlementServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

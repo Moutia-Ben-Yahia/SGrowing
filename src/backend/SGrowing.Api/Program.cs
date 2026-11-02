@@ -157,6 +157,11 @@ using SGrowing.Api.Modules.Finance.TipsRealYieldBreakevenInflation;
 using SGrowing.Api.Modules.Finance.CdsIndexTrancheCorrelation;
 using SGrowing.Api.Modules.Finance.CrossCurrencyBasisConvexity;
 using SGrowing.Api.Modules.Finance.SviVolatilitySurfaceCalibration;
+using SGrowing.Api.Modules.Manufacturing.MaterialRequirementsPlanning;
+using SGrowing.Api.Modules.Finance.AccountsPayableThreeWayMatching;
+using SGrowing.Api.Modules.SupplyChain.WarehouseBinCycleCounting;
+using SGrowing.Api.Modules.Workforce.MultiTierPayrollEngine;
+using SGrowing.Api.Modules.Logistics.CashOnDeliverySettlement;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -735,6 +740,13 @@ app.MapCrossCurrencyBasisEndpoints();
 
 // Horizons 321-325 Endpoint Mappings (Dual-Species Tweezers, CODEX Proteomics, Spacecraft RCS Plume Impingement, SVI Volatility Surface & SOEC Steam Electrolysis)
 app.MapSviVolatilityEndpoints();
+
+// Horizons 326-330 Core ERP Suite (MRP II, AP 3-Way Match, Warehouse Bin Cycle Counting, Multi-Tier Payroll & COD Settlement)
+app.MapMrpEndpoints();
+app.MapApThreeWayMatchEndpoints();
+app.MapWarehouseBinAuditEndpoints();
+app.MapMultiTierPayrollEndpoints();
+app.MapCodSettlementEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
