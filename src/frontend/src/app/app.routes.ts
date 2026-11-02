@@ -203,5 +203,6 @@ export const routes: Routes = [
   { path: 'marketing/ad-capi-roas', loadComponent: () => import('./features/marketing/ad-capi-roas-cockpit.component').then(m => m.AdCapiRoasCockpitComponent), canActivate: [authGuard] },
   { path: 'workflows/dag-telemetry', loadComponent: () => import('./features/workflows/dag-telemetry-studio.component').then(m => m.DagTelemetryStudioComponent), canActivate: [authGuard] },
   { path: 'agents/growth-director', loadComponent: () => import('./features/agents/growth-director-mission-cockpit.component').then(m => m.GrowthDirectorMissionCockpitComponent), canActivate: [authGuard] },
+  { path: 'developer/sandbox', loadComponent: () => import('./features/developer/developer-sandbox-cockpit.component').then(m => m.DeveloperSandboxCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

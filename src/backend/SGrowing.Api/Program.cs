@@ -192,6 +192,7 @@ using SGrowing.Api.Modules.CRM.Import;
 using SGrowing.Api.Modules.Forms;
 using SGrowing.Api.Modules.Deliverability;
 using SGrowing.Api.Modules.Dev;
+using SGrowing.Api.Modules.Dev.Gateway;
 using SGrowing.Api.Modules.Diagnostics;
 using SGrowing.Api.Modules.Documents;
 using SGrowing.Api.Modules.Feedback;
@@ -733,6 +734,7 @@ app.MapFirmographicsEndpoints();
 app.MapAdsSyncEndpoints();
 app.MapWorkflowTelemetryEndpoints();
 app.MapOmnichannelSequenceEndpoints();
+app.MapDevGatewayEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

@@ -8,6 +8,7 @@ using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
 using SGrowing.Api.Modules.Agents.Git;
 using SGrowing.Api.Modules.Agents.GrowthDirector;
+using SGrowing.Api.Modules.Dev.Gateway;
 using SGrowing.Api.Modules.Agents.Swarm;
 using SGrowing.Api.Modules.Commerce.DynamicPricing;
 using SGrowing.Api.Modules.Commerce.LiveStreaming;
@@ -972,6 +973,7 @@ public static class ServiceCollectionExtensions
         services.AddAdsSyncServices();
         services.AddWorkflowTelemetryServices();
         services.AddOmnichannelSequenceServices();
+        services.AddDevGatewayServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
