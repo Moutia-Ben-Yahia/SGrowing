@@ -1,0 +1,34 @@
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { ObjectionScoringCockpitComponent } from './objection-scoring-cockpit.component';
+
+describe('ObjectionScoringCockpitComponent (Horizon 58)', () => {
+  let component: ObjectionScoringCockpitComponent;
+
+  beforeEach(() => {
+    localStorage.clear();
+    component = new ObjectionScoringCockpitComponent();
+  });
+
+  it('should initialize with audited calls and objection stats', () => {
+    expect(component).toBeTruthy();
+    expect(component.calls().length).toBeGreaterThanOrEqual(2);
+    expect(component.avgScore()).toBeGreaterThan(80);
+    expect(component.sqlRate()).toBe(100);
+  });
+
+  it('should test and update objection rebuttal', () => {
+    component.testObjectionRebuttal();
+    const rebuttal = component.activeRebuttal();
+    expect(rebuttal).toBeTruthy();
+    expect(rebuttal?.category).toBe('Budget and Pricing');
+    expect(rebuttal?.framing).toContain('Cost of Inaction');
+  });
+
+  it('should allow selecting an audited call to inspect coaching notes', () => {
+    const secondCall = component.calls()[1];
+    component.selectCall(secondCall);
+    expect(component.selectedCall()?.callId).toBe(secondCall.callId);
+  });
+});

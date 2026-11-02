@@ -250,5 +250,10 @@ export const routes: Routes = [
   { path: 'analytics/data-clean-room', loadComponent: () => import('./features/analytics/data-clean-room-cockpit.component').then(m => m.DataCleanRoomCockpitComponent), canActivate: [authGuard] },
   { path: 'channels/whatsapp-flows', loadComponent: () => import('./features/channels/flow-interactive-cockpit.component').then(m => m.FlowInteractiveCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/self-healing', loadComponent: () => import('./features/infrastructure/self-healing-cockpit.component').then(m => m.SelfHealingMeshCockpitComponent), canActivate: [authGuard] },
+  { path: 'intelligence/de-anonymization', loadComponent: () => import('./features/intelligence/de-anonymization-cockpit.component').then(m => m.DeAnonymizationCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/audience-sync', loadComponent: () => import('./features/advertising/audience-sync-cockpit.component').then(m => m.AudienceSyncCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/objection-scoring', loadComponent: () => import('./features/voice/objection-scoring-cockpit.component').then(m => m.ObjectionScoringCockpitComponent), canActivate: [authGuard] },
+  { path: 'seo/topical-authority', loadComponent: () => import('./features/seo/topical-authority-cockpit.component').then(m => m.TopicalAuthorityCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/feature-flags', loadComponent: () => import('./features/infrastructure/feature-flags-cockpit.component').then(m => m.FeatureFlagsCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];
