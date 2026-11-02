@@ -150,6 +150,9 @@ using SGrowing.Api.Modules.Finance.AccountsPayableThreeWayMatching;
 using SGrowing.Api.Modules.SupplyChain.WarehouseBinCycleCounting;
 using SGrowing.Api.Modules.Workforce.MultiTierPayrollEngine;
 using SGrowing.Api.Modules.Logistics.CashOnDeliverySettlement;
+using SGrowing.Api.Modules.CustomerData.IdentityResolution;
+using SGrowing.Api.Modules.Advertising.MetaGoogleAdsSync;
+using SGrowing.Api.Modules.Automation.WorkflowTelemetry;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -957,6 +960,11 @@ public static class ServiceCollectionExtensions
         services.AddWarehouseBinAuditServices();
         services.AddMultiTierPayrollServices();
         services.AddCodSettlementServices();
+
+        // Domain B3 CDP Identity Resolution, Domain C6 Advertising Sync & Domain E1 Automation Visual DAG Telemetry
+        services.AddCdpIdentityServices();
+        services.AddAdsSyncServices();
+        services.AddWorkflowTelemetryServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

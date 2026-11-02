@@ -148,6 +148,9 @@ using SGrowing.Api.Modules.Finance.AccountsPayableThreeWayMatching;
 using SGrowing.Api.Modules.SupplyChain.WarehouseBinCycleCounting;
 using SGrowing.Api.Modules.Workforce.MultiTierPayrollEngine;
 using SGrowing.Api.Modules.Logistics.CashOnDeliverySettlement;
+using SGrowing.Api.Modules.CustomerData.IdentityResolution;
+using SGrowing.Api.Modules.Advertising.MetaGoogleAdsSync;
+using SGrowing.Api.Modules.Automation.WorkflowTelemetry;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -719,6 +722,11 @@ app.MapApThreeWayMatchEndpoints();
 app.MapWarehouseBinAuditEndpoints();
 app.MapMultiTierPayrollEndpoints();
 app.MapCodSettlementEndpoints();
+
+// Domain B3 CDP Identity Resolution, Domain C6 Advertising Sync & Domain E1 Automation Visual DAG Telemetry
+app.MapCdpIdentityEndpoints();
+app.MapAdsSyncEndpoints();
+app.MapWorkflowTelemetryEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
