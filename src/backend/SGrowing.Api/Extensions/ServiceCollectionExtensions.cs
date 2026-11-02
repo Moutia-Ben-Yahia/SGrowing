@@ -42,6 +42,11 @@ using SGrowing.Api.Modules.AI.VideoAvatar;
 using SGrowing.Api.Modules.SupplyChain.EdiReplenishment;
 using SGrowing.Api.Modules.Social.AutoTriage;
 using SGrowing.Api.Modules.Contracts.ChurnRescue;
+using SGrowing.Api.Modules.Growth.Influencers;
+using SGrowing.Api.Modules.Advertising.SpendAutopilot;
+using SGrowing.Api.Modules.Analytics.DataCleanRoom;
+using SGrowing.Api.Modules.Channels.FlowInteractive;
+using SGrowing.Api.Modules.Infrastructure.SelfHealing;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
@@ -1058,6 +1063,11 @@ public static class ServiceCollectionExtensions
         services.AddEdiReplenishmentServices();
         services.AddSocialTriageServices();
         services.AddChurnRescueServices();
+        services.AddInfluencerEscrowServices();
+        services.AddAdSpendAutopilotServices();
+        services.AddDataCleanRoomServices();
+        services.AddFlowInteractiveServices();
+        services.AddSelfHealingMeshServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

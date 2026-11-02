@@ -36,6 +36,11 @@ using SGrowing.Api.Modules.AI.VideoAvatar;
 using SGrowing.Api.Modules.SupplyChain.EdiReplenishment;
 using SGrowing.Api.Modules.Social.AutoTriage;
 using SGrowing.Api.Modules.Contracts.ChurnRescue;
+using SGrowing.Api.Modules.Growth.Influencers;
+using SGrowing.Api.Modules.Advertising.SpendAutopilot;
+using SGrowing.Api.Modules.Analytics.DataCleanRoom;
+using SGrowing.Api.Modules.Channels.FlowInteractive;
+using SGrowing.Api.Modules.Infrastructure.SelfHealing;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -817,6 +822,11 @@ app.MapVideoAvatarEndpoints();
 app.MapEdiReplenishmentEndpoints();
 app.MapSocialTriageEndpoints();
 app.MapChurnRescueEndpoints();
+app.MapInfluencerEscrowEndpoints();
+app.MapAdSpendAutopilotEndpoints();
+app.MapDataCleanRoomEndpoints();
+app.MapFlowInteractiveEndpoints();
+app.MapSelfHealingMeshEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

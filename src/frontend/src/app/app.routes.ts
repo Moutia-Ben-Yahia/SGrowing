@@ -245,5 +245,10 @@ export const routes: Routes = [
   { path: 'commerce/replenishment', loadComponent: () => import('./features/commerce/replenishment-cockpit.component').then(m => m.ReplenishmentCockpitComponent), canActivate: [authGuard] },
   { path: 'social/auto-triage', loadComponent: () => import('./features/social/social-triage-cockpit.component').then(m => m.SocialTriageCockpitComponent), canActivate: [authGuard] },
   { path: 'contracts/churn-rescue', loadComponent: () => import('./features/contracts/churn-rescue-cockpit.component').then(m => m.ChurnRescueCockpitComponent), canActivate: [authGuard] },
+  { path: 'growth/influencers', loadComponent: () => import('./features/growth/influencer-escrow-cockpit.component').then(m => m.InfluencerEscrowCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/spend-autopilot', loadComponent: () => import('./features/advertising/ad-spend-autopilot-cockpit.component').then(m => m.AdSpendAutopilotCockpitComponent), canActivate: [authGuard] },
+  { path: 'analytics/data-clean-room', loadComponent: () => import('./features/analytics/data-clean-room-cockpit.component').then(m => m.DataCleanRoomCockpitComponent), canActivate: [authGuard] },
+  { path: 'channels/whatsapp-flows', loadComponent: () => import('./features/channels/flow-interactive-cockpit.component').then(m => m.FlowInteractiveCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/self-healing', loadComponent: () => import('./features/infrastructure/self-healing-cockpit.component').then(m => m.SelfHealingMeshCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

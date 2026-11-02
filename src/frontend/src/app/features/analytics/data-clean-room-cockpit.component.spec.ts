@@ -1,0 +1,36 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { DataCleanRoomCockpitComponent } from './data-clean-room-cockpit.component';
+
+describe('DataCleanRoomCockpitComponent', () => {
+  let component: DataCleanRoomCockpitComponent;
+  let fixture: ComponentFixture<DataCleanRoomCockpitComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [DataCleanRoomCockpitComponent]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(DataCleanRoomCockpitComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create component and render initial participants and datasets', () => {
+    expect(component).toBeTruthy();
+    expect(component.participants().length).toBeGreaterThanOrEqual(2);
+    expect(component.datasets().length).toBeGreaterThanOrEqual(2);
+    expect(component.totalIdentities()).toBeGreaterThan(0);
+  });
+
+  it('should execute zero-knowledge overlap query with differential privacy noise', () => {
+    component.runZeroKnowledgeOverlapQuery();
+    const result = component.queryResult();
+
+    expect(result).toBeTruthy();
+    expect(result?.rawOverlapMatchCount).toBeGreaterThan(0);
+    expect(result?.privacyNoisedOverlapCount).toBeGreaterThan(0);
+    expect(result?.matchRatePercent).toBeGreaterThan(20);
+    expect(result?.epsilonCost).toBe(0.50);
+  });
+});
