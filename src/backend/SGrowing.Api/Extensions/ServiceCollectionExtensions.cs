@@ -237,6 +237,11 @@ using SGrowing.Api.Modules.BioTech.PrimeEditingSearchAndReplace;
 using SGrowing.Api.Modules.Aerospace.MhdBoundaryLayerFlowControl;
 using SGrowing.Api.Modules.Finance.AmmDynamicImpermanentLossHedge;
 using SGrowing.Api.Modules.Energy.DirectMethanolFuelCell;
+using SGrowing.Api.Modules.Quantum.TopologicalMajoranaBraiding;
+using SGrowing.Api.Modules.BioTech.CrisprRnpElectroporationKinetics;
+using SGrowing.Api.Modules.Aerospace.NuclearThermalPropulsionPebbleBed;
+using SGrowing.Api.Modules.Finance.CrossCurrencyFlashSwapArbitrage;
+using SGrowing.Api.Modules.Energy.OceanThermalEnergyConversion;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1097,6 +1102,13 @@ public static class ServiceCollectionExtensions
         services.AddMhdBoundaryLayerServices();
         services.AddAmmDynamicImpermanentLossHedgeServices();
         services.AddDirectMethanolFuelCellServices();
+
+        // Horizons 246-250 Services (Topological Majorana Braiding, CRISPR RNP Electroporation, Nuclear Thermal Propulsion, Cross-Currency Flash Swap Arbitrage & Ocean Thermal Energy Conversion)
+        services.AddTopologicalMajoranaBraidingServices();
+        services.AddCrisprRnpElectroporationServices();
+        services.AddNuclearThermalPropulsionPebbleBedServices();
+        services.AddCrossCurrencyFlashSwapServices();
+        services.AddOceanThermalEnergyConversionServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

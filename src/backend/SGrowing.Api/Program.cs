@@ -235,6 +235,11 @@ using SGrowing.Api.Modules.BioTech.PrimeEditingSearchAndReplace;
 using SGrowing.Api.Modules.Aerospace.MhdBoundaryLayerFlowControl;
 using SGrowing.Api.Modules.Finance.AmmDynamicImpermanentLossHedge;
 using SGrowing.Api.Modules.Energy.DirectMethanolFuelCell;
+using SGrowing.Api.Modules.Quantum.TopologicalMajoranaBraiding;
+using SGrowing.Api.Modules.BioTech.CrisprRnpElectroporationKinetics;
+using SGrowing.Api.Modules.Aerospace.NuclearThermalPropulsionPebbleBed;
+using SGrowing.Api.Modules.Finance.CrossCurrencyFlashSwapArbitrage;
+using SGrowing.Api.Modules.Energy.OceanThermalEnergyConversion;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -859,6 +864,13 @@ app.MapPrimeEditingSearchAndReplaceEndpoints();
 app.MapMhdBoundaryLayerEndpoints();
 app.MapAmmDynamicHedgeEndpoints();
 app.MapDmfcEndpoints();
+
+// Horizons 246-250 Endpoint Mappings (Topological Majorana Braiding, CRISPR RNP Electroporation, Nuclear Thermal Propulsion, Cross-Currency Flash Swap Arbitrage & Ocean Thermal Energy Conversion)
+app.MapTopologicalMajoranaEndpoints();
+app.MapCrisprRnpElectroporationEndpoints();
+app.MapNuclearThermalPropulsionEndpoints();
+app.MapCrossCurrencyFlashSwapEndpoints();
+app.MapOtecEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
