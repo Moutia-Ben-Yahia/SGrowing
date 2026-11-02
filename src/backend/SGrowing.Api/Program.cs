@@ -105,6 +105,11 @@ using SGrowing.Api.Modules.Finance.CbdcCrossBorderBridge;
 using SGrowing.Api.Modules.Manufacturing.CleanroomAirflowPredictor;
 using SGrowing.Api.Modules.Robotics.DroneUtmAirTraffic;
 using SGrowing.Api.Modules.Pharma.HotMeltExtrusionPat;
+using SGrowing.Api.Modules.Energy.SmrNeutronReactor;
+using SGrowing.Api.Modules.Aerospace.ScramjetThermalProtection;
+using SGrowing.Api.Modules.Security.QkdSatelliteArbiter;
+using SGrowing.Api.Modules.Trade.RulesOfOriginTariff;
+using SGrowing.Api.Modules.Security.ZkIrisBiometrics;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -547,6 +552,13 @@ app.MapCbdcCrossBorderEndpoints();
 app.MapCleanroomAirflowEndpoints();
 app.MapDroneUtmEndpoints();
 app.MapHotMeltExtrusionEndpoints();
+
+// Horizons 116-120 Endpoint Mappings (Nuclear SMR, Hypersonic Aerospace, QKD, Global Trade & ZK Biometrics)
+app.MapSmrNeutronReactorEndpoints();
+app.MapScramjetThermalProtectionEndpoints();
+app.MapQkdSatelliteArbiterEndpoints();
+app.MapRulesOfOriginTariffEndpoints();
+app.MapZkIrisBiometricEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
