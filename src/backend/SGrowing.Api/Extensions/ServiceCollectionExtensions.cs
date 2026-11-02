@@ -7,6 +7,7 @@ using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
 using SGrowing.Api.Modules.Agents.Git;
+using SGrowing.Api.Modules.Agents.GrowthDirector;
 using SGrowing.Api.Modules.Agents.Swarm;
 using SGrowing.Api.Modules.Commerce.DynamicPricing;
 using SGrowing.Api.Modules.Commerce.LiveStreaming;
@@ -322,6 +323,7 @@ public static class ServiceCollectionExtensions
         // Daemon Heartbeat & SignalR / CORS
         services.AddSingleton<IDaemonHeartbeatService, DaemonHeartbeatService>();
         services.AddSignalR();
+        services.AddGrowthOsHubServices();
         services.AddCors(options =>
         {
             options.AddDefaultPolicy(policy =>
@@ -694,6 +696,7 @@ public static class ServiceCollectionExtensions
 
         // Horizons 16-20 Services
         services.AddMultiAgentSwarmServices();
+        services.AddGrowthDirectorServices();
         services.AddDynamicElasticityPricingServices();
         services.AddDoubleEntryLedgerServices();
         services.AddCrdtDeltaSyncServices();

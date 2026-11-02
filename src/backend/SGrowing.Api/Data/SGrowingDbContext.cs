@@ -355,6 +355,18 @@ public class SGrowingDbContext : DbContext
     public DbSet<CommunityFeedbackPost> CommunityFeedbackPosts => Set<CommunityFeedbackPost>();
     public DbSet<FeedbackPostVote> FeedbackPostVotes => Set<FeedbackPostVote>();
 
+    // Horizon 2: Schema Partitioning & Persistence (Domains B3, C6, E1)
+    public DbSet<CustomerIdentityEntity> CustomerIdentities => Set<CustomerIdentityEntity>();
+    public DbSet<CustomerProfileEntity> CustomerProfiles => Set<CustomerProfileEntity>();
+    public DbSet<IdentityLinkEntity> IdentityLinks => Set<IdentityLinkEntity>();
+    public DbSet<VisitorSessionEntity> VisitorSessionEntities => Set<VisitorSessionEntity>();
+    public DbSet<VisitorSessionEntity> CustomerVisitorSessions => Set<VisitorSessionEntity>();
+    public DbSet<CapiConversionEntity> CapiConversions => Set<CapiConversionEntity>();
+    public DbSet<AudienceSyncEntity> AudienceSyncs => Set<AudienceSyncEntity>();
+    public DbSet<CampaignRoasSnapshotEntity> CampaignRoasSnapshots => Set<CampaignRoasSnapshotEntity>();
+    public DbSet<WorkflowDagEntity> WorkflowDags => Set<WorkflowDagEntity>();
+    public DbSet<WorkflowTelemetryTraceEntity> WorkflowTelemetryTraces => Set<WorkflowTelemetryTraceEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -615,6 +627,118 @@ public class SGrowingDbContext : DbContext
             b.HasKey(e => e.Id);
             b.Property(e => e.Status).IsRequired().HasMaxLength(50);
             b.HasIndex(e => new { e.TenantId, e.Status, e.ScheduledAtUtc });
+        });
+
+        // ====================================================================
+        // Horizon 2: Schema Partitioning & Persistence (Domains B3, C6, E1)
+        // ====================================================================
+
+        // Schema customer_data (Domain B3: Customer Data / CDP)
+        modelBuilder.Entity<CustomerIdentityEntity>(b =>
+        {
+            b.ToTable("identities", "customer_data");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.Type).IsRequired().HasMaxLength(50);
+            b.Property(e => e.Value).IsRequired().HasMaxLength(256);
+            b.Property(e => e.CanonicalProfileId).IsRequired().HasMaxLength(100);
+            b.HasIndex(e => new { e.TenantId, e.Type, e.Value }).IsUnique();
+            b.HasIndex(e => new { e.TenantId, e.CanonicalProfileId });
+        });
+
+        modelBuilder.Entity<CustomerProfileEntity>(b =>
+        {
+            b.ToTable("profiles", "customer_data");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.CanonicalProfileId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.UnifiedTraitsJson).HasColumnType("jsonb");
+            b.HasIndex(e => new { e.TenantId, e.CanonicalProfileId });
+        });
+
+        modelBuilder.Entity<IdentityLinkEntity>(b =>
+        {
+            b.ToTable("identity_links", "customer_data");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.SourceIdentifierJson).HasColumnType("jsonb");
+            b.Property(e => e.TargetIdentifierJson).HasColumnType("jsonb");
+            b.HasIndex(e => e.TenantId);
+        });
+
+        modelBuilder.Entity<VisitorSessionEntity>(b =>
+        {
+            b.ToTable("visitor_sessions", "customer_data");
+            b.HasKey(e => e.SessionId);
+            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.AnonymousId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.PageViewsJson).HasColumnType("jsonb");
+            b.Property(e => e.UtmParametersJson).HasColumnType("jsonb");
+            b.HasIndex(e => new { e.TenantId, e.AnonymousId });
+        });
+
+        // Schema advertising (Domain C6: Advertising & CAPI Sync)
+        modelBuilder.Entity<CapiConversionEntity>(b =>
+        {
+            b.ToTable("conversions", "advertising");
+            b.HasKey(e => e.EventId);
+            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.Platform).IsRequired().HasMaxLength(50);
+            b.Property(e => e.EventName).IsRequired().HasMaxLength(100);
+            b.Property(e => e.Currency).HasMaxLength(10);
+            b.Property(e => e.ConversionValue).HasPrecision(18, 4);
+            b.HasIndex(e => new { e.TenantId, e.Platform, e.EventId }).IsUnique();
+        });
+
+        modelBuilder.Entity<AudienceSyncEntity>(b =>
+        {
+            b.ToTable("audience_syncs", "advertising");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.AudienceId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.Platform).IsRequired().HasMaxLength(50);
+            b.HasIndex(e => new { e.TenantId, e.AudienceId });
+            b.HasIndex(e => new { e.TenantId, e.Platform });
+        });
+
+        modelBuilder.Entity<CampaignRoasSnapshotEntity>(b =>
+        {
+            b.ToTable("campaign_roas_snapshots", "advertising");
+            b.HasKey(e => e.Id);
+            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.CampaignId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.Platform).IsRequired().HasMaxLength(50);
+            b.Property(e => e.Spend).HasPrecision(18, 4);
+            b.Property(e => e.Revenue).HasPrecision(18, 4);
+            b.Property(e => e.CurrentRoas).HasPrecision(18, 4);
+            b.Property(e => e.RecommendedSpend).HasPrecision(18, 4);
+            b.HasIndex(e => new { e.TenantId, e.CampaignId });
+            b.HasIndex(e => new { e.TenantId, e.Platform });
+        });
+
+        // Schema automation (Domain E1: Workflow DAG & Telemetry)
+        modelBuilder.Entity<WorkflowDagEntity>(b =>
+        {
+            b.ToTable("workflows", "automation");
+            b.HasKey(e => e.WorkflowId);
+            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            b.Property(e => e.NodesJson).HasColumnType("jsonb");
+            b.Property(e => e.EdgesJson).HasColumnType("jsonb");
+            b.HasIndex(e => new { e.TenantId, e.WorkflowId }).IsUnique();
+        });
+
+        modelBuilder.Entity<WorkflowTelemetryTraceEntity>(b =>
+        {
+            b.ToTable("telemetry_traces", "automation");
+            b.HasKey(e => e.ExecutionId);
+            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.WorkflowId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.ContactId).HasMaxLength(100);
+            b.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            b.Property(e => e.StepsJson).HasColumnType("jsonb");
+            b.HasIndex(e => new { e.TenantId, e.WorkflowId });
+            b.HasIndex(e => new { e.TenantId, e.Status });
         });
     }
 }
