@@ -97,6 +97,11 @@ using SGrowing.Api.Modules.Agriculture.PrecisionAgrigenomics;
 using SGrowing.Api.Modules.Energy.HvdcGridStabilizer;
 using SGrowing.Api.Modules.Finance.MicroPaymentMesh;
 using SGrowing.Api.Modules.BioTech.MetabolicFluxOptimizer;
+using SGrowing.Api.Modules.Aviation.AircraftTurnaroundOptimizer;
+using SGrowing.Api.Modules.Logistics.RailHumpYardScheduler;
+using SGrowing.Api.Modules.Energy.GeothermalMicroSeismicity;
+using SGrowing.Api.Modules.Automotive.TeleoperationFoveatedStream;
+using SGrowing.Api.Modules.Security.ConfidentialRemoteAttestation;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -761,6 +766,13 @@ public static class ServiceCollectionExtensions
         services.AddHvdcGridStabilizerServices();
         services.AddMicroPaymentMeshServices();
         services.AddMetabolicFluxServices();
+
+        // Horizons 106-110 Services (Deep Infrastructure Wave)
+        services.AddAircraftTurnaroundServices();
+        services.AddRailHumpYardServices();
+        services.AddGeothermalMicroSeismicityServices();
+        services.AddTeleoperationFoveatedServices();
+        services.AddConfidentialRemoteAttestationServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

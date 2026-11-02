@@ -95,6 +95,11 @@ using SGrowing.Api.Modules.Agriculture.PrecisionAgrigenomics;
 using SGrowing.Api.Modules.Energy.HvdcGridStabilizer;
 using SGrowing.Api.Modules.Finance.MicroPaymentMesh;
 using SGrowing.Api.Modules.BioTech.MetabolicFluxOptimizer;
+using SGrowing.Api.Modules.Aviation.AircraftTurnaroundOptimizer;
+using SGrowing.Api.Modules.Logistics.RailHumpYardScheduler;
+using SGrowing.Api.Modules.Energy.GeothermalMicroSeismicity;
+using SGrowing.Api.Modules.Automotive.TeleoperationFoveatedStream;
+using SGrowing.Api.Modules.Security.ConfidentialRemoteAttestation;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -523,6 +528,13 @@ app.MapPrecisionAgrigenomicsEndpoints();
 app.MapHvdcGridStabilizerEndpoints();
 app.MapMicroPaymentMeshEndpoints();
 app.MapMetabolicFluxEndpoints();
+
+// Horizons 106-110 Endpoint Mappings (Deep Infrastructure Wave)
+app.MapAircraftTurnaroundEndpoints();
+app.MapRailHumpYardEndpoints();
+app.MapGeothermalMicroSeismicityEndpoints();
+app.MapTeleoperationFoveatedEndpoints();
+app.MapConfidentialRemoteAttestationEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
