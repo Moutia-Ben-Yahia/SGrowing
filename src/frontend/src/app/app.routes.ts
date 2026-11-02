@@ -255,5 +255,10 @@ export const routes: Routes = [
   { path: 'voice/objection-scoring', loadComponent: () => import('./features/voice/objection-scoring-cockpit.component').then(m => m.ObjectionScoringCockpitComponent), canActivate: [authGuard] },
   { path: 'seo/topical-authority', loadComponent: () => import('./features/seo/topical-authority-cockpit.component').then(m => m.TopicalAuthorityCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/feature-flags', loadComponent: () => import('./features/infrastructure/feature-flags-cockpit.component').then(m => m.FeatureFlagsCockpitComponent), canActivate: [authGuard] },
+  { path: 'intelligence/waterfall-enrichment', loadComponent: () => import('./features/intelligence/waterfall-enrichment-cockpit.component').then(m => m.WaterfallEnrichmentCockpitComponent), canActivate: [authGuard] },
+  { path: 'content/social-proof', loadComponent: () => import('./features/content/social-proof-cockpit.component').then(m => m.SocialProofCockpitComponent), canActivate: [authGuard] },
+  { path: 'commerce/cart-rescue', loadComponent: () => import('./features/commerce/cart-rescue-cockpit.component').then(m => m.CartRescueCockpitComponent), canActivate: [authGuard] },
+  { path: 'partnerships/deal-registration', loadComponent: () => import('./features/partnerships/deal-registration-cockpit.component').then(m => m.DealRegistrationCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/semantic-cache', loadComponent: () => import('./features/infrastructure/semantic-cache-cockpit.component').then(m => m.SemanticCacheCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

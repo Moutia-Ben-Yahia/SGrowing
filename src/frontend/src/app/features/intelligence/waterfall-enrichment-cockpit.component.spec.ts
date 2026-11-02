@@ -1,0 +1,33 @@
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { WaterfallEnrichmentCockpitComponent } from './waterfall-enrichment-cockpit.component';
+
+describe('WaterfallEnrichmentCockpitComponent (Horizon 61)', () => {
+  let component: WaterfallEnrichmentCockpitComponent;
+
+  beforeEach(() => {
+    localStorage.clear();
+    component = new WaterfallEnrichmentCockpitComponent();
+  });
+
+  it('should initialize with waterfall provider metrics and enriched leads', () => {
+    expect(component).toBeTruthy();
+    expect(component.providers().length).toBeGreaterThanOrEqual(4);
+    expect(component.overallMatchRate()).toBe(94);
+    expect(component.leads().length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('should trigger waterfall enrichment and add new verified lead', () => {
+    const initialCount = component.leads().length;
+    component.triggerWaterfallEnrichment();
+    expect(component.leads().length).toBe(initialCount + 1);
+    expect(component.leads()[0].domain).toBe('databricks.com');
+  });
+
+  it('should re-verify deliverability for an existing lead', () => {
+    const lead = component.leads()[0];
+    component.verifyMx(lead);
+    expect(component.leads()[0].deliverability).toBe('DeliverableWithMx');
+  });
+});

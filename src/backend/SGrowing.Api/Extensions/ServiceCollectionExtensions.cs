@@ -52,6 +52,11 @@ using SGrowing.Api.Modules.Advertising.AudienceSync;
 using SGrowing.Api.Modules.Voice.ObjectionScoring;
 using SGrowing.Api.Modules.SEO.TopicalAuthority;
 using SGrowing.Api.Modules.Infrastructure.FeatureFlags;
+using SGrowing.Api.Modules.Intelligence.WaterfallEnrichment;
+using SGrowing.Api.Modules.Content.SocialProof;
+using SGrowing.Api.Modules.Commerce.CartRescue;
+using SGrowing.Api.Modules.Partnerships.DealRegistration;
+using SGrowing.Api.Modules.Infrastructure.SemanticCache;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
@@ -1078,6 +1083,11 @@ public static class ServiceCollectionExtensions
         services.AddObjectionScoringServices();
         services.AddTopicalAuthorityServices();
         services.AddFeatureFlagServices();
+        services.AddLeadWaterfallEnrichmentServices();
+        services.AddSocialProofServices();
+        services.AddCartRescueServices();
+        services.AddDealRegistrationServices();
+        services.AddSemanticCacheServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
