@@ -62,6 +62,11 @@ using SGrowing.Api.Modules.Security.VerifiableCredentials;
 using SGrowing.Api.Modules.IoT.PredictiveTelemetry;
 using SGrowing.Api.Modules.SupplyChain.HsClassification;
 using SGrowing.Api.Modules.Infrastructure.ServiceMesh;
+using SGrowing.Api.Modules.Commerce.WarehouseSlotting;
+using SGrowing.Api.Modules.Finance.FxHedging;
+using SGrowing.Api.Modules.AI.SyntheticData;
+using SGrowing.Api.Modules.Logistics.DroneCorridors;
+using SGrowing.Api.Modules.Security.ZtnaContinuousPosture;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -677,6 +682,13 @@ public static class ServiceCollectionExtensions
         services.AddPredictiveTelemetryServices();
         services.AddHsClassificationServices();
         services.AddServiceMeshServices();
+
+        // Horizons 71-75 Services
+        services.AddWarehouseSlottingServices();
+        services.AddFxHedgingServices();
+        services.AddDifferentialPrivacySandboxServices();
+        services.AddDroneCorridorServices();
+        services.AddZtnaServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

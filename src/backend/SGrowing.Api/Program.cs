@@ -60,6 +60,11 @@ using SGrowing.Api.Modules.Security.VerifiableCredentials;
 using SGrowing.Api.Modules.IoT.PredictiveTelemetry;
 using SGrowing.Api.Modules.SupplyChain.HsClassification;
 using SGrowing.Api.Modules.Infrastructure.ServiceMesh;
+using SGrowing.Api.Modules.Commerce.WarehouseSlotting;
+using SGrowing.Api.Modules.Finance.FxHedging;
+using SGrowing.Api.Modules.AI.SyntheticData;
+using SGrowing.Api.Modules.Logistics.DroneCorridors;
+using SGrowing.Api.Modules.Security.ZtnaContinuousPosture;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -439,6 +444,13 @@ app.MapVerifiableCredentialsEndpoints();
 app.MapPredictiveTelemetryEndpoints();
 app.MapHsClassificationEndpoints();
 app.MapServiceMeshEndpoints();
+
+// Horizons 71-75 Endpoint Mappings
+app.MapWarehouseSlottingEndpoints();
+app.MapFxHedgingEndpoints();
+app.MapDifferentialPrivacySandboxEndpoints();
+app.MapDroneCorridorEndpoints();
+app.MapZtnaEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
