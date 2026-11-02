@@ -280,6 +280,11 @@ using SGrowing.Api.Modules.BioTech.SingleCellAmbientRnaDecontamination;
 using SGrowing.Api.Modules.Aerospace.ReactionWheelMicroVibrationJitter;
 using SGrowing.Api.Modules.Finance.BondPortfolioDurationConvexityImmunization;
 using SGrowing.Api.Modules.Energy.MoltenSaltCspNitrateDecomposition;
+using SGrowing.Api.Modules.Quantum.RareEarthOpticalMemory;
+using SGrowing.Api.Modules.BioTech.HighMolecularWeightDnaExtraction;
+using SGrowing.Api.Modules.Aerospace.LunarOrbitInsertionBallisticCapture;
+using SGrowing.Api.Modules.Finance.CdoGaussianCopulaTrancheCorrelation;
+using SGrowing.Api.Modules.Energy.SolidOxideFuelCellTriplePhaseBoundary;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -967,6 +972,13 @@ app.MapSingleCellAmbientRnaEndpoints();
 app.MapReactionWheelJitterEndpoints();
 app.MapBondPortfolioImmunizationEndpoints();
 app.MapMoltenSaltNitrateDecompositionEndpoints();
+
+// Horizons 291-295 Endpoint Mappings (Rare-Earth Optical Memory, HMW DNA Extraction, Lunar Orbit Insertion, CDO Copula Tranches & Solid Oxide Fuel Cells)
+app.MapRareEarthMemoryEndpoints();
+app.MapHmwDnaExtractionEndpoints();
+app.MapLunarOrbitInsertionEndpoints();
+app.MapCdoCopulaTrancheEndpoints();
+app.MapSolidOxideFuelCellEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
