@@ -150,6 +150,7 @@ using SGrowing.Api.Modules.SupplyChain.WarehouseBinCycleCounting;
 using SGrowing.Api.Modules.Workforce.MultiTierPayrollEngine;
 using SGrowing.Api.Modules.Logistics.CashOnDeliverySettlement;
 using SGrowing.Api.Modules.CustomerData.IdentityResolution;
+using SGrowing.Api.Modules.CustomerData.Firmographics;
 using SGrowing.Api.Modules.Advertising.MetaGoogleAdsSync;
 using SGrowing.Api.Modules.Automation.WorkflowTelemetry;
 using SGrowing.Api.Modules.AI;
@@ -203,6 +204,7 @@ using SGrowing.Api.Modules.Gateways;
 using SGrowing.Api.Modules.Gateways.Android;
 using SGrowing.Api.Modules.Integrations;
 using SGrowing.Api.Modules.Journeys;
+using SGrowing.Api.Modules.Journeys.OmnichannelSequence;
 using SGrowing.Api.Modules.KnowledgeBase;
 using SGrowing.Api.Modules.KnowledgeBase.Autopilot;
 using SGrowing.Api.Modules.Lifecycle;
@@ -727,8 +729,10 @@ app.MapCodSettlementEndpoints();
 
 // Domain B3 CDP Identity Resolution, Domain C6 Advertising Sync & Domain E1 Automation Visual DAG Telemetry
 app.MapCdpIdentityEndpoints();
+app.MapFirmographicsEndpoints();
 app.MapAdsSyncEndpoints();
 app.MapWorkflowTelemetryEndpoints();
+app.MapOmnichannelSequenceEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

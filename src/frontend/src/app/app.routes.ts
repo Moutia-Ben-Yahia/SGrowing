@@ -202,5 +202,6 @@ export const routes: Routes = [
   { path: 'crm/identity-graph', loadComponent: () => import('./features/crm/identity-graph-cockpit.component').then(m => m.IdentityGraphCockpitComponent), canActivate: [authGuard] },
   { path: 'marketing/ad-capi-roas', loadComponent: () => import('./features/marketing/ad-capi-roas-cockpit.component').then(m => m.AdCapiRoasCockpitComponent), canActivate: [authGuard] },
   { path: 'workflows/dag-telemetry', loadComponent: () => import('./features/workflows/dag-telemetry-studio.component').then(m => m.DagTelemetryStudioComponent), canActivate: [authGuard] },
+  { path: 'agents/growth-director', loadComponent: () => import('./features/agents/growth-director-mission-cockpit.component').then(m => m.GrowthDirectorMissionCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];
