@@ -147,6 +147,11 @@ using SGrowing.Api.Modules.Energy.CryoFusionPelletExtruder;
 using SGrowing.Api.Modules.BioTech.CarTCellExhaustionKinetics;
 using SGrowing.Api.Modules.Energy.DmfcRutheniumPoisoning;
 using SGrowing.Api.Modules.Aerospace.RtgDecayThermocouple;
+using SGrowing.Api.Modules.Aerospace.GravitationalMicrolensingExoplanet;
+using SGrowing.Api.Modules.Energy.HtsRebcoCableDelamination;
+using SGrowing.Api.Modules.BioTech.AntibodyAffinityMaturation;
+using SGrowing.Api.Modules.Finance.ZkSolvencyMerkleSumTree;
+using SGrowing.Api.Modules.Aerospace.HypersonicBltCrossflow;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -881,6 +886,13 @@ public static class ServiceCollectionExtensions
         services.AddCarTCellExhaustionServices();
         services.AddDmfcRutheniumPoisoningServices();
         services.AddRtgDecayThermocoupleServices();
+
+        // Horizons 156-160 Services (Gravitational Microlensing Exoplanets, HTS REBCO Delamination, Antibody Affinity Maturation, ZK Solvency & Hypersonic BLT)
+        services.AddGravitationalMicrolensingServices();
+        services.AddHtsRebcoCableServices();
+        services.AddAntibodyAffinityServices();
+        services.AddZkSolvencyServices();
+        services.AddHypersonicBltServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

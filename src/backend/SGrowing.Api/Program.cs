@@ -145,6 +145,11 @@ using SGrowing.Api.Modules.Energy.CryoFusionPelletExtruder;
 using SGrowing.Api.Modules.BioTech.CarTCellExhaustionKinetics;
 using SGrowing.Api.Modules.Energy.DmfcRutheniumPoisoning;
 using SGrowing.Api.Modules.Aerospace.RtgDecayThermocouple;
+using SGrowing.Api.Modules.Aerospace.GravitationalMicrolensingExoplanet;
+using SGrowing.Api.Modules.Energy.HtsRebcoCableDelamination;
+using SGrowing.Api.Modules.BioTech.AntibodyAffinityMaturation;
+using SGrowing.Api.Modules.Finance.ZkSolvencyMerkleSumTree;
+using SGrowing.Api.Modules.Aerospace.HypersonicBltCrossflow;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -643,6 +648,13 @@ app.MapCryoFusionPelletEndpoints();
 app.MapCarTExhaustionEndpoints();
 app.MapDmfcPoisoningEndpoints();
 app.MapRtgDecayEndpoints();
+
+// Horizons 156-160 Endpoint Mappings (Gravitational Microlensing Exoplanets, HTS REBCO Delamination, Antibody Affinity Maturation, ZK Solvency & Hypersonic BLT)
+app.MapGravitationalMicrolensingEndpoints();
+app.MapHtsRebcoCableEndpoints();
+app.MapAntibodyAffinityEndpoints();
+app.MapZkSolvencyEndpoints();
+app.MapHypersonicBltEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
