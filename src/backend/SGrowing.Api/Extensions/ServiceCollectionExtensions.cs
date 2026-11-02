@@ -187,6 +187,11 @@ using SGrowing.Api.Modules.AI.NeuromorphicStdpSynapticEnergy;
 using SGrowing.Api.Modules.BioTech.ApiPolymorphContinuousCrystallization;
 using SGrowing.Api.Modules.Finance.RestakingCryptoeconomicSlashing;
 using SGrowing.Api.Modules.Energy.HempSubstationProtection;
+using SGrowing.Api.Modules.Energy.DilutionRefrigeratorDemagnetization;
+using SGrowing.Api.Modules.BioTech.TargetedAlphaEmitterDosimetry;
+using SGrowing.Api.Modules.Aerospace.ObliqueDetonationWaveEngine;
+using SGrowing.Api.Modules.Finance.CbdcAtomicDvpLiquiditySaving;
+using SGrowing.Api.Modules.Energy.NeutrinoGeotomographyCoreDensity;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -977,6 +982,13 @@ public static class ServiceCollectionExtensions
         services.AddApiPolymorphServices();
         services.AddRestakingSlashingServices();
         services.AddHempSubstationServices();
+
+        // Horizons 196-200 Services (Double Century Milestone: Dilution Refrigerator ADR, Targeted Alpha TRT, Oblique Detonation Wave Engine, CBDC Atomic DvP & Neutrino Tomography)
+        services.AddDilutionRefrigeratorServices();
+        services.AddTargetedAlphaDosimetryServices();
+        services.AddObliqueDetonationServices();
+        services.AddCbdcLiquiditySavingServices();
+        services.AddNeutrinoGeotomographyServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

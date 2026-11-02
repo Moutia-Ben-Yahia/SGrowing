@@ -185,6 +185,11 @@ using SGrowing.Api.Modules.AI.NeuromorphicStdpSynapticEnergy;
 using SGrowing.Api.Modules.BioTech.ApiPolymorphContinuousCrystallization;
 using SGrowing.Api.Modules.Finance.RestakingCryptoeconomicSlashing;
 using SGrowing.Api.Modules.Energy.HempSubstationProtection;
+using SGrowing.Api.Modules.Energy.DilutionRefrigeratorDemagnetization;
+using SGrowing.Api.Modules.BioTech.TargetedAlphaEmitterDosimetry;
+using SGrowing.Api.Modules.Aerospace.ObliqueDetonationWaveEngine;
+using SGrowing.Api.Modules.Finance.CbdcAtomicDvpLiquiditySaving;
+using SGrowing.Api.Modules.Energy.NeutrinoGeotomographyCoreDensity;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -739,6 +744,13 @@ app.MapNeuromorphicStdpEndpoints();
 app.MapApiPolymorphEndpoints();
 app.MapRestakingSlashingEndpoints();
 app.MapHempSubstationEndpoints();
+
+// Horizons 196-200 Endpoint Mappings (Double Century Milestone: Dilution Refrigerator ADR, Targeted Alpha TRT, Oblique Detonation Wave Engine, CBDC Atomic DvP & Neutrino Tomography)
+app.MapDilutionRefrigeratorEndpoints();
+app.MapTargetedAlphaDosimetryEndpoints();
+app.MapObliqueDetonationEndpoints();
+app.MapCbdcLiquiditySavingEndpoints();
+app.MapNeutrinoGeotomographyEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
