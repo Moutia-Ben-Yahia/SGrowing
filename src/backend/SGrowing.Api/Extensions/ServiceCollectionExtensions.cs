@@ -172,6 +172,11 @@ using SGrowing.Api.Modules.Telecom.DirectToCellDopplerTimingAdvance;
 using SGrowing.Api.Modules.BioTech.CrisprCas12aCollateralCleavage;
 using SGrowing.Api.Modules.Finance.ZkDarkPoolVdfBatching;
 using SGrowing.Api.Modules.Aerospace.LunarRegolithMicrowaveSintering;
+using SGrowing.Api.Modules.Energy.SmesCryogenicQuenchFastDump;
+using SGrowing.Api.Modules.Defense.AdaptiveOpticsPhaseConjugation;
+using SGrowing.Api.Modules.BioTech.CellFreeProteinTranslation;
+using SGrowing.Api.Modules.Finance.DeFiLendingBadDebtSocialization;
+using SGrowing.Api.Modules.Aerospace.HypersonicSkipGlideTrajectory;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -941,6 +946,13 @@ public static class ServiceCollectionExtensions
         services.AddCrisprCas12aServices();
         services.AddZkDarkPoolServices();
         services.AddLunarRegolithServices();
+
+        // Horizons 181-185 Services (SMES Quench Fast Dump, Adaptive Optics Phase Conjugation, Cell-Free Protein Translation, DeFi Bad Debt Socialization & Hypersonic Skip-Glide)
+        services.AddSmesQuenchServices();
+        services.AddAdaptiveOpticsServices();
+        services.AddCellFreeProteinServices();
+        services.AddDeFiLendingServices();
+        services.AddHypersonicSkipGlideServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

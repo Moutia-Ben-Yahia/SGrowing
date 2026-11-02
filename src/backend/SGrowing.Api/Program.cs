@@ -170,6 +170,11 @@ using SGrowing.Api.Modules.Telecom.DirectToCellDopplerTimingAdvance;
 using SGrowing.Api.Modules.BioTech.CrisprCas12aCollateralCleavage;
 using SGrowing.Api.Modules.Finance.ZkDarkPoolVdfBatching;
 using SGrowing.Api.Modules.Aerospace.LunarRegolithMicrowaveSintering;
+using SGrowing.Api.Modules.Energy.SmesCryogenicQuenchFastDump;
+using SGrowing.Api.Modules.Defense.AdaptiveOpticsPhaseConjugation;
+using SGrowing.Api.Modules.BioTech.CellFreeProteinTranslation;
+using SGrowing.Api.Modules.Finance.DeFiLendingBadDebtSocialization;
+using SGrowing.Api.Modules.Aerospace.HypersonicSkipGlideTrajectory;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -703,6 +708,13 @@ app.MapDirectToCellEndpoints();
 app.MapCrisprCas12aEndpoints();
 app.MapZkDarkPoolEndpoints();
 app.MapLunarRegolithEndpoints();
+
+// Horizons 181-185 Endpoint Mappings (SMES Quench Fast Dump, Adaptive Optics Phase Conjugation, Cell-Free Protein Translation, DeFi Bad Debt Socialization & Hypersonic Skip-Glide)
+app.MapSmesQuenchEndpoints();
+app.MapAdaptiveOpticsEndpoints();
+app.MapCellFreeProteinEndpoints();
+app.MapDeFiLendingEndpoints();
+app.MapHypersonicSkipGlideEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
