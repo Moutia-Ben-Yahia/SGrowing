@@ -137,6 +137,11 @@ using SGrowing.Api.Modules.Energy.MoltenSaltCspThermocline;
 using SGrowing.Api.Modules.BioTech.MicrobialCrisprCascade;
 using SGrowing.Api.Modules.Energy.FusionDivertorDetachment;
 using SGrowing.Api.Modules.Aerospace.HypersonicWaveriderShock;
+using SGrowing.Api.Modules.Energy.QuantumDotMegSolarCell;
+using SGrowing.Api.Modules.Aerospace.HallThrusterPoleErosion;
+using SGrowing.Api.Modules.BioTech.NanoporeTranslocationBasecaller;
+using SGrowing.Api.Modules.Finance.ZkL3WatchtowerFraudProof;
+using SGrowing.Api.Modules.Energy.SuperhotEgsMicroSeismicity;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -857,6 +862,13 @@ public static class ServiceCollectionExtensions
         services.AddMicrobialCrisprCascadeServices();
         services.AddFusionDivertorDetachmentServices();
         services.AddHypersonicWaveriderShockServices();
+
+        // Horizons 146-150 Services (Quantum Dot MEG, Hall Thruster Pole Erosion, Nanopore Basecaller, ZK L3 Watchtower & Superhot EGS)
+        services.AddQuantumDotMegSolarCellServices();
+        services.AddHallThrusterPoleErosionServices();
+        services.AddNanoporeTranslocationServices();
+        services.AddZkL3WatchtowerFraudProofServices();
+        services.AddSuperhotEgsMicroSeismicityServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

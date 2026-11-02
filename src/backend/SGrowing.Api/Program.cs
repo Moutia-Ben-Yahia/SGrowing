@@ -135,6 +135,11 @@ using SGrowing.Api.Modules.Energy.MoltenSaltCspThermocline;
 using SGrowing.Api.Modules.BioTech.MicrobialCrisprCascade;
 using SGrowing.Api.Modules.Energy.FusionDivertorDetachment;
 using SGrowing.Api.Modules.Aerospace.HypersonicWaveriderShock;
+using SGrowing.Api.Modules.Energy.QuantumDotMegSolarCell;
+using SGrowing.Api.Modules.Aerospace.HallThrusterPoleErosion;
+using SGrowing.Api.Modules.BioTech.NanoporeTranslocationBasecaller;
+using SGrowing.Api.Modules.Finance.ZkL3WatchtowerFraudProof;
+using SGrowing.Api.Modules.Energy.SuperhotEgsMicroSeismicity;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -619,6 +624,13 @@ app.MapMoltenSaltCspEndpoints();
 app.MapMicrobialCrisprEndpoints();
 app.MapFusionDivertorEndpoints();
 app.MapHypersonicWaveriderEndpoints();
+
+// Horizons 146-150 Endpoint Mappings (Quantum Dot MEG, Hall Thruster Pole Erosion, Nanopore Basecaller, ZK L3 Watchtower & Superhot EGS)
+app.MapQuantumDotMegEndpoints();
+app.MapHallThrusterEndpoints();
+app.MapNanoporeEndpoints();
+app.MapZkL3WatchtowerEndpoints();
+app.MapSuperhotEgsEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
