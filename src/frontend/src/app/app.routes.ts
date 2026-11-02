@@ -225,5 +225,10 @@ export const routes: Routes = [
   { path: 'seo/programmatic', loadComponent: () => import('./features/seo/programmatic-seo-cockpit.component').then(m => m.ProgrammaticSeoCockpitComponent), canActivate: [authGuard] },
   { path: 'billing/tax-compliance', loadComponent: () => import('./features/billing/tax-compliance-cockpit.component').then(m => m.TaxComplianceCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/deal-copilot', loadComponent: () => import('./features/sales/deal-copilot-cockpit.component').then(m => m.DealCopilotCockpitComponent), canActivate: [authGuard] },
+  { path: 'cms/headless-studio', loadComponent: () => import('./features/cms/headless-cms-cockpit.component').then(m => m.HeadlessCmsCockpitComponent), canActivate: [authGuard] },
+  { path: 'growth/affiliates', loadComponent: () => import('./features/growth/affiliate-loyalty-cockpit.component').then(m => m.AffiliateLoyaltyCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/call-copilot', loadComponent: () => import('./features/voice/live-call-copilot-cockpit.component').then(m => m.LiveCallCopilotCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/abm-territories', loadComponent: () => import('./features/sales/abm-territory-cockpit.component').then(m => m.AbmTerritoryCockpitComponent), canActivate: [authGuard] },
+  { path: 'security/compliance-vault', loadComponent: () => import('./features/security/compliance-vault-cockpit.component').then(m => m.ComplianceVaultCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

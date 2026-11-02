@@ -16,6 +16,11 @@ using SGrowing.Api.Modules.AI.VectorRag;
 using SGrowing.Api.Modules.SEO.Programmatic;
 using SGrowing.Api.Modules.Billing.TaxCompliance;
 using SGrowing.Api.Modules.Sales.DealCopilot;
+using SGrowing.Api.Modules.CMS.ContentFactory;
+using SGrowing.Api.Modules.Growth.Affiliates;
+using SGrowing.Api.Modules.Voice.CallCopilot;
+using SGrowing.Api.Modules.Sales.TerritoryRouting;
+using SGrowing.Api.Modules.Security.ComplianceVault;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -777,6 +782,11 @@ app.MapVectorRagEndpoints();
 app.MapProgrammaticMeshEndpoints();
 app.MapTaxComplianceEndpoints();
 app.MapDealCopilotEndpoints();
+app.MapContentFactoryEndpoints();
+app.MapAffiliateLoyaltyEndpoints();
+app.MapCallCopilotEndpoints();
+app.MapTerritoryRoutingEndpoints();
+app.MapZeroTrustVaultEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

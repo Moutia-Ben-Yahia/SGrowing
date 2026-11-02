@@ -22,6 +22,11 @@ using SGrowing.Api.Modules.AI.VectorRag;
 using SGrowing.Api.Modules.SEO.Programmatic;
 using SGrowing.Api.Modules.Billing.TaxCompliance;
 using SGrowing.Api.Modules.Sales.DealCopilot;
+using SGrowing.Api.Modules.CMS.ContentFactory;
+using SGrowing.Api.Modules.Growth.Affiliates;
+using SGrowing.Api.Modules.Voice.CallCopilot;
+using SGrowing.Api.Modules.Sales.TerritoryRouting;
+using SGrowing.Api.Modules.Security.ComplianceVault;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
@@ -1018,6 +1023,11 @@ public static class ServiceCollectionExtensions
         services.AddProgrammaticMeshServices();
         services.AddTaxComplianceServices();
         services.AddDealCopilotServices();
+        services.AddContentFactoryServices();
+        services.AddAffiliateLoyaltyServices();
+        services.AddCallCopilotServices();
+        services.AddTerritoryRoutingServices();
+        services.AddZeroTrustVaultServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
