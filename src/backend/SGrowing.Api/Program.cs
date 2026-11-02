@@ -90,6 +90,11 @@ using SGrowing.Api.Modules.Infrastructure.DePinWorkerArbiter;
 using SGrowing.Api.Modules.Robotics.NeuromorphicOdometry;
 using SGrowing.Api.Modules.Finance.BepsPillarTwo;
 using SGrowing.Api.Modules.Governance.EnterpriseImmuneSystem;
+using SGrowing.Api.Modules.Telecom.SubseaAcousticEarlyWarning;
+using SGrowing.Api.Modules.Agriculture.PrecisionAgrigenomics;
+using SGrowing.Api.Modules.Energy.HvdcGridStabilizer;
+using SGrowing.Api.Modules.Finance.MicroPaymentMesh;
+using SGrowing.Api.Modules.BioTech.MetabolicFluxOptimizer;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -511,6 +516,13 @@ app.MapDePinEndpoints();
 app.MapNeuromorphicOdometryEndpoints();
 app.MapBepsPillarTwoEndpoints();
 app.MapEnterpriseImmuneEndpoints();
+
+// Horizons 101-105 Endpoint Mappings (Next-Era Wave)
+app.MapSubseaAcousticEndpoints();
+app.MapPrecisionAgrigenomicsEndpoints();
+app.MapHvdcGridStabilizerEndpoints();
+app.MapMicroPaymentMeshEndpoints();
+app.MapMetabolicFluxEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
