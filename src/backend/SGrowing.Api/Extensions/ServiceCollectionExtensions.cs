@@ -242,6 +242,11 @@ using SGrowing.Api.Modules.BioTech.CrisprRnpElectroporationKinetics;
 using SGrowing.Api.Modules.Aerospace.NuclearThermalPropulsionPebbleBed;
 using SGrowing.Api.Modules.Finance.CrossCurrencyFlashSwapArbitrage;
 using SGrowing.Api.Modules.Energy.OceanThermalEnergyConversion;
+using SGrowing.Api.Modules.Quantum.CavityOptomechanicsPhononSqueezing;
+using SGrowing.Api.Modules.BioTech.AavCapsidDirectedEvolution;
+using SGrowing.Api.Modules.Aerospace.RotatingDetonationRocketCombustor;
+using SGrowing.Api.Modules.Finance.OrderFlowAdverseSelectionDrain;
+using SGrowing.Api.Modules.Energy.AlkalineWaterElectrolysisDynamic;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1109,6 +1114,13 @@ public static class ServiceCollectionExtensions
         services.AddNuclearThermalPropulsionPebbleBedServices();
         services.AddCrossCurrencyFlashSwapServices();
         services.AddOceanThermalEnergyConversionServices();
+
+        // Horizons 251-255 Services (Cavity Optomechanics Phonon Squeezing, AAV Capsid Evolution, Rotating Detonation Combustor, Order Flow Adverse Selection & Alkaline Water Electrolysis)
+        services.AddCavityOptomechanicsPhononSqueezingServices();
+        services.AddAavCapsidDirectedEvolutionServices();
+        services.AddRotatingDetonationRocketCombustorServices();
+        services.AddOrderFlowAdverseSelectionDrainServices();
+        services.AddAlkalineWaterElectrolysisDynamicServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
