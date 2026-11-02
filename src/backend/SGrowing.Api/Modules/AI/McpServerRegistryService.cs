@@ -66,13 +66,17 @@ public class McpServerRegistryService : IMcpServerRegistryService
     private static readonly Dictionary<Guid, List<ContactFactDto>> _factStore = new();
     private static readonly Dictionary<Guid, string> _autonomyModes = new();
     private static readonly List<AgentAuditLogEntryDto> _auditLogs = new();
+    private static readonly object _auditLock = new();
 
     public McpServerRegistryService(SGrowingDbContext db)
     {
         _db = db;
-        if (_auditLogs.Count == 0)
+        lock (_auditLock)
         {
-            SeedInitialAuditLogs();
+            if (_auditLogs.Count == 0)
+            {
+                SeedInitialAuditLogs();
+            }
         }
     }
 
@@ -83,22 +87,28 @@ public class McpServerRegistryService : IMcpServerRegistryService
 
     public void SetAutonomyMode(Guid tenantId, string mode)
     {
-        _autonomyModes[tenantId] = mode;
-        _auditLogs.Insert(0, new AgentAuditLogEntryDto(
-            Guid.NewGuid(),
-            DateTime.UtcNow,
-            "SGrowing-Supervisor-Agent",
-            "system_autonomy_switch",
-            mode,
-            $"Supervisory autonomy switched to '{mode}'.",
-            "Approved",
-            12.0
-        ));
+        lock (_auditLock)
+        {
+            _autonomyModes[tenantId] = mode;
+            _auditLogs.Insert(0, new AgentAuditLogEntryDto(
+                Guid.NewGuid(),
+                DateTime.UtcNow,
+                "SGrowing-Supervisor-Agent",
+                "system_autonomy_switch",
+                mode,
+                $"Supervisory autonomy switched to '{mode}'.",
+                "Approved",
+                12.0
+            ));
+        }
     }
 
     public List<AgentAuditLogEntryDto> GetAuditLogs(Guid tenantId)
     {
-        return _auditLogs.Take(50).ToList();
+        lock (_auditLock)
+        {
+            return _auditLogs.Take(50).ToList();
+        }
     }
 
     public Task<List<McpToolDefinitionDto>> GetRegisteredMcpToolsAsync()
@@ -274,16 +284,19 @@ public class McpServerRegistryService : IMcpServerRegistryService
         }
 
         // Record into Audit Log
-        _auditLogs.Insert(0, new AgentAuditLogEntryDto(
-            Guid.NewGuid(),
-            DateTime.UtcNow,
-            "SGrowing-Sales-Agent-01",
-            toolName,
-            currentAutonomy,
-            $"Executed tool '{toolName}' with autonomy '{currentAutonomy}'.",
-            currentAutonomy == "Draft Only" ? "PendingReview" : "Approved",
-            sw.ElapsedMilliseconds
-        ));
+        lock (_auditLock)
+        {
+            _auditLogs.Insert(0, new AgentAuditLogEntryDto(
+                Guid.NewGuid(),
+                DateTime.UtcNow,
+                "SGrowing-Sales-Agent-01",
+                toolName,
+                currentAutonomy,
+                $"Executed tool '{toolName}' with autonomy '{currentAutonomy}'.",
+                currentAutonomy == "Draft Only" ? "PendingReview" : "Approved",
+                sw.ElapsedMilliseconds
+            ));
+        }
 
         return result;
     }

@@ -212,6 +212,11 @@ using SGrowing.Api.Modules.BioTech.AcidMineDrainageBioleaching;
 using SGrowing.Api.Modules.Aerospace.AerogelTpsAblationRecession;
 using SGrowing.Api.Modules.Finance.LsdDepegArbitrageRedemption;
 using SGrowing.Api.Modules.Transportation.HyperloopKantrowitzTubeAerodynamics;
+using SGrowing.Api.Modules.Physics.StedSuperResolutionMicroscopy;
+using SGrowing.Api.Modules.BioTech.PhageAssistedContinuousEvolution;
+using SGrowing.Api.Modules.Aerospace.MiniMagnetosphericPlasmaPropulsion;
+using SGrowing.Api.Modules.Finance.SovereignDebtClimateResilience;
+using SGrowing.Api.Modules.Infrastructure.SeismicMetamaterialPhononicCloak;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1037,6 +1042,13 @@ public static class ServiceCollectionExtensions
         services.AddAerogelTpsAblationRecessionServices();
         services.AddLsdDepegArbitrageServices();
         services.AddHyperloopKantrowitzAerodynamicsServices();
+
+        // Horizons 221-225 Services (STED Super-Resolution, PACE Continuous Evolution, M2P2 Plasma Propulsion, Sovereign Debt Climate Resilience & Seismic Metamaterial Cloak)
+        services.AddStedSuperResolutionServices();
+        services.AddPaceServices();
+        services.AddM2p2Services();
+        services.AddSovereignDebtClimateResilienceServices();
+        services.AddSeismicMetamaterialCloakServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
