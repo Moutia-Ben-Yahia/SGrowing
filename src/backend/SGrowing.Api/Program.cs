@@ -270,6 +270,11 @@ using SGrowing.Api.Modules.BioTech.CellFreeProteinSynthesisExpression;
 using SGrowing.Api.Modules.Aerospace.HallEffectThrusterErosion;
 using SGrowing.Api.Modules.Finance.MicrostructureKylesLambdaAdverseSelection;
 using SGrowing.Api.Modules.Energy.SolidStateBatteryDendriteSuppression;
+using SGrowing.Api.Modules.Quantum.DiamondColorCenterNanophotonics;
+using SGrowing.Api.Modules.BioTech.OligonucleotidePhosphoramiditeSynthesis;
+using SGrowing.Api.Modules.Aerospace.DualCombSpectroscopyGreenhouseFlux;
+using SGrowing.Api.Modules.Finance.MertonJumpDiffusionOptionPricing;
+using SGrowing.Api.Modules.Energy.PerovskiteSiliconTandemRecombination;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -943,6 +948,13 @@ app.MapCellFreeProteinSynthesisEndpoints();
 app.MapHallEffectThrusterEndpoints();
 app.MapMicrostructureKylesLambdaEndpoints();
 app.MapSolidStateBatteryDendriteEndpoints();
+
+// Horizons 281-285 Endpoint Mappings (Diamond Color Center Nanophotonics, Oligo Synthesis, Dual-Comb Spectroscopy, Merton Jump Diffusion & Perovskite Tandem)
+app.MapDiamondColorCenterEndpoints();
+app.MapOligoPhosphoramiditeEndpoints();
+app.MapDualCombSpectroscopyEndpoints();
+app.MapMertonJumpDiffusionEndpoints();
+app.MapPerovskiteSiliconTandemEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

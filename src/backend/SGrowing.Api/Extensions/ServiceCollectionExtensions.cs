@@ -272,6 +272,11 @@ using SGrowing.Api.Modules.BioTech.CellFreeProteinSynthesisExpression;
 using SGrowing.Api.Modules.Aerospace.HallEffectThrusterErosion;
 using SGrowing.Api.Modules.Finance.MicrostructureKylesLambdaAdverseSelection;
 using SGrowing.Api.Modules.Energy.SolidStateBatteryDendriteSuppression;
+using SGrowing.Api.Modules.Quantum.DiamondColorCenterNanophotonics;
+using SGrowing.Api.Modules.BioTech.OligonucleotidePhosphoramiditeSynthesis;
+using SGrowing.Api.Modules.Aerospace.DualCombSpectroscopyGreenhouseFlux;
+using SGrowing.Api.Modules.Finance.MertonJumpDiffusionOptionPricing;
+using SGrowing.Api.Modules.Energy.PerovskiteSiliconTandemRecombination;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1181,6 +1186,13 @@ public static class ServiceCollectionExtensions
         services.AddHallEffectThrusterErosionServices();
         services.AddMicrostructureKylesLambdaServices();
         services.AddSolidStateBatteryDendriteServices();
+
+        // Horizons 281-285 Services (Diamond Color Center Nanophotonics, Oligo Synthesis, Dual-Comb Spectroscopy, Merton Jump Diffusion & Perovskite Tandem)
+        services.AddDiamondColorCenterNanophotonicsServices();
+        services.AddOligoPhosphoramiditeSynthesisServices();
+        services.AddDualCombSpectroscopyServices();
+        services.AddMertonJumpDiffusionServices();
+        services.AddPerovskiteSiliconTandemServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
