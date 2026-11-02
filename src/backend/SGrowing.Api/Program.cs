@@ -205,6 +205,11 @@ using SGrowing.Api.Modules.Environmental.QclAtmosphericPlumeInversion;
 using SGrowing.Api.Modules.Aerospace.DualStageHallThrusterAnodeErosion;
 using SGrowing.Api.Modules.Finance.ZkSolvencyMerkleSumAudit;
 using SGrowing.Api.Modules.Energy.LiquidLithiumCpsDivertor;
+using SGrowing.Api.Modules.Quantum.StrontiumOpticalLatticeClock;
+using SGrowing.Api.Modules.BioTech.AcidMineDrainageBioleaching;
+using SGrowing.Api.Modules.Aerospace.AerogelTpsAblationRecession;
+using SGrowing.Api.Modules.Finance.LsdDepegArbitrageRedemption;
+using SGrowing.Api.Modules.Transportation.HyperloopKantrowitzTubeAerodynamics;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -787,6 +792,13 @@ app.MapQclAtmosphericPlumeEndpoints();
 app.MapDualStageHallThrusterEndpoints();
 app.MapZkSolvencyAuditEndpoints();
 app.MapLiquidLithiumDivertorEndpoints();
+
+// Horizons 216-220 Endpoint Mappings (Strontium-87 Optical Clock, AMD Bioleaching, Aerogel TPS Ablation, LSD Depeg Arbitrage & Hyperloop Kantrowitz Aerodynamics)
+app.MapStrontiumOpticalClockEndpoints();
+app.MapAcidMineDrainageEndpoints();
+app.MapAerogelTpsEndpoints();
+app.MapLsdDepegArbitrageEndpoints();
+app.MapHyperloopKantrowitzEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

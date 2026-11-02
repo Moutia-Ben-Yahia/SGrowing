@@ -207,6 +207,11 @@ using SGrowing.Api.Modules.Environmental.QclAtmosphericPlumeInversion;
 using SGrowing.Api.Modules.Aerospace.DualStageHallThrusterAnodeErosion;
 using SGrowing.Api.Modules.Finance.ZkSolvencyMerkleSumAudit;
 using SGrowing.Api.Modules.Energy.LiquidLithiumCpsDivertor;
+using SGrowing.Api.Modules.Quantum.StrontiumOpticalLatticeClock;
+using SGrowing.Api.Modules.BioTech.AcidMineDrainageBioleaching;
+using SGrowing.Api.Modules.Aerospace.AerogelTpsAblationRecession;
+using SGrowing.Api.Modules.Finance.LsdDepegArbitrageRedemption;
+using SGrowing.Api.Modules.Transportation.HyperloopKantrowitzTubeAerodynamics;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1025,6 +1030,13 @@ public static class ServiceCollectionExtensions
         services.AddDualStageHallThrusterServices();
         services.AddZkSolvencyAuditServices();
         services.AddLiquidLithiumDivertorServices();
+
+        // Horizons 216-220 Services (Strontium-87 Optical Clock, AMD Bioleaching, Aerogel TPS Ablation, LSD Depeg Arbitrage & Hyperloop Kantrowitz Aerodynamics)
+        services.AddStrontiumOpticalLatticeClockServices();
+        services.AddAcidMineDrainageBioleachingServices();
+        services.AddAerogelTpsAblationRecessionServices();
+        services.AddLsdDepegArbitrageServices();
+        services.AddHyperloopKantrowitzAerodynamicsServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
