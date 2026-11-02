@@ -85,6 +85,11 @@ using SGrowing.Api.Modules.Robotics.AgvFlockingCoordinator;
 using SGrowing.Api.Modules.Finance.CreditRiskUnderwriting;
 using SGrowing.Api.Modules.AI.DocumentGrounding;
 using SGrowing.Api.Modules.Security.ZkIdentityVerification;
+using SGrowing.Api.Modules.Aerospace.SatelliteOpticalDownlink;
+using SGrowing.Api.Modules.Infrastructure.DePinWorkerArbiter;
+using SGrowing.Api.Modules.Robotics.NeuromorphicOdometry;
+using SGrowing.Api.Modules.Finance.BepsPillarTwo;
+using SGrowing.Api.Modules.Governance.EnterpriseImmuneSystem;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -499,6 +504,13 @@ app.MapAgvFlockingEndpoints();
 app.MapCreditRiskUnderwritingEndpoints();
 app.MapDocumentGroundingEndpoints();
 app.MapZkIdentityVerificationEndpoints();
+
+// Horizons 96-100 Endpoint Mappings (Century Capstone Wave)
+app.MapSatelliteDownlinkEndpoints();
+app.MapDePinEndpoints();
+app.MapNeuromorphicOdometryEndpoints();
+app.MapBepsPillarTwoEndpoints();
+app.MapEnterpriseImmuneEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

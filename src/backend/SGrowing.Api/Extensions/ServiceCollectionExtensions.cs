@@ -87,6 +87,11 @@ using SGrowing.Api.Modules.Robotics.AgvFlockingCoordinator;
 using SGrowing.Api.Modules.Finance.CreditRiskUnderwriting;
 using SGrowing.Api.Modules.AI.DocumentGrounding;
 using SGrowing.Api.Modules.Security.ZkIdentityVerification;
+using SGrowing.Api.Modules.Aerospace.SatelliteOpticalDownlink;
+using SGrowing.Api.Modules.Infrastructure.DePinWorkerArbiter;
+using SGrowing.Api.Modules.Robotics.NeuromorphicOdometry;
+using SGrowing.Api.Modules.Finance.BepsPillarTwo;
+using SGrowing.Api.Modules.Governance.EnterpriseImmuneSystem;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -737,6 +742,13 @@ public static class ServiceCollectionExtensions
         services.AddCreditRiskUnderwritingServices();
         services.AddDocumentGroundingServices();
         services.AddZkIdentityVerificationServices();
+
+        // Horizons 96-100 Services (Century Capstone Wave)
+        services.AddSatelliteDownlinkServices();
+        services.AddDePinServices();
+        services.AddNeuromorphicOdometryServices();
+        services.AddBepsPillarTwoServices();
+        services.AddEnterpriseImmuneServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
