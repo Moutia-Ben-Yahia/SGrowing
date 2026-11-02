@@ -55,6 +55,11 @@ using SGrowing.Api.Modules.AI.KnowledgeHypergraph;
 using SGrowing.Api.Modules.SupplyChain.DisruptionSimulator;
 using SGrowing.Api.Modules.Security.VoiceLiveness;
 using SGrowing.Api.Modules.Infrastructure.FinOps;
+using SGrowing.Api.Modules.Sustainability.CarbonExchange;
+using SGrowing.Api.Modules.Security.VerifiableCredentials;
+using SGrowing.Api.Modules.IoT.PredictiveTelemetry;
+using SGrowing.Api.Modules.SupplyChain.HsClassification;
+using SGrowing.Api.Modules.Infrastructure.ServiceMesh;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -427,6 +432,13 @@ app.MapKnowledgeHypergraphEndpoints();
 app.MapDisruptionSimulationEndpoints();
 app.MapVoiceLivenessEndpoints();
 app.MapFinOpsArbitrageEndpoints();
+
+// Horizons 66-70 Endpoint Mappings
+app.MapCarbonExchangeEndpoints();
+app.MapVerifiableCredentialsEndpoints();
+app.MapPredictiveTelemetryEndpoints();
+app.MapHsClassificationEndpoints();
+app.MapServiceMeshEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
