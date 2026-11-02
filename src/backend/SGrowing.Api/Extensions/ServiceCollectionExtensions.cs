@@ -257,6 +257,11 @@ using SGrowing.Api.Modules.BioTech.LentiviralVectorIntegrationOncogenesis;
 using SGrowing.Api.Modules.Aerospace.LunarCraterTetherRappelling;
 using SGrowing.Api.Modules.Finance.SabrVolatilitySurfaceCalibration;
 using SGrowing.Api.Modules.Energy.LfpBatteryThermalRunawaySuppression;
+using SGrowing.Api.Modules.Quantum.BosonicCatQubitProtection;
+using SGrowing.Api.Modules.BioTech.EngineeredExosomeCargoLoading;
+using SGrowing.Api.Modules.Aerospace.AsteroidKineticImpactorDeflection;
+using SGrowing.Api.Modules.Finance.HierarchicalRiskParityClustering;
+using SGrowing.Api.Modules.Energy.VanadiumRedoxFlowBatteryBalancing;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1145,6 +1150,13 @@ public static class ServiceCollectionExtensions
         services.AddLunarCraterTetherRappellingServices();
         services.AddSabrVolatilitySurfaceCalibrationServices();
         services.AddLfpBatteryThermalRunawayServices();
+
+        // Horizons 266-270 Services (Bosonic Cat Qubit Protection, Engineered Exosome Cargo, Asteroid Kinetic Impactor, Hierarchical Risk Parity & VRFB Spectrophotometry Balancing)
+        services.AddBosonicCatQubitProtectionServices();
+        services.AddEngineeredExosomeCargoLoadingServices();
+        services.AddAsteroidKineticImpactorServices();
+        services.AddHierarchicalRiskParityClusteringServices();
+        services.AddVanadiumRedoxFlowBatteryBalancingServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
