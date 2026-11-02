@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SGrowing.Api.Common;
+using SGrowing.Api.Modules.Attribution.MultiTouch;
+using SGrowing.Api.Modules.AI.Governance;
+using SGrowing.Api.Modules.Marketing.SocialPublishing;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
@@ -17,6 +20,8 @@ using SGrowing.Api.Modules.Finance.Ledger;
 using SGrowing.Api.Modules.SupplyChain.Replenishment;
 using SGrowing.Api.Modules.DataArchitecture.EventSourcing;
 using SGrowing.Api.Modules.Security.GraphFraud;
+using SGrowing.Api.Modules.Conversations.Unified;
+using SGrowing.Api.Modules.Sales.Proposals;
 using SGrowing.Api.Modules.Documents.Idp;
 using SGrowing.Api.Modules.FrontendArchitecture.MicroFrontends;
 using SGrowing.Api.Modules.SupplyChain.Procurement;
@@ -498,6 +503,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IComplianceCertificateGeneratorService, ComplianceCertificateGeneratorService>();
 
         // Attribution & SaaS Metering
+        services.AddMultiTouchAttributionServices();
         services.AddScoped<MultiTouchAttributionService>();
         services.AddScoped<TenantUsageMeteringService>();
         services.AddScoped<QuietHoursGuardService>();
@@ -545,6 +551,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AiModelRouterService>();
 
         // Phase 14: Autonomous Multi-Agent Swarm Defense, Semantic Vector Tool Caching & Prompt Firewalls
+        services.AddAiGovernanceServices();
         services.AddSingleton<ICryptographicPromptCanaryService, CryptographicPromptCanaryService>();
         services.AddSingleton<ISemanticVectorToolCacheService, SemanticVectorToolCacheService>();
         services.AddSingleton<ICascadingModelRouterService, CascadingModelRouterService>();
@@ -974,6 +981,11 @@ public static class ServiceCollectionExtensions
         services.AddWorkflowTelemetryServices();
         services.AddOmnichannelSequenceServices();
         services.AddDevGatewayServices();
+        services.AddSocialPublishingServices();
+        services.AddB2BProposalServices();
+        services.AddUnifiedInboxServices();
+        services.AddMultiTouchAttributionServices();
+        services.AddAiGovernanceServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

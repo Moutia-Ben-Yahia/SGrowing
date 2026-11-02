@@ -136,6 +136,7 @@ export const routes: Routes = [
   { path: 'seo', component: SeoStudioComponent, canActivate: [authGuard] },
   { path: 'funnels', component: FunnelsStudioComponent, canActivate: [authGuard] },
   { path: 'operations', component: OperationsStudioComponent, canActivate: [authGuard] },
+  { path: 'analytics/multi-touch', loadComponent: () => import('./features/analytics/multi-touch-attribution-cockpit.component').then(m => m.MultiTouchAttributionCockpitComponent), canActivate: [authGuard] },
   { path: 'analytics', component: AnalyticsStudioComponent, canActivate: [authGuard] },
   { path: 'commerce/connectors', component: EcommerceConnectorsCockpitComponent, canActivate: [authGuard] },
   { path: 'commerce', component: CommerceStudioComponent, canActivate: [authGuard] },
@@ -145,6 +146,7 @@ export const routes: Routes = [
   { path: 'sla/monitor', loadComponent: () => import('./features/sla/sla-breach-monitor-cockpit.component').then(m => m.SlaBreachMonitorCockpitComponent), canActivate: [authGuard] },
   { path: 'social/calendar', loadComponent: () => import('./features/social/social-content-calendar-studio.component').then(m => m.SocialContentCalendarStudioComponent), canActivate: [authGuard] },
   { path: 'social/comment-to-dm', loadComponent: () => import('./features/social/social-comment-dm-studio.component').then(m => m.SocialCommentDmStudioComponent), canActivate: [authGuard] },
+  { path: 'social/publisher', loadComponent: () => import('./features/social/social-publisher-cockpit.component').then(m => m.SocialPublisherCockpitComponent), canActivate: [authGuard] },
   { path: 'social', component: SocialStudioComponent, canActivate: [authGuard] },
   { path: 'voice', component: VoiceStudioComponent, canActivate: [authGuard] },
   { path: 'voice/streaming-cockpit', loadComponent: () => import('./features/voice/voice-streaming-cockpit.component').then(m => m.VoiceStreamingCockpitComponent), canActivate: [authGuard] },
@@ -204,5 +206,8 @@ export const routes: Routes = [
   { path: 'workflows/dag-telemetry', loadComponent: () => import('./features/workflows/dag-telemetry-studio.component').then(m => m.DagTelemetryStudioComponent), canActivate: [authGuard] },
   { path: 'agents/growth-director', loadComponent: () => import('./features/agents/growth-director-mission-cockpit.component').then(m => m.GrowthDirectorMissionCockpitComponent), canActivate: [authGuard] },
   { path: 'developer/sandbox', loadComponent: () => import('./features/developer/developer-sandbox-cockpit.component').then(m => m.DeveloperSandboxCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/proposals', loadComponent: () => import('./features/sales/b2b-proposal-cpq-cockpit.component').then(m => m.B2BProposalCpqCockpitComponent), canActivate: [authGuard] },
+  { path: 'conversations/unified', loadComponent: () => import('./features/conversations/unified-support-inbox.component').then(m => m.UnifiedSupportInboxComponent), canActivate: [authGuard] },
+  { path: 'ai/governance', loadComponent: () => import('./features/ai/ai-governance-cockpit.component').then(m => m.AiGovernanceCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

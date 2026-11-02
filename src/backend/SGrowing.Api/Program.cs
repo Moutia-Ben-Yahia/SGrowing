@@ -1,4 +1,5 @@
 using Scalar.AspNetCore;
+using SGrowing.Api.Modules.Attribution.MultiTouch;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -14,6 +15,8 @@ using SGrowing.Api.Modules.Finance.Ledger;
 using SGrowing.Api.Modules.SupplyChain.Replenishment;
 using SGrowing.Api.Modules.DataArchitecture.EventSourcing;
 using SGrowing.Api.Modules.Security.GraphFraud;
+using SGrowing.Api.Modules.Conversations.Unified;
+using SGrowing.Api.Modules.Sales.Proposals;
 using SGrowing.Api.Modules.Documents.Idp;
 using SGrowing.Api.Modules.FrontendArchitecture.MicroFrontends;
 using SGrowing.Api.Modules.SupplyChain.Procurement;
@@ -154,6 +157,7 @@ using SGrowing.Api.Modules.CustomerData.Firmographics;
 using SGrowing.Api.Modules.Advertising.MetaGoogleAdsSync;
 using SGrowing.Api.Modules.Automation.WorkflowTelemetry;
 using SGrowing.Api.Modules.AI;
+using SGrowing.Api.Modules.AI.Governance;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
 using SGrowing.Api.Modules.Analytics;
@@ -360,6 +364,7 @@ app.MapWhatsAppClusterAndPacingEndpoints();
 app.MapTelegramBotEndpoints();
 app.MapAiModelRouterEndpoints();
 app.MapPromptFirewallEndpoints();
+app.MapAiGovernanceEndpoints();
 
 // Enterprise Wiki Strategic Pillars Endpoints (Waves 1-4)
 app.MapCallCenterAntiCollisionEndpoints();
@@ -402,6 +407,7 @@ app.MapMultiInboxRotationEndpoints();
 app.MapCarrierDispatchEndpoints();
 
 // Horizons 10-13 Endpoint Mappings
+SGrowing.Api.Modules.Marketing.SocialPublishing.SocialPublishingEndpoints.MapSocialPublishingEndpoints(app);
 app.MapWhatsAppPairingEndpoints();
 app.MapWhatsAppCompanionEndpoints();
 app.MapAgentFleetEndpoints();
@@ -735,6 +741,10 @@ app.MapAdsSyncEndpoints();
 app.MapWorkflowTelemetryEndpoints();
 app.MapOmnichannelSequenceEndpoints();
 app.MapDevGatewayEndpoints();
+app.MapB2BProposalEndpoints();
+app.MapUnifiedInboxEndpoints();
+app.MapMultiTouchAttributionEndpoints();
+app.MapAiGovernanceEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
