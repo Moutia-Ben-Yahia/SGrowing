@@ -285,6 +285,11 @@ using SGrowing.Api.Modules.BioTech.HighMolecularWeightDnaExtraction;
 using SGrowing.Api.Modules.Aerospace.LunarOrbitInsertionBallisticCapture;
 using SGrowing.Api.Modules.Finance.CdoGaussianCopulaTrancheCorrelation;
 using SGrowing.Api.Modules.Energy.SolidOxideFuelCellTriplePhaseBoundary;
+using SGrowing.Api.Modules.Quantum.SiliconSpinQubitExchange;
+using SGrowing.Api.Modules.BioTech.NanoporeSquiggleBasecalling;
+using SGrowing.Api.Modules.Aerospace.AerobrakingAtmosphericDrag;
+using SGrowing.Api.Modules.Finance.AlmgrenChrissOptimalLiquidation;
+using SGrowing.Api.Modules.Energy.TokamakNtmEccdSuppression;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -979,6 +984,13 @@ app.MapHmwDnaExtractionEndpoints();
 app.MapLunarOrbitInsertionEndpoints();
 app.MapCdoCopulaTrancheEndpoints();
 app.MapSolidOxideFuelCellEndpoints();
+
+// Horizons 296-300 Endpoint Mappings (Silicon Spin Qubit Exchange, Nanopore Squiggle Basecalling, Aerobraking Drag, Almgren-Chriss Liquidation & Tokamak NTM ECCD Suppression)
+app.MapSiliconSpinQubitEndpoints();
+app.MapNanoporeSquiggleEndpoints();
+app.MapAerobrakingDragEndpoints();
+app.MapAlmgrenChrissLiquidationEndpoints();
+app.MapTokamakNtmEccdEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

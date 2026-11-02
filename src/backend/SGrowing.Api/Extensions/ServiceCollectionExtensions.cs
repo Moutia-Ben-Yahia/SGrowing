@@ -287,6 +287,11 @@ using SGrowing.Api.Modules.BioTech.HighMolecularWeightDnaExtraction;
 using SGrowing.Api.Modules.Aerospace.LunarOrbitInsertionBallisticCapture;
 using SGrowing.Api.Modules.Finance.CdoGaussianCopulaTrancheCorrelation;
 using SGrowing.Api.Modules.Energy.SolidOxideFuelCellTriplePhaseBoundary;
+using SGrowing.Api.Modules.Quantum.SiliconSpinQubitExchange;
+using SGrowing.Api.Modules.BioTech.NanoporeSquiggleBasecalling;
+using SGrowing.Api.Modules.Aerospace.AerobrakingAtmosphericDrag;
+using SGrowing.Api.Modules.Finance.AlmgrenChrissOptimalLiquidation;
+using SGrowing.Api.Modules.Energy.TokamakNtmEccdSuppression;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1217,6 +1222,13 @@ public static class ServiceCollectionExtensions
         services.AddLunarOrbitInsertionServices();
         services.AddCdoCopulaTrancheServices();
         services.AddSolidOxideFuelCellServices();
+
+        // Horizons 296-300 Services (Silicon Spin Qubit Exchange, Nanopore Squiggle Basecalling, Aerobraking Drag, Almgren-Chriss Liquidation & Tokamak NTM ECCD Suppression)
+        services.AddSiliconSpinQubitServices();
+        services.AddNanoporeSquiggleServices();
+        services.AddAerobrakingDragServices();
+        services.AddAlmgrenChrissLiquidationServices();
+        services.AddTokamakNtmEccdServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
