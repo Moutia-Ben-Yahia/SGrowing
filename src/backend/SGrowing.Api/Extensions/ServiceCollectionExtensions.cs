@@ -102,6 +102,11 @@ using SGrowing.Api.Modules.Logistics.RailHumpYardScheduler;
 using SGrowing.Api.Modules.Energy.GeothermalMicroSeismicity;
 using SGrowing.Api.Modules.Automotive.TeleoperationFoveatedStream;
 using SGrowing.Api.Modules.Security.ConfidentialRemoteAttestation;
+using SGrowing.Api.Modules.Sustainability.MineralCarbonation;
+using SGrowing.Api.Modules.Finance.CbdcCrossBorderBridge;
+using SGrowing.Api.Modules.Manufacturing.CleanroomAirflowPredictor;
+using SGrowing.Api.Modules.Robotics.DroneUtmAirTraffic;
+using SGrowing.Api.Modules.Pharma.HotMeltExtrusionPat;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -773,6 +778,13 @@ public static class ServiceCollectionExtensions
         services.AddGeothermalMicroSeismicityServices();
         services.AddTeleoperationFoveatedServices();
         services.AddConfidentialRemoteAttestationServices();
+
+        // Horizons 111-115 Services (Precision Decarbonization & Cyber-Physical Systems)
+        services.AddMineralCarbonationServices();
+        services.AddCbdcCrossBorderServices();
+        services.AddCleanroomAirflowServices();
+        services.AddDroneUtmServices();
+        services.AddHotMeltExtrusionServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

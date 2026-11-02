@@ -100,6 +100,11 @@ using SGrowing.Api.Modules.Logistics.RailHumpYardScheduler;
 using SGrowing.Api.Modules.Energy.GeothermalMicroSeismicity;
 using SGrowing.Api.Modules.Automotive.TeleoperationFoveatedStream;
 using SGrowing.Api.Modules.Security.ConfidentialRemoteAttestation;
+using SGrowing.Api.Modules.Sustainability.MineralCarbonation;
+using SGrowing.Api.Modules.Finance.CbdcCrossBorderBridge;
+using SGrowing.Api.Modules.Manufacturing.CleanroomAirflowPredictor;
+using SGrowing.Api.Modules.Robotics.DroneUtmAirTraffic;
+using SGrowing.Api.Modules.Pharma.HotMeltExtrusionPat;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -535,6 +540,13 @@ app.MapRailHumpYardEndpoints();
 app.MapGeothermalMicroSeismicityEndpoints();
 app.MapTeleoperationFoveatedEndpoints();
 app.MapConfidentialRemoteAttestationEndpoints();
+
+// Horizons 111-115 Endpoint Mappings (Precision Decarbonization & Cyber-Physical Systems)
+app.MapMineralCarbonationEndpoints();
+app.MapCbdcCrossBorderEndpoints();
+app.MapCleanroomAirflowEndpoints();
+app.MapDroneUtmEndpoints();
+app.MapHotMeltExtrusionEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
