@@ -155,6 +155,11 @@ using SGrowing.Api.Modules.Aerospace.OislLaserPointingJitter;
 using SGrowing.Api.Modules.BioTech.SpatialTranscriptomicsDeconvolution;
 using SGrowing.Api.Modules.Finance.PqcCrossChainHtlc;
 using SGrowing.Api.Modules.Energy.PlasmaRunawayElectronSuppression;
+using SGrowing.Api.Modules.Environmental.QclPhotoacousticSpectroscopy;
+using SGrowing.Api.Modules.Aerospace.ScramjetIsolatorShockTrain;
+using SGrowing.Api.Modules.BioTech.CrisprPrimeEditingFlap;
+using SGrowing.Api.Modules.Finance.AmmLossVersusRebalancing;
+using SGrowing.Api.Modules.Energy.SupercriticalWellboreJouleThomson;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -667,6 +672,13 @@ app.MapOislLaserEndpoints();
 app.MapSpatialTranscriptomicsEndpoints();
 app.MapPqcHtlcEndpoints();
 app.MapPlasmaRunawayEndpoints();
+
+// Horizons 166-170 Endpoint Mappings (QCL Photoacoustic Spectroscopy, Scramjet Shock Train, CRISPR Prime Editing Flap, AMM LVR & Supercritical Wellbore)
+app.MapQclPhotoacousticEndpoints();
+app.MapScramjetIsolatorEndpoints();
+app.MapPrimeEditingEndpoints();
+app.MapAmmLvrEndpoints();
+app.MapSupercriticalWellboreEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

@@ -157,6 +157,11 @@ using SGrowing.Api.Modules.Aerospace.OislLaserPointingJitter;
 using SGrowing.Api.Modules.BioTech.SpatialTranscriptomicsDeconvolution;
 using SGrowing.Api.Modules.Finance.PqcCrossChainHtlc;
 using SGrowing.Api.Modules.Energy.PlasmaRunawayElectronSuppression;
+using SGrowing.Api.Modules.Environmental.QclPhotoacousticSpectroscopy;
+using SGrowing.Api.Modules.Aerospace.ScramjetIsolatorShockTrain;
+using SGrowing.Api.Modules.BioTech.CrisprPrimeEditingFlap;
+using SGrowing.Api.Modules.Finance.AmmLossVersusRebalancing;
+using SGrowing.Api.Modules.Energy.SupercriticalWellboreJouleThomson;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -905,6 +910,13 @@ public static class ServiceCollectionExtensions
         services.AddSpatialTranscriptomicsServices();
         services.AddPqcCrossChainHtlcServices();
         services.AddPlasmaRunawaySuppressionServices();
+
+        // Horizons 166-170 Services (QCL Photoacoustic Spectroscopy, Scramjet Shock Train, CRISPR Prime Editing Flap, AMM LVR & Supercritical Wellbore)
+        services.AddQclPhotoacousticServices();
+        services.AddScramjetIsolatorServices();
+        services.AddPrimeEditingServices();
+        services.AddAmmLossVersusRebalancingServices();
+        services.AddSupercriticalWellboreServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
