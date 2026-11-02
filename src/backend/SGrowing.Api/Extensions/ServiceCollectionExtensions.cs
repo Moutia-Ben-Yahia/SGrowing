@@ -67,6 +67,11 @@ using SGrowing.Api.Modules.Finance.FxHedging;
 using SGrowing.Api.Modules.AI.SyntheticData;
 using SGrowing.Api.Modules.Logistics.DroneCorridors;
 using SGrowing.Api.Modules.Security.ZtnaContinuousPosture;
+using SGrowing.Api.Modules.Tenancy.DataSovereignty;
+using SGrowing.Api.Modules.SupplyChain.DemandSensing;
+using SGrowing.Api.Modules.Voice.SentimentDeescalation;
+using SGrowing.Api.Modules.IoT.ColdChainSla;
+using SGrowing.Api.Modules.Security.PostQuantumCrypto;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -689,6 +694,13 @@ public static class ServiceCollectionExtensions
         services.AddDifferentialPrivacySandboxServices();
         services.AddDroneCorridorServices();
         services.AddZtnaServices();
+
+        // Horizons 76-80 Services
+        services.AddDataSovereigntyServices();
+        services.AddDemandSensingServices();
+        services.AddVoiceSentimentDeescalationServices();
+        services.AddColdChainSlaServices();
+        services.AddPostQuantumCryptoServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
