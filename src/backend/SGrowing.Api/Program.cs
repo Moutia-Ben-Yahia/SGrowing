@@ -140,6 +140,11 @@ using SGrowing.Api.Modules.Aerospace.HallThrusterPoleErosion;
 using SGrowing.Api.Modules.BioTech.NanoporeTranslocationBasecaller;
 using SGrowing.Api.Modules.Finance.ZkL3WatchtowerFraudProof;
 using SGrowing.Api.Modules.Energy.SuperhotEgsMicroSeismicity;
+using SGrowing.Api.Modules.Telecom.Terahertz6gBeamSquint;
+using SGrowing.Api.Modules.Energy.CryoFusionPelletExtruder;
+using SGrowing.Api.Modules.BioTech.CarTCellExhaustionKinetics;
+using SGrowing.Api.Modules.Energy.DmfcRutheniumPoisoning;
+using SGrowing.Api.Modules.Aerospace.RtgDecayThermocouple;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -631,6 +636,13 @@ app.MapHallThrusterEndpoints();
 app.MapNanoporeEndpoints();
 app.MapZkL3WatchtowerEndpoints();
 app.MapSuperhotEgsEndpoints();
+
+// Horizons 151-155 Endpoint Mappings (THz 6G Beam Squint, Cryo Fusion Pellets, CAR-T Exhaustion, DMFC Poisoning & Deep-Space RTG Decay)
+app.MapTerahertz6gEndpoints();
+app.MapCryoFusionPelletEndpoints();
+app.MapCarTExhaustionEndpoints();
+app.MapDmfcPoisoningEndpoints();
+app.MapRtgDecayEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

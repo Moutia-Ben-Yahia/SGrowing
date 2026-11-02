@@ -142,6 +142,11 @@ using SGrowing.Api.Modules.Aerospace.HallThrusterPoleErosion;
 using SGrowing.Api.Modules.BioTech.NanoporeTranslocationBasecaller;
 using SGrowing.Api.Modules.Finance.ZkL3WatchtowerFraudProof;
 using SGrowing.Api.Modules.Energy.SuperhotEgsMicroSeismicity;
+using SGrowing.Api.Modules.Telecom.Terahertz6gBeamSquint;
+using SGrowing.Api.Modules.Energy.CryoFusionPelletExtruder;
+using SGrowing.Api.Modules.BioTech.CarTCellExhaustionKinetics;
+using SGrowing.Api.Modules.Energy.DmfcRutheniumPoisoning;
+using SGrowing.Api.Modules.Aerospace.RtgDecayThermocouple;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -869,6 +874,13 @@ public static class ServiceCollectionExtensions
         services.AddNanoporeTranslocationServices();
         services.AddZkL3WatchtowerFraudProofServices();
         services.AddSuperhotEgsMicroSeismicityServices();
+
+        // Horizons 151-155 Services (THz 6G Beam Squint, Cryo Fusion Pellets, CAR-T Exhaustion, DMFC Poisoning & Deep-Space RTG Decay)
+        services.AddTerahertz6gBeamSquintServices();
+        services.AddCryoFusionPelletExtruderServices();
+        services.AddCarTCellExhaustionServices();
+        services.AddDmfcRutheniumPoisoningServices();
+        services.AddRtgDecayThermocoupleServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
