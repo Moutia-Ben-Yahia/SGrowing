@@ -162,6 +162,11 @@ using SGrowing.Api.Modules.Aerospace.ScramjetIsolatorShockTrain;
 using SGrowing.Api.Modules.BioTech.CrisprPrimeEditingFlap;
 using SGrowing.Api.Modules.Finance.AmmLossVersusRebalancing;
 using SGrowing.Api.Modules.Energy.SupercriticalWellboreJouleThomson;
+using SGrowing.Api.Modules.Energy.LiquidMetalBlanketHartmannFlow;
+using SGrowing.Api.Modules.BioTech.MicrobialElectrosynthesis;
+using SGrowing.Api.Modules.Aerospace.VasimrPlasmaPropulsion;
+using SGrowing.Api.Modules.Finance.OrderFlowAuctionMev;
+using SGrowing.Api.Modules.Manufacturing.HighNaEuvStochasticDefects;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -917,6 +922,13 @@ public static class ServiceCollectionExtensions
         services.AddPrimeEditingServices();
         services.AddAmmLossVersusRebalancingServices();
         services.AddSupercriticalWellboreServices();
+
+        // Horizons 171-175 Services (Liquid Metal Blanket Hartmann Flow, Microbial Electrosynthesis, VASIMR Propulsion, OFA MEV & High-NA EUV)
+        services.AddLiquidMetalMhdServices();
+        services.AddMicrobialElectrosynthesisServices();
+        services.AddVasimrPlasmaPropulsionServices();
+        services.AddOrderFlowAuctionServices();
+        services.AddHighNaEuvServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

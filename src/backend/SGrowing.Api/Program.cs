@@ -160,6 +160,11 @@ using SGrowing.Api.Modules.Aerospace.ScramjetIsolatorShockTrain;
 using SGrowing.Api.Modules.BioTech.CrisprPrimeEditingFlap;
 using SGrowing.Api.Modules.Finance.AmmLossVersusRebalancing;
 using SGrowing.Api.Modules.Energy.SupercriticalWellboreJouleThomson;
+using SGrowing.Api.Modules.Energy.LiquidMetalBlanketHartmannFlow;
+using SGrowing.Api.Modules.BioTech.MicrobialElectrosynthesis;
+using SGrowing.Api.Modules.Aerospace.VasimrPlasmaPropulsion;
+using SGrowing.Api.Modules.Finance.OrderFlowAuctionMev;
+using SGrowing.Api.Modules.Manufacturing.HighNaEuvStochasticDefects;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -679,6 +684,13 @@ app.MapScramjetIsolatorEndpoints();
 app.MapPrimeEditingEndpoints();
 app.MapAmmLvrEndpoints();
 app.MapSupercriticalWellboreEndpoints();
+
+// Horizons 171-175 Endpoint Mappings (Liquid Metal Blanket Hartmann Flow, Microbial Electrosynthesis, VASIMR Propulsion, OFA MEV & High-NA EUV)
+app.MapLiquidMetalMhdEndpoints();
+app.MapMicrobialElectrosynthesisEndpoints();
+app.MapVasimrPlasmaEndpoints();
+app.MapOrderFlowAuctionEndpoints();
+app.MapHighNaEuvEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
