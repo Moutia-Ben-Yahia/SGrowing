@@ -200,6 +200,11 @@ using SGrowing.Api.Modules.BioTech.OpticalCoherenceElastographyBiomechanics;
 using SGrowing.Api.Modules.Marine.MhdMarineSilentPropulsion;
 using SGrowing.Api.Modules.Finance.ZkRollupCensorshipResistance;
 using SGrowing.Api.Modules.Energy.SupercriticalThermosiphonGeothermal;
+using SGrowing.Api.Modules.BioTech.MicrofluidicLnpMrnaEncapsulation;
+using SGrowing.Api.Modules.Environmental.QclAtmosphericPlumeInversion;
+using SGrowing.Api.Modules.Aerospace.DualStageHallThrusterAnodeErosion;
+using SGrowing.Api.Modules.Finance.ZkSolvencyMerkleSumAudit;
+using SGrowing.Api.Modules.Energy.LiquidLithiumCpsDivertor;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -775,6 +780,13 @@ app.MapOpticalElastographyEndpoints();
 app.MapMhdMarinePropulsionEndpoints();
 app.MapZkRollupCensorshipEndpoints();
 app.MapSupercriticalThermosiphonEndpoints();
+
+// Horizons 211-215 Endpoint Mappings (Microfluidic LNP mRNA, QCL Atmospheric Plume, Dual-Stage Hall Thruster, ZK Solvency Audit & Tokamak Liquid Lithium CPS Divertor)
+app.MapMicrofluidicLnpEndpoints();
+app.MapQclAtmosphericPlumeEndpoints();
+app.MapDualStageHallThrusterEndpoints();
+app.MapZkSolvencyAuditEndpoints();
+app.MapLiquidLithiumDivertorEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

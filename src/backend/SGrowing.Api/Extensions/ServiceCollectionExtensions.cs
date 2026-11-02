@@ -202,6 +202,11 @@ using SGrowing.Api.Modules.BioTech.OpticalCoherenceElastographyBiomechanics;
 using SGrowing.Api.Modules.Marine.MhdMarineSilentPropulsion;
 using SGrowing.Api.Modules.Finance.ZkRollupCensorshipResistance;
 using SGrowing.Api.Modules.Energy.SupercriticalThermosiphonGeothermal;
+using SGrowing.Api.Modules.BioTech.MicrofluidicLnpMrnaEncapsulation;
+using SGrowing.Api.Modules.Environmental.QclAtmosphericPlumeInversion;
+using SGrowing.Api.Modules.Aerospace.DualStageHallThrusterAnodeErosion;
+using SGrowing.Api.Modules.Finance.ZkSolvencyMerkleSumAudit;
+using SGrowing.Api.Modules.Energy.LiquidLithiumCpsDivertor;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1013,6 +1018,13 @@ public static class ServiceCollectionExtensions
         services.AddMhdMarinePropulsionServices();
         services.AddZkRollupCensorshipServices();
         services.AddSupercriticalThermosiphonServices();
+
+        // Horizons 211-215 Services (Microfluidic LNP mRNA, QCL Atmospheric Plume, Dual-Stage Hall Thruster, ZK Solvency Audit & Tokamak Liquid Lithium CPS Divertor)
+        services.AddMicrofluidicLnpServices();
+        services.AddQclAtmosphericPlumeServices();
+        services.AddDualStageHallThrusterServices();
+        services.AddZkSolvencyAuditServices();
+        services.AddLiquidLithiumDivertorServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
