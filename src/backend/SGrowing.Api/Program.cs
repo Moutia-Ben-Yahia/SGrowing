@@ -120,6 +120,11 @@ using SGrowing.Api.Modules.Aerospace.CryoTurbopumpCavitation;
 using SGrowing.Api.Modules.BioTech.CrisprCasCleavageKinetics;
 using SGrowing.Api.Modules.Security.RingSignatureIdentity;
 using SGrowing.Api.Modules.Energy.UhvCoronaIonization;
+using SGrowing.Api.Modules.Energy.SolidStateBatteryEis;
+using SGrowing.Api.Modules.Telecom.SubseaDwdmRamanCompensator;
+using SGrowing.Api.Modules.Quantum.SuperconductingQubitGateArbiter;
+using SGrowing.Api.Modules.Aerospace.SpacecraftAerocaptureGuidance;
+using SGrowing.Api.Modules.Security.ThresholdMlDsaSigner;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -583,6 +588,13 @@ app.MapCryoTurbopumpCavitationEndpoints();
 app.MapCrisprCasCleavageEndpoints();
 app.MapRingSignatureIdentityEndpoints();
 app.MapUhvCoronaIonizationEndpoints();
+
+// Horizons 131-135 Endpoint Mappings (Solid-State Battery EIS, Subsea DWDM Raman, Superconducting Qubit Gates, Aerocapture Guidance & Threshold ML-DSA)
+app.MapSolidStateBatteryEisEndpoints();
+app.MapSubseaDwdmRamanCompensatorEndpoints();
+app.MapSuperconductingQubitGateArbiterEndpoints();
+app.MapSpacecraftAerocaptureGuidanceEndpoints();
+app.MapThresholdMlDsaSignerEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

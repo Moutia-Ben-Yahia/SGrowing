@@ -122,6 +122,11 @@ using SGrowing.Api.Modules.Aerospace.CryoTurbopumpCavitation;
 using SGrowing.Api.Modules.BioTech.CrisprCasCleavageKinetics;
 using SGrowing.Api.Modules.Security.RingSignatureIdentity;
 using SGrowing.Api.Modules.Energy.UhvCoronaIonization;
+using SGrowing.Api.Modules.Energy.SolidStateBatteryEis;
+using SGrowing.Api.Modules.Telecom.SubseaDwdmRamanCompensator;
+using SGrowing.Api.Modules.Quantum.SuperconductingQubitGateArbiter;
+using SGrowing.Api.Modules.Aerospace.SpacecraftAerocaptureGuidance;
+using SGrowing.Api.Modules.Security.ThresholdMlDsaSigner;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -821,6 +826,13 @@ public static class ServiceCollectionExtensions
         services.AddCrisprCasCleavageServices();
         services.AddRingSignatureIdentityServices();
         services.AddUhvCoronaIonizationServices();
+
+        // Horizons 131-135 Services (Solid-State Battery EIS, Subsea DWDM Raman, Superconducting Qubit Gates, Aerocapture Guidance & Threshold ML-DSA)
+        services.AddSolidStateBatteryEisServices();
+        services.AddSubseaDwdmRamanCompensatorServices();
+        services.AddSuperconductingQubitGateArbiterServices();
+        services.AddSpacecraftAerocaptureGuidanceServices();
+        services.AddThresholdMlDsaSignerServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
