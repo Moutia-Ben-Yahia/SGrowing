@@ -222,6 +222,11 @@ using SGrowing.Api.Modules.BioTech.EpigeneticMethylationClock;
 using SGrowing.Api.Modules.Aerospace.ElectrodynamicTetherDeorbit;
 using SGrowing.Api.Modules.Finance.VpinMarketMakerToxicFlow;
 using SGrowing.Api.Modules.Energy.AdiabaticCaesThermalStorage;
+using SGrowing.Api.Modules.Physics.ColdAtomGravimeterInterferometry;
+using SGrowing.Api.Modules.BioTech.IvtMrnaCappingPolyATail;
+using SGrowing.Api.Modules.Aerospace.AerogravityAssistTrajectory;
+using SGrowing.Api.Modules.Finance.CrossAssetLiquiditySpillover;
+using SGrowing.Api.Modules.Environmental.ScwoPfasElimination;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1061,6 +1066,13 @@ public static class ServiceCollectionExtensions
         services.AddElectrodynamicTetherDeorbitServices();
         services.AddVpinToxicFlowServices();
         services.AddAdiabaticCaesServices();
+
+        // Horizons 231-235 Services (Cold Atom Gravimeter, IVT mRNA Capping, Aerogravity-Assist, Cross-Asset Spillover & SCWO PFAS Elimination)
+        services.AddColdAtomGravimeterServices();
+        services.AddIvtMrnaCappingPolyAServices();
+        services.AddAerogravityAssistTrajectoryServices();
+        services.AddCrossAssetLiquiditySpilloverServices();
+        services.AddScwoPfasEliminationServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

@@ -220,6 +220,11 @@ using SGrowing.Api.Modules.BioTech.EpigeneticMethylationClock;
 using SGrowing.Api.Modules.Aerospace.ElectrodynamicTetherDeorbit;
 using SGrowing.Api.Modules.Finance.VpinMarketMakerToxicFlow;
 using SGrowing.Api.Modules.Energy.AdiabaticCaesThermalStorage;
+using SGrowing.Api.Modules.Physics.ColdAtomGravimeterInterferometry;
+using SGrowing.Api.Modules.BioTech.IvtMrnaCappingPolyATail;
+using SGrowing.Api.Modules.Aerospace.AerogravityAssistTrajectory;
+using SGrowing.Api.Modules.Finance.CrossAssetLiquiditySpillover;
+using SGrowing.Api.Modules.Environmental.ScwoPfasElimination;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -823,6 +828,13 @@ app.MapEpigeneticClockEndpoints();
 app.MapElectrodynamicTetherEndpoints();
 app.MapVpinEndpoints();
 app.MapAdiabaticCaesEndpoints();
+
+// Horizons 231-235 Endpoint Mappings (Cold Atom Gravimeter, IVT mRNA Capping, Aerogravity-Assist, Cross-Asset Spillover & SCWO PFAS Elimination)
+app.MapColdAtomGravimeterEndpoints();
+app.MapIvtMrnaEndpoints();
+app.MapAerogravityAssistEndpoints();
+app.MapCrossAssetSpilloverEndpoints();
+app.MapScwoEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
