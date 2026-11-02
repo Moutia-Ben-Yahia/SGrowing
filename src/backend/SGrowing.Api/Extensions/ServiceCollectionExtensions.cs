@@ -277,6 +277,11 @@ using SGrowing.Api.Modules.BioTech.OligonucleotidePhosphoramiditeSynthesis;
 using SGrowing.Api.Modules.Aerospace.DualCombSpectroscopyGreenhouseFlux;
 using SGrowing.Api.Modules.Finance.MertonJumpDiffusionOptionPricing;
 using SGrowing.Api.Modules.Energy.PerovskiteSiliconTandemRecombination;
+using SGrowing.Api.Modules.Quantum.SuperconductingCrosstalkCancellation;
+using SGrowing.Api.Modules.BioTech.SingleCellAmbientRnaDecontamination;
+using SGrowing.Api.Modules.Aerospace.ReactionWheelMicroVibrationJitter;
+using SGrowing.Api.Modules.Finance.BondPortfolioDurationConvexityImmunization;
+using SGrowing.Api.Modules.Energy.MoltenSaltCspNitrateDecomposition;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1193,6 +1198,13 @@ public static class ServiceCollectionExtensions
         services.AddDualCombSpectroscopyServices();
         services.AddMertonJumpDiffusionServices();
         services.AddPerovskiteSiliconTandemServices();
+
+        // Horizons 286-290 Services (Superconducting Crosstalk Cancellation, Single-Cell Ambient RNA Decontamination, Reaction Wheel Jitter, Bond Portfolio Immunization & Molten Salt CSP)
+        services.AddSuperconductingCrosstalkCancellationServices();
+        services.AddSingleCellAmbientRnaServices();
+        services.AddReactionWheelJitterServices();
+        services.AddBondPortfolioImmunizationServices();
+        services.AddMoltenSaltNitrateDecompositionServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

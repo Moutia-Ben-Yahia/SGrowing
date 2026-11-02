@@ -275,6 +275,11 @@ using SGrowing.Api.Modules.BioTech.OligonucleotidePhosphoramiditeSynthesis;
 using SGrowing.Api.Modules.Aerospace.DualCombSpectroscopyGreenhouseFlux;
 using SGrowing.Api.Modules.Finance.MertonJumpDiffusionOptionPricing;
 using SGrowing.Api.Modules.Energy.PerovskiteSiliconTandemRecombination;
+using SGrowing.Api.Modules.Quantum.SuperconductingCrosstalkCancellation;
+using SGrowing.Api.Modules.BioTech.SingleCellAmbientRnaDecontamination;
+using SGrowing.Api.Modules.Aerospace.ReactionWheelMicroVibrationJitter;
+using SGrowing.Api.Modules.Finance.BondPortfolioDurationConvexityImmunization;
+using SGrowing.Api.Modules.Energy.MoltenSaltCspNitrateDecomposition;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -955,6 +960,13 @@ app.MapOligoPhosphoramiditeEndpoints();
 app.MapDualCombSpectroscopyEndpoints();
 app.MapMertonJumpDiffusionEndpoints();
 app.MapPerovskiteSiliconTandemEndpoints();
+
+// Horizons 286-290 Endpoint Mappings (Superconducting Crosstalk Cancellation, Single-Cell Ambient RNA Decontamination, Reaction Wheel Jitter, Bond Portfolio Immunization & Molten Salt CSP)
+app.MapSuperconductingCrosstalkEndpoints();
+app.MapSingleCellAmbientRnaEndpoints();
+app.MapReactionWheelJitterEndpoints();
+app.MapBondPortfolioImmunizationEndpoints();
+app.MapMoltenSaltNitrateDecompositionEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
