@@ -32,6 +32,11 @@ using SGrowing.Api.Modules.Funnels.CanvasBuilder;
 using SGrowing.Api.Modules.Commerce.FulfillmentMatrix;
 using SGrowing.Api.Modules.Analytics.BiReportBuilder;
 using SGrowing.Api.Modules.Dev.WebhookMesh;
+using SGrowing.Api.Modules.Ai.KnowledgeGraph;
+using SGrowing.Api.Modules.Voice.IvrTree;
+using SGrowing.Api.Modules.Commerce.FraudFirewall;
+using SGrowing.Api.Modules.Security.CollaborationAudit;
+using SGrowing.Api.Modules.Dev.AppGenerator;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
@@ -1038,6 +1043,11 @@ public static class ServiceCollectionExtensions
         services.AddFulfillmentMatrixServices();
         services.AddBiReportBuilderServices();
         services.AddBiDirectionalWebhookMeshServices();
+        services.AddKnowledgeGraphServices();
+        services.AddVoiceIvrTreeServices();
+        services.AddFraudFirewallServices();
+        services.AddCollaborationAuditServices();
+        services.AddAppGeneratorServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

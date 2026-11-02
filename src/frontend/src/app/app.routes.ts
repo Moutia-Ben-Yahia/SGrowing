@@ -235,5 +235,10 @@ export const routes: Routes = [
   { path: 'commerce/fulfillment-matrix', loadComponent: () => import('./features/commerce/fulfillment-matrix-cockpit.component').then(m => m.FulfillmentMatrixCockpitComponent), canActivate: [authGuard] },
   { path: 'analytics/bi-report-builder', loadComponent: () => import('./features/analytics/bi-report-builder.component').then(m => m.BiReportBuilderComponent), canActivate: [authGuard] },
   { path: 'developer/webhook-mesh', loadComponent: () => import('./features/developer/webhook-mesh-cockpit.component').then(m => m.WebhookMeshCockpitComponent), canActivate: [authGuard] },
+  { path: 'ai/knowledge-graph', loadComponent: () => import('./features/ai/knowledge-graph-cockpit.component').then(m => m.KnowledgeGraphCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/ivr-canvas', loadComponent: () => import('./features/voice/voice-ivr-tree-cockpit.component').then(m => m.VoiceIvrTreeCockpitComponent), canActivate: [authGuard] },
+  { path: 'commerce/fraud-radar', loadComponent: () => import('./features/commerce/fraud-firewall-cockpit.component').then(m => m.FraudFirewallCockpitComponent), canActivate: [authGuard] },
+  { path: 'security/collaboration-audit', loadComponent: () => import('./features/security/collaboration-audit-cockpit.component').then(m => m.CollaborationAuditCockpitComponent), canActivate: [authGuard] },
+  { path: 'developer/app-builder', loadComponent: () => import('./features/developer/app-generator-cockpit.component').then(m => m.AppGeneratorCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

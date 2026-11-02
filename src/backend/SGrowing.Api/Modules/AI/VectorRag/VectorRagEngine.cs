@@ -112,14 +112,18 @@ public class VectorRagEngine : IVectorRagEngine
 
     private static float[] GenerateSyntheticEmbedding(string text)
     {
-        // Deterministic pseudo-embedding based on character n-grams and hashing
+        // Deterministic pseudo-embedding based on FNV-1a character hashing
         const int dimensions = 64;
         var vec = new float[dimensions];
         var words = text.ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
         foreach (var word in words)
         {
-            var hash = (uint)word.GetHashCode();
+            uint hash = 2166136261;
+            foreach (var c in word)
+            {
+                hash = (hash ^ c) * 16777619;
+            }
             var index = (int)(hash % dimensions);
             vec[index] += 1.0f;
         }

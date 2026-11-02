@@ -26,6 +26,11 @@ using SGrowing.Api.Modules.Funnels.CanvasBuilder;
 using SGrowing.Api.Modules.Commerce.FulfillmentMatrix;
 using SGrowing.Api.Modules.Analytics.BiReportBuilder;
 using SGrowing.Api.Modules.Dev.WebhookMesh;
+using SGrowing.Api.Modules.Ai.KnowledgeGraph;
+using SGrowing.Api.Modules.Voice.IvrTree;
+using SGrowing.Api.Modules.Commerce.FraudFirewall;
+using SGrowing.Api.Modules.Security.CollaborationAudit;
+using SGrowing.Api.Modules.Dev.AppGenerator;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -797,6 +802,11 @@ app.MapCanvasBuilderEndpoints();
 app.MapFulfillmentMatrixEndpoints();
 app.MapBiReportBuilderEndpoints();
 app.MapBiDirectionalWebhookMeshEndpoints();
+app.MapKnowledgeGraphEndpoints();
+app.MapVoiceIvrTreeEndpoints();
+app.MapFraudFirewallEndpoints();
+app.MapCollaborationAuditEndpoints();
+app.MapAppGeneratorEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
