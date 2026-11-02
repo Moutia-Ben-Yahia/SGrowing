@@ -78,51 +78,37 @@ using SGrowing.Api.Modules.Finance.ConcentratedLiquidity;
 using SGrowing.Api.Modules.Media.ProsodyDubbing;
 using SGrowing.Api.Modules.Security.ZkRollupBridge;
 using SGrowing.Api.Modules.Logistics.MaritimeEcoRouting;
-using SGrowing.Api.Modules.Insurance.ParametricUnderwriting;
 using SGrowing.Api.Modules.Manufacturing.OpticalQualityControl;
 using SGrowing.Api.Modules.Security.MpcThresholdSigner;
 using SGrowing.Api.Modules.Sustainability.CircularRemanufacturing;
-using SGrowing.Api.Modules.Robotics.AgvFlockingCoordinator;
 using SGrowing.Api.Modules.Finance.CreditRiskUnderwriting;
 using SGrowing.Api.Modules.AI.DocumentGrounding;
 using SGrowing.Api.Modules.Security.ZkIdentityVerification;
 using SGrowing.Api.Modules.Infrastructure.DePinWorkerArbiter;
-using SGrowing.Api.Modules.Robotics.NeuromorphicOdometry;
 using SGrowing.Api.Modules.Finance.BepsPillarTwo;
 using SGrowing.Api.Modules.Governance.EnterpriseImmuneSystem;
-using SGrowing.Api.Modules.Telecom.SubseaAcousticEarlyWarning;
-using SGrowing.Api.Modules.Agriculture.PrecisionAgrigenomics;
 using SGrowing.Api.Modules.Finance.MicroPaymentMesh;
-using SGrowing.Api.Modules.Aviation.AircraftTurnaroundOptimizer;
 using SGrowing.Api.Modules.Logistics.RailHumpYardScheduler;
-using SGrowing.Api.Modules.Automotive.TeleoperationFoveatedStream;
 using SGrowing.Api.Modules.Security.ConfidentialRemoteAttestation;
 using SGrowing.Api.Modules.Sustainability.MineralCarbonation;
 using SGrowing.Api.Modules.Finance.CbdcCrossBorderBridge;
 using SGrowing.Api.Modules.Manufacturing.CleanroomAirflowPredictor;
-using SGrowing.Api.Modules.Robotics.DroneUtmAirTraffic;
-using SGrowing.Api.Modules.Pharma.HotMeltExtrusionPat;
 using SGrowing.Api.Modules.Security.QkdSatelliteArbiter;
 using SGrowing.Api.Modules.Trade.RulesOfOriginTariff;
 using SGrowing.Api.Modules.Security.ZkIrisBiometrics;
-using SGrowing.Api.Modules.Healthcare.BciNeuralKinematics;
 using SGrowing.Api.Modules.Manufacturing.EuvLithographyPellicle;
 using SGrowing.Api.Modules.Finance.HftOrderBookMicrostructure;
 using SGrowing.Api.Modules.Security.RingSignatureIdentity;
-using SGrowing.Api.Modules.Telecom.SubseaDwdmRamanCompensator;
 using SGrowing.Api.Modules.Security.ThresholdMlDsaSigner;
-using SGrowing.Api.Modules.Healthcare.MriMagnetQuenchArbiter;
 using SGrowing.Api.Modules.AI.SpikingRetinaGazeArbiter;
 using SGrowing.Api.Modules.Finance.ZkStateRelayAggregator;
 using SGrowing.Api.Modules.Security.CvQkdCoherentState;
 using SGrowing.Api.Modules.Finance.ZkL3WatchtowerFraudProof;
-using SGrowing.Api.Modules.Telecom.Terahertz6gBeamSquint;
 using SGrowing.Api.Modules.Finance.ZkSolvencyMerkleSumTree;
 using SGrowing.Api.Modules.Finance.PqcCrossChainHtlc;
 using SGrowing.Api.Modules.Finance.AmmLossVersusRebalancing;
 using SGrowing.Api.Modules.Finance.OrderFlowAuctionMev;
 using SGrowing.Api.Modules.Manufacturing.HighNaEuvStochasticDefects;
-using SGrowing.Api.Modules.Telecom.DirectToCellDopplerTimingAdvance;
 using SGrowing.Api.Modules.Finance.ZkDarkPoolVdfBatching;
 using SGrowing.Api.Modules.Finance.DeFiLendingBadDebtSocialization;
 using SGrowing.Api.Modules.Security.CvQkdExcessNoiseSecretKeyRate;
@@ -803,40 +789,31 @@ public static class ServiceCollectionExtensions
 
         // Horizons 86-90 Services
         services.AddMaritimeEcoRoutingServices();
-        services.AddParametricInsuranceServices();
         services.AddOpticalQualityControlServices();
         services.AddMpcThresholdSignerServices();
 
         // Horizons 91-95 Services
         services.AddCircularRemanufacturingServices();
-        services.AddAgvFlockingServices();
         services.AddCreditRiskUnderwritingServices();
         services.AddDocumentGroundingServices();
         services.AddZkIdentityVerificationServices();
 
         // Horizons 96-100 Services (Century Capstone Wave)
         services.AddDePinServices();
-        services.AddNeuromorphicOdometryServices();
         services.AddBepsPillarTwoServices();
         services.AddEnterpriseImmuneServices();
 
         // Horizons 101-105 Services (Next-Era Wave)
-        services.AddSubseaAcousticServices();
-        services.AddPrecisionAgrigenomicsServices();
         services.AddMicroPaymentMeshServices();
 
         // Horizons 106-110 Services (Deep Infrastructure Wave)
-        services.AddAircraftTurnaroundServices();
         services.AddRailHumpYardServices();
-        services.AddTeleoperationFoveatedServices();
         services.AddConfidentialRemoteAttestationServices();
 
         // Horizons 111-115 Services (Precision Decarbonization & Cyber-Physical Systems)
         services.AddMineralCarbonationServices();
         services.AddCbdcCrossBorderServices();
         services.AddCleanroomAirflowServices();
-        services.AddDroneUtmServices();
-        services.AddHotMeltExtrusionServices();
 
         // Horizons 116-120 Services (Nuclear SMR, Hypersonic Aerospace, QKD, Global Trade & ZK Biometrics)
         services.AddQkdSatelliteArbiterServices();
@@ -844,7 +821,6 @@ public static class ServiceCollectionExtensions
         services.AddZkIrisBiometricServices();
 
         // Horizons 121-125 Services (Fusion Tokamak MHD, BCI Kinematics, Gravitational Interferometer, EUV Pellicle & HFT Microstructure)
-        services.AddBciNeuralKinematicsServices();
         services.AddEuvLithographyPellicleServices();
         services.AddHftOrderBookMicrostructureServices();
 
@@ -852,11 +828,9 @@ public static class ServiceCollectionExtensions
         services.AddRingSignatureIdentityServices();
 
         // Horizons 131-135 Services (Solid-State Battery EIS, Subsea DWDM Raman, Superconducting Qubit Gates, Aerocapture Guidance & Threshold ML-DSA)
-        services.AddSubseaDwdmRamanCompensatorServices();
         services.AddThresholdMlDsaSignerServices();
 
         // Horizons 136-140 Services (MRI Quench Arbiter, Space Elevator Tether, PEM Electrolyzer, Spiking Retina & ZK State Relay)
-        services.AddMriMagnetQuenchServices();
         services.AddSpikingRetinaGazeArbiterServices();
         services.AddZkStateRelayAggregatorServices();
 
@@ -867,7 +841,6 @@ public static class ServiceCollectionExtensions
         services.AddZkL3WatchtowerFraudProofServices();
 
         // Horizons 151-155 Services (THz 6G Beam Squint, Cryo Fusion Pellets, CAR-T Exhaustion, DMFC Poisoning & Deep-Space RTG Decay)
-        services.AddTerahertz6gBeamSquintServices();
 
         // Horizons 156-160 Services (Gravitational Microlensing Exoplanets, HTS REBCO Delamination, Antibody Affinity Maturation, ZK Solvency & Hypersonic BLT)
         services.AddZkSolvencyServices();
@@ -883,7 +856,6 @@ public static class ServiceCollectionExtensions
         services.AddHighNaEuvServices();
 
         // Horizons 176-180 Services (sCO2 Brayton Compressor Surge, Direct-to-Cell LEO Doppler, CRISPR Cas12a DETECTR, ZK Dark Pool VDF & Lunar Regolith Microwave Sintering)
-        services.AddDirectToCellServices();
         services.AddZkDarkPoolServices();
 
         // Horizons 181-185 Services (SMES Quench Fast Dump, Adaptive Optics Phase Conjugation, Cell-Free Protein Translation, DeFi Bad Debt Socialization & Hypersonic Skip-Glide)

@@ -76,51 +76,37 @@ using SGrowing.Api.Modules.Finance.ConcentratedLiquidity;
 using SGrowing.Api.Modules.Media.ProsodyDubbing;
 using SGrowing.Api.Modules.Security.ZkRollupBridge;
 using SGrowing.Api.Modules.Logistics.MaritimeEcoRouting;
-using SGrowing.Api.Modules.Insurance.ParametricUnderwriting;
 using SGrowing.Api.Modules.Manufacturing.OpticalQualityControl;
 using SGrowing.Api.Modules.Security.MpcThresholdSigner;
 using SGrowing.Api.Modules.Sustainability.CircularRemanufacturing;
-using SGrowing.Api.Modules.Robotics.AgvFlockingCoordinator;
 using SGrowing.Api.Modules.Finance.CreditRiskUnderwriting;
 using SGrowing.Api.Modules.AI.DocumentGrounding;
 using SGrowing.Api.Modules.Security.ZkIdentityVerification;
 using SGrowing.Api.Modules.Infrastructure.DePinWorkerArbiter;
-using SGrowing.Api.Modules.Robotics.NeuromorphicOdometry;
 using SGrowing.Api.Modules.Finance.BepsPillarTwo;
 using SGrowing.Api.Modules.Governance.EnterpriseImmuneSystem;
-using SGrowing.Api.Modules.Telecom.SubseaAcousticEarlyWarning;
-using SGrowing.Api.Modules.Agriculture.PrecisionAgrigenomics;
 using SGrowing.Api.Modules.Finance.MicroPaymentMesh;
-using SGrowing.Api.Modules.Aviation.AircraftTurnaroundOptimizer;
 using SGrowing.Api.Modules.Logistics.RailHumpYardScheduler;
-using SGrowing.Api.Modules.Automotive.TeleoperationFoveatedStream;
 using SGrowing.Api.Modules.Security.ConfidentialRemoteAttestation;
 using SGrowing.Api.Modules.Sustainability.MineralCarbonation;
 using SGrowing.Api.Modules.Finance.CbdcCrossBorderBridge;
 using SGrowing.Api.Modules.Manufacturing.CleanroomAirflowPredictor;
-using SGrowing.Api.Modules.Robotics.DroneUtmAirTraffic;
-using SGrowing.Api.Modules.Pharma.HotMeltExtrusionPat;
 using SGrowing.Api.Modules.Security.QkdSatelliteArbiter;
 using SGrowing.Api.Modules.Trade.RulesOfOriginTariff;
 using SGrowing.Api.Modules.Security.ZkIrisBiometrics;
-using SGrowing.Api.Modules.Healthcare.BciNeuralKinematics;
 using SGrowing.Api.Modules.Manufacturing.EuvLithographyPellicle;
 using SGrowing.Api.Modules.Finance.HftOrderBookMicrostructure;
 using SGrowing.Api.Modules.Security.RingSignatureIdentity;
-using SGrowing.Api.Modules.Telecom.SubseaDwdmRamanCompensator;
 using SGrowing.Api.Modules.Security.ThresholdMlDsaSigner;
-using SGrowing.Api.Modules.Healthcare.MriMagnetQuenchArbiter;
 using SGrowing.Api.Modules.AI.SpikingRetinaGazeArbiter;
 using SGrowing.Api.Modules.Finance.ZkStateRelayAggregator;
 using SGrowing.Api.Modules.Security.CvQkdCoherentState;
 using SGrowing.Api.Modules.Finance.ZkL3WatchtowerFraudProof;
-using SGrowing.Api.Modules.Telecom.Terahertz6gBeamSquint;
 using SGrowing.Api.Modules.Finance.ZkSolvencyMerkleSumTree;
 using SGrowing.Api.Modules.Finance.PqcCrossChainHtlc;
 using SGrowing.Api.Modules.Finance.AmmLossVersusRebalancing;
 using SGrowing.Api.Modules.Finance.OrderFlowAuctionMev;
 using SGrowing.Api.Modules.Manufacturing.HighNaEuvStochasticDefects;
-using SGrowing.Api.Modules.Telecom.DirectToCellDopplerTimingAdvance;
 using SGrowing.Api.Modules.Finance.ZkDarkPoolVdfBatching;
 using SGrowing.Api.Modules.Finance.DeFiLendingBadDebtSocialization;
 using SGrowing.Api.Modules.Security.CvQkdExcessNoiseSecretKeyRate;
@@ -565,40 +551,31 @@ app.MapZkRollupBridgeEndpoints();
 
 // Horizons 86-90 Endpoint Mappings
 app.MapMaritimeEcoRoutingEndpoints();
-app.MapParametricInsuranceEndpoints();
 app.MapOpticalQualityControlEndpoints();
 app.MapMpcThresholdSignerEndpoints();
 
 // Horizons 91-95 Endpoint Mappings
 app.MapCircularRemanufacturingEndpoints();
-app.MapAgvFlockingEndpoints();
 app.MapCreditRiskUnderwritingEndpoints();
 app.MapDocumentGroundingEndpoints();
 app.MapZkIdentityVerificationEndpoints();
 
 // Horizons 96-100 Endpoint Mappings (Century Capstone Wave)
 app.MapDePinEndpoints();
-app.MapNeuromorphicOdometryEndpoints();
 app.MapBepsPillarTwoEndpoints();
 app.MapEnterpriseImmuneEndpoints();
 
 // Horizons 101-105 Endpoint Mappings (Next-Era Wave)
-app.MapSubseaAcousticEndpoints();
-app.MapPrecisionAgrigenomicsEndpoints();
 app.MapMicroPaymentMeshEndpoints();
 
 // Horizons 106-110 Endpoint Mappings (Deep Infrastructure Wave)
-app.MapAircraftTurnaroundEndpoints();
 app.MapRailHumpYardEndpoints();
-app.MapTeleoperationFoveatedEndpoints();
 app.MapConfidentialRemoteAttestationEndpoints();
 
 // Horizons 111-115 Endpoint Mappings (Precision Decarbonization & Cyber-Physical Systems)
 app.MapMineralCarbonationEndpoints();
 app.MapCbdcCrossBorderEndpoints();
 app.MapCleanroomAirflowEndpoints();
-app.MapDroneUtmEndpoints();
-app.MapHotMeltExtrusionEndpoints();
 
 // Horizons 116-120 Endpoint Mappings (Nuclear SMR, Hypersonic Aerospace, QKD, Global Trade & ZK Biometrics)
 app.MapQkdSatelliteArbiterEndpoints();
@@ -606,7 +583,6 @@ app.MapRulesOfOriginTariffEndpoints();
 app.MapZkIrisBiometricEndpoints();
 
 // Horizons 121-125 Endpoint Mappings (Fusion Tokamak MHD, BCI Kinematics, Gravitational Interferometer, EUV Pellicle & HFT Microstructure)
-app.MapBciNeuralKinematicsEndpoints();
 app.MapEuvLithographyPellicleEndpoints();
 app.MapHftOrderBookMicrostructureEndpoints();
 
@@ -614,11 +590,9 @@ app.MapHftOrderBookMicrostructureEndpoints();
 app.MapRingSignatureIdentityEndpoints();
 
 // Horizons 131-135 Endpoint Mappings (Solid-State Battery EIS, Subsea DWDM Raman, Superconducting Qubit Gates, Aerocapture Guidance & Threshold ML-DSA)
-app.MapSubseaDwdmRamanCompensatorEndpoints();
 app.MapThresholdMlDsaSignerEndpoints();
 
 // Horizons 136-140 Endpoint Mappings (MRI Quench Arbiter, Space Elevator Tether, PEM Electrolyzer, Spiking Retina & ZK State Relay)
-app.MapMriMagnetQuenchEndpoints();
 app.MapSpikingRetinaEndpoints();
 app.MapZkStateRelayEndpoints();
 
@@ -629,7 +603,6 @@ app.MapCvQkdEndpoints();
 app.MapZkL3WatchtowerEndpoints();
 
 // Horizons 151-155 Endpoint Mappings (THz 6G Beam Squint, Cryo Fusion Pellets, CAR-T Exhaustion, DMFC Poisoning & Deep-Space RTG Decay)
-app.MapTerahertz6gEndpoints();
 
 // Horizons 156-160 Endpoint Mappings (Gravitational Microlensing Exoplanets, HTS REBCO Delamination, Antibody Affinity Maturation, ZK Solvency & Hypersonic BLT)
 app.MapZkSolvencyEndpoints();
@@ -645,7 +618,6 @@ app.MapOrderFlowAuctionEndpoints();
 app.MapHighNaEuvEndpoints();
 
 // Horizons 176-180 Endpoint Mappings (sCO2 Brayton Compressor Surge, Direct-to-Cell LEO Doppler, CRISPR Cas12a DETECTR, ZK Dark Pool VDF & Lunar Regolith Microwave Sintering)
-app.MapDirectToCellEndpoints();
 app.MapZkDarkPoolEndpoints();
 
 // Horizons 181-185 Endpoint Mappings (SMES Quench Fast Dump, Adaptive Optics Phase Conjugation, Cell-Free Protein Translation, DeFi Bad Debt Socialization & Hypersonic Skip-Glide)
