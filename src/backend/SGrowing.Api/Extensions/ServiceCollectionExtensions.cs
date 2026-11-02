@@ -72,6 +72,11 @@ using SGrowing.Api.Modules.SupplyChain.DemandSensing;
 using SGrowing.Api.Modules.Voice.SentimentDeescalation;
 using SGrowing.Api.Modules.IoT.ColdChainSla;
 using SGrowing.Api.Modules.Security.PostQuantumCrypto;
+using SGrowing.Api.Modules.Logistics.DrayageScheduler;
+using SGrowing.Api.Modules.Security.HomomorphicAnalytics;
+using SGrowing.Api.Modules.Finance.ConcentratedLiquidity;
+using SGrowing.Api.Modules.Media.ProsodyDubbing;
+using SGrowing.Api.Modules.Security.ZkRollupBridge;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -701,6 +706,13 @@ public static class ServiceCollectionExtensions
         services.AddVoiceSentimentDeescalationServices();
         services.AddColdChainSlaServices();
         services.AddPostQuantumCryptoServices();
+
+        // Horizons 81-85 Services
+        services.AddDrayageSchedulerServices();
+        services.AddHomomorphicAnalyticsServices();
+        services.AddConcentratedLiquidityServices();
+        services.AddProsodyDubbingServices();
+        services.AddZkRollupBridgeServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

@@ -70,6 +70,11 @@ using SGrowing.Api.Modules.SupplyChain.DemandSensing;
 using SGrowing.Api.Modules.Voice.SentimentDeescalation;
 using SGrowing.Api.Modules.IoT.ColdChainSla;
 using SGrowing.Api.Modules.Security.PostQuantumCrypto;
+using SGrowing.Api.Modules.Logistics.DrayageScheduler;
+using SGrowing.Api.Modules.Security.HomomorphicAnalytics;
+using SGrowing.Api.Modules.Finance.ConcentratedLiquidity;
+using SGrowing.Api.Modules.Media.ProsodyDubbing;
+using SGrowing.Api.Modules.Security.ZkRollupBridge;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -463,6 +468,13 @@ app.MapDemandSensingEndpoints();
 app.MapVoiceSentimentDeescalationEndpoints();
 app.MapColdChainSlaEndpoints();
 app.MapPostQuantumCryptoEndpoints();
+
+// Horizons 81-85 Endpoint Mappings
+app.MapDrayageSchedulerEndpoints();
+app.MapHomomorphicAnalyticsEndpoints();
+app.MapConcentratedLiquidityEndpoints();
+app.MapProsodyDubbingEndpoints();
+app.MapZkRollupBridgeEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
