@@ -300,6 +300,11 @@ using SGrowing.Api.Modules.BioTech.GuideSeqPrimeEditingOffTarget;
 using SGrowing.Api.Modules.Aerospace.AtmosphericEntryBlackoutGuidance;
 using SGrowing.Api.Modules.Finance.TipsRealYieldBreakevenInflation;
 using SGrowing.Api.Modules.Energy.DirectAirCaptureTvsaSorbent;
+using SGrowing.Api.Modules.Quantum.MajoranaZeroModeBraiding;
+using SGrowing.Api.Modules.BioTech.OrganoidLightSheetMorphogenesis;
+using SGrowing.Api.Modules.Aerospace.OpticalInterSatelliteCrosslink;
+using SGrowing.Api.Modules.Finance.CdsIndexTrancheCorrelation;
+using SGrowing.Api.Modules.Energy.MicrochannelFischerTropschSaf;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1015,6 +1020,13 @@ app.MapGuideSeqEditingEndpoints();
 app.MapAtmosphericEntryEndpoints();
 app.MapTipsRealYieldEndpoints();
 app.MapDirectAirCaptureTvsaEndpoints();
+
+// Horizons 311-315 Endpoint Mappings (Majorana Zero Modes, Organoid Morphogenesis, OISL Crosslink PAT, CDS Index Tranche & Fischer-Tropsch SAF)
+app.MapMajoranaBraidingEndpoints();
+app.MapOrganoidMorphogenesisEndpoints();
+app.MapOislCrosslinkEndpoints();
+app.MapCdsIndexTrancheEndpoints();
+app.MapFischerTropschSafEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

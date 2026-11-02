@@ -302,6 +302,11 @@ using SGrowing.Api.Modules.BioTech.GuideSeqPrimeEditingOffTarget;
 using SGrowing.Api.Modules.Aerospace.AtmosphericEntryBlackoutGuidance;
 using SGrowing.Api.Modules.Finance.TipsRealYieldBreakevenInflation;
 using SGrowing.Api.Modules.Energy.DirectAirCaptureTvsaSorbent;
+using SGrowing.Api.Modules.Quantum.MajoranaZeroModeBraiding;
+using SGrowing.Api.Modules.BioTech.OrganoidLightSheetMorphogenesis;
+using SGrowing.Api.Modules.Aerospace.OpticalInterSatelliteCrosslink;
+using SGrowing.Api.Modules.Finance.CdsIndexTrancheCorrelation;
+using SGrowing.Api.Modules.Energy.MicrochannelFischerTropschSaf;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1253,6 +1258,13 @@ public static class ServiceCollectionExtensions
         services.AddAtmosphericEntryServices();
         services.AddTipsRealYieldServices();
         services.AddDirectAirCaptureTvsaServices();
+
+        // Horizons 311-315 Services (Majorana Zero Modes, Organoid Morphogenesis, OISL Crosslink PAT, CDS Index Tranche & Fischer-Tropsch SAF)
+        services.AddMajoranaBraidingServices();
+        services.AddOrganoidMorphogenesisServices();
+        services.AddOislCrosslinkServices();
+        services.AddCdsIndexTrancheServices();
+        services.AddFischerTropschSafServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
