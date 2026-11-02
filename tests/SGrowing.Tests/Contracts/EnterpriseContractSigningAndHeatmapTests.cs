@@ -383,8 +383,8 @@ public class EnterpriseContractSigningAndHeatmapTests
         );
 
         var parts = link.Token.Split('.');
-        // Tamper with signature part
-        var tamperedSignature = parts[1][..^1] + (parts[1][^1] == 'X' ? 'Y' : 'X');
+        // Tamper with signature part: change first character to guarantee byte 0 mismatch
+        var tamperedSignature = (parts[1][0] == 'A' ? 'B' : 'A') + parts[1][1..];
         var tamperedToken = $"{parts[0]}.{tamperedSignature}";
 
         // Act

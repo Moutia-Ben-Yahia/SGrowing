@@ -112,6 +112,11 @@ using SGrowing.Api.Modules.Aerospace.ScramjetThermalProtection;
 using SGrowing.Api.Modules.Security.QkdSatelliteArbiter;
 using SGrowing.Api.Modules.Trade.RulesOfOriginTariff;
 using SGrowing.Api.Modules.Security.ZkIrisBiometrics;
+using SGrowing.Api.Modules.Energy.TokamakPlasmaMhd;
+using SGrowing.Api.Modules.Healthcare.BciNeuralKinematics;
+using SGrowing.Api.Modules.Aerospace.GravitationalInterferometerMesh;
+using SGrowing.Api.Modules.Manufacturing.EuvLithographyPellicle;
+using SGrowing.Api.Modules.Finance.HftOrderBookMicrostructure;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -797,6 +802,13 @@ public static class ServiceCollectionExtensions
         services.AddQkdSatelliteArbiterServices();
         services.AddRulesOfOriginTariffServices();
         services.AddZkIrisBiometricServices();
+
+        // Horizons 121-125 Services (Fusion Tokamak MHD, BCI Kinematics, Gravitational Interferometer, EUV Pellicle & HFT Microstructure)
+        services.AddTokamakPlasmaMhdServices();
+        services.AddBciNeuralKinematicsServices();
+        services.AddGravitationalInterferometerServices();
+        services.AddEuvLithographyPellicleServices();
+        services.AddHftOrderBookMicrostructureServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

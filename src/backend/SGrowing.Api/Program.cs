@@ -110,6 +110,11 @@ using SGrowing.Api.Modules.Aerospace.ScramjetThermalProtection;
 using SGrowing.Api.Modules.Security.QkdSatelliteArbiter;
 using SGrowing.Api.Modules.Trade.RulesOfOriginTariff;
 using SGrowing.Api.Modules.Security.ZkIrisBiometrics;
+using SGrowing.Api.Modules.Energy.TokamakPlasmaMhd;
+using SGrowing.Api.Modules.Healthcare.BciNeuralKinematics;
+using SGrowing.Api.Modules.Aerospace.GravitationalInterferometerMesh;
+using SGrowing.Api.Modules.Manufacturing.EuvLithographyPellicle;
+using SGrowing.Api.Modules.Finance.HftOrderBookMicrostructure;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -559,6 +564,13 @@ app.MapScramjetThermalProtectionEndpoints();
 app.MapQkdSatelliteArbiterEndpoints();
 app.MapRulesOfOriginTariffEndpoints();
 app.MapZkIrisBiometricEndpoints();
+
+// Horizons 121-125 Endpoint Mappings (Fusion Tokamak MHD, BCI Kinematics, Gravitational Interferometer, EUV Pellicle & HFT Microstructure)
+app.MapTokamakPlasmaMhdEndpoints();
+app.MapBciNeuralKinematicsEndpoints();
+app.MapGravitationalInterferometerEndpoints();
+app.MapEuvLithographyPellicleEndpoints();
+app.MapHftOrderBookMicrostructureEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

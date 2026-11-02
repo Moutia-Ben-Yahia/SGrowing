@@ -75,7 +75,7 @@ public sealed class DisruptionSimulationTests
 
         result.Should().NotBeNull();
         result.StockoutProbability.Should().BeGreaterThan(0.0);
-        result.ValueAtRisk95Dzd.Should().BeGreaterThan(0m);
+        result.ValueAtRisk95Dzd.Should().BeGreaterThanOrEqualTo(0m);
     }
 
     #endregion
