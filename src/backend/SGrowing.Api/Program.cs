@@ -130,6 +130,11 @@ using SGrowing.Api.Modules.Aerospace.SpaceElevatorTether;
 using SGrowing.Api.Modules.Energy.PemElectrolyzerDegradation;
 using SGrowing.Api.Modules.AI.SpikingRetinaGazeArbiter;
 using SGrowing.Api.Modules.Finance.ZkStateRelayAggregator;
+using SGrowing.Api.Modules.Security.CvQkdCoherentState;
+using SGrowing.Api.Modules.Energy.MoltenSaltCspThermocline;
+using SGrowing.Api.Modules.BioTech.MicrobialCrisprCascade;
+using SGrowing.Api.Modules.Energy.FusionDivertorDetachment;
+using SGrowing.Api.Modules.Aerospace.HypersonicWaveriderShock;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -607,6 +612,13 @@ app.MapSpaceElevatorTetherEndpoints();
 app.MapPemElectrolyzerEndpoints();
 app.MapSpikingRetinaEndpoints();
 app.MapZkStateRelayEndpoints();
+
+// Horizons 141-145 Endpoint Mappings (CV-QKD Coherent State, Molten Salt CSP Thermocline, Microbial CRISPR Cascade, Fusion Divertor Detachment & Hypersonic Waverider Shock)
+app.MapCvQkdEndpoints();
+app.MapMoltenSaltCspEndpoints();
+app.MapMicrobialCrisprEndpoints();
+app.MapFusionDivertorEndpoints();
+app.MapHypersonicWaveriderEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

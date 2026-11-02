@@ -132,6 +132,11 @@ using SGrowing.Api.Modules.Aerospace.SpaceElevatorTether;
 using SGrowing.Api.Modules.Energy.PemElectrolyzerDegradation;
 using SGrowing.Api.Modules.AI.SpikingRetinaGazeArbiter;
 using SGrowing.Api.Modules.Finance.ZkStateRelayAggregator;
+using SGrowing.Api.Modules.Security.CvQkdCoherentState;
+using SGrowing.Api.Modules.Energy.MoltenSaltCspThermocline;
+using SGrowing.Api.Modules.BioTech.MicrobialCrisprCascade;
+using SGrowing.Api.Modules.Energy.FusionDivertorDetachment;
+using SGrowing.Api.Modules.Aerospace.HypersonicWaveriderShock;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -845,6 +850,13 @@ public static class ServiceCollectionExtensions
         services.AddPemElectrolyzerDegradationServices();
         services.AddSpikingRetinaGazeArbiterServices();
         services.AddZkStateRelayAggregatorServices();
+
+        // Horizons 141-145 Services (CV-QKD Coherent State, Molten Salt CSP Thermocline, Microbial CRISPR Cascade, Fusion Divertor Detachment & Hypersonic Waverider Shock)
+        services.AddCvQkdCoherentStateServices();
+        services.AddMoltenSaltCspThermoclineServices();
+        services.AddMicrobialCrisprCascadeServices();
+        services.AddFusionDivertorDetachmentServices();
+        services.AddHypersonicWaveriderShockServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
