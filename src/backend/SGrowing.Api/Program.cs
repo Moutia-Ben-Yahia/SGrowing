@@ -265,6 +265,11 @@ using SGrowing.Api.Modules.BioTech.ProtacTernaryComplexKinetics;
 using SGrowing.Api.Modules.Aerospace.HypersonicScramjetIsolatorShockTrain;
 using SGrowing.Api.Modules.Finance.CrossCurrencyFxBasisSwapCip;
 using SGrowing.Api.Modules.Energy.CompressedGasGeothermalEnergyStorage;
+using SGrowing.Api.Modules.Quantum.NeutralAtomTweezerRearrangement;
+using SGrowing.Api.Modules.BioTech.CellFreeProteinSynthesisExpression;
+using SGrowing.Api.Modules.Aerospace.HallEffectThrusterErosion;
+using SGrowing.Api.Modules.Finance.MicrostructureKylesLambdaAdverseSelection;
+using SGrowing.Api.Modules.Energy.SolidStateBatteryDendriteSuppression;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -931,6 +936,13 @@ app.MapProtacTernaryComplexEndpoints();
 app.MapHypersonicScramjetEndpoints();
 app.MapCrossCurrencyFxBasisEndpoints();
 app.MapCompressedGasGeothermalEndpoints();
+
+// Horizons 276-280 Endpoint Mappings (Neutral Atom Tweezer Rearrangement, Cell-Free Protein Synthesis, Hall-Effect Thruster Erosion, Microstructure Kyle's Lambda & Solid-State Battery Dendrite Suppression)
+app.MapNeutralAtomTweezerEndpoints();
+app.MapCellFreeProteinSynthesisEndpoints();
+app.MapHallEffectThrusterEndpoints();
+app.MapMicrostructureKylesLambdaEndpoints();
+app.MapSolidStateBatteryDendriteEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

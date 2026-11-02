@@ -267,6 +267,11 @@ using SGrowing.Api.Modules.BioTech.ProtacTernaryComplexKinetics;
 using SGrowing.Api.Modules.Aerospace.HypersonicScramjetIsolatorShockTrain;
 using SGrowing.Api.Modules.Finance.CrossCurrencyFxBasisSwapCip;
 using SGrowing.Api.Modules.Energy.CompressedGasGeothermalEnergyStorage;
+using SGrowing.Api.Modules.Quantum.NeutralAtomTweezerRearrangement;
+using SGrowing.Api.Modules.BioTech.CellFreeProteinSynthesisExpression;
+using SGrowing.Api.Modules.Aerospace.HallEffectThrusterErosion;
+using SGrowing.Api.Modules.Finance.MicrostructureKylesLambdaAdverseSelection;
+using SGrowing.Api.Modules.Energy.SolidStateBatteryDendriteSuppression;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1169,6 +1174,13 @@ public static class ServiceCollectionExtensions
         services.AddHypersonicScramjetIsolatorServices();
         services.AddCrossCurrencyFxBasisSwapCipServices();
         services.AddCompressedGasGeothermalServices();
+
+        // Horizons 276-280 Services (Neutral Atom Tweezer Rearrangement, Cell-Free Protein Synthesis, Hall-Effect Thruster Erosion, Microstructure Kyle's Lambda & Solid-State Battery Dendrite Suppression)
+        services.AddNeutralAtomTweezerRearrangementServices();
+        services.AddCellFreeProteinSynthesisServices();
+        services.AddHallEffectThrusterErosionServices();
+        services.AddMicrostructureKylesLambdaServices();
+        services.AddSolidStateBatteryDendriteServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
