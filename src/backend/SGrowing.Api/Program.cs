@@ -1,5 +1,11 @@
 using Scalar.AspNetCore;
 using SGrowing.Api.Modules.Attribution.MultiTouch;
+using SGrowing.Api.Modules.Funnels.MabOptimizer;
+using SGrowing.Api.Modules.Deliverability.WarmupSwarm;
+using SGrowing.Api.Modules.CRM.MetadataEngine;
+using SGrowing.Api.Modules.Automation.ExecutionEngine;
+using SGrowing.Api.Modules.Billing.DunningEngine;
+using SGrowing.Api.Modules.AI.SwarmCoordination;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -745,6 +751,12 @@ app.MapB2BProposalEndpoints();
 app.MapUnifiedInboxEndpoints();
 app.MapMultiTouchAttributionEndpoints();
 app.MapAiGovernanceEndpoints();
+app.MapMabOptimizerEndpoints();
+app.MapWarmupSwarmEndpoints();
+app.MapCrmMetadataEndpoints();
+app.MapWorkflowExecutionEndpoints();
+app.MapDunningBillingEndpoints();
+app.MapSwarmCoordinationEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

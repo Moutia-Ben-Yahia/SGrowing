@@ -6,6 +6,12 @@ using SGrowing.Api.Common;
 using SGrowing.Api.Modules.Attribution.MultiTouch;
 using SGrowing.Api.Modules.AI.Governance;
 using SGrowing.Api.Modules.Marketing.SocialPublishing;
+using SGrowing.Api.Modules.Funnels.MabOptimizer;
+using SGrowing.Api.Modules.Deliverability.WarmupSwarm;
+using SGrowing.Api.Modules.CRM.MetadataEngine;
+using SGrowing.Api.Modules.Automation.ExecutionEngine;
+using SGrowing.Api.Modules.Billing.DunningEngine;
+using SGrowing.Api.Modules.AI.SwarmCoordination;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
@@ -986,6 +992,12 @@ public static class ServiceCollectionExtensions
         services.AddUnifiedInboxServices();
         services.AddMultiTouchAttributionServices();
         services.AddAiGovernanceServices();
+        services.AddMabOptimizerServices();
+        services.AddWarmupSwarmServices();
+        services.AddCrmMetadataServices();
+        services.AddWorkflowExecutionServices();
+        services.AddDunningBillingServices();
+        services.AddSwarmCoordinationServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

@@ -149,21 +149,75 @@ graph TD
 - **Frontend Cockpit:** `src/frontend/src/app/features/ai/ai-governance-cockpit.component.ts` (`/ai/governance`).
 - **Verification:** 18 backend tests in `AiGovernanceTests.cs`, 5 Vitest tests, and Playwright E2E verification.
 
+### Horizon 15: Domain C1 & C2 Visual Funnel Builder & Multi-Armed Bandit (MAB) Split Engine
+- **Backend:** `src/backend/SGrowing.Api/Modules/Funnels/MabOptimizer/` (`MabOptimizerModels.cs`, `MabOptimizerEngine.cs`, `MabOptimizerEndpoints.cs`).
+- **Capabilities:**
+  - Modular block hierarchy schema with dynamic drag-and-drop ordering.
+  - Bayesian Thompson Sampling over Beta(alpha, beta) distribution for autonomous traffic shifting to top-converting variants.
+  - Automatic Schema.org `WebPage` structured JSON-LD synthesis.
+- **Frontend Cockpit:** `src/frontend/src/app/features/funnels/visual-funnel-builder.component.ts` (`/funnels/builder`).
+- **Verification:** 4 backend tests in `MabOptimizerTests.cs`, 5 Vitest tests, and Playwright E2E verification.
+
+### Horizon 16: Domain D2 & D3 P2P Mailbox Warmup Swarm & Deliverability Radar
+- **Backend:** `src/backend/SGrowing.Api/Modules/Deliverability/WarmupSwarm/` (`WarmupSwarmModels.cs`, `WarmupSwarmEngine.cs`, `WarmupSwarmEndpoints.cs`).
+- **Capabilities:**
+  - Automated daily sending volume step-up algorithm with Gaussian delay distribution.
+  - Peer-to-peer synthetic engagement mesh with simulated opens, contextual replies, and spam rescue.
+  - DNS deliverability resolver verifying SPF, DKIM 2048-bit selectors, DMARC `p=reject` policies, and BIMI SVG certificates.
+- **Frontend Cockpit:** `src/frontend/src/app/features/deliverability/mailbox-warmup-radar.component.ts` (`/outreach/warmup`).
+- **Verification:** 3 backend tests in `WarmupSwarmTests.cs`, 4 Vitest tests, and Playwright E2E verification.
+
+### Horizon 17: Domain B1 & B4 CRM Custom Objects Studio & Metadata Schema Engine
+- **Backend:** `src/backend/SGrowing.Api/Modules/CRM/MetadataEngine/` (`CrmMetadataModels.cs`, `CrmMetadataEngine.cs`, `CrmMetadataEndpoints.cs`).
+- **Capabilities:**
+  - Extensible custom entity schema definition with 8 typed attribute primitives.
+  - Dynamic relational graph mapping linking custom entities to standard CRM contacts, companies, and deals.
+  - Levenshtein distance duplicate detection engine with interactive master record merge reconciliation.
+- **Frontend Cockpit:** `src/frontend/src/app/features/crm/custom-objects-studio.component.ts` (`/crm/custom-objects`).
+- **Verification:** 3 backend tests in `CrmMetadataTests.cs`, 5 Vitest tests, and Playwright E2E verification.
+
+### Horizon 18: Domain E1, E2 & E3 Stateful Event Mesh & DAG Workflow Execution Cockpit
+- **Backend:** `src/backend/SGrowing.Api/Modules/Automation/ExecutionEngine/` (`WorkflowExecutionModels.cs`, `WorkflowExecutionEngine.cs`, `WorkflowExecutionEndpoints.cs`).
+- **Capabilities:**
+  - Persistent step-by-step DAG checkpointing preserving execution inputs, outputs, and timestamps.
+  - Resilient exponential backoff retry policies and dead-letter queue isolation.
+  - Step replay capability allowing isolated recovery of failed nodes without restarting the entire workflow.
+- **Frontend Cockpit:** `src/frontend/src/app/features/workflows/workflow-execution-cockpit.component.ts` (`/workflows/executor`).
+- **Verification:** 2 backend tests in `WorkflowExecutionTests.cs`, 4 Vitest tests, and Playwright E2E verification.
+
+### Horizon 19: Domain G1 & G2 Subscription Billing, Tax & Smart Dunning Studio
+- **Backend:** `src/backend/SGrowing.Api/Modules/Billing/DunningEngine/` (`DunningBillingModels.cs`, `DunningBillingEngine.cs`, `DunningBillingEndpoints.cs`).
+- **Capabilities:**
+  - Global real-time sales tax and EU VAT VIES cross-border B2B reverse charge calculation.
+  - SHA-256 sealed immutable billing invoices.
+  - Progressive dunning recovery workflow (Day 1 silent retry, Day 3 warning, Day 7 final notice & graceful tier downgrade).
+- **Frontend Cockpit:** `src/frontend/src/app/features/billing/subscription-dunning-studio.component.ts` (`/billing/dunning`).
+- **Verification:** 4 backend tests in `DunningBillingTests.cs`, 3 Vitest tests, and Playwright E2E verification.
+
+### Horizon 20: Domain J1, J2 & J3 Autonomous Multi-Agent Swarm Orchestration Cockpit
+- **Backend:** `src/backend/SGrowing.Api/Modules/AI/SwarmCoordination/` (`SwarmCoordinationModels.cs`, `SwarmCoordinationEngine.cs`, `SwarmCoordinationEndpoints.cs`).
+- **Capabilities:**
+  - Autonomous task decomposition across specialized personas (`LeadResearcher`, `OutreachCopywriter`, `TechnicalSeoAuditor`, `ComplianceGuardian`, `AdOptimizer`).
+  - Shared scratchpad contextual memory preserving state without token degradation.
+  - Human-in-the-Loop policy gatekeeper enforcing mandatory admin authorization for high-risk financial and outreach actions.
+- **Frontend Cockpit:** `src/frontend/src/app/features/ai/swarm-orchestration-cockpit.component.ts` (`/ai/swarm`).
+- **Verification:** 3 backend tests in `SwarmCoordinationTests.cs`, 5 Vitest tests, and Playwright E2E verification.
+
 ---
 
 ## 3. Comprehensive Quality Gates Verification
 
 | Verification Gate | Result | Status |
 |---|---|---|
-| **Backend Unit & Integration Tests** | **5,162 passed / 0 failed / 0 skipped** | **100% Pass** (27s) |
+| **Backend Unit & Integration Tests** | **5,181 passed / 0 failed / 0 skipped** | **100% Pass** (10s) |
 | **Backend Compilation (`TreatWarningsAsErrors = true`)** | **0 Warnings, 0 Errors** | **100% Pass** |
-| **Frontend Vitest Unit & Component Suite** | **116 passed / 0 failed** across 23 suites | **100% Pass** (7.37s) |
-| **Playwright End-to-End Suite** | **38 passed / 0 failed** across 38 suites | **100% Pass** (40.8s) |
+| **Frontend Vitest Unit & Component Suite** | **142 passed / 0 failed** across 29 suites | **100% Pass** (5.9s) |
+| **Playwright End-to-End Suite** | **44 passed / 0 failed** across 44 suites | **100% Pass** (31s) |
 
 ---
 
 ## 4. Git Commits Sequence
-- `408e620`: `chore(arch): prune remaining 14 non-growth simulation modules (Agriculture, Automotive, Aviation, Healthcare, Pharma, Telecom, Robotics, Insurance)`
+- `408e620`: `chore(arch): prune remaining 14 non-growth simulation modules`
 - `e926316`: `feat(growth-os): implement CDP Identity Resolution, Ads CAPI Sync, and Workflow Telemetry DAG Simulator`
 - `efbf58f`: `docs: add growth OS PRD roadmap execution and architecture report`
 - `27a8b30`: `feat(growth-os-ui): deliver Horizon 1 cockpits for CDP Identity Graph, Ad CAPI ROAS, and DAG Telemetry with Vitest and Playwright suites`
@@ -172,3 +226,4 @@ graph TD
 - `fcd0a1c`: `feat(growth-os): deliver Horizons 5, 6, 7, and 8 (AI Growth Director Cockpit, SignalR Client Service, B2B Firmographics Engine, and Omnichannel Sequence Orchestrator)`
 - `a22c12f`: `feat(dev-gateway): deliver Horizon 9 (Public Developer Gateway, Token-Bucket Rate Limiter & Sandbox Simulator)`
 - `2e30bff`: `docs: finalize delivery of Horizon 9 in growth OS execution report`
+- `ca09667`: `feat(growth-os): deliver Horizons 10 to 14 (Social Publisher, B2B CPQ, Unified Inbox, Multi-Touch Attribution, AI Governance)`
