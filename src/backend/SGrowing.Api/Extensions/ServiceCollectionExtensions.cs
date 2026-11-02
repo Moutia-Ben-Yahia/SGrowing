@@ -232,6 +232,11 @@ using SGrowing.Api.Modules.BioTech.CarTCellExhaustionReprogramming;
 using SGrowing.Api.Modules.Aerospace.SolarSailRadiationPressure;
 using SGrowing.Api.Modules.Finance.DynamicMarginCollateralVar;
 using SGrowing.Api.Modules.Energy.MicrobialFuelCellBioenergy;
+using SGrowing.Api.Modules.Quantum.NvCenterNanoscaleMagnetometry;
+using SGrowing.Api.Modules.BioTech.PrimeEditingSearchAndReplace;
+using SGrowing.Api.Modules.Aerospace.MhdBoundaryLayerFlowControl;
+using SGrowing.Api.Modules.Finance.AmmDynamicImpermanentLossHedge;
+using SGrowing.Api.Modules.Energy.DirectMethanolFuelCell;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1085,6 +1090,13 @@ public static class ServiceCollectionExtensions
         services.AddSolarSailRadiationPressureServices();
         services.AddDynamicMarginCollateralVarServices();
         services.AddMicrobialFuelCellBioenergyServices();
+
+        // Horizons 241-245 Services (NV Center Magnetometry, Prime Editing Search-and-Replace, MHD Boundary Layer Flow Control, AMM Impermanent Loss Dynamic Hedge & Direct Methanol Fuel Cell)
+        services.AddNvCenterMagnetometryServices();
+        services.AddPrimeEditingSearchAndReplaceServices();
+        services.AddMhdBoundaryLayerServices();
+        services.AddAmmDynamicImpermanentLossHedgeServices();
+        services.AddDirectMethanolFuelCellServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

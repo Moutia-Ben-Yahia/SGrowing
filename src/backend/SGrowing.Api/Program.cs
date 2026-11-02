@@ -230,6 +230,11 @@ using SGrowing.Api.Modules.BioTech.CarTCellExhaustionReprogramming;
 using SGrowing.Api.Modules.Aerospace.SolarSailRadiationPressure;
 using SGrowing.Api.Modules.Finance.DynamicMarginCollateralVar;
 using SGrowing.Api.Modules.Energy.MicrobialFuelCellBioenergy;
+using SGrowing.Api.Modules.Quantum.NvCenterNanoscaleMagnetometry;
+using SGrowing.Api.Modules.BioTech.PrimeEditingSearchAndReplace;
+using SGrowing.Api.Modules.Aerospace.MhdBoundaryLayerFlowControl;
+using SGrowing.Api.Modules.Finance.AmmDynamicImpermanentLossHedge;
+using SGrowing.Api.Modules.Energy.DirectMethanolFuelCell;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -847,6 +852,13 @@ app.MapCarTCellExhaustionReprogrammingEndpoints();
 app.MapSolarSailEndpoints();
 app.MapDynamicMarginVarEndpoints();
 app.MapMicrobialFuelCellEndpoints();
+
+// Horizons 241-245 Endpoint Mappings (NV Center Magnetometry, Prime Editing Search-and-Replace, MHD Boundary Layer Flow Control, AMM Impermanent Loss Dynamic Hedge & Direct Methanol Fuel Cell)
+app.MapNvCenterMagnetometryEndpoints();
+app.MapPrimeEditingSearchAndReplaceEndpoints();
+app.MapMhdBoundaryLayerEndpoints();
+app.MapAmmDynamicHedgeEndpoints();
+app.MapDmfcEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
