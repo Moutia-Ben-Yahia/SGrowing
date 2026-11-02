@@ -175,6 +175,11 @@ using SGrowing.Api.Modules.Defense.AdaptiveOpticsPhaseConjugation;
 using SGrowing.Api.Modules.BioTech.CellFreeProteinTranslation;
 using SGrowing.Api.Modules.Finance.DeFiLendingBadDebtSocialization;
 using SGrowing.Api.Modules.Aerospace.HypersonicSkipGlideTrajectory;
+using SGrowing.Api.Modules.Security.CvQkdExcessNoiseSecretKeyRate;
+using SGrowing.Api.Modules.Environmental.DacSolidAmineChemisorption;
+using SGrowing.Api.Modules.Aerospace.MartianAerocaptureGuidance;
+using SGrowing.Api.Modules.Finance.HftVwapMicroPriceQueue;
+using SGrowing.Api.Modules.Energy.LngBogReliquefactionExergy;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -715,6 +720,13 @@ app.MapAdaptiveOpticsEndpoints();
 app.MapCellFreeProteinEndpoints();
 app.MapDeFiLendingEndpoints();
 app.MapHypersonicSkipGlideEndpoints();
+
+// Horizons 186-190 Endpoint Mappings (CV-QKD Excess Noise, DAC Solid-Amine Chemisorption, Martian Aerocapture Guidance, HFT Micro-Price & LNG BOG Re-Liquefaction)
+app.MapCvQkdExcessNoiseEndpoints();
+app.MapDacSolidAmineEndpoints();
+app.MapMartianAerocaptureEndpoints();
+app.MapHftMicroPriceEndpoints();
+app.MapLngBogReliquefactionEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

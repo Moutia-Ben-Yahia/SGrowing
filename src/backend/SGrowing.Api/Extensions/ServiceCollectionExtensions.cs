@@ -177,6 +177,11 @@ using SGrowing.Api.Modules.Defense.AdaptiveOpticsPhaseConjugation;
 using SGrowing.Api.Modules.BioTech.CellFreeProteinTranslation;
 using SGrowing.Api.Modules.Finance.DeFiLendingBadDebtSocialization;
 using SGrowing.Api.Modules.Aerospace.HypersonicSkipGlideTrajectory;
+using SGrowing.Api.Modules.Security.CvQkdExcessNoiseSecretKeyRate;
+using SGrowing.Api.Modules.Environmental.DacSolidAmineChemisorption;
+using SGrowing.Api.Modules.Aerospace.MartianAerocaptureGuidance;
+using SGrowing.Api.Modules.Finance.HftVwapMicroPriceQueue;
+using SGrowing.Api.Modules.Energy.LngBogReliquefactionExergy;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -953,6 +958,13 @@ public static class ServiceCollectionExtensions
         services.AddCellFreeProteinServices();
         services.AddDeFiLendingServices();
         services.AddHypersonicSkipGlideServices();
+
+        // Horizons 186-190 Services (CV-QKD Excess Noise, DAC Solid-Amine Chemisorption, Martian Aerocapture Guidance, HFT Micro-Price & LNG BOG Re-Liquefaction)
+        services.AddCvQkdExcessNoiseServices();
+        services.AddDacSolidAmineServices();
+        services.AddMartianAerocaptureServices();
+        services.AddHftMicroPriceServices();
+        services.AddLngBogReliquefactionServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
