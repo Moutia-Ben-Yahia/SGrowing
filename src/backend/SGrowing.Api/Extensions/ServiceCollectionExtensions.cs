@@ -312,6 +312,11 @@ using SGrowing.Api.Modules.BioTech.DropletMicrofluidicSingleCell;
 using SGrowing.Api.Modules.Aerospace.SpacecraftElectrostaticCharging;
 using SGrowing.Api.Modules.Finance.CrossCurrencyBasisConvexity;
 using SGrowing.Api.Modules.Energy.VrfbShuntCurrentRebalancing;
+using SGrowing.Api.Modules.Quantum.DualSpeciesNeutralAtomTweezers;
+using SGrowing.Api.Modules.BioTech.CodexSpatialProteomics;
+using SGrowing.Api.Modules.Aerospace.SpacecraftRcsPlumeImpingement;
+using SGrowing.Api.Modules.Finance.SviVolatilitySurfaceCalibration;
+using SGrowing.Api.Modules.Energy.SoecSteamElectrolysisThermalNeutral;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1277,6 +1282,13 @@ public static class ServiceCollectionExtensions
         services.AddSpacecraftChargingServices();
         services.AddCrossCurrencyBasisServices();
         services.AddVrfbShuntCurrentServices();
+
+        // Horizons 321-325 Services (Dual-Species Tweezers, CODEX Proteomics, Spacecraft RCS Plume Impingement, SVI Volatility Surface & SOEC Steam Electrolysis)
+        services.AddDualSpeciesTweezersServices();
+        services.AddCodexProteomicsServices();
+        services.AddSpacecraftRcsServices();
+        services.AddSviVolatilityServices();
+        services.AddSoecSteamElectrolysisServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

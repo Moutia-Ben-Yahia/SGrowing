@@ -310,6 +310,11 @@ using SGrowing.Api.Modules.BioTech.DropletMicrofluidicSingleCell;
 using SGrowing.Api.Modules.Aerospace.SpacecraftElectrostaticCharging;
 using SGrowing.Api.Modules.Finance.CrossCurrencyBasisConvexity;
 using SGrowing.Api.Modules.Energy.VrfbShuntCurrentRebalancing;
+using SGrowing.Api.Modules.Quantum.DualSpeciesNeutralAtomTweezers;
+using SGrowing.Api.Modules.BioTech.CodexSpatialProteomics;
+using SGrowing.Api.Modules.Aerospace.SpacecraftRcsPlumeImpingement;
+using SGrowing.Api.Modules.Finance.SviVolatilitySurfaceCalibration;
+using SGrowing.Api.Modules.Energy.SoecSteamElectrolysisThermalNeutral;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1039,6 +1044,13 @@ app.MapDropletMicrofluidicEndpoints();
 app.MapSpacecraftChargingEndpoints();
 app.MapCrossCurrencyBasisEndpoints();
 app.MapVrfbShuntCurrentEndpoints();
+
+// Horizons 321-325 Endpoint Mappings (Dual-Species Tweezers, CODEX Proteomics, Spacecraft RCS Plume Impingement, SVI Volatility Surface & SOEC Steam Electrolysis)
+app.MapDualSpeciesTweezersEndpoints();
+app.MapCodexProteomicsEndpoints();
+app.MapSpacecraftRcsEndpoints();
+app.MapSviVolatilityEndpoints();
+app.MapSoecSteamElectrolysisEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
