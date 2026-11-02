@@ -37,6 +37,11 @@ using SGrowing.Api.Modules.Voice.IvrTree;
 using SGrowing.Api.Modules.Commerce.FraudFirewall;
 using SGrowing.Api.Modules.Security.CollaborationAudit;
 using SGrowing.Api.Modules.Dev.AppGenerator;
+using SGrowing.Api.Modules.Tenancy.CustomDomains;
+using SGrowing.Api.Modules.AI.VideoAvatar;
+using SGrowing.Api.Modules.SupplyChain.EdiReplenishment;
+using SGrowing.Api.Modules.Social.AutoTriage;
+using SGrowing.Api.Modules.Contracts.ChurnRescue;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
@@ -1048,6 +1053,11 @@ public static class ServiceCollectionExtensions
         services.AddFraudFirewallServices();
         services.AddCollaborationAuditServices();
         services.AddAppGeneratorServices();
+        services.AddCustomDomainServices();
+        services.AddVideoAvatarServices();
+        services.AddEdiReplenishmentServices();
+        services.AddSocialTriageServices();
+        services.AddChurnRescueServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

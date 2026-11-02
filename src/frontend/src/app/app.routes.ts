@@ -240,5 +240,10 @@ export const routes: Routes = [
   { path: 'commerce/fraud-radar', loadComponent: () => import('./features/commerce/fraud-firewall-cockpit.component').then(m => m.FraudFirewallCockpitComponent), canActivate: [authGuard] },
   { path: 'security/collaboration-audit', loadComponent: () => import('./features/security/collaboration-audit-cockpit.component').then(m => m.CollaborationAuditCockpitComponent), canActivate: [authGuard] },
   { path: 'developer/app-builder', loadComponent: () => import('./features/developer/app-generator-cockpit.component').then(m => m.AppGeneratorCockpitComponent), canActivate: [authGuard] },
+  { path: 'tenancy/custom-domains', loadComponent: () => import('./features/tenancy/custom-domains-cockpit.component').then(m => m.CustomDomainsCockpitComponent), canActivate: [authGuard] },
+  { path: 'ai/video-avatar', loadComponent: () => import('./features/ai/video-avatar-cockpit.component').then(m => m.VideoAvatarCockpitComponent), canActivate: [authGuard] },
+  { path: 'commerce/replenishment', loadComponent: () => import('./features/commerce/replenishment-cockpit.component').then(m => m.ReplenishmentCockpitComponent), canActivate: [authGuard] },
+  { path: 'social/auto-triage', loadComponent: () => import('./features/social/social-triage-cockpit.component').then(m => m.SocialTriageCockpitComponent), canActivate: [authGuard] },
+  { path: 'contracts/churn-rescue', loadComponent: () => import('./features/contracts/churn-rescue-cockpit.component').then(m => m.ChurnRescueCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

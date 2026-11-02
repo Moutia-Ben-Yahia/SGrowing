@@ -31,6 +31,11 @@ using SGrowing.Api.Modules.Voice.IvrTree;
 using SGrowing.Api.Modules.Commerce.FraudFirewall;
 using SGrowing.Api.Modules.Security.CollaborationAudit;
 using SGrowing.Api.Modules.Dev.AppGenerator;
+using SGrowing.Api.Modules.Tenancy.CustomDomains;
+using SGrowing.Api.Modules.AI.VideoAvatar;
+using SGrowing.Api.Modules.SupplyChain.EdiReplenishment;
+using SGrowing.Api.Modules.Social.AutoTriage;
+using SGrowing.Api.Modules.Contracts.ChurnRescue;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -807,6 +812,11 @@ app.MapVoiceIvrTreeEndpoints();
 app.MapFraudFirewallEndpoints();
 app.MapCollaborationAuditEndpoints();
 app.MapAppGeneratorEndpoints();
+app.MapCustomDomainEndpoints();
+app.MapVideoAvatarEndpoints();
+app.MapEdiReplenishmentEndpoints();
+app.MapSocialTriageEndpoints();
+app.MapChurnRescueEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
