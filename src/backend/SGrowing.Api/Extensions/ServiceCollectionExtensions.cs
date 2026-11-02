@@ -182,6 +182,11 @@ using SGrowing.Api.Modules.Environmental.DacSolidAmineChemisorption;
 using SGrowing.Api.Modules.Aerospace.MartianAerocaptureGuidance;
 using SGrowing.Api.Modules.Finance.HftVwapMicroPriceQueue;
 using SGrowing.Api.Modules.Energy.LngBogReliquefactionExergy;
+using SGrowing.Api.Modules.Energy.KilopowerSpaceNuclearBrayton;
+using SGrowing.Api.Modules.AI.NeuromorphicStdpSynapticEnergy;
+using SGrowing.Api.Modules.BioTech.ApiPolymorphContinuousCrystallization;
+using SGrowing.Api.Modules.Finance.RestakingCryptoeconomicSlashing;
+using SGrowing.Api.Modules.Energy.HempSubstationProtection;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -965,6 +970,13 @@ public static class ServiceCollectionExtensions
         services.AddMartianAerocaptureServices();
         services.AddHftMicroPriceServices();
         services.AddLngBogReliquefactionServices();
+
+        // Horizons 191-195 Services (Kilopower Space Brayton, Neuromorphic STDP, API Polymorph Continuous Crystallization, Re-Staking Slashing & HEMP Substation Protection)
+        services.AddKilopowerBraytonServices();
+        services.AddNeuromorphicStdpServices();
+        services.AddApiPolymorphServices();
+        services.AddRestakingSlashingServices();
+        services.AddHempSubstationServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

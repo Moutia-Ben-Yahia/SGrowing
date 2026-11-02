@@ -180,6 +180,11 @@ using SGrowing.Api.Modules.Environmental.DacSolidAmineChemisorption;
 using SGrowing.Api.Modules.Aerospace.MartianAerocaptureGuidance;
 using SGrowing.Api.Modules.Finance.HftVwapMicroPriceQueue;
 using SGrowing.Api.Modules.Energy.LngBogReliquefactionExergy;
+using SGrowing.Api.Modules.Energy.KilopowerSpaceNuclearBrayton;
+using SGrowing.Api.Modules.AI.NeuromorphicStdpSynapticEnergy;
+using SGrowing.Api.Modules.BioTech.ApiPolymorphContinuousCrystallization;
+using SGrowing.Api.Modules.Finance.RestakingCryptoeconomicSlashing;
+using SGrowing.Api.Modules.Energy.HempSubstationProtection;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -727,6 +732,13 @@ app.MapDacSolidAmineEndpoints();
 app.MapMartianAerocaptureEndpoints();
 app.MapHftMicroPriceEndpoints();
 app.MapLngBogReliquefactionEndpoints();
+
+// Horizons 191-195 Endpoint Mappings (Kilopower Space Brayton, Neuromorphic STDP, API Polymorph Continuous Crystallization, Re-Staking Slashing & HEMP Substation Protection)
+app.MapKilopowerBraytonEndpoints();
+app.MapNeuromorphicStdpEndpoints();
+app.MapApiPolymorphEndpoints();
+app.MapRestakingSlashingEndpoints();
+app.MapHempSubstationEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
