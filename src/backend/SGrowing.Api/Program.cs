@@ -215,6 +215,11 @@ using SGrowing.Api.Modules.BioTech.PhageAssistedContinuousEvolution;
 using SGrowing.Api.Modules.Aerospace.MiniMagnetosphericPlasmaPropulsion;
 using SGrowing.Api.Modules.Finance.SovereignDebtClimateResilience;
 using SGrowing.Api.Modules.Infrastructure.SeismicMetamaterialPhononicCloak;
+using SGrowing.Api.Modules.Quantum.GaussianBosonSampling;
+using SGrowing.Api.Modules.BioTech.EpigeneticMethylationClock;
+using SGrowing.Api.Modules.Aerospace.ElectrodynamicTetherDeorbit;
+using SGrowing.Api.Modules.Finance.VpinMarketMakerToxicFlow;
+using SGrowing.Api.Modules.Energy.AdiabaticCaesThermalStorage;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -811,6 +816,13 @@ app.MapPaceEndpoints();
 app.MapM2p2Endpoints();
 app.MapSovereignDebtEndpoints();
 app.MapSeismicCloakEndpoints();
+
+// Horizons 226-230 Endpoint Mappings (Photonic GBS, Epigenetic Clock, Electrodynamic Tether, VPIN Toxic Flow & Adiabatic CAES)
+app.MapGaussianBosonSamplingEndpoints();
+app.MapEpigeneticClockEndpoints();
+app.MapElectrodynamicTetherEndpoints();
+app.MapVpinEndpoints();
+app.MapAdiabaticCaesEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

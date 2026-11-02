@@ -217,6 +217,11 @@ using SGrowing.Api.Modules.BioTech.PhageAssistedContinuousEvolution;
 using SGrowing.Api.Modules.Aerospace.MiniMagnetosphericPlasmaPropulsion;
 using SGrowing.Api.Modules.Finance.SovereignDebtClimateResilience;
 using SGrowing.Api.Modules.Infrastructure.SeismicMetamaterialPhononicCloak;
+using SGrowing.Api.Modules.Quantum.GaussianBosonSampling;
+using SGrowing.Api.Modules.BioTech.EpigeneticMethylationClock;
+using SGrowing.Api.Modules.Aerospace.ElectrodynamicTetherDeorbit;
+using SGrowing.Api.Modules.Finance.VpinMarketMakerToxicFlow;
+using SGrowing.Api.Modules.Energy.AdiabaticCaesThermalStorage;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1049,6 +1054,13 @@ public static class ServiceCollectionExtensions
         services.AddM2p2Services();
         services.AddSovereignDebtClimateResilienceServices();
         services.AddSeismicMetamaterialCloakServices();
+
+        // Horizons 226-230 Services (Photonic GBS, Epigenetic Clock, Electrodynamic Tether, VPIN Toxic Flow & Adiabatic CAES)
+        services.AddGaussianBosonSamplingServices();
+        services.AddEpigeneticMethylationClockServices();
+        services.AddElectrodynamicTetherDeorbitServices();
+        services.AddVpinToxicFlowServices();
+        services.AddAdiabaticCaesServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
