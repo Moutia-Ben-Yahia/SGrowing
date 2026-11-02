@@ -247,6 +247,11 @@ using SGrowing.Api.Modules.BioTech.AavCapsidDirectedEvolution;
 using SGrowing.Api.Modules.Aerospace.RotatingDetonationRocketCombustor;
 using SGrowing.Api.Modules.Finance.OrderFlowAdverseSelectionDrain;
 using SGrowing.Api.Modules.Energy.AlkalineWaterElectrolysisDynamic;
+using SGrowing.Api.Modules.Quantum.SuperconductingFluxoniumCoherence;
+using SGrowing.Api.Modules.BioTech.CytidineBaseEditingBystanderMutagenesis;
+using SGrowing.Api.Modules.Aerospace.HypersonicAerocaptureOrbitalInsertion;
+using SGrowing.Api.Modules.Finance.StatisticalArbitrageOrnsteinUhlenbeck;
+using SGrowing.Api.Modules.Energy.SolidOxideCoElectrolysisSyngas;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1121,6 +1126,13 @@ public static class ServiceCollectionExtensions
         services.AddRotatingDetonationRocketCombustorServices();
         services.AddOrderFlowAdverseSelectionDrainServices();
         services.AddAlkalineWaterElectrolysisDynamicServices();
+
+        // Horizons 256-260 Services (Superconducting Fluxonium Coherence, Cytidine Base Editing Bystander, Hypersonic Aerocapture, Ornstein-Uhlenbeck Stat Arb & SOEC Co-Electrolysis)
+        services.AddSuperconductingFluxoniumCoherenceServices();
+        services.AddCytidineBaseEditingBystanderServices();
+        services.AddHypersonicAerocaptureServices();
+        services.AddStatisticalArbitrageOrnsteinUhlenbeckServices();
+        services.AddSolidOxideCoElectrolysisServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

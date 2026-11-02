@@ -245,6 +245,11 @@ using SGrowing.Api.Modules.BioTech.AavCapsidDirectedEvolution;
 using SGrowing.Api.Modules.Aerospace.RotatingDetonationRocketCombustor;
 using SGrowing.Api.Modules.Finance.OrderFlowAdverseSelectionDrain;
 using SGrowing.Api.Modules.Energy.AlkalineWaterElectrolysisDynamic;
+using SGrowing.Api.Modules.Quantum.SuperconductingFluxoniumCoherence;
+using SGrowing.Api.Modules.BioTech.CytidineBaseEditingBystanderMutagenesis;
+using SGrowing.Api.Modules.Aerospace.HypersonicAerocaptureOrbitalInsertion;
+using SGrowing.Api.Modules.Finance.StatisticalArbitrageOrnsteinUhlenbeck;
+using SGrowing.Api.Modules.Energy.SolidOxideCoElectrolysisSyngas;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -883,6 +888,13 @@ app.MapAavCapsidEndpoints();
 app.MapRotatingDetonationEndpoints();
 app.MapOrderFlowAdverseSelectionEndpoints();
 app.MapAlkalineWaterElectrolysisEndpoints();
+
+// Horizons 256-260 Endpoint Mappings (Superconducting Fluxonium Coherence, Cytidine Base Editing Bystander, Hypersonic Aerocapture, Ornstein-Uhlenbeck Stat Arb & SOEC Co-Electrolysis)
+app.MapSuperconductingFluxoniumEndpoints();
+app.MapCytidineBaseEditingEndpoints();
+app.MapHypersonicAerocaptureEndpoints();
+app.MapStatisticalArbitrageEndpoints();
+app.MapSolidOxideCoElectrolysisEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
