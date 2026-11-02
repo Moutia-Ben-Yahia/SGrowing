@@ -227,6 +227,11 @@ using SGrowing.Api.Modules.BioTech.IvtMrnaCappingPolyATail;
 using SGrowing.Api.Modules.Aerospace.AerogravityAssistTrajectory;
 using SGrowing.Api.Modules.Finance.CrossAssetLiquiditySpillover;
 using SGrowing.Api.Modules.Environmental.ScwoPfasElimination;
+using SGrowing.Api.Modules.Quantum.NeutralAtomRydbergGates;
+using SGrowing.Api.Modules.BioTech.CarTCellExhaustionReprogramming;
+using SGrowing.Api.Modules.Aerospace.SolarSailRadiationPressure;
+using SGrowing.Api.Modules.Finance.DynamicMarginCollateralVar;
+using SGrowing.Api.Modules.Energy.MicrobialFuelCellBioenergy;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1073,6 +1078,13 @@ public static class ServiceCollectionExtensions
         services.AddAerogravityAssistTrajectoryServices();
         services.AddCrossAssetLiquiditySpilloverServices();
         services.AddScwoPfasEliminationServices();
+
+        // Horizons 236-240 Services (Neutral Atom Rydberg Gates, CAR-T Exhaustion Reprogramming, Solar Sail Radiation Pressure, Dynamic Margin Collateral VaR & Microbial Fuel Cell Bioenergy)
+        services.AddNeutralAtomRydbergServices();
+        services.AddCarTCellExhaustionReprogrammingServices();
+        services.AddSolarSailRadiationPressureServices();
+        services.AddDynamicMarginCollateralVarServices();
+        services.AddMicrobialFuelCellBioenergyServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

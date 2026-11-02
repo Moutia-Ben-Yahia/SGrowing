@@ -225,6 +225,11 @@ using SGrowing.Api.Modules.BioTech.IvtMrnaCappingPolyATail;
 using SGrowing.Api.Modules.Aerospace.AerogravityAssistTrajectory;
 using SGrowing.Api.Modules.Finance.CrossAssetLiquiditySpillover;
 using SGrowing.Api.Modules.Environmental.ScwoPfasElimination;
+using SGrowing.Api.Modules.Quantum.NeutralAtomRydbergGates;
+using SGrowing.Api.Modules.BioTech.CarTCellExhaustionReprogramming;
+using SGrowing.Api.Modules.Aerospace.SolarSailRadiationPressure;
+using SGrowing.Api.Modules.Finance.DynamicMarginCollateralVar;
+using SGrowing.Api.Modules.Energy.MicrobialFuelCellBioenergy;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -835,6 +840,13 @@ app.MapIvtMrnaEndpoints();
 app.MapAerogravityAssistEndpoints();
 app.MapCrossAssetSpilloverEndpoints();
 app.MapScwoEndpoints();
+
+// Horizons 236-240 Endpoint Mappings (Neutral Atom Rydberg Gates, CAR-T Exhaustion Reprogramming, Solar Sail Radiation Pressure, Dynamic Margin Collateral VaR & Microbial Fuel Cell Bioenergy)
+app.MapNeutralAtomRydbergEndpoints();
+app.MapCarTCellExhaustionReprogrammingEndpoints();
+app.MapSolarSailEndpoints();
+app.MapDynamicMarginVarEndpoints();
+app.MapMicrobialFuelCellEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
