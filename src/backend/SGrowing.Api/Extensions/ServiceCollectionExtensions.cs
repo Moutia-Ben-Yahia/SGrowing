@@ -192,6 +192,11 @@ using SGrowing.Api.Modules.BioTech.TargetedAlphaEmitterDosimetry;
 using SGrowing.Api.Modules.Aerospace.ObliqueDetonationWaveEngine;
 using SGrowing.Api.Modules.Finance.CbdcAtomicDvpLiquiditySaving;
 using SGrowing.Api.Modules.Energy.NeutrinoGeotomographyCoreDensity;
+using SGrowing.Api.Modules.Manufacturing.MbeRheedGrowthKinetics;
+using SGrowing.Api.Modules.BioTech.CrisprBaseEditorDeaminaseBystander;
+using SGrowing.Api.Modules.Aerospace.HaleSolarEnergyBalance;
+using SGrowing.Api.Modules.Security.ZkRecursiveFoldingScheme;
+using SGrowing.Api.Modules.Energy.McfcCarbonCapturePolygeneration;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -989,6 +994,13 @@ public static class ServiceCollectionExtensions
         services.AddObliqueDetonationServices();
         services.AddCbdcLiquiditySavingServices();
         services.AddNeutrinoGeotomographyServices();
+
+        // Horizons 201-205 Services (MBE RHEED Growth, CRISPR Base Editing Bystander, Stratospheric HALE Solar Balance, ZK Recursive Folding & MCFC Carbon Capture)
+        services.AddMbeRheedGrowthServices();
+        services.AddCrisprBaseEditorServices();
+        services.AddHaleSolarEnergyServices();
+        services.AddZkRecursiveFoldingServices();
+        services.AddMcfcCarbonCaptureServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
