@@ -305,6 +305,11 @@ using SGrowing.Api.Modules.BioTech.OrganoidLightSheetMorphogenesis;
 using SGrowing.Api.Modules.Aerospace.OpticalInterSatelliteCrosslink;
 using SGrowing.Api.Modules.Finance.CdsIndexTrancheCorrelation;
 using SGrowing.Api.Modules.Energy.MicrochannelFischerTropschSaf;
+using SGrowing.Api.Modules.Quantum.SurfaceCodeLatticeSurgery;
+using SGrowing.Api.Modules.BioTech.DropletMicrofluidicSingleCell;
+using SGrowing.Api.Modules.Aerospace.SpacecraftElectrostaticCharging;
+using SGrowing.Api.Modules.Finance.CrossCurrencyBasisConvexity;
+using SGrowing.Api.Modules.Energy.VrfbShuntCurrentRebalancing;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1027,6 +1032,13 @@ app.MapOrganoidMorphogenesisEndpoints();
 app.MapOislCrosslinkEndpoints();
 app.MapCdsIndexTrancheEndpoints();
 app.MapFischerTropschSafEndpoints();
+
+// Horizons 316-320 Endpoint Mappings (Surface Code Lattice Surgery, Droplet Single-Cell Microfluidics, Spacecraft Charging, Cross-Currency Basis & VRFB Shunt Currents)
+app.MapSurfaceCodeLatticeEndpoints();
+app.MapDropletMicrofluidicEndpoints();
+app.MapSpacecraftChargingEndpoints();
+app.MapCrossCurrencyBasisEndpoints();
+app.MapVrfbShuntCurrentEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
