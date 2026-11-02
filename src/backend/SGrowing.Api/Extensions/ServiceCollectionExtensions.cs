@@ -117,6 +117,11 @@ using SGrowing.Api.Modules.Healthcare.BciNeuralKinematics;
 using SGrowing.Api.Modules.Aerospace.GravitationalInterferometerMesh;
 using SGrowing.Api.Modules.Manufacturing.EuvLithographyPellicle;
 using SGrowing.Api.Modules.Finance.HftOrderBookMicrostructure;
+using SGrowing.Api.Modules.Marine.DeepSeaBuoyancyMesh;
+using SGrowing.Api.Modules.Aerospace.CryoTurbopumpCavitation;
+using SGrowing.Api.Modules.BioTech.CrisprCasCleavageKinetics;
+using SGrowing.Api.Modules.Security.RingSignatureIdentity;
+using SGrowing.Api.Modules.Energy.UhvCoronaIonization;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -809,6 +814,13 @@ public static class ServiceCollectionExtensions
         services.AddGravitationalInterferometerServices();
         services.AddEuvLithographyPellicleServices();
         services.AddHftOrderBookMicrostructureServices();
+
+        // Horizons 126-130 Services (Deep-Sea Submersible, Cryo Turbopump, CRISPR Cleavage, Ring Signatures & UHV Corona)
+        services.AddDeepSeaBuoyancyMeshServices();
+        services.AddCryoTurbopumpCavitationServices();
+        services.AddCrisprCasCleavageServices();
+        services.AddRingSignatureIdentityServices();
+        services.AddUhvCoronaIonizationServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

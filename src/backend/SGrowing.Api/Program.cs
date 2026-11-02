@@ -115,6 +115,11 @@ using SGrowing.Api.Modules.Healthcare.BciNeuralKinematics;
 using SGrowing.Api.Modules.Aerospace.GravitationalInterferometerMesh;
 using SGrowing.Api.Modules.Manufacturing.EuvLithographyPellicle;
 using SGrowing.Api.Modules.Finance.HftOrderBookMicrostructure;
+using SGrowing.Api.Modules.Marine.DeepSeaBuoyancyMesh;
+using SGrowing.Api.Modules.Aerospace.CryoTurbopumpCavitation;
+using SGrowing.Api.Modules.BioTech.CrisprCasCleavageKinetics;
+using SGrowing.Api.Modules.Security.RingSignatureIdentity;
+using SGrowing.Api.Modules.Energy.UhvCoronaIonization;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -571,6 +576,13 @@ app.MapBciNeuralKinematicsEndpoints();
 app.MapGravitationalInterferometerEndpoints();
 app.MapEuvLithographyPellicleEndpoints();
 app.MapHftOrderBookMicrostructureEndpoints();
+
+// Horizons 126-130 Endpoint Mappings (Deep-Sea Submersible, Cryo Turbopump, CRISPR Cleavage, Ring Signatures & UHV Corona)
+app.MapDeepSeaBuoyancyMeshEndpoints();
+app.MapCryoTurbopumpCavitationEndpoints();
+app.MapCrisprCasCleavageEndpoints();
+app.MapRingSignatureIdentityEndpoints();
+app.MapUhvCoronaIonizationEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
