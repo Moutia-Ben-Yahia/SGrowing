@@ -215,5 +215,10 @@ export const routes: Routes = [
   { path: 'conversations/unified', loadComponent: () => import('./features/conversations/unified-support-inbox.component').then(m => m.UnifiedSupportInboxComponent), canActivate: [authGuard] },
   { path: 'ai/governance', loadComponent: () => import('./features/ai/ai-governance-cockpit.component').then(m => m.AiGovernanceCockpitComponent), canActivate: [authGuard] },
   { path: 'ai/swarm', loadComponent: () => import('./features/ai/swarm-orchestration-cockpit.component').then(m => m.SwarmOrchestrationCockpitComponent), canActivate: [authGuard] },
+  { path: 'integrations/marketplace', loadComponent: () => import('./features/integrations/app-marketplace-cockpit.component').then(m => m.AppMarketplaceCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/webrtc-sdr', loadComponent: () => import('./features/voice/webrtc-sdr-cockpit.component').then(m => m.WebRtcSdrCockpitComponent), canActivate: [authGuard] },
+  { path: 'analytics/executive', loadComponent: () => import('./features/analytics/executive-revenue-cockpit.component').then(m => m.ExecutiveRevenueCockpitComponent), canActivate: [authGuard] },
+  { path: 'tenancy/licensing', loadComponent: () => import('./features/tenancy/enterprise-license-cockpit.component').then(m => m.EnterpriseLicenseCockpitComponent), canActivate: [authGuard] },
+  { path: 'seo/geo-visibility', loadComponent: () => import('./features/seo/geo-visibility-cockpit.component').then(m => m.GeoVisibilityCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

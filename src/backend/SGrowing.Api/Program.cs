@@ -6,6 +6,11 @@ using SGrowing.Api.Modules.CRM.MetadataEngine;
 using SGrowing.Api.Modules.Automation.ExecutionEngine;
 using SGrowing.Api.Modules.Billing.DunningEngine;
 using SGrowing.Api.Modules.AI.SwarmCoordination;
+using SGrowing.Api.Modules.Integrations.Marketplace;
+using SGrowing.Api.Modules.Voice.WebRtcSdr;
+using SGrowing.Api.Modules.Analytics.RevenueIntelligence;
+using SGrowing.Api.Modules.Tenancy.Licensing;
+using SGrowing.Api.Modules.SEO.GeoVisibility;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -757,6 +762,11 @@ app.MapCrmMetadataEndpoints();
 app.MapWorkflowExecutionEndpoints();
 app.MapDunningBillingEndpoints();
 app.MapSwarmCoordinationEndpoints();
+app.MapAppMarketplaceEndpoints();
+app.MapWebRtcSdrEndpoints();
+app.MapRevenueIntelligenceEndpoints();
+app.MapEnterpriseLicensingEndpoints();
+app.MapGeoVisibilityEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

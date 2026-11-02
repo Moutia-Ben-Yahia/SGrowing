@@ -203,16 +203,73 @@ graph TD
 - **Frontend Cockpit:** `src/frontend/src/app/features/ai/swarm-orchestration-cockpit.component.ts` (`/ai/swarm`).
 - **Verification:** 3 backend tests in `SwarmCoordinationTests.cs`, 5 Vitest tests, and Playwright E2E verification.
 
+### Horizon 21: Domain K2 & K3 App Marketplace & Sandboxed Custom Extension Engine
+- **Backend:** `src/backend/SGrowing.Api/Modules/Integrations/Marketplace/` (`AppMarketplaceModels.cs`, `AppMarketplaceEngine.cs`, `AppMarketplaceEndpoints.cs`).
+- **Capabilities:**
+  - Certified partner app catalog (HubSpot, Shopify, Stripe, Meta CAPI, Gemini AI Copilot).
+  - Fine-grained permission scopes (`crm:read`, `orders:write`, `ai:execute`, `telemetry:read`) with sandboxed iframe endpoints.
+  - One-click tenant installation, credential configuration, and lifecycle uninstallation.
+- **Frontend Cockpit:** `src/frontend/src/app/features/integrations/app-marketplace-cockpit.component.ts` (`/integrations/marketplace`).
+- **Verification:** 7 backend tests in `AppMarketplaceTests.cs`, 3 Vitest tests, and Playwright E2E verification.
+
+### Horizon 22: Domain D5 & J1 Real-Time WebRTC Voice SDR & Duplex Audio Streaming
+- **Backend:** `src/backend/SGrowing.Api/Modules/Voice/WebRtcSdr/` (`WebRtcSdrModels.cs`, `WebRtcSdrEngine.cs`, `WebRtcSdrEndpoints.cs`).
+- **Capabilities:**
+  - Ultra-low latency duplex audio streaming (125ms RTT benchmark).
+  - Realtime Voice Activity Detection (VAD) state machine (`Silence`, `UserSpeaking`, `AgentSpeaking`, `BargeInInterrupted`).
+  - Live barge-in interruption detection and rolling Whisper transcript generation.
+- **Frontend Cockpit:** `src/frontend/src/app/features/voice/webrtc-sdr-cockpit.component.ts` (`/voice/webrtc-sdr`).
+- **Verification:** 4 backend tests in `WebRtcSdrTests.cs`, 4 Vitest tests, and Playwright E2E verification.
+
+### Horizon 23: Domain I2 & I3 Executive Revenue Intelligence & Cohort Churn Matrix
+- **Backend:** `src/backend/SGrowing.Api/Modules/Analytics/RevenueIntelligence/` (`RevenueIntelligenceModels.cs`, `RevenueIntelligenceEngine.cs`, `RevenueIntelligenceEndpoints.cs`).
+- **Capabilities:**
+  - Real-time GAAP & SaaS metric intelligence: ARR run-rate, MRR, NRR (118.5%), GRR (95.6%), LTV:CAC (4.8x).
+  - Decomposed MRR Waterfall (Starting, New Bookings, Expansion, Contraction, Churn, Ending MRR, Quick Ratio).
+  - Triangular N x M Cohort account and revenue retention decay matrix with gradient intensity mapping.
+- **Frontend Cockpit:** `src/frontend/src/app/features/analytics/executive-revenue-cockpit.component.ts` (`/analytics/executive`).
+- **Verification:** 3 backend tests in `RevenueIntelligenceTests.cs`, 3 Vitest tests, and Playwright E2E verification.
+
+### Horizon 24: Domain A1 & A3 Self-Hosted Enterprise License Activation & Air-Gapped Key Validator
+- **Backend:** `src/backend/SGrowing.Api/Modules/Tenancy/Licensing/` (`EnterpriseLicensingModels.cs`, `EnterpriseLicensingEngine.cs`, `EnterpriseLicensingEndpoints.cs`).
+- **Capabilities:**
+  - Zero-cloud heartbeat cryptographic license validator for sovereign, on-premise, and VPC deployments.
+  - Offline SHA-256 ECDSA signature verification and hardware node MAC fingerprint binding.
+  - Entitlement enforcement for enterprise capability modules and monthly event quotas.
+- **Frontend Cockpit:** `src/frontend/src/app/features/tenancy/enterprise-license-cockpit.component.ts` (`/tenancy/licensing`).
+- **Verification:** 4 backend tests in `EnterpriseLicensingTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+
+### Horizon 25: Domain C3 AI Search & Answer Engine Optimization (GEO/AEO) Visibility Tracker
+- **Backend:** `src/backend/SGrowing.Api/Modules/SEO/GeoVisibility/` (`GeoVisibilityModels.cs`, `GeoVisibilityEngine.cs`, `GeoVisibilityEndpoints.cs`).
+- **Capabilities:**
+  - Generative Engine Optimization (GEO/AEO) scoring index (0-100) and Share of Model Voice (SoMV).
+  - Multi-engine citation tracker across Perplexity, ChatGPT Search, Claude Search, and Google AI Overviews.
+  - Live query auditing and structured schema directives (llms.txt, Schema.org SoftwareApplication).
+- **Frontend Cockpit:** `src/frontend/src/app/features/seo/geo-visibility-cockpit.component.ts` (`/seo/geo-visibility`).
+- **Verification:** 3 backend tests in `GeoVisibilityTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+
+### Infrastructure & Benchmarking: Self-Hosted Packaging & Stress Suite
+- **Deployment Packaging:**
+  - Production Multi-Stage Dockerfiles for API (.NET 10) and Web (Nginx Alpine).
+  - `docker-compose.enterprise.yml` orchestrating API, Web, PostgreSQL 17, Redis 7, and LocalStack S3.
+  - Kubernetes Helm Chart in `deploy/helm/sgrowing/` (`Chart.yaml`, `values.yaml`, deployments, services).
+  - Bootstrap & health probe script in `deploy/scripts/init-growth-os.sh`.
+- **Stress Testing Benchmark:**
+  - High-throughput concurrency stress tests in `tests/SGrowing.Tests/Dev/GatewayStressBenchmarkTests.cs`.
+  - 10,000 requests processed under extreme thread parallelism without race conditions or locks in <2500ms.
+  - 5,000 parallel webhook simulation requests with 100% integrity.
+
 ---
 
 ## 3. Comprehensive Quality Gates Verification
 
 | Verification Gate | Result | Status |
 |---|---|---|
-| **Backend Unit & Integration Tests** | **5,181 passed / 0 failed / 0 skipped** | **100% Pass** (10s) |
+| **Backend Unit & Integration Tests** | **5,204 passed / 0 failed / 0 skipped** | **100% Pass** (26s) |
 | **Backend Compilation (`TreatWarningsAsErrors = true`)** | **0 Warnings, 0 Errors** | **100% Pass** |
-| **Frontend Vitest Unit & Component Suite** | **142 passed / 0 failed** across 29 suites | **100% Pass** (5.9s) |
-| **Playwright End-to-End Suite** | **44 passed / 0 failed** across 44 suites | **100% Pass** (31s) |
+| **Frontend Vitest Unit & Component Suite** | **156 passed / 0 failed** across 34 suites | **100% Pass** (10.2s) |
+| **Playwright End-to-End Suite** | **49 passed / 0 failed** across 49 suites | **100% Pass** (2.7m) |
+| **Frontend Production Build (`ng build`)** | **0 Errors, 39.4s bundle generation** | **100% Pass** |
 
 ---
 
@@ -227,3 +284,4 @@ graph TD
 - `a22c12f`: `feat(dev-gateway): deliver Horizon 9 (Public Developer Gateway, Token-Bucket Rate Limiter & Sandbox Simulator)`
 - `2e30bff`: `docs: finalize delivery of Horizon 9 in growth OS execution report`
 - `ca09667`: `feat(growth-os): deliver Horizons 10 to 14 (Social Publisher, B2B CPQ, Unified Inbox, Multi-Touch Attribution, AI Governance)`
+- `964f53b`: `feat(growth-os): deliver Horizons 15 to 20 (MAB Funnels, Warmup Swarm, Custom Objects, Workflow DAG Mesh, Dunning Billing, Swarm Orchestration)`

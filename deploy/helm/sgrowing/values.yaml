@@ -1,0 +1,59 @@
+# Default values for SGrowing Enterprise Helm Chart
+replicaCount:
+  api: 3
+  web: 2
+
+image:
+  api:
+    repository: registry.sgrowing.io/enterprise/sgrowing-api
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  web:
+    repository: registry.sgrowing.io/enterprise/sgrowing-web
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+service:
+  api:
+    type: ClusterIP
+    port: 8080
+  web:
+    type: LoadBalancer
+    port: 80
+
+resources:
+  api:
+    limits:
+      cpu: 2000m
+      memory: 4096Mi
+    requests:
+      cpu: 500m
+      memory: 1024Mi
+  web:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+env:
+  aspnetcoreEnvironment: Production
+  databaseHost: postgresql-ha.infra.svc.cluster.local
+  redisHost: redis-ha.infra.svc.cluster.local
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-body-size: "64m"
+  hosts:
+    - host: growth.enterprise.internal
+      paths:
+        - path: /
+          pathType: Prefix
+          service: web
+        - path: /api
+          pathType: Prefix
+          service: api

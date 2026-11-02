@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  sgrowing-api:
+    build:
+      context: .
+      dockerfile: src/backend/SGrowing.Api/Dockerfile
+    container_name: sgrowing-api
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=sgrowing_db;Username=sgrowing_admin;Password=enterprise_secret_password_2026!
+      - Redis__Configuration=redis:6379,password=redis_enterprise_secret_2026!
+      - Storage__Endpoint=http://localstack:4566
+      - Storage__Bucket=sgrowing-assets
+      - Jwt__SecretKey=SGrowing_SuperSecretEnterpriseMasterKey_998877665544332211!!
+      - Jwt__Issuer=SGrowing.Api
+      - Jwt__Audience=SGrowing.Clients
+    ports:
+      - "5000:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - sgrowing-enterprise-net
+
+  sgrowing-web:
+    build:
+      context: src/frontend
+      dockerfile: Dockerfile
+    container_name: sgrowing-web
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - sgrowing-api
+    networks:
+      - sgrowing-enterprise-net
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: sgrowing-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: sgrowing_db
+      POSTGRES_USER: sgrowing_admin
+      POSTGRES_PASSWORD: enterprise_secret_password_2026!
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sgrowing_admin -d sgrowing_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sgrowing-enterprise-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: sgrowing-redis
+    restart: always
+    command: redis-server --requirepass redis_enterprise_secret_2026! --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis_enterprise_secret_2026!", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sgrowing-enterprise-net
+
+  localstack:
+    image: localstack/localstack:latest
+    container_name: sgrowing-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3,sqs
+      - DEFAULT_REGION=us-east-1
+    volumes:
+      - localstack_data:/var/lib/localstack
+    networks:
+      - sgrowing-enterprise-net
+
+volumes:
+  postgres_data:
+  redis_data:
+  localstack_data:
+
+networks:
+  sgrowing-enterprise-net:
+    driver: bridge

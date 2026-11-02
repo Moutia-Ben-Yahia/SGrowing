@@ -12,6 +12,11 @@ using SGrowing.Api.Modules.CRM.MetadataEngine;
 using SGrowing.Api.Modules.Automation.ExecutionEngine;
 using SGrowing.Api.Modules.Billing.DunningEngine;
 using SGrowing.Api.Modules.AI.SwarmCoordination;
+using SGrowing.Api.Modules.Integrations.Marketplace;
+using SGrowing.Api.Modules.Voice.WebRtcSdr;
+using SGrowing.Api.Modules.Analytics.RevenueIntelligence;
+using SGrowing.Api.Modules.Tenancy.Licensing;
+using SGrowing.Api.Modules.SEO.GeoVisibility;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
@@ -998,6 +1003,11 @@ public static class ServiceCollectionExtensions
         services.AddWorkflowExecutionServices();
         services.AddDunningBillingServices();
         services.AddSwarmCoordinationServices();
+        services.AddAppMarketplaceServices();
+        services.AddWebRtcSdrServices();
+        services.AddRevenueIntelligenceServices();
+        services.AddEnterpriseLicensingServices();
+        services.AddGeoVisibilityServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
