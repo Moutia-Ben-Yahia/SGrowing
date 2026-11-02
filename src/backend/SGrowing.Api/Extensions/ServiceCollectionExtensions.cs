@@ -127,6 +127,11 @@ using SGrowing.Api.Modules.Telecom.SubseaDwdmRamanCompensator;
 using SGrowing.Api.Modules.Quantum.SuperconductingQubitGateArbiter;
 using SGrowing.Api.Modules.Aerospace.SpacecraftAerocaptureGuidance;
 using SGrowing.Api.Modules.Security.ThresholdMlDsaSigner;
+using SGrowing.Api.Modules.Healthcare.MriMagnetQuenchArbiter;
+using SGrowing.Api.Modules.Aerospace.SpaceElevatorTether;
+using SGrowing.Api.Modules.Energy.PemElectrolyzerDegradation;
+using SGrowing.Api.Modules.AI.SpikingRetinaGazeArbiter;
+using SGrowing.Api.Modules.Finance.ZkStateRelayAggregator;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -833,6 +838,13 @@ public static class ServiceCollectionExtensions
         services.AddSuperconductingQubitGateArbiterServices();
         services.AddSpacecraftAerocaptureGuidanceServices();
         services.AddThresholdMlDsaSignerServices();
+
+        // Horizons 136-140 Services (MRI Quench Arbiter, Space Elevator Tether, PEM Electrolyzer, Spiking Retina & ZK State Relay)
+        services.AddMriMagnetQuenchServices();
+        services.AddSpaceElevatorTetherServices();
+        services.AddPemElectrolyzerDegradationServices();
+        services.AddSpikingRetinaGazeArbiterServices();
+        services.AddZkStateRelayAggregatorServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

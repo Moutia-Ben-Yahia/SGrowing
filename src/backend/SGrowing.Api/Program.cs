@@ -125,6 +125,11 @@ using SGrowing.Api.Modules.Telecom.SubseaDwdmRamanCompensator;
 using SGrowing.Api.Modules.Quantum.SuperconductingQubitGateArbiter;
 using SGrowing.Api.Modules.Aerospace.SpacecraftAerocaptureGuidance;
 using SGrowing.Api.Modules.Security.ThresholdMlDsaSigner;
+using SGrowing.Api.Modules.Healthcare.MriMagnetQuenchArbiter;
+using SGrowing.Api.Modules.Aerospace.SpaceElevatorTether;
+using SGrowing.Api.Modules.Energy.PemElectrolyzerDegradation;
+using SGrowing.Api.Modules.AI.SpikingRetinaGazeArbiter;
+using SGrowing.Api.Modules.Finance.ZkStateRelayAggregator;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -595,6 +600,13 @@ app.MapSubseaDwdmRamanCompensatorEndpoints();
 app.MapSuperconductingQubitGateArbiterEndpoints();
 app.MapSpacecraftAerocaptureGuidanceEndpoints();
 app.MapThresholdMlDsaSignerEndpoints();
+
+// Horizons 136-140 Endpoint Mappings (MRI Quench Arbiter, Space Elevator Tether, PEM Electrolyzer, Spiking Retina & ZK State Relay)
+app.MapMriMagnetQuenchEndpoints();
+app.MapSpaceElevatorTetherEndpoints();
+app.MapPemElectrolyzerEndpoints();
+app.MapSpikingRetinaEndpoints();
+app.MapZkStateRelayEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
