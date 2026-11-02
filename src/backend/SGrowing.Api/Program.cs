@@ -11,6 +11,11 @@ using SGrowing.Api.Modules.Voice.WebRtcSdr;
 using SGrowing.Api.Modules.Analytics.RevenueIntelligence;
 using SGrowing.Api.Modules.Tenancy.Licensing;
 using SGrowing.Api.Modules.SEO.GeoVisibility;
+using SGrowing.Api.Modules.Channels.WhatsAppBroadcast;
+using SGrowing.Api.Modules.AI.VectorRag;
+using SGrowing.Api.Modules.SEO.Programmatic;
+using SGrowing.Api.Modules.Billing.TaxCompliance;
+using SGrowing.Api.Modules.Sales.DealCopilot;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -767,6 +772,11 @@ app.MapWebRtcSdrEndpoints();
 app.MapRevenueIntelligenceEndpoints();
 app.MapEnterpriseLicensingEndpoints();
 app.MapGeoVisibilityEndpoints();
+app.MapWhatsAppBroadcastEndpoints();
+app.MapVectorRagEndpoints();
+app.MapProgrammaticMeshEndpoints();
+app.MapTaxComplianceEndpoints();
+app.MapDealCopilotEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

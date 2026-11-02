@@ -1,0 +1,78 @@
+name: SGrowing Enterprise Growth OS CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend-verification:
+    name: Backend Build & Test Matrix (.NET 10)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore src/backend/SGrowing.Api/SGrowing.Api.csproj
+
+      - name: Build Backend (TreatWarningsAsErrors = true)
+        run: dotnet build src/backend/SGrowing.Api/SGrowing.Api.csproj -c Release
+
+      - name: Execute Full Test Suite (5,200+ Tests)
+        run: dotnet test tests/SGrowing.Tests/SGrowing.Tests.csproj -c Release --no-restore --logger "trx;LogFileName=test-results.trx"
+
+  frontend-verification:
+    name: Frontend Build & Playwright E2E (Node 22 / Angular 22)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/frontend
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: src/frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        run: npm ci
+
+      - name: Run Vitest Unit & Component Suite
+        run: npm test
+
+      - name: Build Production Bundle (ng build)
+        run: npm run build
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright E2E Tests
+        run: npm run test:e2e
+
+  container-packaging:
+    name: Self-Hosted Docker Container Packaging
+    runs-on: ubuntu-latest
+    needs: [backend-verification, frontend-verification]
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Validate Backend Dockerfile
+        run: docker build -f src/backend/SGrowing.Api/Dockerfile . --target build
+
+      - name: Validate Frontend Dockerfile
+        run: docker build -f src/frontend/Dockerfile src/frontend --target build

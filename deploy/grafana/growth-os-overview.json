@@ -1,0 +1,97 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "title": "Token-Bucket Rate Limiter Throughput (req/sec)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(gateway_requests_total[1m])",
+          "legendFormat": "{{status}}"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "title": "Autonomous AI Swarm Latency (ms)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(swarm_mission_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "P95 Mission Latency"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "title": "Real-Time WebRTC Voice SDR Audio Jitter (ms)",
+      "type": "gauge",
+      "targets": [
+        {
+          "expr": "webrtc_sdr_jitter_ms",
+          "legendFormat": "Packet Jitter"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "title": "Annual Recurring Revenue (ARR Run-Rate)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "revenue_arr_usd",
+          "legendFormat": "ARR USD"
+        }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "tags": ["sgrowing", "growth-os", "executive", "telemetry"],
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "SGrowing Enterprise Growth OS — Observability Overview",
+  "uid": "sgrowing-overview",
+  "version": 1
+}

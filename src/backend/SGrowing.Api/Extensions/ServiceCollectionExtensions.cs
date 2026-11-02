@@ -17,6 +17,11 @@ using SGrowing.Api.Modules.Voice.WebRtcSdr;
 using SGrowing.Api.Modules.Analytics.RevenueIntelligence;
 using SGrowing.Api.Modules.Tenancy.Licensing;
 using SGrowing.Api.Modules.SEO.GeoVisibility;
+using SGrowing.Api.Modules.Channels.WhatsAppBroadcast;
+using SGrowing.Api.Modules.AI.VectorRag;
+using SGrowing.Api.Modules.SEO.Programmatic;
+using SGrowing.Api.Modules.Billing.TaxCompliance;
+using SGrowing.Api.Modules.Sales.DealCopilot;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
@@ -1008,6 +1013,11 @@ public static class ServiceCollectionExtensions
         services.AddRevenueIntelligenceServices();
         services.AddEnterpriseLicensingServices();
         services.AddGeoVisibilityServices();
+        services.AddWhatsAppBroadcastServices();
+        services.AddVectorRagServices();
+        services.AddProgrammaticMeshServices();
+        services.AddTaxComplianceServices();
+        services.AddDealCopilotServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

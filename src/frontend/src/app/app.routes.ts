@@ -220,5 +220,10 @@ export const routes: Routes = [
   { path: 'analytics/executive', loadComponent: () => import('./features/analytics/executive-revenue-cockpit.component').then(m => m.ExecutiveRevenueCockpitComponent), canActivate: [authGuard] },
   { path: 'tenancy/licensing', loadComponent: () => import('./features/tenancy/enterprise-license-cockpit.component').then(m => m.EnterpriseLicenseCockpitComponent), canActivate: [authGuard] },
   { path: 'seo/geo-visibility', loadComponent: () => import('./features/seo/geo-visibility-cockpit.component').then(m => m.GeoVisibilityCockpitComponent), canActivate: [authGuard] },
+  { path: 'outreach/whatsapp-broadcast', loadComponent: () => import('./features/outreach/whatsapp-broadcast-cockpit.component').then(m => m.WhatsAppBroadcastCockpitComponent), canActivate: [authGuard] },
+  { path: 'ai/knowledge-rag', loadComponent: () => import('./features/ai/semantic-rag-cockpit.component').then(m => m.SemanticRagCockpitComponent), canActivate: [authGuard] },
+  { path: 'seo/programmatic', loadComponent: () => import('./features/seo/programmatic-seo-cockpit.component').then(m => m.ProgrammaticSeoCockpitComponent), canActivate: [authGuard] },
+  { path: 'billing/tax-compliance', loadComponent: () => import('./features/billing/tax-compliance-cockpit.component').then(m => m.TaxComplianceCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/deal-copilot', loadComponent: () => import('./features/sales/deal-copilot-cockpit.component').then(m => m.DealCopilotCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];
