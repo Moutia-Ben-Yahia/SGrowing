@@ -21,6 +21,11 @@ using SGrowing.Api.Modules.Growth.Affiliates;
 using SGrowing.Api.Modules.Voice.CallCopilot;
 using SGrowing.Api.Modules.Sales.TerritoryRouting;
 using SGrowing.Api.Modules.Security.ComplianceVault;
+using SGrowing.Api.Modules.Journeys.LifecycleOrchestrator;
+using SGrowing.Api.Modules.Funnels.CanvasBuilder;
+using SGrowing.Api.Modules.Commerce.FulfillmentMatrix;
+using SGrowing.Api.Modules.Analytics.BiReportBuilder;
+using SGrowing.Api.Modules.Dev.WebhookMesh;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -787,6 +792,11 @@ app.MapAffiliateLoyaltyEndpoints();
 app.MapCallCopilotEndpoints();
 app.MapTerritoryRoutingEndpoints();
 app.MapZeroTrustVaultEndpoints();
+app.MapLifecycleJourneyEndpoints();
+app.MapCanvasBuilderEndpoints();
+app.MapFulfillmentMatrixEndpoints();
+app.MapBiReportBuilderEndpoints();
+app.MapBiDirectionalWebhookMeshEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

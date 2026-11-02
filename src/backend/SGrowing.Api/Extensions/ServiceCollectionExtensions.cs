@@ -27,6 +27,11 @@ using SGrowing.Api.Modules.Growth.Affiliates;
 using SGrowing.Api.Modules.Voice.CallCopilot;
 using SGrowing.Api.Modules.Sales.TerritoryRouting;
 using SGrowing.Api.Modules.Security.ComplianceVault;
+using SGrowing.Api.Modules.Journeys.LifecycleOrchestrator;
+using SGrowing.Api.Modules.Funnels.CanvasBuilder;
+using SGrowing.Api.Modules.Commerce.FulfillmentMatrix;
+using SGrowing.Api.Modules.Analytics.BiReportBuilder;
+using SGrowing.Api.Modules.Dev.WebhookMesh;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
@@ -1028,6 +1033,11 @@ public static class ServiceCollectionExtensions
         services.AddCallCopilotServices();
         services.AddTerritoryRoutingServices();
         services.AddZeroTrustVaultServices();
+        services.AddLifecycleJourneyServices();
+        services.AddCanvasBuilderServices();
+        services.AddFulfillmentMatrixServices();
+        services.AddBiReportBuilderServices();
+        services.AddBiDirectionalWebhookMeshServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

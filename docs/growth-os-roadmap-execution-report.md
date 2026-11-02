@@ -339,6 +339,32 @@ graph TD
 - **Frontend Cockpit:** `src/frontend/src/app/features/security/compliance-vault-cockpit.component.ts` (`/security/compliance-vault`).
 - **Verification:** 3 backend tests in `ComplianceVaultTests.cs`, 3 Vitest tests, and Playwright E2E verification.
 
+### Horizons 36 to 40: Customer Journeys, Funnel Canvas, Multi-Warehouse Proximity, BI ARR Forecaster & Webhook Mesh
+- **Horizon 36: Visual Customer Lifecycle Journey Orchestrator & Fatigue Gate Mesh (`Domain E2`)**
+  - Directed acyclic graph stage transitions with behavioral `waitCondition` triggers and stage drop-off telemetry.
+  - Rolling omnichannel fatigue cap protection preventing frequency burnout across WhatsApp, Voice SDR, and Email.
+  - Interactive pre-flight simulator and manual contact enrollment modals.
+  - **Verification:** 4 backend tests in `LifecycleOrchestratorTests.cs`, 3 Vitest tests, and Playwright E2E verification.
+- **Horizon 37: Drag-and-Drop Landing Page & Funnel Canvas Builder (`Domain C2`)**
+  - Fluid canvas state management with mobile, tablet, and desktop responsive viewports.
+  - Modular UI block catalog (HeroBanner, PricingCards, LeadForm, Testimonials) with reordering and dynamic token styling.
+  - Deterministic compiler producing semantic, production-ready HTML with `<style>` and accessible structure.
+  - **Verification:** 3 backend tests in `CanvasBuilderTests.cs`, 4 Vitest tests, and Playwright E2E verification.
+- **Horizon 38: Multi-Warehouse Proximity Order Allocation & Split-Fulfillment Engine (`Domain G3 & G5`)**
+  - Haversine geodetic distance formula calculating great-circle distance between regional fulfillment facilities and destination coordinates.
+  - Single-package split shield preventing unnecessary split consignments while respecting regional safety stock buffers.
+  - Interactive allocation simulator with real-time courier shipping rate predictions.
+  - **Verification:** 3 backend tests in `FulfillmentMatrixTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 39: Enterprise BI Report Builder & Monte Carlo ARR Forecaster (`Domain I4 & I2`)**
+  - Multi-dimensional pivot slicing across Channels, Regions, and Cohort months with custom aggregation metrics.
+  - 1,000-trial stochastic Monte Carlo simulation engine with normal-variate churn/expansion perturbation.
+  - Calculates P10, P25, P50, P75, P90 ARR percentiles and target milestone probability of attainment.
+  - **Verification:** 3 backend tests in `BiReportBuilderTests.cs`, 3 Vitest tests, and Playwright E2E verification.
+- **Horizon 40: Bi-Directional Webhook Event Mesh & Real-Time Replay Debugger (`Domain K1 & K3`)**
+  - Zero-loss event streaming with HMAC-SHA256 signature verification (`X-SGrowing-Signature-256`) and idempotency token tracking.
+  - Real-time event dispatch logging, Dead-Letter Queue (DLQ) isolation, and 1-click event replay debugger.
+  - **Verification:** 3 backend tests in `WebhookMeshTests.cs`, 3 Vitest tests, and Playwright E2E verification.
+
 ### Infrastructure & Benchmarking: Self-Hosted Packaging, Grafana & CI/CD
 - **Observability:**
   - Full Grafana dashboard in `deploy/grafana/growth-os-overview.json` monitoring OpenTelemetry throughput, sub-150ms voice latency, RAG latency, WhatsApp queues, and error budgets.
@@ -360,11 +386,11 @@ graph TD
 
 | Verification Gate | Result | Status |
 |---|---|---|
-| **Backend Unit & Integration Tests** | **5,240 passed / 0 failed / 0 skipped** | **100% Pass** (29s) |
+| **Backend Unit & Integration Tests** | **5,256 passed / 0 failed / 0 skipped** | **100% Pass** (39s) |
 | **Backend Compilation (`TreatWarningsAsErrors = true`)** | **0 Warnings, 0 Errors** | **100% Pass** |
-| **Frontend Vitest Unit & Component Suite** | **184 passed / 0 failed** across 44 suites | **100% Pass** (10.6s) |
-| **Playwright End-to-End Suite** | **59 passed / 0 failed** across 59 suites | **100% Pass** (55.4s) |
-| **Frontend Production Build (`ng build`)** | **0 Errors, 39.0s bundle generation, 75+ chunks** | **100% Pass** |
+| **Frontend Vitest Unit & Component Suite** | **199 passed / 0 failed** across 49 suites | **100% Pass** (8.9s) |
+| **Playwright End-to-End Suite** | **64 passed / 0 failed** across 64 suites | **100% Pass** (1.1m) |
+| **Frontend Production Build (`ng build`)** | **0 Errors, 14.8s bundle generation, 80+ chunks** | **100% Pass** |
 
 ---
 
@@ -382,3 +408,5 @@ graph TD
 - `964f53b`: `feat(growth-os): deliver Horizons 15 to 20 (MAB Funnels, Warmup Swarm, Custom Objects, Workflow DAG Mesh, Dunning Billing, Swarm Orchestration)`
 - `ad38675`: `feat(growth-os): deliver Horizons 21 to 25, Self-Hosted Docker Compose, Helm Charts & Stress Suite`
 - `e65a844`: `feat(growth-os): deliver Horizons 26 to 30, OpenTelemetry Observability & CI/CD Pipelines`
+- `7714f2a`: `feat(growth-os): deliver Horizons 31 to 35 (Headless CMS, Viral Referral, Voice Copilot, ABM Intent Surge, Merkle Audit Vault)`
+- `[pending]`: `feat(growth-os): deliver Horizons 36 to 40 (Lifecycle Journeys, Funnel Canvas, Fulfillment Matrix, BI Reports, Webhook Mesh)`
