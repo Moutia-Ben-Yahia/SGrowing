@@ -295,6 +295,11 @@ using SGrowing.Api.Modules.BioTech.CryoEtSubtomogramAveraging;
 using SGrowing.Api.Modules.Aerospace.SolarCmeShockArrival;
 using SGrowing.Api.Modules.Finance.FxLocalStochasticVolatility;
 using SGrowing.Api.Modules.Energy.PemElectrolyzerGasCrossover;
+using SGrowing.Api.Modules.Quantum.SuperconductingQuantumAcoustics;
+using SGrowing.Api.Modules.BioTech.GuideSeqPrimeEditingOffTarget;
+using SGrowing.Api.Modules.Aerospace.AtmosphericEntryBlackoutGuidance;
+using SGrowing.Api.Modules.Finance.TipsRealYieldBreakevenInflation;
+using SGrowing.Api.Modules.Energy.DirectAirCaptureTvsaSorbent;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1003,6 +1008,13 @@ app.MapCryoEtTomographyEndpoints();
 app.MapSolarCmeShockEndpoints();
 app.MapFxLsvBarrierEndpoints();
 app.MapPemElectrolyzerGasCrossoverEndpoints();
+
+// Horizons 306-310 Endpoint Mappings (Superconducting Quantum Acoustics, GUIDE-Seq Prime Editing, Atmospheric Entry Guidance, TIPS Real Yield & DAC TVSA Sorbent)
+app.MapQuantumAcousticsEndpoints();
+app.MapGuideSeqEditingEndpoints();
+app.MapAtmosphericEntryEndpoints();
+app.MapTipsRealYieldEndpoints();
+app.MapDirectAirCaptureTvsaEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

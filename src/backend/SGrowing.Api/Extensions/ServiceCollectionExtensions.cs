@@ -297,6 +297,11 @@ using SGrowing.Api.Modules.BioTech.CryoEtSubtomogramAveraging;
 using SGrowing.Api.Modules.Aerospace.SolarCmeShockArrival;
 using SGrowing.Api.Modules.Finance.FxLocalStochasticVolatility;
 using SGrowing.Api.Modules.Energy.PemElectrolyzerGasCrossover;
+using SGrowing.Api.Modules.Quantum.SuperconductingQuantumAcoustics;
+using SGrowing.Api.Modules.BioTech.GuideSeqPrimeEditingOffTarget;
+using SGrowing.Api.Modules.Aerospace.AtmosphericEntryBlackoutGuidance;
+using SGrowing.Api.Modules.Finance.TipsRealYieldBreakevenInflation;
+using SGrowing.Api.Modules.Energy.DirectAirCaptureTvsaSorbent;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -1241,6 +1246,13 @@ public static class ServiceCollectionExtensions
         services.AddSolarCmeShockServices();
         services.AddFxLsvBarrierServices();
         services.AddPemElectrolyzerGasCrossoverServices();
+
+        // Horizons 306-310 Services (Superconducting Quantum Acoustics, GUIDE-Seq Prime Editing, Atmospheric Entry Guidance, TIPS Real Yield & DAC TVSA Sorbent)
+        services.AddQuantumAcousticsServices();
+        services.AddGuideSeqEditingServices();
+        services.AddAtmosphericEntryServices();
+        services.AddTipsRealYieldServices();
+        services.AddDirectAirCaptureTvsaServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
