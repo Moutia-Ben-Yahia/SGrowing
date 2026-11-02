@@ -165,6 +165,11 @@ using SGrowing.Api.Modules.BioTech.MicrobialElectrosynthesis;
 using SGrowing.Api.Modules.Aerospace.VasimrPlasmaPropulsion;
 using SGrowing.Api.Modules.Finance.OrderFlowAuctionMev;
 using SGrowing.Api.Modules.Manufacturing.HighNaEuvStochasticDefects;
+using SGrowing.Api.Modules.Energy.Sco2BraytonCompressorSurge;
+using SGrowing.Api.Modules.Telecom.DirectToCellDopplerTimingAdvance;
+using SGrowing.Api.Modules.BioTech.CrisprCas12aCollateralCleavage;
+using SGrowing.Api.Modules.Finance.ZkDarkPoolVdfBatching;
+using SGrowing.Api.Modules.Aerospace.LunarRegolithMicrowaveSintering;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -691,6 +696,13 @@ app.MapMicrobialElectrosynthesisEndpoints();
 app.MapVasimrPlasmaEndpoints();
 app.MapOrderFlowAuctionEndpoints();
 app.MapHighNaEuvEndpoints();
+
+// Horizons 176-180 Endpoint Mappings (sCO2 Brayton Compressor Surge, Direct-to-Cell LEO Doppler, CRISPR Cas12a DETECTR, ZK Dark Pool VDF & Lunar Regolith Microwave Sintering)
+app.MapSco2BraytonEndpoints();
+app.MapDirectToCellEndpoints();
+app.MapCrisprCas12aEndpoints();
+app.MapZkDarkPoolEndpoints();
+app.MapLunarRegolithEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

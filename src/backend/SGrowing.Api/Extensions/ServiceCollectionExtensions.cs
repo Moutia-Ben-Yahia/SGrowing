@@ -167,6 +167,11 @@ using SGrowing.Api.Modules.BioTech.MicrobialElectrosynthesis;
 using SGrowing.Api.Modules.Aerospace.VasimrPlasmaPropulsion;
 using SGrowing.Api.Modules.Finance.OrderFlowAuctionMev;
 using SGrowing.Api.Modules.Manufacturing.HighNaEuvStochasticDefects;
+using SGrowing.Api.Modules.Energy.Sco2BraytonCompressorSurge;
+using SGrowing.Api.Modules.Telecom.DirectToCellDopplerTimingAdvance;
+using SGrowing.Api.Modules.BioTech.CrisprCas12aCollateralCleavage;
+using SGrowing.Api.Modules.Finance.ZkDarkPoolVdfBatching;
+using SGrowing.Api.Modules.Aerospace.LunarRegolithMicrowaveSintering;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -929,6 +934,13 @@ public static class ServiceCollectionExtensions
         services.AddVasimrPlasmaPropulsionServices();
         services.AddOrderFlowAuctionServices();
         services.AddHighNaEuvServices();
+
+        // Horizons 176-180 Services (sCO2 Brayton Compressor Surge, Direct-to-Cell LEO Doppler, CRISPR Cas12a DETECTR, ZK Dark Pool VDF & Lunar Regolith Microwave Sintering)
+        services.AddSco2BraytonServices();
+        services.AddDirectToCellServices();
+        services.AddCrisprCas12aServices();
+        services.AddZkDarkPoolServices();
+        services.AddLunarRegolithServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
