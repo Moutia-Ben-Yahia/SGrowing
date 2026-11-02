@@ -77,7 +77,6 @@ using SGrowing.Api.Modules.Security.HomomorphicAnalytics;
 using SGrowing.Api.Modules.Finance.ConcentratedLiquidity;
 using SGrowing.Api.Modules.Media.ProsodyDubbing;
 using SGrowing.Api.Modules.Security.ZkRollupBridge;
-using SGrowing.Api.Modules.Energy.BessArbitrage;
 using SGrowing.Api.Modules.Logistics.MaritimeEcoRouting;
 using SGrowing.Api.Modules.Insurance.ParametricUnderwriting;
 using SGrowing.Api.Modules.Manufacturing.OpticalQualityControl;
@@ -87,19 +86,15 @@ using SGrowing.Api.Modules.Robotics.AgvFlockingCoordinator;
 using SGrowing.Api.Modules.Finance.CreditRiskUnderwriting;
 using SGrowing.Api.Modules.AI.DocumentGrounding;
 using SGrowing.Api.Modules.Security.ZkIdentityVerification;
-using SGrowing.Api.Modules.Aerospace.SatelliteOpticalDownlink;
 using SGrowing.Api.Modules.Infrastructure.DePinWorkerArbiter;
 using SGrowing.Api.Modules.Robotics.NeuromorphicOdometry;
 using SGrowing.Api.Modules.Finance.BepsPillarTwo;
 using SGrowing.Api.Modules.Governance.EnterpriseImmuneSystem;
 using SGrowing.Api.Modules.Telecom.SubseaAcousticEarlyWarning;
 using SGrowing.Api.Modules.Agriculture.PrecisionAgrigenomics;
-using SGrowing.Api.Modules.Energy.HvdcGridStabilizer;
 using SGrowing.Api.Modules.Finance.MicroPaymentMesh;
-using SGrowing.Api.Modules.BioTech.MetabolicFluxOptimizer;
 using SGrowing.Api.Modules.Aviation.AircraftTurnaroundOptimizer;
 using SGrowing.Api.Modules.Logistics.RailHumpYardScheduler;
-using SGrowing.Api.Modules.Energy.GeothermalMicroSeismicity;
 using SGrowing.Api.Modules.Automotive.TeleoperationFoveatedStream;
 using SGrowing.Api.Modules.Security.ConfidentialRemoteAttestation;
 using SGrowing.Api.Modules.Sustainability.MineralCarbonation;
@@ -107,216 +102,63 @@ using SGrowing.Api.Modules.Finance.CbdcCrossBorderBridge;
 using SGrowing.Api.Modules.Manufacturing.CleanroomAirflowPredictor;
 using SGrowing.Api.Modules.Robotics.DroneUtmAirTraffic;
 using SGrowing.Api.Modules.Pharma.HotMeltExtrusionPat;
-using SGrowing.Api.Modules.Energy.SmrNeutronReactor;
-using SGrowing.Api.Modules.Aerospace.ScramjetThermalProtection;
 using SGrowing.Api.Modules.Security.QkdSatelliteArbiter;
 using SGrowing.Api.Modules.Trade.RulesOfOriginTariff;
 using SGrowing.Api.Modules.Security.ZkIrisBiometrics;
-using SGrowing.Api.Modules.Energy.TokamakPlasmaMhd;
 using SGrowing.Api.Modules.Healthcare.BciNeuralKinematics;
-using SGrowing.Api.Modules.Aerospace.GravitationalInterferometerMesh;
 using SGrowing.Api.Modules.Manufacturing.EuvLithographyPellicle;
 using SGrowing.Api.Modules.Finance.HftOrderBookMicrostructure;
-using SGrowing.Api.Modules.Marine.DeepSeaBuoyancyMesh;
-using SGrowing.Api.Modules.Aerospace.CryoTurbopumpCavitation;
-using SGrowing.Api.Modules.BioTech.CrisprCasCleavageKinetics;
 using SGrowing.Api.Modules.Security.RingSignatureIdentity;
-using SGrowing.Api.Modules.Energy.UhvCoronaIonization;
-using SGrowing.Api.Modules.Energy.SolidStateBatteryEis;
 using SGrowing.Api.Modules.Telecom.SubseaDwdmRamanCompensator;
-using SGrowing.Api.Modules.Quantum.SuperconductingQubitGateArbiter;
-using SGrowing.Api.Modules.Aerospace.SpacecraftAerocaptureGuidance;
 using SGrowing.Api.Modules.Security.ThresholdMlDsaSigner;
 using SGrowing.Api.Modules.Healthcare.MriMagnetQuenchArbiter;
-using SGrowing.Api.Modules.Aerospace.SpaceElevatorTether;
-using SGrowing.Api.Modules.Energy.PemElectrolyzerDegradation;
 using SGrowing.Api.Modules.AI.SpikingRetinaGazeArbiter;
 using SGrowing.Api.Modules.Finance.ZkStateRelayAggregator;
 using SGrowing.Api.Modules.Security.CvQkdCoherentState;
-using SGrowing.Api.Modules.Energy.MoltenSaltCspThermocline;
-using SGrowing.Api.Modules.BioTech.MicrobialCrisprCascade;
-using SGrowing.Api.Modules.Energy.FusionDivertorDetachment;
-using SGrowing.Api.Modules.Aerospace.HypersonicWaveriderShock;
-using SGrowing.Api.Modules.Energy.QuantumDotMegSolarCell;
-using SGrowing.Api.Modules.Aerospace.HallThrusterPoleErosion;
-using SGrowing.Api.Modules.BioTech.NanoporeTranslocationBasecaller;
 using SGrowing.Api.Modules.Finance.ZkL3WatchtowerFraudProof;
-using SGrowing.Api.Modules.Energy.SuperhotEgsMicroSeismicity;
 using SGrowing.Api.Modules.Telecom.Terahertz6gBeamSquint;
-using SGrowing.Api.Modules.Energy.CryoFusionPelletExtruder;
-using SGrowing.Api.Modules.BioTech.CarTCellExhaustionKinetics;
-using SGrowing.Api.Modules.Energy.DmfcRutheniumPoisoning;
-using SGrowing.Api.Modules.Aerospace.RtgDecayThermocouple;
-using SGrowing.Api.Modules.Aerospace.GravitationalMicrolensingExoplanet;
-using SGrowing.Api.Modules.Energy.HtsRebcoCableDelamination;
-using SGrowing.Api.Modules.BioTech.AntibodyAffinityMaturation;
 using SGrowing.Api.Modules.Finance.ZkSolvencyMerkleSumTree;
-using SGrowing.Api.Modules.Aerospace.HypersonicBltCrossflow;
-using SGrowing.Api.Modules.Energy.SoecCoElectrolysis;
-using SGrowing.Api.Modules.Aerospace.OislLaserPointingJitter;
-using SGrowing.Api.Modules.BioTech.SpatialTranscriptomicsDeconvolution;
 using SGrowing.Api.Modules.Finance.PqcCrossChainHtlc;
-using SGrowing.Api.Modules.Energy.PlasmaRunawayElectronSuppression;
-using SGrowing.Api.Modules.Environmental.QclPhotoacousticSpectroscopy;
-using SGrowing.Api.Modules.Aerospace.ScramjetIsolatorShockTrain;
-using SGrowing.Api.Modules.BioTech.CrisprPrimeEditingFlap;
 using SGrowing.Api.Modules.Finance.AmmLossVersusRebalancing;
-using SGrowing.Api.Modules.Energy.SupercriticalWellboreJouleThomson;
-using SGrowing.Api.Modules.Energy.LiquidMetalBlanketHartmannFlow;
-using SGrowing.Api.Modules.BioTech.MicrobialElectrosynthesis;
-using SGrowing.Api.Modules.Aerospace.VasimrPlasmaPropulsion;
 using SGrowing.Api.Modules.Finance.OrderFlowAuctionMev;
 using SGrowing.Api.Modules.Manufacturing.HighNaEuvStochasticDefects;
-using SGrowing.Api.Modules.Energy.Sco2BraytonCompressorSurge;
 using SGrowing.Api.Modules.Telecom.DirectToCellDopplerTimingAdvance;
-using SGrowing.Api.Modules.BioTech.CrisprCas12aCollateralCleavage;
 using SGrowing.Api.Modules.Finance.ZkDarkPoolVdfBatching;
-using SGrowing.Api.Modules.Aerospace.LunarRegolithMicrowaveSintering;
-using SGrowing.Api.Modules.Energy.SmesCryogenicQuenchFastDump;
-using SGrowing.Api.Modules.Defense.AdaptiveOpticsPhaseConjugation;
-using SGrowing.Api.Modules.BioTech.CellFreeProteinTranslation;
 using SGrowing.Api.Modules.Finance.DeFiLendingBadDebtSocialization;
-using SGrowing.Api.Modules.Aerospace.HypersonicSkipGlideTrajectory;
 using SGrowing.Api.Modules.Security.CvQkdExcessNoiseSecretKeyRate;
-using SGrowing.Api.Modules.Environmental.DacSolidAmineChemisorption;
-using SGrowing.Api.Modules.Aerospace.MartianAerocaptureGuidance;
 using SGrowing.Api.Modules.Finance.HftVwapMicroPriceQueue;
-using SGrowing.Api.Modules.Energy.LngBogReliquefactionExergy;
-using SGrowing.Api.Modules.Energy.KilopowerSpaceNuclearBrayton;
 using SGrowing.Api.Modules.AI.NeuromorphicStdpSynapticEnergy;
-using SGrowing.Api.Modules.BioTech.ApiPolymorphContinuousCrystallization;
 using SGrowing.Api.Modules.Finance.RestakingCryptoeconomicSlashing;
-using SGrowing.Api.Modules.Energy.HempSubstationProtection;
-using SGrowing.Api.Modules.Energy.DilutionRefrigeratorDemagnetization;
-using SGrowing.Api.Modules.BioTech.TargetedAlphaEmitterDosimetry;
-using SGrowing.Api.Modules.Aerospace.ObliqueDetonationWaveEngine;
 using SGrowing.Api.Modules.Finance.CbdcAtomicDvpLiquiditySaving;
-using SGrowing.Api.Modules.Energy.NeutrinoGeotomographyCoreDensity;
 using SGrowing.Api.Modules.Manufacturing.MbeRheedGrowthKinetics;
-using SGrowing.Api.Modules.BioTech.CrisprBaseEditorDeaminaseBystander;
-using SGrowing.Api.Modules.Aerospace.HaleSolarEnergyBalance;
 using SGrowing.Api.Modules.Security.ZkRecursiveFoldingScheme;
-using SGrowing.Api.Modules.Energy.McfcCarbonCapturePolygeneration;
 using SGrowing.Api.Modules.Transportation.MaglevInductrackNullFlux;
-using SGrowing.Api.Modules.BioTech.OpticalCoherenceElastographyBiomechanics;
-using SGrowing.Api.Modules.Marine.MhdMarineSilentPropulsion;
 using SGrowing.Api.Modules.Finance.ZkRollupCensorshipResistance;
-using SGrowing.Api.Modules.Energy.SupercriticalThermosiphonGeothermal;
-using SGrowing.Api.Modules.BioTech.MicrofluidicLnpMrnaEncapsulation;
-using SGrowing.Api.Modules.Environmental.QclAtmosphericPlumeInversion;
-using SGrowing.Api.Modules.Aerospace.DualStageHallThrusterAnodeErosion;
 using SGrowing.Api.Modules.Finance.ZkSolvencyMerkleSumAudit;
-using SGrowing.Api.Modules.Energy.LiquidLithiumCpsDivertor;
-using SGrowing.Api.Modules.Quantum.StrontiumOpticalLatticeClock;
-using SGrowing.Api.Modules.BioTech.AcidMineDrainageBioleaching;
-using SGrowing.Api.Modules.Aerospace.AerogelTpsAblationRecession;
 using SGrowing.Api.Modules.Finance.LsdDepegArbitrageRedemption;
 using SGrowing.Api.Modules.Transportation.HyperloopKantrowitzTubeAerodynamics;
-using SGrowing.Api.Modules.Physics.StedSuperResolutionMicroscopy;
-using SGrowing.Api.Modules.BioTech.PhageAssistedContinuousEvolution;
-using SGrowing.Api.Modules.Aerospace.MiniMagnetosphericPlasmaPropulsion;
 using SGrowing.Api.Modules.Finance.SovereignDebtClimateResilience;
 using SGrowing.Api.Modules.Infrastructure.SeismicMetamaterialPhononicCloak;
-using SGrowing.Api.Modules.Quantum.GaussianBosonSampling;
-using SGrowing.Api.Modules.BioTech.EpigeneticMethylationClock;
-using SGrowing.Api.Modules.Aerospace.ElectrodynamicTetherDeorbit;
 using SGrowing.Api.Modules.Finance.VpinMarketMakerToxicFlow;
-using SGrowing.Api.Modules.Energy.AdiabaticCaesThermalStorage;
-using SGrowing.Api.Modules.Physics.ColdAtomGravimeterInterferometry;
-using SGrowing.Api.Modules.BioTech.IvtMrnaCappingPolyATail;
-using SGrowing.Api.Modules.Aerospace.AerogravityAssistTrajectory;
 using SGrowing.Api.Modules.Finance.CrossAssetLiquiditySpillover;
-using SGrowing.Api.Modules.Environmental.ScwoPfasElimination;
-using SGrowing.Api.Modules.Quantum.NeutralAtomRydbergGates;
-using SGrowing.Api.Modules.BioTech.CarTCellExhaustionReprogramming;
-using SGrowing.Api.Modules.Aerospace.SolarSailRadiationPressure;
 using SGrowing.Api.Modules.Finance.DynamicMarginCollateralVar;
-using SGrowing.Api.Modules.Energy.MicrobialFuelCellBioenergy;
-using SGrowing.Api.Modules.Quantum.NvCenterNanoscaleMagnetometry;
-using SGrowing.Api.Modules.BioTech.PrimeEditingSearchAndReplace;
-using SGrowing.Api.Modules.Aerospace.MhdBoundaryLayerFlowControl;
 using SGrowing.Api.Modules.Finance.AmmDynamicImpermanentLossHedge;
-using SGrowing.Api.Modules.Energy.DirectMethanolFuelCell;
-using SGrowing.Api.Modules.Quantum.TopologicalMajoranaBraiding;
-using SGrowing.Api.Modules.BioTech.CrisprRnpElectroporationKinetics;
-using SGrowing.Api.Modules.Aerospace.NuclearThermalPropulsionPebbleBed;
 using SGrowing.Api.Modules.Finance.CrossCurrencyFlashSwapArbitrage;
-using SGrowing.Api.Modules.Energy.OceanThermalEnergyConversion;
-using SGrowing.Api.Modules.Quantum.CavityOptomechanicsPhononSqueezing;
-using SGrowing.Api.Modules.BioTech.AavCapsidDirectedEvolution;
-using SGrowing.Api.Modules.Aerospace.RotatingDetonationRocketCombustor;
 using SGrowing.Api.Modules.Finance.OrderFlowAdverseSelectionDrain;
-using SGrowing.Api.Modules.Energy.AlkalineWaterElectrolysisDynamic;
-using SGrowing.Api.Modules.Quantum.SuperconductingFluxoniumCoherence;
-using SGrowing.Api.Modules.BioTech.CytidineBaseEditingBystanderMutagenesis;
-using SGrowing.Api.Modules.Aerospace.HypersonicAerocaptureOrbitalInsertion;
 using SGrowing.Api.Modules.Finance.StatisticalArbitrageOrnsteinUhlenbeck;
-using SGrowing.Api.Modules.Energy.SolidOxideCoElectrolysisSyngas;
-using SGrowing.Api.Modules.Quantum.NvCenterNuclearSpinRegister;
-using SGrowing.Api.Modules.BioTech.LentiviralVectorIntegrationOncogenesis;
-using SGrowing.Api.Modules.Aerospace.LunarCraterTetherRappelling;
 using SGrowing.Api.Modules.Finance.SabrVolatilitySurfaceCalibration;
-using SGrowing.Api.Modules.Energy.LfpBatteryThermalRunawaySuppression;
-using SGrowing.Api.Modules.Quantum.BosonicCatQubitProtection;
-using SGrowing.Api.Modules.BioTech.EngineeredExosomeCargoLoading;
-using SGrowing.Api.Modules.Aerospace.AsteroidKineticImpactorDeflection;
 using SGrowing.Api.Modules.Finance.HierarchicalRiskParityClustering;
-using SGrowing.Api.Modules.Energy.VanadiumRedoxFlowBatteryBalancing;
-using SGrowing.Api.Modules.Quantum.SuperconductingTwpaReadout;
-using SGrowing.Api.Modules.BioTech.ProtacTernaryComplexKinetics;
-using SGrowing.Api.Modules.Aerospace.HypersonicScramjetIsolatorShockTrain;
 using SGrowing.Api.Modules.Finance.CrossCurrencyFxBasisSwapCip;
-using SGrowing.Api.Modules.Energy.CompressedGasGeothermalEnergyStorage;
-using SGrowing.Api.Modules.Quantum.NeutralAtomTweezerRearrangement;
-using SGrowing.Api.Modules.BioTech.CellFreeProteinSynthesisExpression;
-using SGrowing.Api.Modules.Aerospace.HallEffectThrusterErosion;
 using SGrowing.Api.Modules.Finance.MicrostructureKylesLambdaAdverseSelection;
-using SGrowing.Api.Modules.Energy.SolidStateBatteryDendriteSuppression;
-using SGrowing.Api.Modules.Quantum.DiamondColorCenterNanophotonics;
-using SGrowing.Api.Modules.BioTech.OligonucleotidePhosphoramiditeSynthesis;
-using SGrowing.Api.Modules.Aerospace.DualCombSpectroscopyGreenhouseFlux;
 using SGrowing.Api.Modules.Finance.MertonJumpDiffusionOptionPricing;
-using SGrowing.Api.Modules.Energy.PerovskiteSiliconTandemRecombination;
-using SGrowing.Api.Modules.Quantum.SuperconductingCrosstalkCancellation;
-using SGrowing.Api.Modules.BioTech.SingleCellAmbientRnaDecontamination;
-using SGrowing.Api.Modules.Aerospace.ReactionWheelMicroVibrationJitter;
 using SGrowing.Api.Modules.Finance.BondPortfolioDurationConvexityImmunization;
-using SGrowing.Api.Modules.Energy.MoltenSaltCspNitrateDecomposition;
-using SGrowing.Api.Modules.Quantum.RareEarthOpticalMemory;
-using SGrowing.Api.Modules.BioTech.HighMolecularWeightDnaExtraction;
-using SGrowing.Api.Modules.Aerospace.LunarOrbitInsertionBallisticCapture;
 using SGrowing.Api.Modules.Finance.CdoGaussianCopulaTrancheCorrelation;
-using SGrowing.Api.Modules.Energy.SolidOxideFuelCellTriplePhaseBoundary;
-using SGrowing.Api.Modules.Quantum.SiliconSpinQubitExchange;
-using SGrowing.Api.Modules.BioTech.NanoporeSquiggleBasecalling;
-using SGrowing.Api.Modules.Aerospace.AerobrakingAtmosphericDrag;
 using SGrowing.Api.Modules.Finance.AlmgrenChrissOptimalLiquidation;
-using SGrowing.Api.Modules.Energy.TokamakNtmEccdSuppression;
-using SGrowing.Api.Modules.Quantum.ContinuousVariableClusterTeleportation;
-using SGrowing.Api.Modules.BioTech.CryoEtSubtomogramAveraging;
-using SGrowing.Api.Modules.Aerospace.SolarCmeShockArrival;
 using SGrowing.Api.Modules.Finance.FxLocalStochasticVolatility;
-using SGrowing.Api.Modules.Energy.PemElectrolyzerGasCrossover;
-using SGrowing.Api.Modules.Quantum.SuperconductingQuantumAcoustics;
-using SGrowing.Api.Modules.BioTech.GuideSeqPrimeEditingOffTarget;
-using SGrowing.Api.Modules.Aerospace.AtmosphericEntryBlackoutGuidance;
 using SGrowing.Api.Modules.Finance.TipsRealYieldBreakevenInflation;
-using SGrowing.Api.Modules.Energy.DirectAirCaptureTvsaSorbent;
-using SGrowing.Api.Modules.Quantum.MajoranaZeroModeBraiding;
-using SGrowing.Api.Modules.BioTech.OrganoidLightSheetMorphogenesis;
-using SGrowing.Api.Modules.Aerospace.OpticalInterSatelliteCrosslink;
 using SGrowing.Api.Modules.Finance.CdsIndexTrancheCorrelation;
-using SGrowing.Api.Modules.Energy.MicrochannelFischerTropschSaf;
-using SGrowing.Api.Modules.Quantum.SurfaceCodeLatticeSurgery;
-using SGrowing.Api.Modules.BioTech.DropletMicrofluidicSingleCell;
-using SGrowing.Api.Modules.Aerospace.SpacecraftElectrostaticCharging;
 using SGrowing.Api.Modules.Finance.CrossCurrencyBasisConvexity;
-using SGrowing.Api.Modules.Energy.VrfbShuntCurrentRebalancing;
-using SGrowing.Api.Modules.Quantum.DualSpeciesNeutralAtomTweezers;
-using SGrowing.Api.Modules.BioTech.CodexSpatialProteomics;
-using SGrowing.Api.Modules.Aerospace.SpacecraftRcsPlumeImpingement;
 using SGrowing.Api.Modules.Finance.SviVolatilitySurfaceCalibration;
-using SGrowing.Api.Modules.Energy.SoecSteamElectrolysisThermalNeutral;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.AI.Firewall;
 using SGrowing.Api.Modules.AI.Personas;
@@ -955,7 +797,6 @@ public static class ServiceCollectionExtensions
         services.AddZkRollupBridgeServices();
 
         // Horizons 86-90 Services
-        services.AddBessArbitrageServices();
         services.AddMaritimeEcoRoutingServices();
         services.AddParametricInsuranceServices();
         services.AddOpticalQualityControlServices();
@@ -969,7 +810,6 @@ public static class ServiceCollectionExtensions
         services.AddZkIdentityVerificationServices();
 
         // Horizons 96-100 Services (Century Capstone Wave)
-        services.AddSatelliteDownlinkServices();
         services.AddDePinServices();
         services.AddNeuromorphicOdometryServices();
         services.AddBepsPillarTwoServices();
@@ -978,14 +818,11 @@ public static class ServiceCollectionExtensions
         // Horizons 101-105 Services (Next-Era Wave)
         services.AddSubseaAcousticServices();
         services.AddPrecisionAgrigenomicsServices();
-        services.AddHvdcGridStabilizerServices();
         services.AddMicroPaymentMeshServices();
-        services.AddMetabolicFluxServices();
 
         // Horizons 106-110 Services (Deep Infrastructure Wave)
         services.AddAircraftTurnaroundServices();
         services.AddRailHumpYardServices();
-        services.AddGeothermalMicroSeismicityServices();
         services.AddTeleoperationFoveatedServices();
         services.AddConfidentialRemoteAttestationServices();
 
@@ -997,298 +834,145 @@ public static class ServiceCollectionExtensions
         services.AddHotMeltExtrusionServices();
 
         // Horizons 116-120 Services (Nuclear SMR, Hypersonic Aerospace, QKD, Global Trade & ZK Biometrics)
-        services.AddSmrNeutronReactorServices();
-        services.AddScramjetThermalProtectionServices();
         services.AddQkdSatelliteArbiterServices();
         services.AddRulesOfOriginTariffServices();
         services.AddZkIrisBiometricServices();
 
         // Horizons 121-125 Services (Fusion Tokamak MHD, BCI Kinematics, Gravitational Interferometer, EUV Pellicle & HFT Microstructure)
-        services.AddTokamakPlasmaMhdServices();
         services.AddBciNeuralKinematicsServices();
-        services.AddGravitationalInterferometerServices();
         services.AddEuvLithographyPellicleServices();
         services.AddHftOrderBookMicrostructureServices();
 
         // Horizons 126-130 Services (Deep-Sea Submersible, Cryo Turbopump, CRISPR Cleavage, Ring Signatures & UHV Corona)
-        services.AddDeepSeaBuoyancyMeshServices();
-        services.AddCryoTurbopumpCavitationServices();
-        services.AddCrisprCasCleavageServices();
         services.AddRingSignatureIdentityServices();
-        services.AddUhvCoronaIonizationServices();
 
         // Horizons 131-135 Services (Solid-State Battery EIS, Subsea DWDM Raman, Superconducting Qubit Gates, Aerocapture Guidance & Threshold ML-DSA)
-        services.AddSolidStateBatteryEisServices();
         services.AddSubseaDwdmRamanCompensatorServices();
-        services.AddSuperconductingQubitGateArbiterServices();
-        services.AddSpacecraftAerocaptureGuidanceServices();
         services.AddThresholdMlDsaSignerServices();
 
         // Horizons 136-140 Services (MRI Quench Arbiter, Space Elevator Tether, PEM Electrolyzer, Spiking Retina & ZK State Relay)
         services.AddMriMagnetQuenchServices();
-        services.AddSpaceElevatorTetherServices();
-        services.AddPemElectrolyzerDegradationServices();
         services.AddSpikingRetinaGazeArbiterServices();
         services.AddZkStateRelayAggregatorServices();
 
         // Horizons 141-145 Services (CV-QKD Coherent State, Molten Salt CSP Thermocline, Microbial CRISPR Cascade, Fusion Divertor Detachment & Hypersonic Waverider Shock)
         services.AddCvQkdCoherentStateServices();
-        services.AddMoltenSaltCspThermoclineServices();
-        services.AddMicrobialCrisprCascadeServices();
-        services.AddFusionDivertorDetachmentServices();
-        services.AddHypersonicWaveriderShockServices();
 
         // Horizons 146-150 Services (Quantum Dot MEG, Hall Thruster Pole Erosion, Nanopore Basecaller, ZK L3 Watchtower & Superhot EGS)
-        services.AddQuantumDotMegSolarCellServices();
-        services.AddHallThrusterPoleErosionServices();
-        services.AddNanoporeTranslocationServices();
         services.AddZkL3WatchtowerFraudProofServices();
-        services.AddSuperhotEgsMicroSeismicityServices();
 
         // Horizons 151-155 Services (THz 6G Beam Squint, Cryo Fusion Pellets, CAR-T Exhaustion, DMFC Poisoning & Deep-Space RTG Decay)
         services.AddTerahertz6gBeamSquintServices();
-        services.AddCryoFusionPelletExtruderServices();
-        services.AddCarTCellExhaustionServices();
-        services.AddDmfcRutheniumPoisoningServices();
-        services.AddRtgDecayThermocoupleServices();
 
         // Horizons 156-160 Services (Gravitational Microlensing Exoplanets, HTS REBCO Delamination, Antibody Affinity Maturation, ZK Solvency & Hypersonic BLT)
-        services.AddGravitationalMicrolensingServices();
-        services.AddHtsRebcoCableServices();
-        services.AddAntibodyAffinityServices();
         services.AddZkSolvencyServices();
-        services.AddHypersonicBltServices();
 
         // Horizons 161-165 Services (SOEC Co-Electrolysis, OISL Laser Jitter, Spatial Transcriptomics, PQC-HTLC & Tokamak Runaway Suppression)
-        services.AddSoecCoElectrolysisServices();
-        services.AddOislLaserServices();
-        services.AddSpatialTranscriptomicsServices();
         services.AddPqcCrossChainHtlcServices();
-        services.AddPlasmaRunawaySuppressionServices();
 
         // Horizons 166-170 Services (QCL Photoacoustic Spectroscopy, Scramjet Shock Train, CRISPR Prime Editing Flap, AMM LVR & Supercritical Wellbore)
-        services.AddQclPhotoacousticServices();
-        services.AddScramjetIsolatorServices();
-        services.AddPrimeEditingServices();
         services.AddAmmLossVersusRebalancingServices();
-        services.AddSupercriticalWellboreServices();
 
         // Horizons 171-175 Services (Liquid Metal Blanket Hartmann Flow, Microbial Electrosynthesis, VASIMR Propulsion, OFA MEV & High-NA EUV)
-        services.AddLiquidMetalMhdServices();
-        services.AddMicrobialElectrosynthesisServices();
-        services.AddVasimrPlasmaPropulsionServices();
         services.AddOrderFlowAuctionServices();
         services.AddHighNaEuvServices();
 
         // Horizons 176-180 Services (sCO2 Brayton Compressor Surge, Direct-to-Cell LEO Doppler, CRISPR Cas12a DETECTR, ZK Dark Pool VDF & Lunar Regolith Microwave Sintering)
-        services.AddSco2BraytonServices();
         services.AddDirectToCellServices();
-        services.AddCrisprCas12aServices();
         services.AddZkDarkPoolServices();
-        services.AddLunarRegolithServices();
 
         // Horizons 181-185 Services (SMES Quench Fast Dump, Adaptive Optics Phase Conjugation, Cell-Free Protein Translation, DeFi Bad Debt Socialization & Hypersonic Skip-Glide)
-        services.AddSmesQuenchServices();
-        services.AddAdaptiveOpticsServices();
-        services.AddCellFreeProteinServices();
         services.AddDeFiLendingServices();
-        services.AddHypersonicSkipGlideServices();
 
         // Horizons 186-190 Services (CV-QKD Excess Noise, DAC Solid-Amine Chemisorption, Martian Aerocapture Guidance, HFT Micro-Price & LNG BOG Re-Liquefaction)
         services.AddCvQkdExcessNoiseServices();
-        services.AddDacSolidAmineServices();
-        services.AddMartianAerocaptureServices();
         services.AddHftMicroPriceServices();
-        services.AddLngBogReliquefactionServices();
 
         // Horizons 191-195 Services (Kilopower Space Brayton, Neuromorphic STDP, API Polymorph Continuous Crystallization, Re-Staking Slashing & HEMP Substation Protection)
-        services.AddKilopowerBraytonServices();
         services.AddNeuromorphicStdpServices();
-        services.AddApiPolymorphServices();
         services.AddRestakingSlashingServices();
-        services.AddHempSubstationServices();
 
         // Horizons 196-200 Services (Double Century Milestone: Dilution Refrigerator ADR, Targeted Alpha TRT, Oblique Detonation Wave Engine, CBDC Atomic DvP & Neutrino Tomography)
-        services.AddDilutionRefrigeratorServices();
-        services.AddTargetedAlphaDosimetryServices();
-        services.AddObliqueDetonationServices();
         services.AddCbdcLiquiditySavingServices();
-        services.AddNeutrinoGeotomographyServices();
 
         // Horizons 201-205 Services (MBE RHEED Growth, CRISPR Base Editing Bystander, Stratospheric HALE Solar Balance, ZK Recursive Folding & MCFC Carbon Capture)
         services.AddMbeRheedGrowthServices();
-        services.AddCrisprBaseEditorServices();
-        services.AddHaleSolarEnergyServices();
         services.AddZkRecursiveFoldingServices();
-        services.AddMcfcCarbonCaptureServices();
 
         // Horizons 206-210 Services (Maglev Inductrack EDS, Optical Coherence Elastography, Superconducting Marine MHD, ZK Rollup Censorship Resistance & Supercritical Thermosiphon Geothermal)
         services.AddMaglevInductrackServices();
-        services.AddOpticalElastographyServices();
-        services.AddMhdMarinePropulsionServices();
         services.AddZkRollupCensorshipServices();
-        services.AddSupercriticalThermosiphonServices();
 
         // Horizons 211-215 Services (Microfluidic LNP mRNA, QCL Atmospheric Plume, Dual-Stage Hall Thruster, ZK Solvency Audit & Tokamak Liquid Lithium CPS Divertor)
-        services.AddMicrofluidicLnpServices();
-        services.AddQclAtmosphericPlumeServices();
-        services.AddDualStageHallThrusterServices();
         services.AddZkSolvencyAuditServices();
-        services.AddLiquidLithiumDivertorServices();
 
         // Horizons 216-220 Services (Strontium-87 Optical Clock, AMD Bioleaching, Aerogel TPS Ablation, LSD Depeg Arbitrage & Hyperloop Kantrowitz Aerodynamics)
-        services.AddStrontiumOpticalLatticeClockServices();
-        services.AddAcidMineDrainageBioleachingServices();
-        services.AddAerogelTpsAblationRecessionServices();
         services.AddLsdDepegArbitrageServices();
         services.AddHyperloopKantrowitzAerodynamicsServices();
 
         // Horizons 221-225 Services (STED Super-Resolution, PACE Continuous Evolution, M2P2 Plasma Propulsion, Sovereign Debt Climate Resilience & Seismic Metamaterial Cloak)
-        services.AddStedSuperResolutionServices();
-        services.AddPaceServices();
-        services.AddM2p2Services();
         services.AddSovereignDebtClimateResilienceServices();
         services.AddSeismicMetamaterialCloakServices();
 
         // Horizons 226-230 Services (Photonic GBS, Epigenetic Clock, Electrodynamic Tether, VPIN Toxic Flow & Adiabatic CAES)
-        services.AddGaussianBosonSamplingServices();
-        services.AddEpigeneticMethylationClockServices();
-        services.AddElectrodynamicTetherDeorbitServices();
         services.AddVpinToxicFlowServices();
-        services.AddAdiabaticCaesServices();
 
         // Horizons 231-235 Services (Cold Atom Gravimeter, IVT mRNA Capping, Aerogravity-Assist, Cross-Asset Spillover & SCWO PFAS Elimination)
-        services.AddColdAtomGravimeterServices();
-        services.AddIvtMrnaCappingPolyAServices();
-        services.AddAerogravityAssistTrajectoryServices();
         services.AddCrossAssetLiquiditySpilloverServices();
-        services.AddScwoPfasEliminationServices();
 
         // Horizons 236-240 Services (Neutral Atom Rydberg Gates, CAR-T Exhaustion Reprogramming, Solar Sail Radiation Pressure, Dynamic Margin Collateral VaR & Microbial Fuel Cell Bioenergy)
-        services.AddNeutralAtomRydbergServices();
-        services.AddCarTCellExhaustionReprogrammingServices();
-        services.AddSolarSailRadiationPressureServices();
         services.AddDynamicMarginCollateralVarServices();
-        services.AddMicrobialFuelCellBioenergyServices();
 
         // Horizons 241-245 Services (NV Center Magnetometry, Prime Editing Search-and-Replace, MHD Boundary Layer Flow Control, AMM Impermanent Loss Dynamic Hedge & Direct Methanol Fuel Cell)
-        services.AddNvCenterMagnetometryServices();
-        services.AddPrimeEditingSearchAndReplaceServices();
-        services.AddMhdBoundaryLayerServices();
         services.AddAmmDynamicImpermanentLossHedgeServices();
-        services.AddDirectMethanolFuelCellServices();
 
         // Horizons 246-250 Services (Topological Majorana Braiding, CRISPR RNP Electroporation, Nuclear Thermal Propulsion, Cross-Currency Flash Swap Arbitrage & Ocean Thermal Energy Conversion)
-        services.AddTopologicalMajoranaBraidingServices();
-        services.AddCrisprRnpElectroporationServices();
-        services.AddNuclearThermalPropulsionPebbleBedServices();
         services.AddCrossCurrencyFlashSwapServices();
-        services.AddOceanThermalEnergyConversionServices();
 
         // Horizons 251-255 Services (Cavity Optomechanics Phonon Squeezing, AAV Capsid Evolution, Rotating Detonation Combustor, Order Flow Adverse Selection & Alkaline Water Electrolysis)
-        services.AddCavityOptomechanicsPhononSqueezingServices();
-        services.AddAavCapsidDirectedEvolutionServices();
-        services.AddRotatingDetonationRocketCombustorServices();
         services.AddOrderFlowAdverseSelectionDrainServices();
-        services.AddAlkalineWaterElectrolysisDynamicServices();
 
         // Horizons 256-260 Services (Superconducting Fluxonium Coherence, Cytidine Base Editing Bystander, Hypersonic Aerocapture, Ornstein-Uhlenbeck Stat Arb & SOEC Co-Electrolysis)
-        services.AddSuperconductingFluxoniumCoherenceServices();
-        services.AddCytidineBaseEditingBystanderServices();
-        services.AddHypersonicAerocaptureServices();
         services.AddStatisticalArbitrageOrnsteinUhlenbeckServices();
-        services.AddSolidOxideCoElectrolysisServices();
 
         // Horizons 261-265 Services (NV Center Nuclear Spin Register, Lentiviral Integration Oncogenesis, Lunar Crater Tether, SABR Volatility Surface & LFP Battery Thermal Runaway)
-        services.AddNvCenterNuclearSpinRegisterServices();
-        services.AddLentiviralIntegrationServices();
-        services.AddLunarCraterTetherRappellingServices();
         services.AddSabrVolatilitySurfaceCalibrationServices();
-        services.AddLfpBatteryThermalRunawayServices();
 
         // Horizons 266-270 Services (Bosonic Cat Qubit Protection, Engineered Exosome Cargo, Asteroid Kinetic Impactor, Hierarchical Risk Parity & VRFB Spectrophotometry Balancing)
-        services.AddBosonicCatQubitProtectionServices();
-        services.AddEngineeredExosomeCargoLoadingServices();
-        services.AddAsteroidKineticImpactorServices();
         services.AddHierarchicalRiskParityClusteringServices();
-        services.AddVanadiumRedoxFlowBatteryBalancingServices();
 
         // Horizons 271-275 Services (TWPA Readout, PROTAC Kinetics, Scramjet Isolator, FX Basis CIP & Compressed Gas Geothermal)
-        services.AddSuperconductingTwpaReadoutServices();
-        services.AddProtacTernaryComplexServices();
-        services.AddHypersonicScramjetIsolatorServices();
         services.AddCrossCurrencyFxBasisSwapCipServices();
-        services.AddCompressedGasGeothermalServices();
 
         // Horizons 276-280 Services (Neutral Atom Tweezer Rearrangement, Cell-Free Protein Synthesis, Hall-Effect Thruster Erosion, Microstructure Kyle's Lambda & Solid-State Battery Dendrite Suppression)
-        services.AddNeutralAtomTweezerRearrangementServices();
-        services.AddCellFreeProteinSynthesisServices();
-        services.AddHallEffectThrusterErosionServices();
         services.AddMicrostructureKylesLambdaServices();
-        services.AddSolidStateBatteryDendriteServices();
 
         // Horizons 281-285 Services (Diamond Color Center Nanophotonics, Oligo Synthesis, Dual-Comb Spectroscopy, Merton Jump Diffusion & Perovskite Tandem)
-        services.AddDiamondColorCenterNanophotonicsServices();
-        services.AddOligoPhosphoramiditeSynthesisServices();
-        services.AddDualCombSpectroscopyServices();
         services.AddMertonJumpDiffusionServices();
-        services.AddPerovskiteSiliconTandemServices();
 
         // Horizons 286-290 Services (Superconducting Crosstalk Cancellation, Single-Cell Ambient RNA Decontamination, Reaction Wheel Jitter, Bond Portfolio Immunization & Molten Salt CSP)
-        services.AddSuperconductingCrosstalkCancellationServices();
-        services.AddSingleCellAmbientRnaServices();
-        services.AddReactionWheelJitterServices();
         services.AddBondPortfolioImmunizationServices();
-        services.AddMoltenSaltNitrateDecompositionServices();
 
         // Horizons 291-295 Services (Rare-Earth Optical Memory, HMW DNA Extraction, Lunar Orbit Insertion, CDO Copula Tranches & Solid Oxide Fuel Cells)
-        services.AddRareEarthMemoryServices();
-        services.AddHmwDnaExtractionServices();
-        services.AddLunarOrbitInsertionServices();
         services.AddCdoCopulaTrancheServices();
-        services.AddSolidOxideFuelCellServices();
 
         // Horizons 296-300 Services (Silicon Spin Qubit Exchange, Nanopore Squiggle Basecalling, Aerobraking Drag, Almgren-Chriss Liquidation & Tokamak NTM ECCD Suppression)
-        services.AddSiliconSpinQubitServices();
-        services.AddNanoporeSquiggleServices();
-        services.AddAerobrakingDragServices();
         services.AddAlmgrenChrissLiquidationServices();
-        services.AddTokamakNtmEccdServices();
 
         // Horizons 301-305 Services (CV Cluster Teleportation, Cryo-ET Subtomogram Averaging, Solar CME Shock Arrival, FX LSV Barrier Options & PEM Electrolyzer Gas Crossover)
-        services.AddCvClusterTeleportationServices();
-        services.AddCryoEtTomographyServices();
-        services.AddSolarCmeShockServices();
         services.AddFxLsvBarrierServices();
-        services.AddPemElectrolyzerGasCrossoverServices();
 
         // Horizons 306-310 Services (Superconducting Quantum Acoustics, GUIDE-Seq Prime Editing, Atmospheric Entry Guidance, TIPS Real Yield & DAC TVSA Sorbent)
-        services.AddQuantumAcousticsServices();
-        services.AddGuideSeqEditingServices();
-        services.AddAtmosphericEntryServices();
         services.AddTipsRealYieldServices();
-        services.AddDirectAirCaptureTvsaServices();
 
         // Horizons 311-315 Services (Majorana Zero Modes, Organoid Morphogenesis, OISL Crosslink PAT, CDS Index Tranche & Fischer-Tropsch SAF)
-        services.AddMajoranaBraidingServices();
-        services.AddOrganoidMorphogenesisServices();
-        services.AddOislCrosslinkServices();
         services.AddCdsIndexTrancheServices();
-        services.AddFischerTropschSafServices();
 
         // Horizons 316-320 Services (Surface Code Lattice Surgery, Droplet Single-Cell Microfluidics, Spacecraft Charging, Cross-Currency Basis & VRFB Shunt Currents)
-        services.AddSurfaceCodeLatticeServices();
-        services.AddDropletMicrofluidicServices();
-        services.AddSpacecraftChargingServices();
         services.AddCrossCurrencyBasisServices();
-        services.AddVrfbShuntCurrentServices();
 
         // Horizons 321-325 Services (Dual-Species Tweezers, CODEX Proteomics, Spacecraft RCS Plume Impingement, SVI Volatility Surface & SOEC Steam Electrolysis)
-        services.AddDualSpeciesTweezersServices();
-        services.AddCodexProteomicsServices();
-        services.AddSpacecraftRcsServices();
         services.AddSviVolatilityServices();
-        services.AddSoecSteamElectrolysisServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
