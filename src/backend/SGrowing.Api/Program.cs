@@ -66,6 +66,11 @@ using SGrowing.Api.Modules.Advertising.RetargetingMatrix;
 using SGrowing.Api.Modules.Support.SentimentDeescalation;
 using SGrowing.Api.Modules.Billing.ConsumptionMetering;
 using SGrowing.Api.Modules.Infrastructure.ShardMesh;
+using SGrowing.Api.Modules.Intelligence.MutualActionPlan;
+using SGrowing.Api.Modules.Advertising.CatalogFeeds;
+using SGrowing.Api.Modules.Support.CapacityPlanning;
+using SGrowing.Api.Modules.Finance.FxHedgingEscrow;
+using SGrowing.Api.Modules.Security.MicroSegmentation;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -877,6 +882,11 @@ app.MapRetargetingMatrixEndpoints();
 app.MapSentimentDeescalationEndpoints();
 app.MapConsumptionMeteringEndpoints();
 app.MapShardMeshEndpoints();
+app.MapMutualActionPlanEndpoints();
+app.MapCatalogFeedsEndpoints();
+app.MapCapacityPlanningEndpoints();
+app.MapFxHedgingEscrowEndpoints();
+app.MapMicroSegmentationEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

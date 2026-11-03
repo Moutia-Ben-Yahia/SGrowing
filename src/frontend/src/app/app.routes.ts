@@ -275,5 +275,10 @@ export const routes: Routes = [
   { path: 'support/sentiment-deescalation', loadComponent: () => import('./features/support/sentiment-deescalation-cockpit.component').then(m => m.SentimentDeescalationCockpitComponent), canActivate: [authGuard] },
   { path: 'billing/consumption-metering', loadComponent: () => import('./features/billing/consumption-metering-cockpit.component').then(m => m.ConsumptionMeteringCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/shard-mesh', loadComponent: () => import('./features/infrastructure/shard-mesh-cockpit.component').then(m => m.ShardMeshCockpitComponent), canActivate: [authGuard] },
+  { path: 'intelligence/mutual-action-plan', loadComponent: () => import('./features/intelligence/mutual-action-plan-cockpit.component').then(m => m.MutualActionPlanCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/catalog-feeds', loadComponent: () => import('./features/advertising/catalog-feeds-cockpit.component').then(m => m.CatalogFeedsCockpitComponent), canActivate: [authGuard] },
+  { path: 'support/capacity-planning', loadComponent: () => import('./features/support/capacity-planning-cockpit.component').then(m => m.CapacityPlanningCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/fx-hedging', loadComponent: () => import('./features/finance/fx-hedging-cockpit.component').then(m => m.FxHedgingCockpitComponent), canActivate: [authGuard] },
+  { path: 'security/micro-segmentation', loadComponent: () => import('./features/security/micro-segmentation-cockpit.component').then(m => m.MicroSegmentationCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

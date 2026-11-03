@@ -72,6 +72,11 @@ using SGrowing.Api.Modules.Advertising.RetargetingMatrix;
 using SGrowing.Api.Modules.Support.SentimentDeescalation;
 using SGrowing.Api.Modules.Billing.ConsumptionMetering;
 using SGrowing.Api.Modules.Infrastructure.ShardMesh;
+using SGrowing.Api.Modules.Intelligence.MutualActionPlan;
+using SGrowing.Api.Modules.Advertising.CatalogFeeds;
+using SGrowing.Api.Modules.Support.CapacityPlanning;
+using SGrowing.Api.Modules.Finance.FxHedgingEscrow;
+using SGrowing.Api.Modules.Security.MicroSegmentation;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
@@ -1118,6 +1123,11 @@ public static class ServiceCollectionExtensions
         services.AddSentimentDeescalationServices();
         services.AddConsumptionMeteringServices();
         services.AddShardMeshServices();
+        services.AddMutualActionPlanServices();
+        services.AddCatalogFeedsServices();
+        services.AddCapacityPlanningServices();
+        services.AddFxHedgingEscrowServices();
+        services.AddMicroSegmentationServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
