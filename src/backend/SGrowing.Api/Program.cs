@@ -111,6 +111,11 @@ using SGrowing.Api.Modules.Advertising.SpatialAdBidding;
 using SGrowing.Api.Modules.Voice.SpeechStreamingMesh;
 using SGrowing.Api.Modules.Finance.AssetDepreciation;
 using SGrowing.Api.Modules.Infrastructure.SecretRotationMesh;
+using SGrowing.Api.Modules.Sales.CollaborativeDealRoom;
+using SGrowing.Api.Modules.Advertising.RetailSignageMesh;
+using SGrowing.Api.Modules.Voice.MultilingualVoiceMesh;
+using SGrowing.Api.Modules.Finance.SovereignEInvoicing;
+using SGrowing.Api.Modules.Infrastructure.PodSandboxingMesh;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -967,6 +972,11 @@ app.MapSpatialAdBiddingEndpoints();
 app.MapSpeechStreamingMeshEndpoints();
 app.MapAssetDepreciationEndpoints();
 app.MapSecretRotationMeshEndpoints();
+app.MapCollaborativeDealRoomEndpoints();
+app.MapRetailSignageMeshEndpoints();
+app.MapMultilingualVoiceMeshEndpoints();
+app.MapSovereignEInvoicingEndpoints();
+app.MapPodSandboxingMeshEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

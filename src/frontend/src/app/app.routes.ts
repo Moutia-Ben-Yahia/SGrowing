@@ -320,5 +320,10 @@ export const routes: Routes = [
   { path: 'voice/speech-streaming-mesh', loadComponent: () => import('./features/voice/speech-streaming-mesh-cockpit.component').then(m => m.SpeechStreamingMeshCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/asset-depreciation', loadComponent: () => import('./features/finance/asset-depreciation-cockpit.component').then(m => m.AssetDepreciationCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/secret-rotation-mesh', loadComponent: () => import('./features/infrastructure/secret-rotation-mesh-cockpit.component').then(m => m.SecretRotationMeshCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/mutual-action-plan', loadComponent: () => import('./features/sales/mutual-action-plan-cockpit.component').then(m => m.MutualActionPlanCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/retail-signage-mesh', loadComponent: () => import('./features/advertising/retail-signage-mesh-cockpit.component').then(m => m.RetailSignageMeshCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/multilingual-voice-mesh', loadComponent: () => import('./features/voice/multilingual-voice-mesh-cockpit.component').then(m => m.MultilingualVoiceMeshCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/sovereign-e-invoicing', loadComponent: () => import('./features/finance/sovereign-e-invoicing-cockpit.component').then(m => m.SovereignEInvoicingCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/pod-sandboxing-mesh', loadComponent: () => import('./features/infrastructure/pod-sandboxing-mesh-cockpit.component').then(m => m.PodSandboxingMeshCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

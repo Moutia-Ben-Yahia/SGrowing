@@ -361,6 +361,11 @@ using SGrowing.Api.Modules.Advertising.SpatialAdBidding;
 using SGrowing.Api.Modules.Voice.SpeechStreamingMesh;
 using SGrowing.Api.Modules.Finance.AssetDepreciation;
 using SGrowing.Api.Modules.Infrastructure.SecretRotationMesh;
+using SGrowing.Api.Modules.Sales.CollaborativeDealRoom;
+using SGrowing.Api.Modules.Advertising.RetailSignageMesh;
+using SGrowing.Api.Modules.Voice.MultilingualVoiceMesh;
+using SGrowing.Api.Modules.Finance.SovereignEInvoicing;
+using SGrowing.Api.Modules.Infrastructure.PodSandboxingMesh;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Diagnostics;
@@ -1208,6 +1213,11 @@ public static class ServiceCollectionExtensions
         services.AddSpeechStreamingMeshServices();
         services.AddAssetDepreciationServices();
         services.AddSecretRotationMeshServices();
+        services.AddCollaborativeDealRoomServices();
+        services.AddRetailSignageMeshServices();
+        services.AddMultilingualVoiceMeshServices();
+        services.AddSovereignEInvoicingServices();
+        services.AddPodSandboxingMeshServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
