@@ -489,7 +489,8 @@ public class MultiAgentSwarmProtocolTests
         var token = _quorumSigner.GenerateExecutionToken(Guid.NewGuid(), _testTenantId, votes, 1.0, TestSigningSecret);
 
         // Mutate signature
-        var tamperedToken = token with { Signature = token.Signature[..^2] + "ff" };
+        var replacement = token.Signature.EndsWith("ff") ? "00" : "ff";
+        var tamperedToken = token with { Signature = token.Signature[..^2] + replacement };
 
         var verifyResult = _quorumSigner.VerifyExecutionToken(tamperedToken, votes, TestSigningSecret);
 
