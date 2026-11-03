@@ -67,6 +67,11 @@ using SGrowing.Api.Modules.Analytics.ShapleyAttribution;
 using SGrowing.Api.Modules.Voice.AgentAssist;
 using SGrowing.Api.Modules.Commerce.Tariffs;
 using SGrowing.Api.Modules.Security.EphemeralVault;
+using SGrowing.Api.Modules.Intelligence.WinLoss;
+using SGrowing.Api.Modules.Advertising.RetargetingMatrix;
+using SGrowing.Api.Modules.Support.SentimentDeescalation;
+using SGrowing.Api.Modules.Billing.ConsumptionMetering;
+using SGrowing.Api.Modules.Infrastructure.ShardMesh;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
@@ -1108,6 +1113,11 @@ public static class ServiceCollectionExtensions
         services.AddAgentAssistServices();
         services.AddTariffCalculatorServices();
         services.AddEphemeralVaultServices();
+        services.AddWinLossServices();
+        services.AddRetargetingMatrixServices();
+        services.AddSentimentDeescalationServices();
+        services.AddConsumptionMeteringServices();
+        services.AddShardMeshServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

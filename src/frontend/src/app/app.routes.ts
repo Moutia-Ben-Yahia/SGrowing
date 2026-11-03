@@ -270,5 +270,10 @@ export const routes: Routes = [
   { path: 'voice/agent-assist', loadComponent: () => import('./features/voice/agent-assist-cockpit.component').then(m => m.AgentAssistCockpitComponent), canActivate: [authGuard] },
   { path: 'commerce/tariffs', loadComponent: () => import('./features/commerce/tariff-calculator-cockpit.component').then(m => m.TariffCalculatorCockpitComponent), canActivate: [authGuard] },
   { path: 'security/ephemeral-vault', loadComponent: () => import('./features/security/ephemeral-vault-cockpit.component').then(m => m.EphemeralVaultCockpitComponent), canActivate: [authGuard] },
+  { path: 'intelligence/win-loss', loadComponent: () => import('./features/intelligence/win-loss-cockpit.component').then(m => m.WinLossCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/retargeting-matrix', loadComponent: () => import('./features/advertising/retargeting-matrix-cockpit.component').then(m => m.RetargetingMatrixCockpitComponent), canActivate: [authGuard] },
+  { path: 'support/sentiment-deescalation', loadComponent: () => import('./features/support/sentiment-deescalation-cockpit.component').then(m => m.SentimentDeescalationCockpitComponent), canActivate: [authGuard] },
+  { path: 'billing/consumption-metering', loadComponent: () => import('./features/billing/consumption-metering-cockpit.component').then(m => m.ConsumptionMeteringCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/shard-mesh', loadComponent: () => import('./features/infrastructure/shard-mesh-cockpit.component').then(m => m.ShardMeshCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];
