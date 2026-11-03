@@ -101,6 +101,11 @@ using SGrowing.Api.Modules.Advertising.Uid2Tokenizer;
 using SGrowing.Api.Modules.Voice.AgentWhisper;
 using SGrowing.Api.Modules.Finance.FxExposureRebalancing;
 using SGrowing.Api.Modules.Infrastructure.DbQueryRouter;
+using SGrowing.Api.Modules.Personalization.ContentPersonalization;
+using SGrowing.Api.Modules.Advertising.VideoDco;
+using SGrowing.Api.Modules.Voice.EmotionDeescalation;
+using SGrowing.Api.Modules.Finance.PayrollTaxWithholding;
+using SGrowing.Api.Modules.Infrastructure.ApiRateLimiterMesh;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -947,6 +952,11 @@ app.MapUid2TokenizerEndpoints();
 app.MapAgentWhisperEndpoints();
 app.MapFxExposureRebalancingEndpoints();
 app.MapDbQueryRouterEndpoints();
+app.MapContentPersonalizationEndpoints();
+app.MapVideoDcoEndpoints();
+app.MapEmotionDeescalationEndpoints();
+app.MapPayrollTaxWithholdingEndpoints();
+app.MapApiRateLimiterMeshEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

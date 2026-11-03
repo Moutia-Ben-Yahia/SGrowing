@@ -351,6 +351,11 @@ using SGrowing.Api.Modules.Advertising.Uid2Tokenizer;
 using SGrowing.Api.Modules.Voice.AgentWhisper;
 using SGrowing.Api.Modules.Finance.FxExposureRebalancing;
 using SGrowing.Api.Modules.Infrastructure.DbQueryRouter;
+using SGrowing.Api.Modules.Personalization.ContentPersonalization;
+using SGrowing.Api.Modules.Advertising.VideoDco;
+using SGrowing.Api.Modules.Voice.EmotionDeescalation;
+using SGrowing.Api.Modules.Finance.PayrollTaxWithholding;
+using SGrowing.Api.Modules.Infrastructure.ApiRateLimiterMesh;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Diagnostics;
@@ -1188,6 +1193,11 @@ public static class ServiceCollectionExtensions
         services.AddAgentWhisperServices();
         services.AddFxExposureRebalancingServices();
         services.AddDbQueryRouterServices();
+        services.AddContentPersonalizationServices();
+        services.AddVideoDcoServices();
+        services.AddEmotionDeescalationServices();
+        services.AddPayrollTaxWithholdingServices();
+        services.AddApiRateLimiterMeshServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

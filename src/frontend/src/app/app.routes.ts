@@ -310,5 +310,10 @@ export const routes: Routes = [
   { path: 'voice/agent-whisper', loadComponent: () => import('./features/voice/agent-whisper-cockpit.component').then(m => m.AgentWhisperCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/fx-exposure-rebalancing', loadComponent: () => import('./features/finance/fx-exposure-rebalancing-cockpit.component').then(m => m.FxExposureRebalancingCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/db-query-router', loadComponent: () => import('./features/infrastructure/db-query-router-cockpit.component').then(m => m.DbQueryRouterCockpitComponent), canActivate: [authGuard] },
+  { path: 'personalization/content-personalization', loadComponent: () => import('./features/personalization/content-personalization-cockpit.component').then(m => m.ContentPersonalizationCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/video-dco', loadComponent: () => import('./features/advertising/video-dco-cockpit.component').then(m => m.VideoDcoCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/emotion-deescalation', loadComponent: () => import('./features/voice/emotion-deescalation-cockpit.component').then(m => m.EmotionDeescalationCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/payroll-tax-withholding', loadComponent: () => import('./features/finance/payroll-tax-withholding-cockpit.component').then(m => m.PayrollTaxWithholdingCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/api-rate-limiter-mesh', loadComponent: () => import('./features/infrastructure/api-rate-limiter-mesh-cockpit.component').then(m => m.ApiRateLimiterMeshCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];
