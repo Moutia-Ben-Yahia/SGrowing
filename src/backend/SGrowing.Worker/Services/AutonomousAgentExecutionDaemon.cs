@@ -96,7 +96,8 @@ public class AutonomousAgentExecutionDaemon : BackgroundService
         // 1. Plan Decomposition: If no steps exist yet, decompose goal into multi-step tool sequence
         if (mission.Steps.Count == 0)
         {
-            DecomposeGoalIntoSteps(mission);
+            var steps = DecomposeGoalIntoSteps(mission);
+            db.AgentMissionSteps.AddRange(steps);
             mission.Status = AgentMissionStatus.Running;
             await db.SaveChangesAsync(cancellationToken);
         }
@@ -220,9 +221,9 @@ public class AutonomousAgentExecutionDaemon : BackgroundService
         return true;
     }
 
-    private static void DecomposeGoalIntoSteps(AgentMission mission)
+    private static List<AgentMissionStep> DecomposeGoalIntoSteps(AgentMission mission)
     {
-        mission.Steps = new List<AgentMissionStep>
+        var steps = new List<AgentMissionStep>
         {
             AgentMissionStep.Create(
                 mission.Id,
@@ -282,7 +283,13 @@ public class AutonomousAgentExecutionDaemon : BackgroundService
                 approvalRequired: true)
         };
 
+        foreach (var step in steps)
+        {
+            mission.Steps.Add(step);
+        }
+
         mission.ReasoningTrace += $"\n[Planner] Goal decomposed into 5 executable tool DAG steps. Sensitive steps marked for approval gate: outbound dispatch, contract sealing, courier waybill.";
+        return steps;
     }
 
     private static Dictionary<string, object> ParseArguments(string json)
