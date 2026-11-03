@@ -300,5 +300,10 @@ export const routes: Routes = [
   { path: 'voice/audio-noise-cancellation', loadComponent: () => import('./features/voice/audio-noise-cancellation-cockpit.component').then(m => m.AudioNoiseCancellationCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/vendor-bill-matching', loadComponent: () => import('./features/finance/vendor-bill-matching-cockpit.component').then(m => m.VendorBillMatchingCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/k8s-isolation-mesh', loadComponent: () => import('./features/infrastructure/k8s-isolation-mesh-cockpit.component').then(m => m.K8sIsolationMeshCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/territory-rebalancing', loadComponent: () => import('./features/sales/territory-rebalancing-cockpit.component').then(m => m.TerritoryRebalancingCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/ctv-ad-insertion', loadComponent: () => import('./features/advertising/ctv-ad-insertion-cockpit.component').then(m => m.CtvAdInsertionCockpitComponent), canActivate: [authGuard] },
+  { path: 'support/screen-diagnostic', loadComponent: () => import('./features/support/screen-diagnostic-cockpit.component').then(m => m.ScreenDiagnosticCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/transfer-pricing', loadComponent: () => import('./features/finance/transfer-pricing-cockpit.component').then(m => m.TransferPricingCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/bgp-geo-steering', loadComponent: () => import('./features/infrastructure/bgp-geo-steering-cockpit.component').then(m => m.BgpGeoSteeringCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

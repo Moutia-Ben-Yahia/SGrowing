@@ -341,6 +341,11 @@ using SGrowing.Api.Modules.Advertising.RetailMediaAuction;
 using SGrowing.Api.Modules.Voice.AudioNoiseCancellation;
 using SGrowing.Api.Modules.Finance.VendorBillMatching;
 using SGrowing.Api.Modules.Infrastructure.K8sIsolationMesh;
+using SGrowing.Api.Modules.Sales.TerritoryRebalancing;
+using SGrowing.Api.Modules.Advertising.CtvAdInsertion;
+using SGrowing.Api.Modules.Support.ScreenDiagnostic;
+using SGrowing.Api.Modules.Finance.TransferPricing;
+using SGrowing.Api.Modules.Infrastructure.BgpGeoSteering;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Diagnostics;
@@ -1168,6 +1173,11 @@ public static class ServiceCollectionExtensions
         services.AddAudioNoiseCancellationServices();
         services.AddVendorBillMatchingServices();
         services.AddK8sIsolationMeshServices();
+        services.AddTerritoryRebalancingServices();
+        services.AddCtvAdInsertionServices();
+        services.AddScreenDiagnosticServices();
+        services.AddTransferPricingServices();
+        services.AddBgpGeoSteeringServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

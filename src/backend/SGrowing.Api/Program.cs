@@ -91,6 +91,11 @@ using SGrowing.Api.Modules.Advertising.RetailMediaAuction;
 using SGrowing.Api.Modules.Voice.AudioNoiseCancellation;
 using SGrowing.Api.Modules.Finance.VendorBillMatching;
 using SGrowing.Api.Modules.Infrastructure.K8sIsolationMesh;
+using SGrowing.Api.Modules.Sales.TerritoryRebalancing;
+using SGrowing.Api.Modules.Advertising.CtvAdInsertion;
+using SGrowing.Api.Modules.Support.ScreenDiagnostic;
+using SGrowing.Api.Modules.Finance.TransferPricing;
+using SGrowing.Api.Modules.Infrastructure.BgpGeoSteering;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -927,6 +932,11 @@ app.MapRetailMediaAuctionEndpoints();
 app.MapAudioNoiseCancellationEndpoints();
 app.MapVendorBillMatchingEndpoints();
 app.MapK8sIsolationMeshEndpoints();
+app.MapTerritoryRebalancingEndpoints();
+app.MapCtvAdInsertionEndpoints();
+app.MapScreenDiagnosticEndpoints();
+app.MapTransferPricingEndpoints();
+app.MapBgpGeoSteeringEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
