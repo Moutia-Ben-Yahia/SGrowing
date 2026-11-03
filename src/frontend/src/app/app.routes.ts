@@ -290,5 +290,10 @@ export const routes: Routes = [
   { path: 'voice/call-compliance', loadComponent: () => import('./features/voice/call-compliance-cockpit.component').then(m => m.CallComplianceCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/tax-nexus', loadComponent: () => import('./features/finance/tax-nexus-cockpit.component').then(m => m.TaxNexusCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/chaos-mesh', loadComponent: () => import('./features/infrastructure/chaos-mesh-cockpit.component').then(m => m.ChaosMeshCockpitComponent), canActivate: [authGuard] },
+  { path: 'commerce/cpq-approval', loadComponent: () => import('./features/commerce/cpq-approval-cockpit.component').then(m => m.CpqApprovalCockpitComponent), canActivate: [authGuard] },
+  { path: 'marketing/shapley-attribution', loadComponent: () => import('./features/marketing/shapley-attribution-cockpit.component').then(m => m.ShapleyAttributionCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/pitch-tuning', loadComponent: () => import('./features/voice/pitch-tuning-cockpit.component').then(m => m.PitchTuningCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/treasury-yield', loadComponent: () => import('./features/finance/treasury-yield-cockpit.component').then(m => m.TreasuryYieldCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/edge-mesh', loadComponent: () => import('./features/infrastructure/edge-mesh-cockpit.component').then(m => m.EdgeMeshCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

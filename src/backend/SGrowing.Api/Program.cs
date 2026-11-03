@@ -81,6 +81,11 @@ using SGrowing.Api.Modules.Advertising.BidPacing;
 using SGrowing.Api.Modules.Voice.CallCompliance;
 using SGrowing.Api.Modules.Finance.TaxNexus;
 using SGrowing.Api.Modules.Infrastructure.ChaosMesh;
+using SGrowing.Api.Modules.Commerce.CpqApproval;
+using SGrowing.Api.Modules.Marketing.AdSpendRedistribution;
+using SGrowing.Api.Modules.Voice.PitchTuning;
+using SGrowing.Api.Modules.Finance.TreasuryYield;
+using SGrowing.Api.Modules.Infrastructure.EdgeMesh;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -907,6 +912,11 @@ app.MapBidPacingEndpoints();
 app.MapCallComplianceEndpoints();
 app.MapTaxNexusEndpoints();
 app.MapChaosMeshEndpoints();
+app.MapCpqApprovalEndpoints();
+app.MapAdSpendRedistributionEndpoints();
+app.MapPitchTuningEndpoints();
+app.MapTreasuryYieldEndpoints();
+app.MapEdgeMeshEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

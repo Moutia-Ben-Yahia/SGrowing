@@ -331,6 +331,11 @@ using SGrowing.Api.Modules.Conversations.Hierarchy;
 using SGrowing.Api.Modules.Notifications;
 using SGrowing.Api.Modules.Workforce.Shifts;
 using SGrowing.Api.Modules.Workforce.Timesheets;
+using SGrowing.Api.Modules.Commerce.CpqApproval;
+using SGrowing.Api.Modules.Marketing.AdSpendRedistribution;
+using SGrowing.Api.Modules.Voice.PitchTuning;
+using SGrowing.Api.Modules.Finance.TreasuryYield;
+using SGrowing.Api.Modules.Infrastructure.EdgeMesh;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Diagnostics;
@@ -1148,6 +1153,11 @@ public static class ServiceCollectionExtensions
         services.AddCallComplianceServices();
         services.AddTaxNexusServices();
         services.AddChaosMeshServices();
+        services.AddCpqApprovalServices();
+        services.AddAdSpendRedistributionServices();
+        services.AddPitchTuningServices();
+        services.AddTreasuryYieldServices();
+        services.AddEdgeMeshServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
