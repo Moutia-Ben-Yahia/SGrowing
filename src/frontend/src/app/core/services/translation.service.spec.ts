@@ -30,6 +30,10 @@ describe('TranslationService (Multilingual Native English & LTR)', () => {
     service.setLocale('de-DE');
     expect(document.documentElement.getAttribute('dir')).toBe('ltr');
     expect(document.documentElement.getAttribute('lang')).toBe('de-DE');
+
+    service.setLocale('ar-AR');
+    expect(document.documentElement.getAttribute('dir')).toBe('ltr');
+    expect(document.documentElement.getAttribute('lang')).toBe('ar-AR');
   });
 
   it('should translate keys correctly across supported locales', () => {
@@ -48,6 +52,11 @@ describe('TranslationService (Multilingual Native English & LTR)', () => {
     service.setLocale('de-DE');
     expect(service.t('common.resolve')).toBe('Abschließen');
     expect(service.t('common.healthy')).toBe('Betriebsbereit');
+
+    service.setLocale('ar-AR');
+    expect(service.t('nav.inbox')).toBe('المحادثات');
+    expect(service.t('common.resolve')).toBe('حل وإنهاء');
+    expect(service.t('common.healthy')).toBe('سليم وتعمل بكفاءة');
   });
 
   it('should format currency accurately according to locale', () => {

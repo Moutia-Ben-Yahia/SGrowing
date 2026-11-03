@@ -83,6 +83,7 @@ public class CartReservationSweeperDaemon : BackgroundService
     {
         var now = DateTime.UtcNow;
         var expiredLocks = await db.CartReservationLocks
+            .IgnoreQueryFilters()
             .Where(l => l.Status == "Active" && l.ExpiresAtUtc < now)
             .Take(100)
             .ToListAsync(cancellationToken);
@@ -93,6 +94,7 @@ public class CartReservationSweeperDaemon : BackgroundService
         foreach (var lockRec in expiredLocks)
         {
             var stock = await db.WarehouseStockRecords
+                .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(s => s.TenantId == lockRec.TenantId && s.WarehouseId == lockRec.WarehouseId && s.Sku == lockRec.Sku, cancellationToken);
 
             if (stock != null)

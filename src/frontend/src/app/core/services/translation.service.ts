@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, effect } from '@angular/core';
 
-export type SupportedLocale = 'en-US' | 'fr-FR' | 'es-ES' | 'de-DE';
+export type SupportedLocale = 'en-US' | 'fr-FR' | 'es-ES' | 'de-DE' | 'ar-AR';
 
 export interface LocaleInfo {
   code: SupportedLocale;
@@ -14,7 +14,8 @@ export const SUPPORTED_LOCALES: LocaleInfo[] = [
   { code: 'en-US', name: 'English (US)', flag: '🇺🇸', currency: 'USD', dateFormat: 'MM/DD/YYYY' },
   { code: 'fr-FR', name: 'Français', flag: '🇫🇷', currency: 'EUR', dateFormat: 'DD/MM/YYYY' },
   { code: 'es-ES', name: 'Español', flag: '🇪🇸', currency: 'EUR', dateFormat: 'DD/MM/YYYY' },
-  { code: 'de-DE', name: 'Deutsch', flag: '🇩🇪', currency: 'EUR', dateFormat: 'DD.MM.YYYY' }
+  { code: 'de-DE', name: 'Deutsch', flag: '🇩🇪', currency: 'EUR', dateFormat: 'DD.MM.YYYY' },
+  { code: 'ar-AR', name: 'العربية (Tunisia & MENA)', flag: '🇹🇳', currency: 'TND', dateFormat: 'DD/MM/YYYY' }
 ];
 
 type TranslationDictionary = Record<string, string>;
@@ -424,11 +425,120 @@ const DE_DE_TRANSLATIONS: TranslationDictionary = {
   'daemons.last_heartbeat': 'Letzter Herzschlag'
 };
 
+const AR_AR_TRANSLATIONS: TranslationDictionary = {
+  // Brand & Navigation
+  'brand.title': 'SGrowing',
+  'brand.subtitle': 'منصة الذكاء الاصطناعي متعددة القنوات',
+  'nav.title': 'التنقل',
+  'nav.inbox': 'المحادثات',
+  'nav.all_conversations': 'جميع المحادثات',
+  'nav.courier': 'تطبيق سائق التوصيل',
+  'nav.checkout': 'صفحة إتمام الطلب COD',
+  'nav.creatives': 'إعلانات الذكاء الاصطناعي ورادار المنافسين',
+  'nav.digital_goods': 'المنتجات الرقمية وإدارة الكتالوج',
+  'nav.forms': 'النماذج الديناميكية ومستندات PDF',
+  'nav.developer': 'واجهة المطورين وخطافات الويب',
+  'nav.calendar': 'تقويم المواعيد والحجوزات',
+  'nav.deliverability': 'صلاحية تسليم البريد الإلكتروني',
+  'nav.telemetry': 'مؤشرات الأداء المباشرة',
+  'nav.billing': 'الاشتراكات والفوترة السحابية',
+  'nav.operations': 'مركز عمليات الدفع عند الاستلام واللوجستيات',
+  'nav.analytics': 'التحليلات والمقاييس متعددة القنوات',
+  'nav.commerce': 'التجارة وعروض الأسعار',
+  'nav.connectors': 'جسور المزامنة للمتاجر الإلكترونية',
+  'nav.funnels': 'مسارات البيع والزيادة التلقائية',
+  'nav.seo': 'تحسين محركات البحث والكلمات المفتاحية',
+  'nav.outbound': 'حملات التواصل الآلي بالذكاء الاصطناعي',
+  'nav.social': 'استوديو النشر على منصات التواصل',
+  'nav.voice': 'الهاتف الافتراضي والمكالمات الذكية',
+  'nav.accounts': 'إدارة حسابات الشركات والعملاء',
+  'nav.workflows': 'سير العمل والأتمتة المرئية',
+  'nav.contracts': 'العقود والتوقيع الرقمي',
+  'nav.rag': 'قاعدة المعرفة والذكاء الاصطناعي pgvector',
+  'nav.broadcasts': 'رسائل واتساب الجماعية',
+  'nav.sla': 'اتفاقيات مستوى الخدمة والتصعيد',
+  'nav.journeys': 'مسارات رحلة العميل',
+  'nav.feedback': 'استطلاعات الرأي ورضا العملاء',
+  'nav.help': 'مركز المساعدة والدعم الذاتي',
+  'nav.chatbots': 'مخطط الروبوتات الذكية والمحفزات',
+  'nav.warmup': 'تهيئة البريد وتفادي مجلد العشوائيات',
+  'nav.softphone': 'هاتف الويب ومجموعة الاتصال',
+  'nav.cpq': 'نظام تسعير عروض الأسعار المؤسسي',
+  'nav.sealing': 'الختم والتشفير الرقمي لملفات PDF',
+  'nav.agents_hub': 'مركز الوكلاء المستقلين بالذكاء الاصطناعي',
+  'nav.missions': 'مهام الوكلاء وفريق المبيعات الآلي',
+  'nav.projects': 'مهام المشاريع وتوجيه العملاء',
+  'nav.research': 'البحث المعمق على الويب بالذكاء الاصطناعي',
+  'nav.warehouses': 'توزيع المخزون عبر المستودعات',
+  'nav.organizations': 'إدارة المؤسسات وهوامش الأرباح',
+  'nav.timesheets': 'سجلات الوقت وحساب تكلفة العمالة',
+  'nav.whatsapp_gateway': 'بوابة واتساب المباشرة',
+  'nav.autonomous_funnels': 'ورشة المسارات الذاتية',
+  'nav.agent_fleet': 'أسطول الوكلاء المزدوج المكون من 38 وكيلاً',
+  'nav.invoices': 'الفواتير متعددة العملات والضرائب',
+
+  // Common Actions & Statuses
+  'common.search': 'بحث في المحادثات...',
+  'common.save': 'حفظ التغييرات',
+  'common.cancel': 'إلغاء',
+  'common.delete': 'حذف',
+  'common.resolve': 'حل وإنهاء',
+  'common.active': 'نشط',
+  'common.inactive': 'غير نشط',
+  'common.healthy': 'سليم وتعمل بكفاءة',
+  'common.warning': 'تحذير',
+  'common.critical': 'حرج',
+  'common.loading': 'جاري التحميل...',
+  'common.refresh': 'تحديث',
+  'common.sync_now': 'مزامنة فورية',
+  'common.export': 'تصدير البيانات',
+  'common.seed_sandbox': 'تهيئة بيانات الاختبار',
+  'common.exit': 'خروج',
+  'common.connected': 'متصل في الوقت الفعلي',
+  'common.mock_mode': 'وضع المحاكاة المحلي',
+  'common.shortcuts_hint': 'اختصارات لوحة المفاتيح: Ctrl+Shift+Space (الماكرو) • Ctrl+Alt+D (الهاتف) • Ctrl+Alt+M (المهام)',
+
+  // CPQ & Deals
+  'cpq.quote_builder': 'أداة بناء عروض الأسعار التفاعلية',
+  'cpq.subtotal': 'المجموع الفرعي',
+  'cpq.discount': 'الخصم',
+  'cpq.tax': 'الضريبة',
+  'cpq.total': 'المجموع الإجمالي',
+  'cpq.sign_and_seal': 'توقيع وختم العرض رقمياً',
+  'cpq.items': 'عناصر العرض',
+  'cpq.unit_price': 'سعر الوحدة',
+  'cpq.quantity': 'الكمية',
+
+  // Analytics
+  'analytics.live_visitors': 'الزوار النشطون حالياً',
+  'analytics.conversion_rate': 'معدل التحويل',
+  'analytics.revenue_attributed': 'الإيرادات المنسوبة',
+  'analytics.top_pages': 'الصفحات الأكثر أداءً',
+
+  // E-Commerce Connectors
+  'commerce.connectors_title': 'جسور المزامنة للمتاجر الإلكترونية',
+  'commerce.connectors_subtitle': 'مزامنة ثنائية الاتجاه مع شوبيفاي ووكومرس مع التحقق المشفر لخطافات الويب',
+  'commerce.shopify_config': 'إعدادات متجر شوبيفاي',
+  'commerce.woocommerce_config': 'إعدادات متجر ووكومرس',
+  'commerce.sync_stats': 'أداء المزامنة',
+  'commerce.recent_orders': 'الطلبات والصفقات الواردة حديثاً',
+  'commerce.synced_deals': 'الصفقات المنشأة في النظام',
+  'commerce.cod_shipments': 'شحنات الدفع عند الاستلام المرسلة',
+  'commerce.trigger_sync': 'بدء مزامنة الكتالوج',
+
+  // Daemons & Watchdog
+  'daemons.title': 'الخدمات الخلفية ومراقب السلامة',
+  'daemons.all_healthy': 'جميع الخدمات تعمل بصورة مثالية',
+  'daemons.missed_ticks': 'النبضات المفقودة',
+  'daemons.last_heartbeat': 'آخر نبضة اتصال'
+};
+
 const TRANSLATION_TABLES: Record<SupportedLocale, TranslationDictionary> = {
   'en-US': EN_US_TRANSLATIONS,
   'fr-FR': FR_FR_TRANSLATIONS,
   'es-ES': ES_ES_TRANSLATIONS,
-  'de-DE': DE_DE_TRANSLATIONS
+  'de-DE': DE_DE_TRANSLATIONS,
+  'ar-AR': AR_AR_TRANSLATIONS
 };
 
 const STORAGE_KEY = 'sgrowing_locale';

@@ -9,6 +9,7 @@ public class SGrowingDbContext : DbContext
     private readonly ITenantContext? _tenantContext;
 
     public Guid? CurrentTenantId => (_tenantContext != null && _tenantContext.HasTenant) ? _tenantContext.TenantId : null;
+    public string? CurrentTenantIdString => CurrentTenantId?.ToString();
     public Guid? CurrentWorkspaceId => _tenantContext?.WorkspaceId;
 
     public SGrowingDbContext(DbContextOptions<SGrowingDbContext> options, ITenantContext? tenantContext = null)
@@ -361,14 +362,7 @@ public class SGrowingDbContext : DbContext
             b.HasIndex(w => new { w.TenantId, w.Slug }).IsUnique();
         });
 
-        // Multi-Tenant Isolation Global Query Filters (PRD Section 4.2)
-        modelBuilder.Entity<Workspace>().HasQueryFilter(w => !CurrentTenantId.HasValue || w.TenantId == CurrentTenantId.GetValueOrDefault());
-        modelBuilder.Entity<Contact>().HasQueryFilter(c => !CurrentTenantId.HasValue || c.TenantId == CurrentTenantId.GetValueOrDefault());
-        modelBuilder.Entity<Company>().HasQueryFilter(c => !CurrentTenantId.HasValue || c.TenantId == CurrentTenantId.GetValueOrDefault());
-        modelBuilder.Entity<Deal>().HasQueryFilter(d => !CurrentTenantId.HasValue || d.TenantId == CurrentTenantId.GetValueOrDefault());
-        modelBuilder.Entity<Activity>().HasQueryFilter(a => !CurrentTenantId.HasValue || a.TenantId == CurrentTenantId.GetValueOrDefault());
-        modelBuilder.Entity<Conversation>().HasQueryFilter(c => !CurrentTenantId.HasValue || c.TenantId == CurrentTenantId.GetValueOrDefault());
-        modelBuilder.Entity<Message>().HasQueryFilter(m => !CurrentTenantId.HasValue || m.TenantId == CurrentTenantId.GetValueOrDefault());
+        // Dynamic Multi-Tenant Isolation Global Query Filters applied at the end of OnModelCreating
 
         modelBuilder.Entity<User>(b =>
         {
@@ -709,5 +703,49 @@ public class SGrowingDbContext : DbContext
             b.HasIndex(e => new { e.TenantId, e.WorkflowId });
             b.HasIndex(e => new { e.TenantId, e.Status });
         });
+
+        ConfigureGlobalTenantFilters(modelBuilder);
+    }
+
+    private static readonly System.Reflection.MethodInfo SetGuidFilterMethod =
+        typeof(SGrowingDbContext).GetMethod(nameof(SetGuidTenantFilter), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+
+    private static readonly System.Reflection.MethodInfo SetStringFilterMethod =
+        typeof(SGrowingDbContext).GetMethod(nameof(SetStringTenantFilter), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+
+    private void ConfigureGlobalTenantFilters(ModelBuilder modelBuilder)
+    {
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (entityType.BaseType != null || entityType.IsOwned())
+                continue;
+
+            var clrType = entityType.ClrType;
+            if (clrType == null)
+                continue;
+
+            var tenantIdProperty = entityType.FindProperty("TenantId");
+            if (tenantIdProperty != null)
+            {
+                if (tenantIdProperty.ClrType == typeof(Guid))
+                {
+                    SetGuidFilterMethod.MakeGenericMethod(clrType).Invoke(this, new object[] { modelBuilder });
+                }
+                else if (tenantIdProperty.ClrType == typeof(string))
+                {
+                    SetStringFilterMethod.MakeGenericMethod(clrType).Invoke(this, new object[] { modelBuilder });
+                }
+            }
+        }
+    }
+
+    private void SetGuidTenantFilter<TEntity>(ModelBuilder modelBuilder) where TEntity : class
+    {
+        modelBuilder.Entity<TEntity>().HasQueryFilter(e => !CurrentTenantId.HasValue || EF.Property<Guid>(e, "TenantId") == CurrentTenantId.GetValueOrDefault());
+    }
+
+    private void SetStringTenantFilter<TEntity>(ModelBuilder modelBuilder) where TEntity : class
+    {
+        modelBuilder.Entity<TEntity>().HasQueryFilter(e => CurrentTenantIdString == null || EF.Property<string>(e, "TenantId") == CurrentTenantIdString);
     }
 }

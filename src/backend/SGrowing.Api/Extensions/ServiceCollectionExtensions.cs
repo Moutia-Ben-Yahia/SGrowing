@@ -261,12 +261,15 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddDatabaseAndTenancy(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<ITenantContext, TenantContext>();
+        services.AddScoped<IPostgreSqlRlsService, PostgreSqlRlsService>();
+        services.AddScoped<TenantRlsConnectionInterceptor>();
         services.AddDbContext<SGrowingDbContext>((sp, options) =>
         {
             var connStr = configuration.GetConnectionString("DefaultConnection");
             if (!string.IsNullOrEmpty(connStr))
             {
                 options.UseNpgsql(connStr);
+                options.AddInterceptors(sp.GetRequiredService<TenantRlsConnectionInterceptor>());
             }
             else
             {
@@ -274,8 +277,6 @@ public static class ServiceCollectionExtensions
             }
         });
 
-        services.AddScoped<IPostgreSqlRlsService, PostgreSqlRlsService>();
-        services.AddScoped<TenantRlsConnectionInterceptor>();
 
         return services;
     }

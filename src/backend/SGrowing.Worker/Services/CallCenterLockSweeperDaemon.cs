@@ -83,6 +83,7 @@ public class CallCenterLockSweeperDaemon : BackgroundService
     {
         var now = DateTime.UtcNow;
         var expiredLocks = await db.CallCenterOrderLocks
+            .IgnoreQueryFilters()
             .Where(l => l.IsActive && l.ExpiresAtUtc < now)
             .Take(100)
             .ToListAsync(cancellationToken);
