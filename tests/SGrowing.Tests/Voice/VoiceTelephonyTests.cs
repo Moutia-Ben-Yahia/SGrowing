@@ -10,14 +10,14 @@ namespace SGrowing.Tests.Voice;
 
 public class VoiceTelephonyTests
 {
-    private VoiceDbContext CreateDbContext()
+    private SGrowingDbContext CreateDbContext()
     {
         var options = new DbContextOptionsBuilder<SGrowingDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         var tenantContext = new TenantContext();
         // tenantContext.SetTenant(Guid.NewGuid());
-        return new VoiceDbContext(options, tenantContext);
+        return new SGrowingDbContext(options, tenantContext);
     }
 
     [Fact]

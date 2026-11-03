@@ -12,14 +12,14 @@ namespace SGrowing.Tests.Outbound;
 
 public class MultiTouchSdrTests
 {
-    private OutboundDbContext CreateDbContext()
+    private SGrowingDbContext CreateDbContext()
     {
         var options = new DbContextOptionsBuilder<SGrowingDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         var tenantContext = new TenantContext();
         // tenantContext.SetTenant(Guid.NewGuid());
-        return new OutboundDbContext(options, tenantContext);
+        return new SGrowingDbContext(options, tenantContext);
     }
 
     [Fact]

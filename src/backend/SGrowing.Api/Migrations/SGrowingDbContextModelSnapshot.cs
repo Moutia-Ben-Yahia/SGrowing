@@ -866,6 +866,42 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("AttributionTouchpoints");
                 });
 
+            modelBuilder.Entity("SGrowing.Core.Entities.AudienceSyncEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AudienceId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Platform")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("SyncedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TenantId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("ValidHashesCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "AudienceId");
+
+                    b.HasIndex("TenantId", "Platform");
+
+                    b.ToTable("audience_syncs", "advertising");
+                });
+
             modelBuilder.Entity("SGrowing.Core.Entities.AutomatedRestockOrder", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1565,89 +1601,104 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("CampaignAdSpendRecords");
                 });
 
-            modelBuilder.Entity("SGrowing.Core.Entities.CarrierPerformanceMetric", b =>
+            modelBuilder.Entity("SGrowing.Core.Entities.CampaignRoasSnapshotEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("AverageTransitDays")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("CourierName")
+                    b.Property<string>("Action")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("CourierProviderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("DeliveredParcels")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("DeliveryRatePercentage")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("GovernorateOrWilaya")
+                    b.Property<string>("CampaignId")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
-                    b.Property<DateTime>("LastUpdatedUtc")
+                    b.Property<decimal>("CurrentRoas")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<string>("Platform")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<decimal>("RecommendedSpend")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<DateTime>("RecordedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal>("ReturnFee")
-                        .HasColumnType("numeric");
+                    b.Property<decimal>("Revenue")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
 
-                    b.Property<int>("ReturnedParcels")
-                        .HasColumnType("integer");
+                    b.Property<decimal>("Spend")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
 
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("TotalDispatchedParcels")
-                        .HasColumnType("integer");
+                    b.Property<string>("TenantId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("CarrierPerformanceMetrics");
+                    b.HasIndex("TenantId", "CampaignId");
+
+                    b.HasIndex("TenantId", "Platform");
+
+                    b.ToTable("campaign_roas_snapshots", "advertising");
                 });
 
-            modelBuilder.Entity("SGrowing.Core.Entities.CarrierRateCard", b =>
+            modelBuilder.Entity("SGrowing.Core.Entities.CapiConversionEntity", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("EventId")
+                        .HasColumnType("text");
 
-                    b.Property<decimal>("BaseFee")
-                        .HasColumnType("numeric");
+                    b.Property<decimal>("ConversionValue")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
 
-                    b.Property<decimal>("BaseWeightKg")
-                        .HasColumnType("numeric");
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
 
-                    b.Property<decimal>("CodCollectionPercentFee")
-                        .HasColumnType("numeric");
+                    b.Property<DateTime>("DispatchedAtUtc")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CourierName")
+                    b.Property<string>("EventName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("IsDeduplicated")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("PayloadHash")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("CourierProviderId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("Platform")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
-                    b.Property<decimal>("ExtraKgFee")
-                        .HasColumnType("numeric");
+                    b.Property<string>("TenantId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                    b.HasKey("EventId");
 
-                    b.Property<decimal>("RemoteZoneSurcharge")
-                        .HasColumnType("numeric");
+                    b.HasIndex("TenantId", "Platform", "EventId")
+                        .IsUnique();
 
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CarrierRateCards");
+                    b.ToTable("conversions", "advertising");
                 });
 
             modelBuilder.Entity("SGrowing.Core.Entities.CarrierRemittanceScheduleConfig", b =>
@@ -2275,6 +2326,9 @@ namespace SGrowing.Api.Migrations
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("WorkspaceId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TenantId", "Domain");
@@ -2428,6 +2482,9 @@ namespace SGrowing.Api.Migrations
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("WorkspaceId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TenantId", "Email");
@@ -2564,51 +2621,6 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("ConversionTrackingConfigs");
                 });
 
-            modelBuilder.Entity("SGrowing.Core.Entities.CountryTradeConfig", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("CountryCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CountryName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CurrencyCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("DefaultVatPercentage")
-                        .HasColumnType("numeric");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("NationalPhoneNumberLength")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("PhonePrefix")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("StandardShippingFee")
-                        .HasColumnType("numeric");
-
-                    b.Property<bool>("SupportsCod")
-                        .HasColumnType("boolean");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CountryTradeConfigs");
-                });
-
             modelBuilder.Entity("SGrowing.Core.Entities.CourierFloatValuation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2642,140 +2654,6 @@ namespace SGrowing.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("CourierFloatValuations");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.CourierManifestRunSheet", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("CourierName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("DriverName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DriverPhone")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DriverSignatureData")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("HandedOverAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ManifestReference")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("TotalCodValue")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("TotalParcels")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CourierManifestRunSheets");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.CourierProvider", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ApiCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ApiEndpoint")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ApiKey")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("SupportedCountries")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CourierProviders");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.CourierRemittanceStatement", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("CourierName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("CourierProviderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("NetRemittedAmount")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime?>("ReconciledAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ReconciledBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("StatementDateUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("StatementReference")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("TotalCashCollected")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalCourierFeesDeducted")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("TotalParcelsReported")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CourierRemittanceStatements");
                 });
 
             modelBuilder.Entity("SGrowing.Core.Entities.CrawlerSecretRecord", b =>
@@ -3144,6 +3022,45 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("CustomerEvents");
                 });
 
+            modelBuilder.Entity("SGrowing.Core.Entities.CustomerIdentityEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CanonicalProfileId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TenantId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "CanonicalProfileId");
+
+                    b.HasIndex("TenantId", "Type", "Value")
+                        .IsUnique();
+
+                    b.ToTable("identities", "customer_data");
+                });
+
             modelBuilder.Entity("SGrowing.Core.Entities.CustomerIdentityLink", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3197,6 +3114,39 @@ namespace SGrowing.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("CustomerJourneys");
+                });
+
+            modelBuilder.Entity("SGrowing.Core.Entities.CustomerProfileEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CanonicalProfileId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("FirstSeenUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("LastActiveUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TenantId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("UnifiedTraitsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "CanonicalProfileId");
+
+                    b.ToTable("profiles", "customer_data");
                 });
 
             modelBuilder.Entity("SGrowing.Core.Entities.CustomerReputationScorecard", b =>
@@ -3282,72 +3232,6 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("CustomerTimelineEvents");
                 });
 
-            modelBuilder.Entity("SGrowing.Core.Entities.CustomsCommercialInvoice", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("ClearanceIssuedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ConsigneeAddress")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ConsigneeCustomerName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ConsigneePhoneE164")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("DestinationCountry")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ExporterCountry")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ExporterName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Incoterm")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("InvoiceNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ItemsJson")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("TotalDeclaredCustomsValue")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalWeightKg")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CustomsCommercialInvoices");
-                });
-
             modelBuilder.Entity("SGrowing.Core.Entities.Deal", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3387,6 +3271,9 @@ namespace SGrowing.Api.Migrations
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<Guid?>("WorkspaceId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -3454,54 +3341,6 @@ namespace SGrowing.Api.Migrations
                     b.HasIndex("TenantId", "OrganizationId");
 
                     b.ToTable("DealMarginRecords");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.DeliveryDriver", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("CashInHandBalance")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("HubWarehouseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("LicensePlate")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("TotalDeliveriesCompleted")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("VehicleType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DeliveryDrivers");
                 });
 
             modelBuilder.Entity("SGrowing.Core.Entities.DigitalAsset", b =>
@@ -3862,203 +3701,6 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("DomainDnsHealthRecords");
                 });
 
-            modelBuilder.Entity("SGrowing.Core.Entities.DoorstepProofOfDelivery", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("CashCollected")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("CustomerSignatureBase64")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("DeliveredAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("DriverId")
-                        .HasColumnType("uuid");
-
-                    b.Property<double>("GpsLatitude")
-                        .HasColumnType("double precision");
-
-                    b.Property<double>("GpsLongitude")
-                        .HasColumnType("double precision");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("OrderNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ParcelPhotoUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PaymentMethod")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("RecipientName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("RecipientRelation")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("RunSheetStopId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DoorstepProofOfDeliveries");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.DriverCashReconciliation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("ActualCashTurnedIn")
-                        .HasColumnType("numeric");
-
-                    b.Property<Guid>("DriverId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("ExpectedCash")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("Notes")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("ReconciledAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ReconciledBy")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("RunSheetId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DriverCashReconciliations");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.DriverMobileSession", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("BatteryLevelPercent")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("DeviceModel")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("DriverId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("DriverName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsOnline")
-                        .HasColumnType("boolean");
-
-                    b.Property<double>("LastGpsLatitude")
-                        .HasColumnType("double precision");
-
-                    b.Property<double>("LastGpsLongitude")
-                        .HasColumnType("double precision");
-
-                    b.Property<DateTime>("LastSyncAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("SessionToken")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DriverMobileSessions");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.DriverRunSheet", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("CompletedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("DateUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("DeliveredParcels")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("DriverId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("HubWarehouseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("RefusedParcels")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("SheetNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("StartedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("TotalCashActuallyCollected")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalCashToCollect")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("TotalParcels")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DriverRunSheets");
-                });
-
             modelBuilder.Entity("SGrowing.Core.Entities.DynamicAgentTool", b =>
                 {
                     b.Property<Guid>("Id")
@@ -4364,60 +4006,6 @@ namespace SGrowing.Api.Migrations
                     b.HasIndex("DocumentEnvelopeId");
 
                     b.ToTable("EnvelopeSigners");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.ExchangeCourierSwapManifest", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("BundledSwapDeliveryFee")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("CashToCollectOnDelivery")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("CourierName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("CourierProviderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("CustomerAddress")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("DeliveredAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("DispatchedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("ExchangeRequestId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Governorate")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("HandoverNewParcelConfirmed")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("ReturnParcelCollectedConfirmed")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("SwapTrackingBarcode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ExchangeCourierSwapManifests");
                 });
 
             modelBuilder.Entity("SGrowing.Core.Entities.ExternalStoreSyncRecord", b =>
@@ -4883,37 +4471,6 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("FunnelSteps");
                 });
 
-            modelBuilder.Entity("SGrowing.Core.Entities.FxExchangeRate", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("BaseCurrency")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsPegged")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("LastUpdatedUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("Rate")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("TargetCurrency")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FxExchangeRates");
-                });
-
             modelBuilder.Entity("SGrowing.Core.Entities.GoogleSheetsSyncConfig", b =>
                 {
                     b.Property<Guid>("Id")
@@ -5058,6 +4615,42 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("HostAvailabilitySchedules");
                 });
 
+            modelBuilder.Entity("SGrowing.Core.Entities.IdentityLinkEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<double>("ConfidenceScore")
+                        .HasColumnType("double precision");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("MatchReason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SourceIdentifierJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("TargetIdentifierJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("TenantId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("identity_links", "customer_data");
+                });
+
             modelBuilder.Entity("SGrowing.Core.Entities.InAppMicroSurveyRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -5178,54 +4771,6 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("Inboxes");
                 });
 
-            modelBuilder.Entity("SGrowing.Core.Entities.InterHubStockTransfer", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("DestinationWarehouseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("DestinationWarehouseName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("DispatchedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ItemsJson")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("ReceivedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("SourceWarehouseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("SourceWarehouseName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("TransferNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("InterHubStockTransfers");
-                });
-
             modelBuilder.Entity("SGrowing.Core.Entities.InvoiceLineItemRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -5327,40 +4872,6 @@ namespace SGrowing.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Invoices");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.ItemReturnInspection", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ExchangeRequestId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("InspectedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("InspectorNotes")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("QualityGrade")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("RestockedToPhysicalWms")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("ReturnedSku")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ItemReturnInspections");
                 });
 
             modelBuilder.Entity("SGrowing.Core.Entities.JourneyDefinition", b =>
@@ -5757,46 +5268,6 @@ namespace SGrowing.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("MailboxWarmupCadences");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.ManifestParcelItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("CodAmount")
-                        .HasColumnType("numeric");
-
-                    b.Property<Guid?>("CourierManifestRunSheetId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("CustomerName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Governorate")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("ManifestId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("ScannedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("TrackingNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CourierManifestRunSheetId");
-
-                    b.ToTable("ManifestParcelItems");
                 });
 
             modelBuilder.Entity("SGrowing.Core.Entities.MediaVaultRecord", b =>
@@ -6250,76 +5721,6 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("OrderCollisionLocks");
                 });
 
-            modelBuilder.Entity("SGrowing.Core.Entities.OrderExchangeRequest", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("AdditionalCashAdjustment")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime?>("CompletedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CustomerName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CustomerPhone")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("OriginalOrderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("OriginalProductId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("OriginalSku")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("OriginalTrackingNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("OriginalVariantDescription")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("ReplacementProductId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ReplacementSku")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ReplacementVariantDescription")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid?>("SwapManifestId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("OrderExchangeRequests");
-                });
-
             modelBuilder.Entity("SGrowing.Core.Entities.OrganizationRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -6565,43 +5966,6 @@ namespace SGrowing.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Payments");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.PickSlipItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Barcode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("PickSlipId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ProductName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("QuantityPicked")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("QuantityRequested")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Sku")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("WarehousePickSlipId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("WarehousePickSlipId");
-
-                    b.ToTable("PickSlipItems");
                 });
 
             modelBuilder.Entity("SGrowing.Core.Entities.PimVariantMatrix", b =>
@@ -6953,40 +6317,6 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("Projects");
                 });
 
-            modelBuilder.Entity("SGrowing.Core.Entities.ProofOfDeliveryRecord", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CapturedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CustomerSignatureData")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("DoorstepPhotoUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<double?>("GeoLatitude")
-                        .HasColumnType("double precision");
-
-                    b.Property<double?>("GeoLongitude")
-                        .HasColumnType("double precision");
-
-                    b.Property<Guid>("RunSheetStopId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProofOfDeliveryRecords");
-                });
-
             modelBuilder.Entity("SGrowing.Core.Entities.ProspectEnrollment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -7213,92 +6543,6 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("QuoteProposals");
                 });
 
-            modelBuilder.Entity("SGrowing.Core.Entities.RegionalHubProximityRule", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("GovernorateOrWilaya")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("Priority")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("WarehouseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("WarehouseName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("RegionalHubProximityRules");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.RemittanceItemMatch", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("CourierFeeDeducted")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("DifferenceAmount")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("DiscrepancyType")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("DisputeTicketNumber")
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("HoldbackAmount")
-                        .HasColumnType("numeric");
-
-                    b.Property<bool>("IsResolved")
-                        .HasColumnType("boolean");
-
-                    b.Property<Guid?>("OrderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("ReportedCashCollected")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("ReportedStatus")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ResolutionNotes")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("StatementId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("SystemExpectedAmount")
-                        .HasColumnType("numeric");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("TrackingNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("RemittanceItemMatches");
-                });
-
             modelBuilder.Entity("SGrowing.Core.Entities.ReplenishmentSchedule", b =>
                 {
                     b.Property<Guid>("Id")
@@ -7427,78 +6671,6 @@ namespace SGrowing.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("RolePermissionClaims");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.RunSheetStop", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("ActualPaymentCollected")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("AmountToCollect")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime?>("CompletedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CustomerName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CustomerPhone")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Delegation")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("DeliveredAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("FailureReason")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Governorate")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("OrderNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PaymentMethodAtDoorstep")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("ProofOfDeliveryId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("RunSheetId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ShippingAddress")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("StopSequence")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("RunSheetStops");
                 });
 
             modelBuilder.Entity("SGrowing.Core.Entities.SalesCadenceLeadEnrollment", b =>
@@ -8335,54 +7507,6 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("ShipmentRecords");
                 });
 
-            modelBuilder.Entity("SGrowing.Core.Entities.ShippingManifest", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("CourierName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("CourierProviderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("ExpectedFreightCost")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime?>("HandedOverAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ManifestNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("OrderCount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("OrderIdsJson")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("TotalCashAmount")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ShippingManifests");
-                });
-
             modelBuilder.Entity("SGrowing.Core.Entities.SlaPolicy", b =>
                 {
                     b.Property<Guid>("Id")
@@ -8601,54 +7725,6 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("StockMovements");
                 });
 
-            modelBuilder.Entity("SGrowing.Core.Entities.StockTransferManifest", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("DestinationWarehouseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("DestinationWarehouseName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ManifestNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Sku")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("SourceWarehouseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("SourceWarehouseName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TenantId", "ManifestNumber");
-
-                    b.ToTable("StockTransferManifests");
-                });
-
             modelBuilder.Entity("SGrowing.Core.Entities.StockoutProjectionAlert", b =>
                 {
                     b.Property<Guid>("Id")
@@ -8825,52 +7901,6 @@ namespace SGrowing.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("StreamingVoiceCallSessions");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.SupplierPurchaseOrder", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("DestinationWarehouseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ItemsJson")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PoNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("ReceivedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("SupplierName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("TotalCost")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SupplierPurchaseOrders");
                 });
 
             modelBuilder.Entity("SGrowing.Core.Entities.SupplierScorecard", b =>
@@ -9421,75 +8451,6 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("TenantSubscriptions");
                 });
 
-            modelBuilder.Entity("SGrowing.Core.Entities.TimesheetEntryRecord", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("ApprovedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ApprovedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("DealId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("DealTitle")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("HourlyRate")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<decimal>("HoursWorked")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("TaskId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("TaskTitle")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("TeamMemberId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("TeamMemberName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("TotalLaborCost")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<DateTime>("WorkDateUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TenantId", "DealId");
-
-                    b.HasIndex("TenantId", "TeamMemberId");
-
-                    b.ToTable("TimesheetEntries");
-                });
-
             modelBuilder.Entity("SGrowing.Core.Entities.TouchpointExecution", b =>
                 {
                     b.Property<Guid>("Id")
@@ -9696,6 +8657,9 @@ namespace SGrowing.Api.Migrations
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("WorkspaceId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TenantId", "Email")
@@ -9762,6 +8726,42 @@ namespace SGrowing.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("VisitorSessions");
+                });
+
+            modelBuilder.Entity("SGrowing.Core.Entities.VisitorSessionEntity", b =>
+                {
+                    b.Property<string>("SessionId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("AnonymousId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("EndedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PageViewsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime>("StartedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TenantId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("UtmParametersJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.HasKey("SessionId");
+
+                    b.HasIndex("TenantId", "AnonymousId");
+
+                    b.ToTable("visitor_sessions", "customer_data");
                 });
 
             modelBuilder.Entity("SGrowing.Core.Entities.VoiceCallAmdRecord", b =>
@@ -10012,142 +9012,6 @@ namespace SGrowing.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("WarehouseInventories");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.WarehousePickSlip", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AssignedPickerId")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("CompletedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("OrderNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PickSlipNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("WarehouseId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("WarehousePickSlips");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.WarehouseRecord", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("CapacityUnits")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Country")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<double>("Latitude")
-                        .HasColumnType("double precision");
-
-                    b.Property<double>("Longitude")
-                        .HasColumnType("double precision");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long>("RowVersion")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TenantId", "Code");
-
-                    b.HasIndex("TenantId", "IsActive", "Latitude", "Longitude");
-
-                    b.ToTable("WarehouseRecords");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.WarehouseRmaInspection", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Condition")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("InspectedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("InspectorId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("InspectorNotes")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("RestockedToWarehouseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TenantId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("TrackingNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("WarehouseRmaInspections");
                 });
 
             modelBuilder.Entity("SGrowing.Core.Entities.WarehouseStockRecord", b =>
@@ -10827,6 +9691,44 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("WilayaZones");
                 });
 
+            modelBuilder.Entity("SGrowing.Core.Entities.WorkflowDagEntity", b =>
+                {
+                    b.Property<string>("WorkflowId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EdgesJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("NodesJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("TenantId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("TriggerNodeId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("WorkflowId");
+
+                    b.HasIndex("TenantId", "WorkflowId")
+                        .IsUnique();
+
+                    b.ToTable("workflows", "automation");
+                });
+
             modelBuilder.Entity("SGrowing.Core.Entities.WorkflowDeadLetterLog", b =>
                 {
                     b.Property<Guid>("Id")
@@ -10944,6 +9846,9 @@ namespace SGrowing.Api.Migrations
                     b.Property<Guid>("WorkflowGraphId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("WorkspaceId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.ToTable("WorkflowExecutions");
@@ -10976,9 +9881,93 @@ namespace SGrowing.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("WorkspaceId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.ToTable("WorkflowGraphs");
+                });
+
+            modelBuilder.Entity("SGrowing.Core.Entities.WorkflowTelemetryTraceEntity", b =>
+                {
+                    b.Property<string>("ExecutionId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContactId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("ExecutedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("StepsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("TenantId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("TotalDurationMs")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("WorkflowId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("ExecutionId");
+
+                    b.HasIndex("TenantId", "Status");
+
+                    b.HasIndex("TenantId", "WorkflowId");
+
+                    b.ToTable("telemetry_traces", "automation");
+                });
+
+            modelBuilder.Entity("SGrowing.Core.Entities.Workspace", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "Slug")
+                        .IsUnique();
+
+                    b.ToTable("Workspaces");
                 });
 
             modelBuilder.Entity("SGrowing.Core.Entities.AgentMissionStep", b =>
@@ -11009,20 +9998,6 @@ namespace SGrowing.Api.Migrations
                         .HasForeignKey("CustomerJourneyId");
                 });
 
-            modelBuilder.Entity("SGrowing.Core.Entities.ManifestParcelItem", b =>
-                {
-                    b.HasOne("SGrowing.Core.Entities.CourierManifestRunSheet", null)
-                        .WithMany("Parcels")
-                        .HasForeignKey("CourierManifestRunSheetId");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.PickSlipItem", b =>
-                {
-                    b.HasOne("SGrowing.Core.Entities.WarehousePickSlip", null)
-                        .WithMany("Items")
-                        .HasForeignKey("WarehousePickSlipId");
-                });
-
             modelBuilder.Entity("SGrowing.Core.Entities.QuoteLineItem", b =>
                 {
                     b.HasOne("SGrowing.Core.Entities.QuoteProposal", null)
@@ -11035,11 +10010,6 @@ namespace SGrowing.Api.Migrations
             modelBuilder.Entity("SGrowing.Core.Entities.AgentMission", b =>
                 {
                     b.Navigation("Steps");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.CourierManifestRunSheet", b =>
-                {
-                    b.Navigation("Parcels");
                 });
 
             modelBuilder.Entity("SGrowing.Core.Entities.CustomerJourney", b =>
@@ -11060,11 +10030,6 @@ namespace SGrowing.Api.Migrations
             modelBuilder.Entity("SGrowing.Core.Entities.QuoteProposal", b =>
                 {
                     b.Navigation("LineItems");
-                });
-
-            modelBuilder.Entity("SGrowing.Core.Entities.WarehousePickSlip", b =>
-                {
-                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

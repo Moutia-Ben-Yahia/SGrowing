@@ -941,6 +941,7 @@ public static class ServiceCollectionExtensions
         services.AddCommissionSettlementServices();
         services.AddTerritoryRebalancingServices();
         services.AddScreenDiagnosticServices();
+        services.AddSentimentDeescalationServices();
         services.AddIntentRollupServices();
         services.AddAgentWhisperServices();
         services.AddDbQueryRouterServices();

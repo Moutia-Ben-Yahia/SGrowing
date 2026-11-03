@@ -705,6 +705,7 @@ app.MapAdSpendRedistributionEndpoints();
 app.MapCommissionSettlementEndpoints();
 app.MapTerritoryRebalancingEndpoints();
 app.MapScreenDiagnosticEndpoints();
+app.MapSentimentDeescalationEndpoints();
 app.MapIntentRollupEndpoints();
 app.MapAgentWhisperEndpoints();
 app.MapDbQueryRouterEndpoints();

@@ -26,7 +26,7 @@ public class PostgreSqlRlsService : IPostgreSqlRlsService
         "WhatsAppTemplates", "BroadcastCampaigns", "AppointmentSlots", "AppointmentBookings",
         "CheckoutLinks", "SlaPolicies", "VoiceCallSessions", "SocialAccounts", "SocialPosts",
         "DocumentEnvelopes", "EnvelopeSigners", "DocumentDwellTelemetries", "ShipmentRecords",
-        "ShippingManifests", "CodOrders", "CalendarBookingRecords", "BookingEventTypes"
+        "CodOrders", "CalendarBookingRecords", "BookingEventTypes"
     };
 
     public string GenerateRlsMigrationDdl(IEnumerable<string>? customTables = null)

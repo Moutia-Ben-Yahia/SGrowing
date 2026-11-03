@@ -38,7 +38,7 @@ public class MultiTouchCadenceOrchestrator
         _db = db;
         _mailboxService = mailboxService;
         _linkedInOutreachAdapter = linkedInOutreachAdapter;
-        _voiceTelephonyService = voiceTelephonyService ?? (db is VoiceDbContext voiceDb ? new VoiceTelephonyService(voiceDb) : null);
+        _voiceTelephonyService = voiceTelephonyService ?? new VoiceTelephonyService(db);
         _outbox = outbox;
         _logger = logger;
     }
@@ -46,7 +46,7 @@ public class MultiTouchCadenceOrchestrator
     public MultiTouchCadenceOrchestrator(
         SGrowingDbContext db,
         IOutbox outbox)
-        : this(db, new MailboxService(db), new LinkedInOutreachAdapter(null, outbox), db is VoiceDbContext voiceDb ? new VoiceTelephonyService(voiceDb) : null, outbox, null)
+        : this(db, new MailboxService(db), new LinkedInOutreachAdapter(null, outbox), new VoiceTelephonyService(db), outbox, null)
     {
     }
 
