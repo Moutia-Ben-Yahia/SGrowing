@@ -57,6 +57,11 @@ using SGrowing.Api.Modules.Content.SocialProof;
 using SGrowing.Api.Modules.Commerce.CartRescue;
 using SGrowing.Api.Modules.Partnerships.DealRegistration;
 using SGrowing.Api.Modules.Infrastructure.SemanticCache;
+using SGrowing.Api.Modules.Intelligence.BuyingCommittee;
+using SGrowing.Api.Modules.Advertising.CreativeBandit;
+using SGrowing.Api.Modules.Commerce.CpqMargin;
+using SGrowing.Api.Modules.Support.Localization;
+using SGrowing.Api.Modules.Infrastructure.DisasterRecovery;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
@@ -1088,6 +1093,11 @@ public static class ServiceCollectionExtensions
         services.AddCartRescueServices();
         services.AddDealRegistrationServices();
         services.AddSemanticCacheServices();
+        services.AddBuyingCommitteeServices();
+        services.AddCreativeBanditServices();
+        services.AddCpqMarginServices();
+        services.AddSupportLocalizationServices();
+        services.AddDisasterRecoveryServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

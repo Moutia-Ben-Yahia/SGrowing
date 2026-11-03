@@ -51,6 +51,11 @@ using SGrowing.Api.Modules.Content.SocialProof;
 using SGrowing.Api.Modules.Commerce.CartRescue;
 using SGrowing.Api.Modules.Partnerships.DealRegistration;
 using SGrowing.Api.Modules.Infrastructure.SemanticCache;
+using SGrowing.Api.Modules.Intelligence.BuyingCommittee;
+using SGrowing.Api.Modules.Advertising.CreativeBandit;
+using SGrowing.Api.Modules.Commerce.CpqMargin;
+using SGrowing.Api.Modules.Support.Localization;
+using SGrowing.Api.Modules.Infrastructure.DisasterRecovery;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -847,6 +852,11 @@ app.MapSocialProofEndpoints();
 app.MapCartRescueEndpoints();
 app.MapDealRegistrationEndpoints();
 app.MapSemanticCacheEndpoints();
+app.MapBuyingCommitteeEndpoints();
+app.MapCreativeBanditEndpoints();
+app.MapCpqMarginEndpoints();
+app.MapSupportLocalizationEndpoints();
+app.MapDisasterRecoveryEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

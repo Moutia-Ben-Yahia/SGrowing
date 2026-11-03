@@ -235,7 +235,11 @@ public class AppointmentSchedulingServiceTests
     {
         // Arrange
         var host = (await _service.GetHostsAsync()).First(h => h.HostName == "Sarah Jenkins");
-        var testDay = DateTimeOffset.UtcNow.Date.AddDays(4);
+        var testDay = DateTimeOffset.UtcNow.Date.AddDays(1);
+        while (testDay.DayOfWeek == DayOfWeek.Saturday || testDay.DayOfWeek == DayOfWeek.Sunday)
+        {
+            testDay = testDay.AddDays(1);
+        }
 
         var query = new SlotQuery(
             HostId: host.HostId,

@@ -260,5 +260,10 @@ export const routes: Routes = [
   { path: 'commerce/cart-rescue', loadComponent: () => import('./features/commerce/cart-rescue-cockpit.component').then(m => m.CartRescueCockpitComponent), canActivate: [authGuard] },
   { path: 'partnerships/deal-registration', loadComponent: () => import('./features/partnerships/deal-registration-cockpit.component').then(m => m.DealRegistrationCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/semantic-cache', loadComponent: () => import('./features/infrastructure/semantic-cache-cockpit.component').then(m => m.SemanticCacheCockpitComponent), canActivate: [authGuard] },
+  { path: 'intelligence/buying-committee', loadComponent: () => import('./features/intelligence/buying-committee-cockpit.component').then(m => m.BuyingCommitteeCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/creative-bandit', loadComponent: () => import('./features/advertising/creative-bandit-cockpit.component').then(m => m.CreativeBanditCockpitComponent), canActivate: [authGuard] },
+  { path: 'commerce/cpq-margin', loadComponent: () => import('./features/commerce/cpq-margin-cockpit.component').then(m => m.CpqMarginCockpitComponent), canActivate: [authGuard] },
+  { path: 'support/localization', loadComponent: () => import('./features/support/localization-cockpit.component').then(m => m.LocalizationCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/disaster-recovery', loadComponent: () => import('./features/infrastructure/disaster-recovery-cockpit.component').then(m => m.DisasterRecoveryCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];
