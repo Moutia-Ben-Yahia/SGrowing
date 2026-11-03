@@ -151,6 +151,11 @@ using SGrowing.Api.Modules.Advertising.MicroGeofence;
 using SGrowing.Api.Modules.Voice.EchoCancellation;
 using SGrowing.Api.Modules.Finance.CapitalAllocation;
 using SGrowing.Api.Modules.Infrastructure.WireGuardDiscovery;
+using SGrowing.Api.Modules.Sales.DealCoaching;
+using SGrowing.Api.Modules.Advertising.SignageSsp;
+using SGrowing.Api.Modules.Voice.NeuralPlc;
+using SGrowing.Api.Modules.Finance.SecondaryLiquidity;
+using SGrowing.Api.Modules.Infrastructure.RouteFlapDamping;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -1047,6 +1052,11 @@ app.MapMicroGeofenceEndpoints();
 app.MapEchoCancellationEndpoints();
 app.MapCapitalAllocationEndpoints();
 app.MapWireGuardDiscoveryEndpoints();
+app.MapDealCoachingEndpoints();
+app.MapSignageSspEndpoints();
+app.MapNeuralPlcEndpoints();
+app.MapSecondaryLiquidityEndpoints();
+app.MapRouteFlapDampingEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

@@ -360,5 +360,10 @@ export const routes: Routes = [
   { path: 'voice/echo-cancellation', loadComponent: () => import('./features/voice/echo-cancellation-cockpit.component').then(m => m.EchoCancellationCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/capital-allocation', loadComponent: () => import('./features/finance/capital-allocation-cockpit.component').then(m => m.CapitalAllocationCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/wireguard-discovery', loadComponent: () => import('./features/infrastructure/wireguard-discovery-cockpit.component').then(m => m.WireGuardDiscoveryCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/deal-coaching', loadComponent: () => import('./features/sales/deal-coaching-cockpit.component').then(m => m.DealCoachingCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/signage-ssp', loadComponent: () => import('./features/advertising/signage-ssp-cockpit.component').then(m => m.SignageSspCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/neural-plc', loadComponent: () => import('./features/voice/neural-plc-cockpit.component').then(m => m.NeuralPlcCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/secondary-liquidity', loadComponent: () => import('./features/finance/secondary-liquidity-cockpit.component').then(m => m.SecondaryLiquidityCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/route-flap-damping', loadComponent: () => import('./features/infrastructure/route-flap-damping-cockpit.component').then(m => m.RouteFlapDampingCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

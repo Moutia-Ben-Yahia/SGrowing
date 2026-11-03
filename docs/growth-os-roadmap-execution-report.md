@@ -884,17 +884,18 @@ graph TD
 - `b7b4eb5`: `feat(growth-os): deliver Horizons 151 to 155 (Customer Advisory Board Matrix, In-Car Infotainment Ad Bidding, Voice Intent Fast-Path, OECD Pillar 2 Tax Ledger, Cilium eBPF WireGuard Transit Mesh)`
 - `db2c7b3`: `feat(growth-os): deliver Horizons 156 to 160 (Customer Success QBR Deck Generator, Weather DPA Triggers, Telephony Disfluency Mesh, Sovereign Export Control Ledger, Multi-Cloud Wasm Micro-VM Arbiter)`
 - `0d4d860`: `feat(growth-os): deliver Horizons 161 to 165 (Customer Advocacy Reference Mesh, Micro-Geofence DSP Bidding, Neural Echo Cancellation, Sovereign Capital Allocation, WireGuard Peer Discovery & IPsec Fallback)`
+- In-Progress: `feat(growth-os): deliver Horizons 166 to 170 (Live Deal Coaching, In-Store Signage SSP, Neural Packet Loss Concealment, Cap Table Secondary Liquidity, BGP Route Flap Damping)`
 
-### Horizon 161 to 165 Implementation Details
-- **Horizon 161 (Sales / Customer Advocacy & Reference Call Matchmaking Mesh):** Automated reference champion identification, double-blind peer matchmaking, advocate fatigue prevention guardrails, tokenized rewards distribution, and deal win-rate attribution (`CustomerAdvocacyEngine.cs`, `customer-advocacy-cockpit.component.ts`).
-- **Horizon 162 (Advertising / Real-Time Micro-Geofencing & Physical Footfall DSP Bidding):** High-precision GPS polygon perimeters, sub-second RTB bid multipliers for physical venues, deterministic footfall dwell store-visit attribution (`MicroGeofenceEngine.cs`, `micro-geofence-cockpit.component.ts`).
-- **Horizon 163 (Voice / Neural Acoustic Echo Cancellation & Double-Talk Arbiter):** Real-time sub-50dB acoustic echo suppression, neural double-talk preservation (zero clipping during human interruption), 48kHz audio clarity (`EchoCancellationEngine.cs`, `echo-cancellation-cockpit.component.ts`).
-- **Horizon 164 (Finance / Sovereign Capital Allocation & Working Capital Treasury Optimizer):** Multi-currency treasury yield optimization, sovereign AAA T-bill ladder management, automated working capital runway extension, covenant buffers (`CapitalAllocationEngine.cs`, `capital-allocation-cockpit.component.ts`).
-- **Horizon 165 (Infrastructure / Zero-Trust WireGuard Peer Discovery & Ephemeral IPsec Fallback):** STUN/ICE dynamic peer discovery across clouds, sub-15ms WireGuard direct UDP hole punching, automatic kernel IPsec ESP fallback on firewall blocks (`WireGuardDiscoveryEngine.cs`, `wireguard-discovery-cockpit.component.ts`).
+### Horizon 166 to 170 Implementation Details
+- **Horizon 166 (Sales / Live Deal Coaching & Buyer Objections Counter-Tactics Mesh):** Sub-200ms acoustic objection recognition, live battlecard counter-tactic recommendations, rep adherence scoring during active negotiations (`DealCoachingEngine.cs`, `deal-coaching-cockpit.component.ts`).
+- **Horizon 167 (Advertising / In-Store Digital Signage SSP Dynamic Slot Auction & Verification):** OpenRTB 3.0 dynamic slot auctions for physical in-store displays, footfall density bid multipliers, cryptographically verified proof-of-play hardware attestations (`SignageSspEngine.cs`, `signage-ssp-cockpit.component.ts`).
+- **Horizon 168 (Voice / Deep Neural Packet Loss Concealment & Jitter Arbiter):** Deep neural autoregressive waveform synthesis across lost 20ms audio frames, dynamic jitter buffer sizing (<18ms latency), zero acoustic clicking (`NeuralPlcEngine.cs`, `neural-plc-cockpit.component.ts`).
+- **Horizon 169 (Finance / Secondary Share Liquidity, Cap Table Dilution & Tender Offer Ledger):** Company-sponsored tender offer windows, automated Right of First Refusal (ROFR) clearance tokens, cap table anti-dilution simulation, sovereign tax withholding (`SecondaryLiquidityEngine.cs`, `secondary-liquidity-cockpit.component.ts`).
+- **Horizon 170 (Infrastructure / Multi-Cloud BGP Route Flap Damping & Anycast Flap Penalty Ledger):** RFC 2439 mathematical flap penalty accumulation, dynamic exponential decay damping, automatic prefix suppression, zero-downtime anycast PoP evacuation (`RouteFlapDampingEngine.cs`, `route-flap-damping-cockpit.component.ts`).
 
 ### Current Verified Quality Metrics
-- **Backend xUnit Tests:** 5,598 passing tests (0 failures, 100% pass rate).
-- **Frontend Vitest Specs:** 475 passing tests across 101 standalone component suites.
-- **Playwright E2E Tests:** 174 passing tests across full browser execution runs.
-- **Production Build:** Angular 22 `ng build` succeeded cleanly with 220 lazy chunk bundles.
+- **Backend xUnit Tests:** 5,613 passing tests (0 failures, 100% pass rate).
+- **Frontend Vitest Specs:** 485 passing tests across 106 standalone component suites.
+- **Playwright E2E Tests:** 179 passing tests across full browser execution runs.
+- **Production Build:** Angular 22 `ng build` succeeded cleanly with 225 lazy chunk bundles.
 - **Compiler Health:** .NET 10 compilation with `TreatWarningsAsErrors=true` (0 warnings, 0 errors).

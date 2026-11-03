@@ -401,6 +401,11 @@ using SGrowing.Api.Modules.Advertising.MicroGeofence;
 using SGrowing.Api.Modules.Voice.EchoCancellation;
 using SGrowing.Api.Modules.Finance.CapitalAllocation;
 using SGrowing.Api.Modules.Infrastructure.WireGuardDiscovery;
+using SGrowing.Api.Modules.Sales.DealCoaching;
+using SGrowing.Api.Modules.Advertising.SignageSsp;
+using SGrowing.Api.Modules.Voice.NeuralPlc;
+using SGrowing.Api.Modules.Finance.SecondaryLiquidity;
+using SGrowing.Api.Modules.Infrastructure.RouteFlapDamping;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Diagnostics;
@@ -1288,6 +1293,11 @@ public static class ServiceCollectionExtensions
         services.AddEchoCancellationServices();
         services.AddCapitalAllocationServices();
         services.AddWireGuardDiscoveryServices();
+        services.AddDealCoachingServices();
+        services.AddSignageSspServices();
+        services.AddNeuralPlcServices();
+        services.AddSecondaryLiquidityServices();
+        services.AddRouteFlapDampingServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
