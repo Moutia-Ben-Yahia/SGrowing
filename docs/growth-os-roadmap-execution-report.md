@@ -887,7 +887,7 @@ graph TD
 - `92d5362`: `feat(growth-os): deliver Horizons 166 to 170 (Live Deal Coaching, In-Store Signage SSP, Neural Packet Loss Concealment, Cap Table Secondary Liquidity, BGP Route Flap Damping)`
 - `8a66d20`: `feat(growth-os): deliver Horizons 171 to 175 (Sales SPIFF Gamification, Vehicle Audio DSP, Voice Dereverberation, Section 174 Amortization, eBGP EVPN VXLAN Overlay)`
 - `3736203`: `feat(growth-os): deliver Horizons 176 to 180 (Win-Rate Deal Autopsy, Retail Media Sponsored Brand Ads, Speech Prosody Empathy Tuning, Intercompany Multilateral Netting, SRv6 Traffic Engineering)`
-- `[pending-commit]`: `feat(growth-os): deliver Horizons 181 to 185 (Sales Rep Ramp Acceleration, Cross-Device CAPI Graph, Whisper Voice Tremor Stress, Pillar Two GloBE Tax, RoCEv2 RDMA Fabric)`
+- `05dfd32`: `feat(growth-os): deliver Horizons 181 to 185 (Sales Rep Ramp Acceleration, Cross-Device CAPI Graph, Whisper Voice Tremor Stress, Pillar Two GloBE Tax, RoCEv2 RDMA Fabric)`
 
 ### Horizon 181 to 185 Implementation Details
 - **Horizon 181 (Sales / Sales Rep Ramp Acceleration & Shadow-Call Co-Pilot Mesh):** Rep onboarding competency matrix, sub-second shadow call transcript analysis, discovery gap whisper interventions, and cohort ramp velocity projection (`RepRampEngine.cs`, `rep-ramp-cockpit.component.ts`).
