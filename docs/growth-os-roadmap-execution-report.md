@@ -599,6 +599,13 @@ graph TD
 - **Horizon 94: Autonomous Global Tax Nexus Tracking & VAT/GST Remittance Engine (`Domain H14 & G10`)**
 - **Horizon 95: Autonomous Multi-Region Chaos Engineering & Resilience Injection Mesh (`Domain K14 & A17`)**
 
+### Horizon Wave 20: Horizons 96 to 100 Centennial Milestone
+- **Horizon 96: Autonomous Enterprise CPQ Approval Chain & Discount Governance Matrix (Domain B16 & J15)**
+- **Horizon 97: Autonomous Multi-Touch Attribution Shapley Value & Ad Spend Redistribution Autopilot (Domain D17 & C14)**
+- **Horizon 98: Autonomous Omnichannel AI Agent Telephony Sentiment Self-Optimization & Real-Time Pitch Tuning (Domain E14 & F11)**
+- **Horizon 99: Autonomous Treasury Cash Flow Forecasting & Working Capital Yield Optimizer (Domain H15 & G11)**
+- **Horizon 100: Autonomous Global Edge Compute Mesh & Geo-Distributed Serverless Execution Plane (Domain K15 & A18)**
+
 ### Infrastructure & Benchmarking: Self-Hosted Packaging, Grafana & CI/CD
 - **Observability:**
   - Full Grafana dashboard in `deploy/grafana/growth-os-overview.json` monitoring OpenTelemetry throughput, sub-150ms voice latency, RAG latency, WhatsApp queues, and error budgets.
