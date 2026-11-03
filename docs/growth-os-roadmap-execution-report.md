@@ -633,6 +633,28 @@ graph TD
   - Standalone cockpit (/infrastructure/k8s-isolation-mesh) displaying cluster namespace topology, compliance scores, and isolation triggers.
   - **Verification:** 3 backend tests in K8sIsolationMeshTests.cs, 2 Vitest tests, and Playwright E2E verification.
 
+### Horizon Wave 22: Horizons 106 to 110 Enterprise Capabilities
+- **Horizon 106: Autonomous Dynamic Sales Territory Rebalancing & Account Potential Scoring (Domain B18 & J16)**
+  - Workload equilibrium optimization, Gini coefficient reduction, and quota opportunity equalization.
+  - Standalone cockpit (`/sales/territory-rebalancing`) with live territory workload distribution, Gini metrics, and 14-day transition grace period scheduling.
+  - **Verification:** 3 backend tests in `TerritoryRebalancingTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 107: Autonomous Connected TV (CTV) Programmatic Ad Insertion & QR Attributed Conversion Mesh (Domain D19 & C15)**
+  - VAST 4.2 / VMAP dynamic ad pod bidding, frame-synchronized QR watermark generation, and dual-screen cross-device attribution.
+  - Standalone cockpit (`/advertising/ctv-ad-insertion`) showing live broadcast ad pod inventory, clearing CPMs, and real-time QR scan conversion ingestion.
+  - **Verification:** 4 backend tests in `CtvAdInsertionTests.cs`, 3 Vitest tests, and Playwright E2E verification.
+- **Horizon 108: Autonomous AI Agent Multimodal Video Screen Share Diagnostic & Cursor Guidance Engine (Domain E16 & F13)**
+  - Frame differential perceptual hashing, UI bounding box classification, and real-time natural Bezier cursor trajectory overlay.
+  - Standalone cockpit (`/support/screen-diagnostic`) visualizing active screen sessions, element detection confidence, and synthetic cursor dispatch.
+  - **Verification:** 3 backend tests in `ScreenDiagnosticTests.cs`, 3 Vitest tests, and Playwright E2E verification.
+- **Horizon 109: Autonomous Cross-Border Multi-Entity Transfer Pricing & Intercompany Invoicing Ledger (Domain H18 & G14)**
+  - OECD BEPS arm's length markup calculations, intercompany invoice generation, and multilateral bilateral FX netting pool.
+  - Standalone cockpit (`/finance/transfer-pricing`) displaying legal entity profiles, intercompany billing ledger, and one-click FX netting settlement.
+  - **Verification:** 3 backend tests in `TransferPricingTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 110: Autonomous Global BGP Anycast Edge Health Probing & Geo-Steering DNS Mesh (Domain K17 & A20)**
+  - Active synthetic POP latency, jitter, and packet loss probing, automated DNS geo-steering failover, and route flap dampening.
+  - Standalone cockpit (`/infrastructure/bgp-geo-steering`) rendering global edge POP health matrix and dynamic DNS steering overrides.
+  - **Verification:** 4 backend tests in `BgpGeoSteeringTests.cs`, 3 Vitest tests, and Playwright E2E verification.
+
 ### Infrastructure & Benchmarking: Self-Hosted Packaging, Grafana & CI/CD
 - **Observability:**
   - Full Grafana dashboard in `deploy/grafana/growth-os-overview.json` monitoring OpenTelemetry throughput, sub-150ms voice latency, RAG latency, WhatsApp queues, and error budgets.
@@ -700,4 +722,5 @@ graph TD
 - `ba2e2ca`: `feat(growth-os): deliver Horizons 96 to 100 Centennial Milestone (Enterprise CPQ Approval Chain, Multi-Touch Shapley Attribution Autopilot, AI Telephony Pitch Tuning, Treasury Cash Flow Forecasting, Global Edge Serverless Mesh)`
 - `f736773`: `docs: finalize delivery record for Horizons 96 to 100 Centennial Milestone in growth OS execution report`
 - `ca6d09e`: `feat(growth-os): deliver Horizons 101 to 105 (Sales Commission Settlement, Retail Media Auction, Audio Noise Cancellation DSP, Vendor Bill 3-Way Reconciliation, Multi-Cloud K8s Isolation Mesh)`
-- `[Active]`: `feat(growth-os): deliver Horizons 106 to 110 (Dynamic Sales Territory Rebalancing, Connected TV Programmatic Ad Insertion, Multimodal Screen Diagnostic Cursor Guidance, Cross-Border Transfer Pricing Ledger, Global BGP Anycast Geo-Steering DNS Mesh)`
+- `1edb1d9`: `feat(growth-os): deliver Horizons 106 to 110 (Dynamic Sales Territory Rebalancing, Connected TV Ad Insertion, Multimodal Screen Diagnostic Cursor Guidance, Cross-Border Transfer Pricing Ledger, Global BGP Anycast Geo-Steering DNS Mesh)`
+- `[Active]`: `feat(growth-os): deliver Horizons 111 to 115 (Buyer Intent De-Duplication & Account Rollup, Cookieless UID2 Tokenizer, Real-Time Agent Whisper Negotiation Co-Pilot, Multi-Currency FX Hedging Mesh, Cross-Region Read Replica Dynamic Query Router)`
