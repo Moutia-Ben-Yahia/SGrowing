@@ -146,9 +146,9 @@ using SGrowing.Api.Modules.AI.KnowledgeHypergraph;
 using SGrowing.Api.Modules.SupplyChain.DisruptionSimulator;
 using SGrowing.Api.Modules.Security.VoiceLiveness;
 using SGrowing.Api.Modules.Infrastructure.FinOps;
-using SGrowing.Api.Modules.Sustainability.CarbonExchange;
+
 using SGrowing.Api.Modules.Security.VerifiableCredentials;
-using SGrowing.Api.Modules.IoT.PredictiveTelemetry;
+
 using SGrowing.Api.Modules.SupplyChain.HsClassification;
 using SGrowing.Api.Modules.Infrastructure.ServiceMesh;
 using SGrowing.Api.Modules.Commerce.WarehouseSlotting;
@@ -159,7 +159,7 @@ using SGrowing.Api.Modules.Security.ZtnaContinuousPosture;
 using SGrowing.Api.Modules.Tenancy.DataSovereignty;
 using SGrowing.Api.Modules.SupplyChain.DemandSensing;
 using SGrowing.Api.Modules.Voice.SentimentDeescalation;
-using SGrowing.Api.Modules.IoT.ColdChainSla;
+
 using SGrowing.Api.Modules.Security.PostQuantumCrypto;
 using SGrowing.Api.Modules.Logistics.DrayageScheduler;
 using SGrowing.Api.Modules.Security.HomomorphicAnalytics;
@@ -167,9 +167,9 @@ using SGrowing.Api.Modules.Finance.ConcentratedLiquidity;
 using SGrowing.Api.Modules.Media.ProsodyDubbing;
 using SGrowing.Api.Modules.Security.ZkRollupBridge;
 using SGrowing.Api.Modules.Logistics.MaritimeEcoRouting;
-using SGrowing.Api.Modules.Manufacturing.OpticalQualityControl;
+
 using SGrowing.Api.Modules.Security.MpcThresholdSigner;
-using SGrowing.Api.Modules.Sustainability.CircularRemanufacturing;
+
 using SGrowing.Api.Modules.Finance.CreditRiskUnderwriting;
 using SGrowing.Api.Modules.AI.DocumentGrounding;
 using SGrowing.Api.Modules.Security.ZkIdentityVerification;
@@ -179,13 +179,13 @@ using SGrowing.Api.Modules.Governance.EnterpriseImmuneSystem;
 using SGrowing.Api.Modules.Finance.MicroPaymentMesh;
 using SGrowing.Api.Modules.Logistics.RailHumpYardScheduler;
 using SGrowing.Api.Modules.Security.ConfidentialRemoteAttestation;
-using SGrowing.Api.Modules.Sustainability.MineralCarbonation;
+
 using SGrowing.Api.Modules.Finance.CbdcCrossBorderBridge;
-using SGrowing.Api.Modules.Manufacturing.CleanroomAirflowPredictor;
+
 using SGrowing.Api.Modules.Security.QkdSatelliteArbiter;
-using SGrowing.Api.Modules.Trade.RulesOfOriginTariff;
+
 using SGrowing.Api.Modules.Security.ZkIrisBiometrics;
-using SGrowing.Api.Modules.Manufacturing.EuvLithographyPellicle;
+
 using SGrowing.Api.Modules.Finance.HftOrderBookMicrostructure;
 using SGrowing.Api.Modules.Security.RingSignatureIdentity;
 using SGrowing.Api.Modules.Security.ThresholdMlDsaSigner;
@@ -197,7 +197,7 @@ using SGrowing.Api.Modules.Finance.ZkSolvencyMerkleSumTree;
 using SGrowing.Api.Modules.Finance.PqcCrossChainHtlc;
 using SGrowing.Api.Modules.Finance.AmmLossVersusRebalancing;
 using SGrowing.Api.Modules.Finance.OrderFlowAuctionMev;
-using SGrowing.Api.Modules.Manufacturing.HighNaEuvStochasticDefects;
+
 using SGrowing.Api.Modules.Finance.ZkDarkPoolVdfBatching;
 using SGrowing.Api.Modules.Finance.DeFiLendingBadDebtSocialization;
 using SGrowing.Api.Modules.Security.CvQkdExcessNoiseSecretKeyRate;
@@ -205,13 +205,13 @@ using SGrowing.Api.Modules.Finance.HftVwapMicroPriceQueue;
 using SGrowing.Api.Modules.AI.NeuromorphicStdpSynapticEnergy;
 using SGrowing.Api.Modules.Finance.RestakingCryptoeconomicSlashing;
 using SGrowing.Api.Modules.Finance.CbdcAtomicDvpLiquiditySaving;
-using SGrowing.Api.Modules.Manufacturing.MbeRheedGrowthKinetics;
+
 using SGrowing.Api.Modules.Security.ZkRecursiveFoldingScheme;
-using SGrowing.Api.Modules.Transportation.MaglevInductrackNullFlux;
+
 using SGrowing.Api.Modules.Finance.ZkRollupCensorshipResistance;
 using SGrowing.Api.Modules.Finance.ZkSolvencyMerkleSumAudit;
 using SGrowing.Api.Modules.Finance.LsdDepegArbitrageRedemption;
-using SGrowing.Api.Modules.Transportation.HyperloopKantrowitzTubeAerodynamics;
+
 using SGrowing.Api.Modules.Finance.SovereignDebtClimateResilience;
 using SGrowing.Api.Modules.Infrastructure.SeismicMetamaterialPhononicCloak;
 using SGrowing.Api.Modules.Finance.VpinMarketMakerToxicFlow;
@@ -234,7 +234,7 @@ using SGrowing.Api.Modules.Finance.TipsRealYieldBreakevenInflation;
 using SGrowing.Api.Modules.Finance.CdsIndexTrancheCorrelation;
 using SGrowing.Api.Modules.Finance.CrossCurrencyBasisConvexity;
 using SGrowing.Api.Modules.Finance.SviVolatilitySurfaceCalibration;
-using SGrowing.Api.Modules.Manufacturing.MaterialRequirementsPlanning;
+
 using SGrowing.Api.Modules.Finance.AccountsPayableThreeWayMatching;
 using SGrowing.Api.Modules.SupplyChain.WarehouseBinCycleCounting;
 using SGrowing.Api.Modules.Workforce.MultiTierPayrollEngine;
@@ -964,9 +964,9 @@ public static class ServiceCollectionExtensions
         services.AddFinOpsArbitrageServices();
 
         // Horizons 66-70 Services
-        services.AddCarbonExchangeServices();
+        
         services.AddVerifiableCredentialsServices();
-        services.AddPredictiveTelemetryServices();
+        
         services.AddHsClassificationServices();
         services.AddServiceMeshServices();
 
@@ -981,7 +981,7 @@ public static class ServiceCollectionExtensions
         services.AddDataSovereigntyServices();
         services.AddDemandSensingServices();
         services.AddVoiceSentimentDeescalationServices();
-        services.AddColdChainSlaServices();
+        
         services.AddPostQuantumCryptoServices();
 
         // Horizons 81-85 Services
@@ -993,11 +993,11 @@ public static class ServiceCollectionExtensions
 
         // Horizons 86-90 Services
         services.AddMaritimeEcoRoutingServices();
-        services.AddOpticalQualityControlServices();
+        
         services.AddMpcThresholdSignerServices();
 
         // Horizons 91-95 Services
-        services.AddCircularRemanufacturingServices();
+        
         services.AddCreditRiskUnderwritingServices();
         services.AddDocumentGroundingServices();
         services.AddZkIdentityVerificationServices();
@@ -1015,17 +1015,17 @@ public static class ServiceCollectionExtensions
         services.AddConfidentialRemoteAttestationServices();
 
         // Horizons 111-115 Services (Precision Decarbonization & Cyber-Physical Systems)
-        services.AddMineralCarbonationServices();
+        
         services.AddCbdcCrossBorderServices();
-        services.AddCleanroomAirflowServices();
+        
 
         // Horizons 116-120 Services (Nuclear SMR, Hypersonic Aerospace, QKD, Global Trade & ZK Biometrics)
         services.AddQkdSatelliteArbiterServices();
-        services.AddRulesOfOriginTariffServices();
+        
         services.AddZkIrisBiometricServices();
 
         // Horizons 121-125 Services (Fusion Tokamak MHD, BCI Kinematics, Gravitational Interferometer, EUV Pellicle & HFT Microstructure)
-        services.AddEuvLithographyPellicleServices();
+        
         services.AddHftOrderBookMicrostructureServices();
 
         // Horizons 126-130 Services (Deep-Sea Submersible, Cryo Turbopump, CRISPR Cleavage, Ring Signatures & UHV Corona)
@@ -1057,7 +1057,7 @@ public static class ServiceCollectionExtensions
 
         // Horizons 171-175 Services (Liquid Metal Blanket Hartmann Flow, Microbial Electrosynthesis, VASIMR Propulsion, OFA MEV & High-NA EUV)
         services.AddOrderFlowAuctionServices();
-        services.AddHighNaEuvServices();
+        
 
         // Horizons 176-180 Services (sCO2 Brayton Compressor Surge, Direct-to-Cell LEO Doppler, CRISPR Cas12a DETECTR, ZK Dark Pool VDF & Lunar Regolith Microwave Sintering)
         services.AddZkDarkPoolServices();
@@ -1077,11 +1077,11 @@ public static class ServiceCollectionExtensions
         services.AddCbdcLiquiditySavingServices();
 
         // Horizons 201-205 Services (MBE RHEED Growth, CRISPR Base Editing Bystander, Stratospheric HALE Solar Balance, ZK Recursive Folding & MCFC Carbon Capture)
-        services.AddMbeRheedGrowthServices();
+        
         services.AddZkRecursiveFoldingServices();
 
         // Horizons 206-210 Services (Maglev Inductrack EDS, Optical Coherence Elastography, Superconducting Marine MHD, ZK Rollup Censorship Resistance & Supercritical Thermosiphon Geothermal)
-        services.AddMaglevInductrackServices();
+        
         services.AddZkRollupCensorshipServices();
 
         // Horizons 211-215 Services (Microfluidic LNP mRNA, QCL Atmospheric Plume, Dual-Stage Hall Thruster, ZK Solvency Audit & Tokamak Liquid Lithium CPS Divertor)
@@ -1089,7 +1089,7 @@ public static class ServiceCollectionExtensions
 
         // Horizons 216-220 Services (Strontium-87 Optical Clock, AMD Bioleaching, Aerogel TPS Ablation, LSD Depeg Arbitrage & Hyperloop Kantrowitz Aerodynamics)
         services.AddLsdDepegArbitrageServices();
-        services.AddHyperloopKantrowitzAerodynamicsServices();
+        
 
         // Horizons 221-225 Services (STED Super-Resolution, PACE Continuous Evolution, M2P2 Plasma Propulsion, Sovereign Debt Climate Resilience & Seismic Metamaterial Cloak)
         services.AddSovereignDebtClimateResilienceServices();
@@ -1156,7 +1156,7 @@ public static class ServiceCollectionExtensions
         services.AddSviVolatilityServices();
 
         // Horizons 326-330 Core ERP Suite (MRP II, AP 3-Way Match, Warehouse Bin Cycle Counting, Multi-Tier Payroll & COD Settlement)
-        services.AddMrpServices();
+        
         services.AddApThreeWayMatchServices();
         services.AddWarehouseBinAuditServices();
         services.AddMultiTierPayrollServices();

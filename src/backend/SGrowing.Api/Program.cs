@@ -235,9 +235,9 @@ using SGrowing.Api.Modules.AI.KnowledgeHypergraph;
 using SGrowing.Api.Modules.SupplyChain.DisruptionSimulator;
 using SGrowing.Api.Modules.Security.VoiceLiveness;
 using SGrowing.Api.Modules.Infrastructure.FinOps;
-using SGrowing.Api.Modules.Sustainability.CarbonExchange;
+
 using SGrowing.Api.Modules.Security.VerifiableCredentials;
-using SGrowing.Api.Modules.IoT.PredictiveTelemetry;
+
 using SGrowing.Api.Modules.SupplyChain.HsClassification;
 using SGrowing.Api.Modules.Infrastructure.ServiceMesh;
 using SGrowing.Api.Modules.Commerce.WarehouseSlotting;
@@ -248,7 +248,7 @@ using SGrowing.Api.Modules.Security.ZtnaContinuousPosture;
 using SGrowing.Api.Modules.Tenancy.DataSovereignty;
 using SGrowing.Api.Modules.SupplyChain.DemandSensing;
 using SGrowing.Api.Modules.Voice.SentimentDeescalation;
-using SGrowing.Api.Modules.IoT.ColdChainSla;
+
 using SGrowing.Api.Modules.Security.PostQuantumCrypto;
 using SGrowing.Api.Modules.Logistics.DrayageScheduler;
 using SGrowing.Api.Modules.Security.HomomorphicAnalytics;
@@ -256,9 +256,9 @@ using SGrowing.Api.Modules.Finance.ConcentratedLiquidity;
 using SGrowing.Api.Modules.Media.ProsodyDubbing;
 using SGrowing.Api.Modules.Security.ZkRollupBridge;
 using SGrowing.Api.Modules.Logistics.MaritimeEcoRouting;
-using SGrowing.Api.Modules.Manufacturing.OpticalQualityControl;
+
 using SGrowing.Api.Modules.Security.MpcThresholdSigner;
-using SGrowing.Api.Modules.Sustainability.CircularRemanufacturing;
+
 using SGrowing.Api.Modules.Finance.CreditRiskUnderwriting;
 using SGrowing.Api.Modules.AI.DocumentGrounding;
 using SGrowing.Api.Modules.Security.ZkIdentityVerification;
@@ -268,13 +268,13 @@ using SGrowing.Api.Modules.Governance.EnterpriseImmuneSystem;
 using SGrowing.Api.Modules.Finance.MicroPaymentMesh;
 using SGrowing.Api.Modules.Logistics.RailHumpYardScheduler;
 using SGrowing.Api.Modules.Security.ConfidentialRemoteAttestation;
-using SGrowing.Api.Modules.Sustainability.MineralCarbonation;
+
 using SGrowing.Api.Modules.Finance.CbdcCrossBorderBridge;
-using SGrowing.Api.Modules.Manufacturing.CleanroomAirflowPredictor;
+
 using SGrowing.Api.Modules.Security.QkdSatelliteArbiter;
-using SGrowing.Api.Modules.Trade.RulesOfOriginTariff;
+
 using SGrowing.Api.Modules.Security.ZkIrisBiometrics;
-using SGrowing.Api.Modules.Manufacturing.EuvLithographyPellicle;
+
 using SGrowing.Api.Modules.Finance.HftOrderBookMicrostructure;
 using SGrowing.Api.Modules.Security.RingSignatureIdentity;
 using SGrowing.Api.Modules.Security.ThresholdMlDsaSigner;
@@ -286,7 +286,7 @@ using SGrowing.Api.Modules.Finance.ZkSolvencyMerkleSumTree;
 using SGrowing.Api.Modules.Finance.PqcCrossChainHtlc;
 using SGrowing.Api.Modules.Finance.AmmLossVersusRebalancing;
 using SGrowing.Api.Modules.Finance.OrderFlowAuctionMev;
-using SGrowing.Api.Modules.Manufacturing.HighNaEuvStochasticDefects;
+
 using SGrowing.Api.Modules.Finance.ZkDarkPoolVdfBatching;
 using SGrowing.Api.Modules.Finance.DeFiLendingBadDebtSocialization;
 using SGrowing.Api.Modules.Security.CvQkdExcessNoiseSecretKeyRate;
@@ -294,13 +294,13 @@ using SGrowing.Api.Modules.Finance.HftVwapMicroPriceQueue;
 using SGrowing.Api.Modules.AI.NeuromorphicStdpSynapticEnergy;
 using SGrowing.Api.Modules.Finance.RestakingCryptoeconomicSlashing;
 using SGrowing.Api.Modules.Finance.CbdcAtomicDvpLiquiditySaving;
-using SGrowing.Api.Modules.Manufacturing.MbeRheedGrowthKinetics;
+
 using SGrowing.Api.Modules.Security.ZkRecursiveFoldingScheme;
-using SGrowing.Api.Modules.Transportation.MaglevInductrackNullFlux;
+
 using SGrowing.Api.Modules.Finance.ZkRollupCensorshipResistance;
 using SGrowing.Api.Modules.Finance.ZkSolvencyMerkleSumAudit;
 using SGrowing.Api.Modules.Finance.LsdDepegArbitrageRedemption;
-using SGrowing.Api.Modules.Transportation.HyperloopKantrowitzTubeAerodynamics;
+
 using SGrowing.Api.Modules.Finance.SovereignDebtClimateResilience;
 using SGrowing.Api.Modules.Infrastructure.SeismicMetamaterialPhononicCloak;
 using SGrowing.Api.Modules.Finance.VpinMarketMakerToxicFlow;
@@ -323,7 +323,7 @@ using SGrowing.Api.Modules.Finance.TipsRealYieldBreakevenInflation;
 using SGrowing.Api.Modules.Finance.CdsIndexTrancheCorrelation;
 using SGrowing.Api.Modules.Finance.CrossCurrencyBasisConvexity;
 using SGrowing.Api.Modules.Finance.SviVolatilitySurfaceCalibration;
-using SGrowing.Api.Modules.Manufacturing.MaterialRequirementsPlanning;
+
 using SGrowing.Api.Modules.Finance.AccountsPayableThreeWayMatching;
 using SGrowing.Api.Modules.SupplyChain.WarehouseBinCycleCounting;
 using SGrowing.Api.Modules.Workforce.MultiTierPayrollEngine;
@@ -713,9 +713,9 @@ app.MapVoiceLivenessEndpoints();
 app.MapFinOpsArbitrageEndpoints();
 
 // Horizons 66-70 Endpoint Mappings
-app.MapCarbonExchangeEndpoints();
+
 app.MapVerifiableCredentialsEndpoints();
-app.MapPredictiveTelemetryEndpoints();
+
 app.MapHsClassificationEndpoints();
 app.MapServiceMeshEndpoints();
 
@@ -730,7 +730,7 @@ app.MapZtnaEndpoints();
 app.MapDataSovereigntyEndpoints();
 app.MapDemandSensingEndpoints();
 app.MapVoiceSentimentDeescalationEndpoints();
-app.MapColdChainSlaEndpoints();
+
 app.MapPostQuantumCryptoEndpoints();
 
 // Horizons 81-85 Endpoint Mappings
@@ -742,11 +742,11 @@ app.MapZkRollupBridgeEndpoints();
 
 // Horizons 86-90 Endpoint Mappings
 app.MapMaritimeEcoRoutingEndpoints();
-app.MapOpticalQualityControlEndpoints();
+
 app.MapMpcThresholdSignerEndpoints();
 
 // Horizons 91-95 Endpoint Mappings
-app.MapCircularRemanufacturingEndpoints();
+
 app.MapCreditRiskUnderwritingEndpoints();
 app.MapDocumentGroundingEndpoints();
 app.MapZkIdentityVerificationEndpoints();
@@ -764,17 +764,17 @@ app.MapRailHumpYardEndpoints();
 app.MapConfidentialRemoteAttestationEndpoints();
 
 // Horizons 111-115 Endpoint Mappings (Precision Decarbonization & Cyber-Physical Systems)
-app.MapMineralCarbonationEndpoints();
+
 app.MapCbdcCrossBorderEndpoints();
-app.MapCleanroomAirflowEndpoints();
+
 
 // Horizons 116-120 Endpoint Mappings (Nuclear SMR, Hypersonic Aerospace, QKD, Global Trade & ZK Biometrics)
 app.MapQkdSatelliteArbiterEndpoints();
-app.MapRulesOfOriginTariffEndpoints();
+
 app.MapZkIrisBiometricEndpoints();
 
 // Horizons 121-125 Endpoint Mappings (Fusion Tokamak MHD, BCI Kinematics, Gravitational Interferometer, EUV Pellicle & HFT Microstructure)
-app.MapEuvLithographyPellicleEndpoints();
+
 app.MapHftOrderBookMicrostructureEndpoints();
 
 // Horizons 126-130 Endpoint Mappings (Deep-Sea Submersible, Cryo Turbopump, CRISPR Cleavage, Ring Signatures & UHV Corona)
@@ -806,7 +806,7 @@ app.MapAmmLvrEndpoints();
 
 // Horizons 171-175 Endpoint Mappings (Liquid Metal Blanket Hartmann Flow, Microbial Electrosynthesis, VASIMR Propulsion, OFA MEV & High-NA EUV)
 app.MapOrderFlowAuctionEndpoints();
-app.MapHighNaEuvEndpoints();
+
 
 // Horizons 176-180 Endpoint Mappings (sCO2 Brayton Compressor Surge, Direct-to-Cell LEO Doppler, CRISPR Cas12a DETECTR, ZK Dark Pool VDF & Lunar Regolith Microwave Sintering)
 app.MapZkDarkPoolEndpoints();
@@ -826,11 +826,11 @@ app.MapRestakingSlashingEndpoints();
 app.MapCbdcLiquiditySavingEndpoints();
 
 // Horizons 201-205 Endpoint Mappings (MBE RHEED Growth, CRISPR Base Editing Bystander, Stratospheric HALE Solar Balance, ZK Recursive Folding & MCFC Carbon Capture)
-app.MapMbeRheedGrowthEndpoints();
+
 app.MapZkRecursiveFoldingEndpoints();
 
 // Horizons 206-210 Endpoint Mappings (Maglev Inductrack EDS, Optical Coherence Elastography, Superconducting Marine MHD, ZK Rollup Censorship Resistance & Supercritical Thermosiphon Geothermal)
-app.MapMaglevInductrackEndpoints();
+
 app.MapZkRollupCensorshipEndpoints();
 
 // Horizons 211-215 Endpoint Mappings (Microfluidic LNP mRNA, QCL Atmospheric Plume, Dual-Stage Hall Thruster, ZK Solvency Audit & Tokamak Liquid Lithium CPS Divertor)
@@ -838,7 +838,7 @@ app.MapZkSolvencyAuditEndpoints();
 
 // Horizons 216-220 Endpoint Mappings (Strontium-87 Optical Clock, AMD Bioleaching, Aerogel TPS Ablation, LSD Depeg Arbitrage & Hyperloop Kantrowitz Aerodynamics)
 app.MapLsdDepegArbitrageEndpoints();
-app.MapHyperloopKantrowitzEndpoints();
+
 
 // Horizons 221-225 Endpoint Mappings (STED Super-Resolution, PACE Continuous Evolution, M2P2 Plasma Propulsion, Sovereign Debt Climate Resilience & Seismic Metamaterial Cloak)
 app.MapSovereignDebtEndpoints();
@@ -905,7 +905,7 @@ app.MapCrossCurrencyBasisEndpoints();
 app.MapSviVolatilityEndpoints();
 
 // Horizons 326-330 Core ERP Suite (MRP II, AP 3-Way Match, Warehouse Bin Cycle Counting, Multi-Tier Payroll & COD Settlement)
-app.MapMrpEndpoints();
+
 app.MapApThreeWayMatchEndpoints();
 app.MapWarehouseBinAuditEndpoints();
 app.MapMultiTierPayrollEndpoints();
