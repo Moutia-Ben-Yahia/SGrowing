@@ -24,6 +24,7 @@ DO $$
 DECLARE
     tbl RECORD;
     target_tables TEXT[] := ARRAY[
+        'Workspaces',
         'Contacts',
         'Companies',
         'Inboxes',
@@ -74,7 +75,9 @@ END;
 $$;
 
 -- 4. Index optimization for fast RLS index scans
+CREATE INDEX IF NOT EXISTS idx_workspaces_tenant_rls ON "Workspaces" ("TenantId");
 CREATE INDEX IF NOT EXISTS idx_contacts_tenant_rls ON "Contacts" ("TenantId");
+CREATE INDEX IF NOT EXISTS idx_deals_tenant_rls ON "Deals" ("TenantId");
 CREATE INDEX IF NOT EXISTS idx_conversations_tenant_rls ON "Conversations" ("TenantId");
 CREATE INDEX IF NOT EXISTS idx_messages_tenant_rls ON "Messages" ("TenantId");
 CREATE INDEX IF NOT EXISTS idx_deals_tenant_rls ON "Deals" ("TenantId");
