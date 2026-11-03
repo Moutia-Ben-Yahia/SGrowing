@@ -632,4 +632,4 @@ graph TD
 - `50b313e`: `docs: finalize delivery record for Horizons 76 to 80 in growth OS execution report`
 - `d5effb8`: `feat(growth-os): deliver Horizons 81 to 85 (Sales Champion MAP, DPA Catalog Feeds, Workforce Capacity Planning, FX Hedging Escrow, Zero-Trust Micro-Segmentation)`
 - `7be643b`: `docs: finalize delivery record for Horizons 81 to 85 in growth OS execution report`
-- `[Active]`: `feat(growth-os): deliver Horizons 86 to 90 (Account Expansion Radar, Influencer Escrow V2, Voice Call Transfer Mesh, ASC 606 Revenue Ledger, Secret Vault Mesh)`
+- `a65fb5d`: `feat(growth-os): deliver Horizons 86 to 90 (Account Expansion Radar, Influencer Escrow V2, Voice Call Transfer Mesh, ASC 606 Revenue Ledger, Secret Vault Mesh)`
