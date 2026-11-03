@@ -36,12 +36,22 @@ public class AdsSyncEngine : IAdsSyncEngine
     }
 
     public AdsSyncEngine(
-        IHttpClientFactory? httpClientFactory = null,
-        IConfiguration? configuration = null,
-        IServiceScopeFactory? scopeFactory = null,
-        SGrowingDbContext? dbContext = null,
+        IHttpClientFactory? httpClientFactory,
+        IConfiguration? configuration,
+        IServiceScopeFactory? scopeFactory,
         ILogger<AdsSyncEngine>? logger = null,
         HttpClient? httpClient = null)
+        : this(httpClientFactory, configuration, scopeFactory, null, logger, httpClient)
+    {
+    }
+
+    public AdsSyncEngine(
+        IHttpClientFactory? httpClientFactory,
+        IConfiguration? configuration,
+        IServiceScopeFactory? scopeFactory,
+        SGrowingDbContext? dbContext,
+        ILogger<AdsSyncEngine>? logger,
+        HttpClient? httpClient)
     {
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;

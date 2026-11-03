@@ -1,10 +1,14 @@
 using System;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using SGrowing.Api.Data;
 
 #nullable disable
 
 namespace SGrowing.Api.Migrations;
 
+[DbContext(typeof(SGrowingDbContext))]
+[Migration("20261103070000_GrowthOsPartitioningAndWorkspace")]
 public partial class GrowthOsPartitioningAndWorkspace : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
