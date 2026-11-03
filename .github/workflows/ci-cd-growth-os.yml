@@ -20,12 +20,12 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore Dependencies
-        run: dotnet restore src/backend/SGrowing.Api/SGrowing.Api.csproj
+        run: dotnet restore SGrowing.slnx
 
       - name: Build Backend (TreatWarningsAsErrors = true)
-        run: dotnet build src/backend/SGrowing.Api/SGrowing.Api.csproj -c Release
+        run: dotnet build SGrowing.slnx -c Release
 
-      - name: Execute Full Test Suite (5,200+ Tests)
+      - name: Execute Full Test Suite (5,700+ Tests)
         run: dotnet test tests/SGrowing.Tests/SGrowing.Tests.csproj -c Release --no-restore --logger "trx;LogFileName=test-results.trx"
 
   frontend-verification:
