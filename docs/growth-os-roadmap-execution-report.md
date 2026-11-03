@@ -885,7 +885,7 @@ graph TD
 - `db2c7b3`: `feat(growth-os): deliver Horizons 156 to 160 (Customer Success QBR Deck Generator, Weather DPA Triggers, Telephony Disfluency Mesh, Sovereign Export Control Ledger, Multi-Cloud Wasm Micro-VM Arbiter)`
 - `0d4d860`: `feat(growth-os): deliver Horizons 161 to 165 (Customer Advocacy Reference Mesh, Micro-Geofence DSP Bidding, Neural Echo Cancellation, Sovereign Capital Allocation, WireGuard Peer Discovery & IPsec Fallback)`
 - `92d5362`: `feat(growth-os): deliver Horizons 166 to 170 (Live Deal Coaching, In-Store Signage SSP, Neural Packet Loss Concealment, Cap Table Secondary Liquidity, BGP Route Flap Damping)`
-- In-Progress: `feat(growth-os): deliver Horizons 171 to 175 (Sales SPIFF Gamification, Vehicle Audio DSP, Voice Dereverberation, Section 174 Amortization, eBGP EVPN VXLAN Overlay)`
+- `8a66d20`: `feat(growth-os): deliver Horizons 171 to 175 (Sales SPIFF Gamification, Vehicle Audio DSP, Voice Dereverberation, Section 174 Amortization, eBGP EVPN VXLAN Overlay)`
 
 ### Horizon 171 to 175 Implementation Details
 - **Horizon 171 (Sales / Sales Performance SPIFF & Real-Time Deal Gamification Escrow):** Sub-second deal closing bounty escrow allocation, real-time leaderboard acceleration, and transparent milestone rewards (`SpiffGamificationEngine.cs`, `spiff-gamification-cockpit.component.ts`).
