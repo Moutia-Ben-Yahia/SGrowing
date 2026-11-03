@@ -106,6 +106,11 @@ using SGrowing.Api.Modules.Advertising.VideoDco;
 using SGrowing.Api.Modules.Voice.EmotionDeescalation;
 using SGrowing.Api.Modules.Finance.PayrollTaxWithholding;
 using SGrowing.Api.Modules.Infrastructure.ApiRateLimiterMesh;
+using SGrowing.Api.Modules.Sales.DirectMailMesh;
+using SGrowing.Api.Modules.Advertising.SpatialAdBidding;
+using SGrowing.Api.Modules.Voice.SpeechStreamingMesh;
+using SGrowing.Api.Modules.Finance.AssetDepreciation;
+using SGrowing.Api.Modules.Infrastructure.SecretRotationMesh;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -957,6 +962,11 @@ app.MapVideoDcoEndpoints();
 app.MapEmotionDeescalationEndpoints();
 app.MapPayrollTaxWithholdingEndpoints();
 app.MapApiRateLimiterMeshEndpoints();
+app.MapDirectMailMeshEndpoints();
+app.MapSpatialAdBiddingEndpoints();
+app.MapSpeechStreamingMeshEndpoints();
+app.MapAssetDepreciationEndpoints();
+app.MapSecretRotationMeshEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

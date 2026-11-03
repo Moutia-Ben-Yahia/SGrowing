@@ -315,5 +315,10 @@ export const routes: Routes = [
   { path: 'voice/emotion-deescalation', loadComponent: () => import('./features/voice/emotion-deescalation-cockpit.component').then(m => m.EmotionDeescalationCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/payroll-tax-withholding', loadComponent: () => import('./features/finance/payroll-tax-withholding-cockpit.component').then(m => m.PayrollTaxWithholdingCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/api-rate-limiter-mesh', loadComponent: () => import('./features/infrastructure/api-rate-limiter-mesh-cockpit.component').then(m => m.ApiRateLimiterMeshCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/direct-mail-mesh', loadComponent: () => import('./features/sales/direct-mail-mesh-cockpit.component').then(m => m.DirectMailMeshCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/spatial-ad-bidding', loadComponent: () => import('./features/advertising/spatial-ad-bidding-cockpit.component').then(m => m.SpatialAdBiddingCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/speech-streaming-mesh', loadComponent: () => import('./features/voice/speech-streaming-mesh-cockpit.component').then(m => m.SpeechStreamingMeshCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/asset-depreciation', loadComponent: () => import('./features/finance/asset-depreciation-cockpit.component').then(m => m.AssetDepreciationCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/secret-rotation-mesh', loadComponent: () => import('./features/infrastructure/secret-rotation-mesh-cockpit.component').then(m => m.SecretRotationMeshCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];
