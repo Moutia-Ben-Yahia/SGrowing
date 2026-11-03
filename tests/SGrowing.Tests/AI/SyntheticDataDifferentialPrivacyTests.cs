@@ -80,6 +80,39 @@ public sealed class SyntheticDataDifferentialPrivacyTests
             .WithMessage("*Privacy budget exhausted*");
     }
 
+    [Fact]
+    public void PerturbQuery_InvalidParameters_ThrowsExpectedExceptions()
+    {
+        var tenantId = "TENANT-PARAMS-TEST";
+
+        // 1. Null request
+        var nullAct = () => _dpEngine.PerturbQuery(null!);
+        nullAct.Should().Throw<ArgumentNullException>();
+
+        // 2. Zero epsilon
+        var zeroEpsAct = () => _dpEngine.PerturbQuery(new PerturbQueryRequest(tenantId, "Q1", 10.0, 1.0, 0.0));
+        zeroEpsAct.Should().Throw<ArgumentOutOfRangeException>()
+            .WithParameterName("RequestedEpsilon");
+
+        // 3. Zero sensitivity
+        var zeroSensAct = () => _dpEngine.PerturbQuery(new PerturbQueryRequest(tenantId, "Q1", 10.0, 0.0, 0.5));
+        zeroSensAct.Should().Throw<ArgumentOutOfRangeException>()
+            .WithParameterName("SensitivityDeltaF");
+    }
+
+    [Fact]
+    public void GetBudget_UninitializedTenant_ReturnsDefaultBudget()
+    {
+        var tenantId = "TENANT-FRESH-001";
+        var budget = _dpEngine.GetBudget(tenantId);
+
+        budget.Should().NotBeNull();
+        budget.TenantId.Should().Be(tenantId);
+        budget.TotalEpsilon.Should().Be(5.0);
+        budget.ConsumedEpsilon.Should().Be(0.0);
+        budget.Delta.Should().Be(1e-5);
+    }
+
     #endregion
 
     #region Synthetic Data Generation Tests
@@ -109,6 +142,50 @@ public sealed class SyntheticDataDifferentialPrivacyTests
             lead.EstimatedBudgetEur.Should().BeGreaterThan(0.0m);
             lead.EngagementScore.Should().BeInRange(0.0, 1.0);
         }
+    }
+
+    [Fact]
+    public void GenerateLeads_ZeroOrNegativeRecordCount_ReturnsEmptyCollection()
+    {
+        var requestZero = new GenerateSyntheticDatasetRequest("TENANT-ZERO", RecordCount: 0);
+        var requestNeg = new GenerateSyntheticDatasetRequest("TENANT-NEG", RecordCount: -3);
+
+        _generator.GenerateLeads(requestZero).Should().BeEmpty();
+        _generator.GenerateLeads(requestNeg).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void GenerateLeads_NullRequest_ThrowsArgumentNullException()
+    {
+        var act = () => _generator.GenerateLeads(null!);
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void GenerateLeads_WhenDpBudgetExhausted_GracefullyFallsBackToSample()
+    {
+        var tenantId = "TENANT-EXHAUST-FALLBACK";
+        _dpEngine.ResetBudget(tenantId, newTotalEpsilon: 0.001);
+
+        // Exhaust budget
+        _dpEngine.PerturbQuery(new PerturbQueryRequest(tenantId, "Q-DEPLETE", 100.0, 1.0, 0.001));
+
+        var request = new GenerateSyntheticDatasetRequest(
+            TenantId: tenantId,
+            RecordCount: 3,
+            EpsilonBudget: 2.0,
+            IndustryFocus: "Renewable Energy"
+        );
+
+        // Should NOT throw, but fall back gracefully
+        var leads = _generator.GenerateLeads(request);
+
+        leads.Should().HaveCount(3);
+        leads.Should().AllSatisfy(l =>
+        {
+            l.Industry.Should().Be("Renewable Energy");
+            l.EstimatedBudgetEur.Should().BeGreaterThan(0m);
+        });
     }
 
     #endregion

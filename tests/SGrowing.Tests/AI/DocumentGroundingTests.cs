@@ -113,4 +113,41 @@ public sealed class DocumentGroundingTests
         // Assert - Rule: NEVER call services.BuildServiceProvider()
         services.Should().ContainSingle(s => s.ServiceType == typeof(DocumentGroundingCitationEngine) && s.Lifetime == ServiceLifetime.Singleton);
     }
+
+    [Fact]
+    public void VerifyAnswerGrounding_NullRequest_ThrowsArgumentNullException()
+    {
+        var act = () => _engine.VerifyAnswerGrounding(null!);
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void VerifyAnswerGrounding_EmptyOrWhitespaceAnswer_ReturnsZeroGroundingScore()
+    {
+        var request = new AuditAnswerGroundingRequest("What is SLA?", "   ", CreateContractCorpus());
+        var result = _engine.VerifyAnswerGrounding(request);
+
+        result.Should().NotBeNull();
+        result.TotalSentences.Should().Be(0);
+        result.OverallGroundingScorePercent.Should().Be(0.0);
+        result.HallucinationRiskDetected.Should().BeTrue();
+    }
+
+    [Fact]
+    public void VerifyAnswerGrounding_EmptyCorpusChunks_ReturnsUngroundedResults()
+    {
+        var request = new AuditAnswerGroundingRequest(
+            "What is SLA?",
+            "Guaranteed uptime is 99.95%.",
+            new List<DocumentChunk>());
+
+        var result = _engine.VerifyAnswerGrounding(request);
+
+        result.Should().NotBeNull();
+        result.TotalSentences.Should().Be(1);
+        result.GroundedSentencesCount.Should().Be(0);
+        result.SentenceCitations[0].IsGrounded.Should().BeFalse();
+        result.SentenceCitations[0].CitationReference.Should().BeNull();
+        result.HallucinationRiskDetected.Should().BeTrue();
+    }
 }

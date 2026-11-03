@@ -43,4 +43,40 @@ public sealed class KnowledgeGraphTests
         var snapshot = _engine.GetGraphSnapshot();
         Assert.Contains(snapshot.Entities, e => e.Id == res.CreatedNodeIds[0]);
     }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public void IngestKnowledge_EmptyOrWhitespace_ReturnsSkippedResponse(string? emptyText)
+    {
+        var req = new IngestKnowledgeRequest(emptyText!, "Doc_Empty");
+        var res = _engine.IngestKnowledge(req);
+
+        Assert.Equal("Skipped: Empty input", res.Status);
+        Assert.Equal(0, res.IngestedEntitiesCount);
+        Assert.Equal(0, res.IngestedTriplesCount);
+        Assert.Empty(res.CreatedNodeIds);
+    }
+
+    [Fact]
+    public void HybridSearch_UnmatchedQueryHighConfidence_ReturnsNoTriplesGroundedSummary()
+    {
+        var query = new HybridSearchQuery("QuantumEntanglementSuperconductivity", MaxTriples: 5, MinConfidence: 0.999);
+        var result = _engine.HybridSearch(query);
+
+        Assert.NotNull(result);
+        Assert.Contains("No high-confidence graph triples matched the target query", result.GroundedContextSummary);
+    }
+
+    [Fact]
+    public void HybridSearch_EmptyQuery_ReturnsTopCentralityEntities()
+    {
+        var query = new HybridSearchQuery("", MaxTriples: 3, MinConfidence: 0.5);
+        var result = _engine.HybridSearch(query);
+
+        Assert.NotNull(result);
+        Assert.NotEmpty(result.MatchedEntities);
+        Assert.True(result.MatchedEntities.Count <= 10);
+    }
 }

@@ -91,4 +91,87 @@ public class SwarmCoordinationTests
         telemetry.PendingApprovalCount.Should().Be(1);
         telemetry.Scratchpad["target_cluster"].Should().Be("Growth OS vs HubSpot Alternatives");
     }
+
+    [Fact]
+    public void ApproveTask_WhenRejected_SetsRejectedStatusAndIncludesReason()
+    {
+        var mission = _engine.CreateMission(new CreateMissionRequest(
+            TenantId: "tenant_reject_01",
+            Title: "Budget Allocation",
+            HighLevelGoal: "Spend test"
+        ));
+
+        var approvalTask = mission.Tasks.First(t => t.RequiresHumanApproval);
+
+        var rejectedPlan = _engine.ApproveTask(new ApproveTaskRequest(
+            TenantId: "tenant_reject_01",
+            MissionId: mission.MissionId,
+            TaskId: approvalTask.TaskId,
+            Approved: false,
+            ApproverId: "supervisor_alice",
+            Reason: "Exceeds daily risk tolerance"
+        ));
+
+        var updatedTask = rejectedPlan.Tasks.First(t => t.TaskId == approvalTask.TaskId);
+        updatedTask.Status.Should().Be(SwarmTaskStatus.Rejected);
+        updatedTask.OutputArtifact.Should().Contain("REJECTED by supervisor_alice");
+        updatedTask.OutputArtifact.Should().Contain("Exceeds daily risk tolerance");
+        rejectedPlan.FinishedAtUtc.Should().NotBeNull();
+        rejectedPlan.Scratchpad["mission_phase"].Should().Be("MissionComplete");
+    }
+
+    [Fact]
+    public void ListMissions_FiltersByTenantIdAndOrdersByStartTime()
+    {
+        var tenantA = "tenant_list_A";
+        var tenantB = "tenant_list_B";
+
+        var misA1 = _engine.CreateMission(new CreateMissionRequest(tenantA, "Mission A1", "Goal 1"));
+        var misA2 = _engine.CreateMission(new CreateMissionRequest(tenantA, "Mission A2", "Goal 2"));
+        var misB1 = _engine.CreateMission(new CreateMissionRequest(tenantB, "Mission B1", "Goal B"));
+
+        var listA = _engine.ListMissions(tenantA);
+        var listB = _engine.ListMissions(tenantB);
+
+        listA.Should().HaveCount(2);
+        listA.Should().AllSatisfy(m => m.TenantId.Should().Be(tenantA));
+        listB.Should().HaveCount(1);
+        listB.First().Title.Should().Be("Mission B1");
+    }
+
+    [Fact]
+    public void GetMission_NonExistentMission_ReturnsNull()
+    {
+        var result = _engine.GetMission("tenant_missing", "mis_nonexistent");
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void ApproveTask_InvalidMissionOrTask_ThrowsKeyNotFoundException()
+    {
+        var mission = _engine.CreateMission(new CreateMissionRequest("tenant_err", "Error Test", "Goal"));
+
+        // 1. Invalid mission
+        var actMissingMission = () => _engine.ApproveTask(new ApproveTaskRequest(
+            "tenant_err", "mis_invalid", "tsk_1", true, "admin"));
+        actMissingMission.Should().Throw<KeyNotFoundException>()
+            .WithMessage("*Mission 'mis_invalid' not found*");
+
+        // 2. Invalid task
+        var actMissingTask = () => _engine.ApproveTask(new ApproveTaskRequest(
+            "tenant_err", mission.MissionId, "tsk_invalid", true, "admin"));
+        actMissingTask.Should().Throw<KeyNotFoundException>()
+            .WithMessage("*Task 'tsk_invalid' not found*");
+    }
+
+    [Fact]
+    public void UpdateScratchpadAndTelemetry_InvalidMission_ThrowsKeyNotFoundException()
+    {
+        var actScratchpad = () => _engine.UpdateScratchpad(new UpdateScratchpadRequest(
+            "tenant_err", "mis_fake", "key", "val"));
+        actScratchpad.Should().Throw<KeyNotFoundException>();
+
+        var actTelemetry = () => _engine.GetTelemetry("tenant_err", "mis_fake");
+        actTelemetry.Should().Throw<KeyNotFoundException>();
+    }
 }
