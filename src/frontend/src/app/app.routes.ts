@@ -355,5 +355,10 @@ export const routes: Routes = [
   { path: 'voice/telephony-disfluency', loadComponent: () => import('./features/voice/telephony-disfluency-cockpit.component').then(m => m.TelephonyDisfluencyCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/export-compliance', loadComponent: () => import('./features/finance/export-compliance-cockpit.component').then(m => m.ExportComplianceCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/wasm-sandbox', loadComponent: () => import('./features/infrastructure/wasm-sandbox-cockpit.component').then(m => m.WasmSandboxCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/customer-advocacy', loadComponent: () => import('./features/sales/customer-advocacy-cockpit.component').then(m => m.CustomerAdvocacyCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/micro-geofence', loadComponent: () => import('./features/advertising/micro-geofence-cockpit.component').then(m => m.MicroGeofenceCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/echo-cancellation', loadComponent: () => import('./features/voice/echo-cancellation-cockpit.component').then(m => m.EchoCancellationCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/capital-allocation', loadComponent: () => import('./features/finance/capital-allocation-cockpit.component').then(m => m.CapitalAllocationCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/wireguard-discovery', loadComponent: () => import('./features/infrastructure/wireguard-discovery-cockpit.component').then(m => m.WireGuardDiscoveryCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

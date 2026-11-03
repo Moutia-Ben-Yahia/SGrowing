@@ -146,6 +146,11 @@ using SGrowing.Api.Modules.Advertising.WeatherAdTriggers;
 using SGrowing.Api.Modules.Voice.TelephonyDisfluency;
 using SGrowing.Api.Modules.Finance.ExportCompliance;
 using SGrowing.Api.Modules.Infrastructure.WasmSandbox;
+using SGrowing.Api.Modules.Sales.CustomerAdvocacy;
+using SGrowing.Api.Modules.Advertising.MicroGeofence;
+using SGrowing.Api.Modules.Voice.EchoCancellation;
+using SGrowing.Api.Modules.Finance.CapitalAllocation;
+using SGrowing.Api.Modules.Infrastructure.WireGuardDiscovery;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -1037,6 +1042,11 @@ app.MapWeatherAdTriggersEndpoints();
 app.MapTelephonyDisfluencyEndpoints();
 app.MapExportComplianceEndpoints();
 app.MapWasmSandboxEndpoints();
+app.MapCustomerAdvocacyEndpoints();
+app.MapMicroGeofenceEndpoints();
+app.MapEchoCancellationEndpoints();
+app.MapCapitalAllocationEndpoints();
+app.MapWireGuardDiscoveryEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

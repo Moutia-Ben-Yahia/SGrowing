@@ -396,6 +396,11 @@ using SGrowing.Api.Modules.Advertising.WeatherAdTriggers;
 using SGrowing.Api.Modules.Voice.TelephonyDisfluency;
 using SGrowing.Api.Modules.Finance.ExportCompliance;
 using SGrowing.Api.Modules.Infrastructure.WasmSandbox;
+using SGrowing.Api.Modules.Sales.CustomerAdvocacy;
+using SGrowing.Api.Modules.Advertising.MicroGeofence;
+using SGrowing.Api.Modules.Voice.EchoCancellation;
+using SGrowing.Api.Modules.Finance.CapitalAllocation;
+using SGrowing.Api.Modules.Infrastructure.WireGuardDiscovery;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Diagnostics;
@@ -1278,6 +1283,11 @@ public static class ServiceCollectionExtensions
         services.AddTelephonyDisfluencyServices();
         services.AddExportComplianceServices();
         services.AddWasmSandboxServices();
+        services.AddCustomerAdvocacyServices();
+        services.AddMicroGeofenceServices();
+        services.AddEchoCancellationServices();
+        services.AddCapitalAllocationServices();
+        services.AddWireGuardDiscoveryServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

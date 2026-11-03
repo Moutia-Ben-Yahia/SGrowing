@@ -883,17 +883,18 @@ graph TD
 - `0d11b95`: `feat(growth-os): deliver Horizons 146 to 150 (Contract Redline Auto-Negotiator, DOOH Real-Time Bidding, Voice Biometric Deepfake Defense, Sovereign R&D Tax Credit Ledger, Multi-Cloud SPIFFE/SPIRE Identity Federation Mesh)`
 - `b7b4eb5`: `feat(growth-os): deliver Horizons 151 to 155 (Customer Advisory Board Matrix, In-Car Infotainment Ad Bidding, Voice Intent Fast-Path, OECD Pillar 2 Tax Ledger, Cilium eBPF WireGuard Transit Mesh)`
 - `db2c7b3`: `feat(growth-os): deliver Horizons 156 to 160 (Customer Success QBR Deck Generator, Weather DPA Triggers, Telephony Disfluency Mesh, Sovereign Export Control Ledger, Multi-Cloud Wasm Micro-VM Arbiter)`
+- In-Progress: `feat(growth-os): deliver Horizons 161 to 165 (Customer Advocacy Reference Mesh, Micro-Geofence DSP Bidding, Neural Echo Cancellation, Sovereign Capital Allocation, WireGuard Peer Discovery & IPsec Fallback)`
 
-### Horizon 156 to 160 Implementation Details
-- **Horizon 156 (Sales / Customer Success QBR Deck Generator):** Automated realized ROI telemetry attestation, executive slide compiler, peer benchmarking, and expansion ARR proposal generation (`ValueRealizationEngine.cs`, `value-realization-cockpit.component.ts`).
-- **Horizon 157 (Advertising / Environmental DPA Weather Triggers):** Real-time NOAA meteorological telemetry integration, dynamic programmatic creative variant injection, environmental bid multipliers (`WeatherAdTriggersEngine.cs`, `weather-triggers-cockpit.component.ts`).
-- **Horizon 158 (Voice / Telephony Disfluency Diagnostic Neural Mesh):** Microsecond-level acoustic cadence diagnostic, caller cognitive pause detection, dynamic speaking rate adaptation, and turn-taking latency optimization (`TelephonyDisfluencyEngine.cs`, `telephony-disfluency-cockpit.component.ts`).
-- **Horizon 159 (Finance / Sovereign Export Control EAR/ITAR Ledger):** Real-time Commerce Control List (CCL) ECCN screening, automated OFAC SDN verification, and cryptographic export clearance token ledger (`ExportComplianceLedgerEngine.cs`, `export-compliance-cockpit.component.ts`).
-- **Horizon 160 (Infrastructure / Multi-Cloud Wasm Sandbox & Micro-VM Arbiter):** Sub-millisecond Wasm cold start, strict memory isolation, capability-based zero-trust security, and tenant worker lifecycle orchestration (`WasmSandboxMeshEngine.cs`, `wasm-sandbox-cockpit.component.ts`).
+### Horizon 161 to 165 Implementation Details
+- **Horizon 161 (Sales / Customer Advocacy & Reference Call Matchmaking Mesh):** Automated reference champion identification, double-blind peer matchmaking, advocate fatigue prevention guardrails, tokenized rewards distribution, and deal win-rate attribution (`CustomerAdvocacyEngine.cs`, `customer-advocacy-cockpit.component.ts`).
+- **Horizon 162 (Advertising / Real-Time Micro-Geofencing & Physical Footfall DSP Bidding):** High-precision GPS polygon perimeters, sub-second RTB bid multipliers for physical venues, deterministic footfall dwell store-visit attribution (`MicroGeofenceEngine.cs`, `micro-geofence-cockpit.component.ts`).
+- **Horizon 163 (Voice / Neural Acoustic Echo Cancellation & Double-Talk Arbiter):** Real-time sub-50dB acoustic echo suppression, neural double-talk preservation (zero clipping during human interruption), 48kHz audio clarity (`EchoCancellationEngine.cs`, `echo-cancellation-cockpit.component.ts`).
+- **Horizon 164 (Finance / Sovereign Capital Allocation & Working Capital Treasury Optimizer):** Multi-currency treasury yield optimization, sovereign AAA T-bill ladder management, automated working capital runway extension, covenant buffers (`CapitalAllocationEngine.cs`, `capital-allocation-cockpit.component.ts`).
+- **Horizon 165 (Infrastructure / Zero-Trust WireGuard Peer Discovery & Ephemeral IPsec Fallback):** STUN/ICE dynamic peer discovery across clouds, sub-15ms WireGuard direct UDP hole punching, automatic kernel IPsec ESP fallback on firewall blocks (`WireGuardDiscoveryEngine.cs`, `wireguard-discovery-cockpit.component.ts`).
 
 ### Current Verified Quality Metrics
-- **Backend xUnit Tests:** 5,583 passing tests (0 failures, 100% pass rate).
-- **Frontend Vitest Specs:** 465 passing tests across 96 standalone component suites.
-- **Playwright E2E Tests:** 169 passing tests across full browser execution runs.
-- **Production Build:** Angular 22 `ng build` succeeded in 13.9s with 205+ lazy chunk bundles.
+- **Backend xUnit Tests:** 5,598 passing tests (0 failures, 100% pass rate).
+- **Frontend Vitest Specs:** 475 passing tests across 101 standalone component suites.
+- **Playwright E2E Tests:** 174 passing tests across full browser execution runs.
+- **Production Build:** Angular 22 `ng build` succeeded cleanly with 220 lazy chunk bundles.
 - **Compiler Health:** .NET 10 compilation with `TreatWarningsAsErrors=true` (0 warnings, 0 errors).
