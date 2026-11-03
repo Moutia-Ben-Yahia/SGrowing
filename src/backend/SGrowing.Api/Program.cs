@@ -161,6 +161,11 @@ using SGrowing.Api.Modules.Advertising.VehicleAudioDsp;
 using SGrowing.Api.Modules.Voice.Dereverberation;
 using SGrowing.Api.Modules.Finance.Section174;
 using SGrowing.Api.Modules.Infrastructure.EvpnVxlan;
+using SGrowing.Api.Modules.Sales.DealAutopsy;
+using SGrowing.Api.Modules.Advertising.SponsoredBrandAds;
+using SGrowing.Api.Modules.Voice.ProsodyEmpathy;
+using SGrowing.Api.Modules.Finance.IntercompanyNetting;
+using SGrowing.Api.Modules.Infrastructure.Srv6Traffic;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -1067,6 +1072,11 @@ app.MapVehicleAudioDspEndpoints();
 app.MapDereverberationEndpoints();
 app.MapSection174Endpoints();
 app.MapEvpnVxlanEndpoints();
+app.MapDealAutopsyEndpoints();
+app.MapSponsoredBrandAdsEndpoints();
+app.MapProsodyEmpathyEndpoints();
+app.MapIntercompanyNettingEndpoints();
+app.MapSrv6TrafficEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

@@ -411,6 +411,11 @@ using SGrowing.Api.Modules.Advertising.VehicleAudioDsp;
 using SGrowing.Api.Modules.Voice.Dereverberation;
 using SGrowing.Api.Modules.Finance.Section174;
 using SGrowing.Api.Modules.Infrastructure.EvpnVxlan;
+using SGrowing.Api.Modules.Sales.DealAutopsy;
+using SGrowing.Api.Modules.Advertising.SponsoredBrandAds;
+using SGrowing.Api.Modules.Voice.ProsodyEmpathy;
+using SGrowing.Api.Modules.Finance.IntercompanyNetting;
+using SGrowing.Api.Modules.Infrastructure.Srv6Traffic;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Diagnostics;
@@ -1308,6 +1313,11 @@ public static class ServiceCollectionExtensions
         services.AddDereverberationServices();
         services.AddSection174Services();
         services.AddEvpnVxlanServices();
+        services.AddDealAutopsyServices();
+        services.AddSponsoredBrandAdsServices();
+        services.AddProsodyEmpathyServices();
+        services.AddIntercompanyNettingServices();
+        services.AddSrv6TrafficServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

@@ -370,5 +370,10 @@ export const routes: Routes = [
   { path: 'voice/dereverberation', loadComponent: () => import('./features/voice/dereverberation-cockpit.component').then(m => m.DereverberationCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/section174', loadComponent: () => import('./features/finance/section174-cockpit.component').then(m => m.Section174CockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/evpn-vxlan', loadComponent: () => import('./features/infrastructure/evpn-vxlan-cockpit.component').then(m => m.EvpnVxlanCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/deal-autopsy', loadComponent: () => import('./features/sales/deal-autopsy-cockpit.component').then(m => m.DealAutopsyCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/sponsored-brand-ads', loadComponent: () => import('./features/advertising/sponsored-brand-ads-cockpit.component').then(m => m.SponsoredBrandAdsCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/prosody-empathy', loadComponent: () => import('./features/voice/prosody-empathy-cockpit.component').then(m => m.ProsodyEmpathyCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/intercompany-netting', loadComponent: () => import('./features/finance/intercompany-netting-cockpit.component').then(m => m.IntercompanyNettingCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/srv6-traffic', loadComponent: () => import('./features/infrastructure/srv6-traffic-cockpit.component').then(m => m.Srv6TrafficCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

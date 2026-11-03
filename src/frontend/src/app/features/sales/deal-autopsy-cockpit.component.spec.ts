@@ -1,0 +1,21 @@
+import '@angular/compiler';
+import { describe, it, expect } from 'vitest';
+import { DealAutopsyCockpitComponent } from './deal-autopsy-cockpit.component';
+
+describe('DealAutopsyCockpitComponent', () => {
+  it('should initialize with completed autopsies and recovery playbooks', () => {
+    const comp = new DealAutopsyCockpitComponent();
+    expect(comp.autopsiesCount()).toBe(48);
+    expect(comp.recoveryPotentialPct()).toBe(34.2);
+    expect(comp.autopsies().length).toBeGreaterThan(0);
+    expect(comp.playbooks().length).toBeGreaterThan(0);
+  });
+
+  it('should run a new deal autopsy and update list', () => {
+    const comp = new DealAutopsyCockpitComponent();
+    const initialCount = comp.autopsies().length;
+    comp.analyzeNewLostDeal();
+    expect(comp.autopsies().length).toBe(initialCount + 1);
+    expect(comp.autopsies()[comp.autopsies().length - 1].accountName).toBe('OmniHealth BioSystems');
+  });
+});
