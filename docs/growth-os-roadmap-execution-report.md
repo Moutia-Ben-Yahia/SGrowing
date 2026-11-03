@@ -888,7 +888,7 @@ graph TD
 - `8a66d20`: `feat(growth-os): deliver Horizons 171 to 175 (Sales SPIFF Gamification, Vehicle Audio DSP, Voice Dereverberation, Section 174 Amortization, eBGP EVPN VXLAN Overlay)`
 - `3736203`: `feat(growth-os): deliver Horizons 176 to 180 (Win-Rate Deal Autopsy, Retail Media Sponsored Brand Ads, Speech Prosody Empathy Tuning, Intercompany Multilateral Netting, SRv6 Traffic Engineering)`
 - `05dfd32`: `feat(growth-os): deliver Horizons 181 to 185 (Sales Rep Ramp Acceleration, Cross-Device CAPI Graph, Whisper Voice Tremor Stress, Pillar Two GloBE Tax, RoCEv2 RDMA Fabric)`
-- `[pending-commit]`: `feat(growth-os): deliver Horizons 186 to 190 (Sales Quota Capacity, Store Footfall Lift, Dialect Synthesis, STTR Treaty Tax, NVMe-oF Mesh)`
+- `a4ed00f`: `feat(growth-os): deliver Horizons 186 to 190 (Sales Quota Capacity, Store Footfall Lift, Dialect Synthesis, STTR Treaty Tax, NVMe-oF Mesh)`
 
 ### Horizon 186 to 190 Implementation Details
 - **Horizon 186 (Sales / Sales Quota Capacity & Territory Heatmap Arbiter):** Territory TAM modeling, 3.5x pipeline coverage optimization, rep burnout risk arbitration, and whitespace redistribution (`QuotaCapacityEngine.cs`, `quota-capacity-cockpit.component.ts`).
