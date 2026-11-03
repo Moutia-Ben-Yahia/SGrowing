@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using SGrowing.Api.Data;
 using SGrowing.Core.Entities;
 using SGrowing.Worker.Services;
@@ -9,177 +10,251 @@ namespace SGrowing.Tests.Worker;
 
 public class CartReservationSweeperDaemonTests
 {
-    private SGrowingDbContext CreateDbContext()
+    private static (IServiceProvider Provider, SGrowingDbContext Db) SetupDependencies()
     {
-        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        return new SGrowingDbContext(options);
+        var services = new ServiceCollection();
+        var dbName = $"CartSweeperTests_{Guid.NewGuid()}";
+        services.AddDbContext<SGrowingDbContext>(options =>
+            options.UseInMemoryDatabase(dbName));
+
+        var sp = services.BuildServiceProvider();
+        var db = sp.GetRequiredService<SGrowingDbContext>();
+        return (sp, db);
     }
 
     [Fact]
     public async Task SweepExpiredCartReservationsAsync_WhenNoLocks_ReturnsZero()
     {
-        using var db = CreateDbContext();
+        var (_, db) = SetupDependencies();
+        using var scope = db;
 
-        var sweptCount = await CartReservationSweeperDaemon.SweepExpiredCartReservationsAsync(db);
+        var returned = await CartReservationSweeperDaemon.SweepExpiredCartReservationsAsync(db);
 
-        sweptCount.Should().Be(0);
+        returned.Should().Be(0);
     }
 
     [Fact]
-    public async Task SweepExpiredCartReservationsAsync_WhenExpiredLocksExist_RestoresAvailableStockAndExpiresLock()
+    public async Task SweepExpiredCartReservationsAsync_WhenLocksStillValid_SkipsThem()
     {
-        using var db = CreateDbContext();
+        var (_, db) = SetupDependencies();
+        using var scope = db;
         var tenantId = Guid.NewGuid();
         var warehouseId = Guid.NewGuid();
-        var sku = "SKU-PREMIUM-ROASTER-01";
+
+        var activeLock = new CartReservationLockRecord
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            WarehouseId = warehouseId,
+            Sku = "SKU-PREMIUM-01",
+            Quantity = 3,
+            CartId = Guid.NewGuid(),
+            Status = "Active",
+            ExpiresAtUtc = DateTime.UtcNow.AddMinutes(12)
+        };
+
+        db.CartReservationLocks.Add(activeLock);
+        await db.SaveChangesAsync();
+
+        var returned = await CartReservationSweeperDaemon.SweepExpiredCartReservationsAsync(db);
+
+        returned.Should().Be(0);
+        var inDb = await db.CartReservationLocks.FindAsync(activeLock.Id);
+        inDb!.Status.Should().Be("Active");
+        inDb.ReleasedAtUtc.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SweepExpiredCartReservationsAsync_WhenExpired_ReleasesInventoryAndMarksExpired()
+    {
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+        var sku = "SKU-WIRELESS-EARBUDS";
 
         var stock = new WarehouseStockRecord
         {
+            Id = Guid.NewGuid(),
             TenantId = tenantId,
             WarehouseId = warehouseId,
             Sku = sku,
-            ProductName = "Specialty Espresso Roaster",
-            QuantityAvailable = 10,
+            ProductName = "Wireless Earbuds ANC",
+            QuantityAvailable = 15,
             QuantityReserved = 5,
-            UnitCost = 450.0m
+            RowVersion = 1,
+            CreatedAtUtc = DateTime.UtcNow
         };
         db.WarehouseStockRecords.Add(stock);
 
         var expiredLock = new CartReservationLockRecord
         {
+            Id = Guid.NewGuid(),
             TenantId = tenantId,
             WarehouseId = warehouseId,
             Sku = sku,
-            Quantity = 3,
+            Quantity = 5,
             CartId = Guid.NewGuid(),
             Status = "Active",
-            ExpiresAtUtc = DateTime.UtcNow.AddMinutes(-5) // Expired 5 minutes ago
+            ExpiresAtUtc = DateTime.UtcNow.AddMinutes(-5) // expired 5 minutes ago
         };
         db.CartReservationLocks.Add(expiredLock);
         await db.SaveChangesAsync();
 
-        var returnedStock = await CartReservationSweeperDaemon.SweepExpiredCartReservationsAsync(db);
+        var returned = await CartReservationSweeperDaemon.SweepExpiredCartReservationsAsync(db);
 
-        returnedStock.Should().Be(3);
+        returned.Should().Be(5);
 
-        var updatedStock = await db.WarehouseStockRecords.FirstAsync(s => s.Id == stock.Id);
-        updatedStock.QuantityAvailable.Should().Be(13); // 10 + 3
-        updatedStock.QuantityReserved.Should().Be(2);  // 5 - 3
-
-        var updatedLock = await db.CartReservationLocks.FirstAsync(l => l.Id == expiredLock.Id);
-        updatedLock.Status.Should().Be("Expired");
-        updatedLock.ReleasedAtUtc.Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task SweepExpiredCartReservationsAsync_WhenActiveLocksNotExpired_DoesNotTouchStock()
-    {
-        using var db = CreateDbContext();
-        var tenantId = Guid.NewGuid();
-        var warehouseId = Guid.NewGuid();
-        var sku = "SKU-BEANS-ETHIOPIA-500G";
-
-        var stock = new WarehouseStockRecord
-        {
-            TenantId = tenantId,
-            WarehouseId = warehouseId,
-            Sku = sku,
-            ProductName = "Yirgacheffe Coffee Beans",
-            QuantityAvailable = 20,
-            QuantityReserved = 4
-        };
-        db.WarehouseStockRecords.Add(stock);
-
-        var activeLock = new CartReservationLockRecord
-        {
-            TenantId = tenantId,
-            WarehouseId = warehouseId,
-            Sku = sku,
-            Quantity = 4,
-            CartId = Guid.NewGuid(),
-            Status = "Active",
-            ExpiresAtUtc = DateTime.UtcNow.AddMinutes(10) // Still valid for 10 minutes
-        };
-        db.CartReservationLocks.Add(activeLock);
-        await db.SaveChangesAsync();
-
-        var returnedStock = await CartReservationSweeperDaemon.SweepExpiredCartReservationsAsync(db);
-
-        returnedStock.Should().Be(0);
-
-        var updatedStock = await db.WarehouseStockRecords.FirstAsync(s => s.Id == stock.Id);
+        var updatedStock = await db.WarehouseStockRecords.FindAsync(stock.Id);
+        updatedStock!.QuantityReserved.Should().Be(0);
         updatedStock.QuantityAvailable.Should().Be(20);
-        updatedStock.QuantityReserved.Should().Be(4);
+        updatedStock.RowVersion.Should().Be(2);
+        updatedStock.UpdatedAtUtc.Should().NotBeNull();
 
-        var updatedLock = await db.CartReservationLocks.FirstAsync(l => l.Id == activeLock.Id);
-        updatedLock.Status.Should().Be("Active");
+        var updatedLock = await db.CartReservationLocks.FindAsync(expiredLock.Id);
+        updatedLock!.Status.Should().Be("Expired");
+        updatedLock.ReleasedAtUtc.Should().NotBeNull();
+        updatedLock.ReleasedAtUtc!.Value.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
     }
 
     [Fact]
-    public async Task SweepExpiredCartReservationsAsync_WhenAlreadyExpiredOrReleased_Ignores()
+    public async Task SweepExpiredCartReservationsAsync_WhenStatusNotActive_SkipsSweep()
     {
-        using var db = CreateDbContext();
+        var (_, db) = SetupDependencies();
+        using var scope = db;
         var tenantId = Guid.NewGuid();
         var warehouseId = Guid.NewGuid();
-        var sku = "SKU-GRINDER-BURR";
 
-        var releasedLock = new CartReservationLockRecord
-        {
-            TenantId = tenantId,
-            WarehouseId = warehouseId,
-            Sku = sku,
-            Quantity = 2,
-            CartId = Guid.NewGuid(),
-            Status = "Released",
-            ExpiresAtUtc = DateTime.UtcNow.AddMinutes(-20)
-        };
         var committedLock = new CartReservationLockRecord
         {
+            Id = Guid.NewGuid(),
             TenantId = tenantId,
             WarehouseId = warehouseId,
-            Sku = sku,
+            Sku = "SKU-PAID-01",
             Quantity = 2,
             CartId = Guid.NewGuid(),
             Status = "Committed",
-            ExpiresAtUtc = DateTime.UtcNow.AddMinutes(-30)
+            ExpiresAtUtc = DateTime.UtcNow.AddMinutes(-10)
         };
-        db.CartReservationLocks.AddRange(releasedLock, committedLock);
+
+        db.CartReservationLocks.Add(committedLock);
         await db.SaveChangesAsync();
 
-        var returnedStock = await CartReservationSweeperDaemon.SweepExpiredCartReservationsAsync(db);
+        var returned = await CartReservationSweeperDaemon.SweepExpiredCartReservationsAsync(db);
 
-        returnedStock.Should().Be(0);
+        returned.Should().Be(0);
+        var inDb = await db.CartReservationLocks.FindAsync(committedLock.Id);
+        inDb!.Status.Should().Be("Committed");
     }
 
     [Fact]
-    public async Task SweepExpiredCartReservationsAsync_WhenWarehouseStockMissing_MarksLockExpiredGracefully()
+    public async Task SweepExpiredCartReservationsAsync_WhenWarehouseStockMissing_MarksExpiredGracefully()
     {
-        using var db = CreateDbContext();
+        var (_, db) = SetupDependencies();
+        using var scope = db;
         var tenantId = Guid.NewGuid();
         var warehouseId = Guid.NewGuid();
-        var sku = "SKU-DISCONTINUED-MUG";
 
-        var expiredLock = new CartReservationLockRecord
+        var orphanLock = new CartReservationLockRecord
         {
+            Id = Guid.NewGuid(),
             TenantId = tenantId,
             WarehouseId = warehouseId,
-            Sku = sku,
-            Quantity = 2,
+            Sku = "SKU-DISCONTINUED-99",
+            Quantity = 4,
+            CartId = Guid.NewGuid(),
+            Status = "Active",
+            ExpiresAtUtc = DateTime.UtcNow.AddMinutes(-2)
+        };
+
+        db.CartReservationLocks.Add(orphanLock);
+        await db.SaveChangesAsync();
+
+        var returned = await CartReservationSweeperDaemon.SweepExpiredCartReservationsAsync(db);
+
+        returned.Should().Be(0); // 0 stock returned because stock record didn't exist
+        var inDb = await db.CartReservationLocks.FindAsync(orphanLock.Id);
+        inDb!.Status.Should().Be("Expired");
+        inDb.ReleasedAtUtc.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task SweepExpiredCartReservationsAsync_WhenMultipleExpiredLocks_AggregatesReturnedQuantity()
+    {
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+
+        var stockA = new WarehouseStockRecord
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            WarehouseId = warehouseId,
+            Sku = "SKU-A",
+            QuantityAvailable = 10,
+            QuantityReserved = 8,
+            RowVersion = 1
+        };
+        var stockB = new WarehouseStockRecord
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            WarehouseId = warehouseId,
+            Sku = "SKU-B",
+            QuantityAvailable = 5,
+            QuantityReserved = 4,
+            RowVersion = 1
+        };
+        db.WarehouseStockRecords.AddRange(stockA, stockB);
+
+        var lock1 = new CartReservationLockRecord
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            WarehouseId = warehouseId,
+            Sku = "SKU-A",
+            Quantity = 3,
             CartId = Guid.NewGuid(),
             Status = "Active",
             ExpiresAtUtc = DateTime.UtcNow.AddMinutes(-10)
         };
-        db.CartReservationLocks.Add(expiredLock);
+        var lock2 = new CartReservationLockRecord
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            WarehouseId = warehouseId,
+            Sku = "SKU-A",
+            Quantity = 5,
+            CartId = Guid.NewGuid(),
+            Status = "Active",
+            ExpiresAtUtc = DateTime.UtcNow.AddMinutes(-5)
+        };
+        var lock3 = new CartReservationLockRecord
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            WarehouseId = warehouseId,
+            Sku = "SKU-B",
+            Quantity = 4,
+            CartId = Guid.NewGuid(),
+            Status = "Active",
+            ExpiresAtUtc = DateTime.UtcNow.AddMinutes(-1)
+        };
+
+        db.CartReservationLocks.AddRange(lock1, lock2, lock3);
         await db.SaveChangesAsync();
 
-        var returnedStock = await CartReservationSweeperDaemon.SweepExpiredCartReservationsAsync(db);
+        var returned = await CartReservationSweeperDaemon.SweepExpiredCartReservationsAsync(db);
 
-        returnedStock.Should().Be(0); // No warehouse stock record to increment
+        returned.Should().Be(12); // 3 + 5 + 4 = 12
 
-        var updatedLock = await db.CartReservationLocks.FirstAsync(l => l.Id == expiredLock.Id);
-        updatedLock.Status.Should().Be("Expired");
-        updatedLock.ReleasedAtUtc.Should().NotBeNull();
+        var stockAInDb = await db.WarehouseStockRecords.FindAsync(stockA.Id);
+        stockAInDb!.QuantityAvailable.Should().Be(18);
+        stockAInDb.QuantityReserved.Should().Be(0);
+
+        var stockBInDb = await db.WarehouseStockRecords.FindAsync(stockB.Id);
+        stockBInDb!.QuantityAvailable.Should().Be(9);
+        stockBInDb.QuantityReserved.Should().Be(0);
     }
 }
