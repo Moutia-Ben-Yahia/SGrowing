@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using SGrowing.Api.Data;
 using SGrowing.Core.Entities;
 using SGrowing.Worker.Services;
@@ -9,134 +10,185 @@ namespace SGrowing.Tests.Worker;
 
 public class AndroidSmsQueueDispatcherDaemonTests
 {
-    private SGrowingDbContext CreateDbContext()
+    private static (IServiceProvider Provider, SGrowingDbContext Db) SetupDependencies()
     {
-        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        return new SGrowingDbContext(options);
+        var services = new ServiceCollection();
+        var dbName = $"AndroidSmsDispatcherTests_{Guid.NewGuid()}";
+        services.AddDbContext<SGrowingDbContext>(options =>
+            options.UseInMemoryDatabase(dbName));
+
+        var sp = services.BuildServiceProvider();
+        var db = sp.GetRequiredService<SGrowingDbContext>();
+        return (sp, db);
     }
 
     [Fact]
     public async Task DispatchQueuedMessagesAsync_WhenNoQueuedMessages_ReturnsZero()
     {
-        using var db = CreateDbContext();
+        var (_, db) = SetupDependencies();
+        using var scope = db;
 
-        var count = await AndroidSmsQueueDispatcherDaemon.DispatchQueuedMessagesAsync(db);
+        var dispatched = await AndroidSmsQueueDispatcherDaemon.DispatchQueuedMessagesAsync(db);
 
-        count.Should().Be(0);
+        dispatched.Should().Be(0);
     }
 
     [Fact]
-    public async Task DispatchQueuedMessagesAsync_WhenOnlineDeviceWithQuota_DispatchesMessagesAndIncrementsCounters()
+    public async Task DispatchQueuedMessagesAsync_WhenNoOnlineDevice_LeavesMessagesQueued()
     {
-        using var db = CreateDbContext();
+        var (_, db) = SetupDependencies();
+        using var scope = db;
         var tenantId = Guid.NewGuid();
 
-        var device = AndroidSmsGatewayDevice.Create(
-            tenantId,
-            "Samsung Galaxy S23 Ultra",
-            "imei_359876543210123",
-            "fcm_token_s23",
-            dailyQuota: 100
-        );
-        device.DailySentCount = 10;
+        // Offline device
+        var device = AndroidSmsGatewayDevice.Create(tenantId, "Redmi Note 12", "IMEI-829104", "fcm-tok");
+        device.IsOnline = false;
+        db.AndroidSmsGatewayDevices.Add(device);
 
-        var dispatchRecord = new AndroidSmsDispatchRecord
+        var queuedMsg = new AndroidSmsDispatchRecord
         {
             Id = Guid.NewGuid(),
             TenantId = tenantId,
-            RecipientPhone = "+21699887766",
-            MessageBody = "Votre commande SGrowing #1042 est en cours d'expedition.",
+            RecipientPhone = "+21698123456",
+            MessageBody = "Votre commande COD #101 est en cours d'expedition.",
             DispatchStatus = "Queued",
             SentAtUtc = DateTime.UtcNow
         };
+        db.AndroidSmsDispatchRecords.Add(queuedMsg);
+        await db.SaveChangesAsync();
 
+        var dispatched = await AndroidSmsQueueDispatcherDaemon.DispatchQueuedMessagesAsync(db);
+
+        dispatched.Should().Be(0);
+        var inDb = await db.AndroidSmsDispatchRecords.FindAsync(queuedMsg.Id);
+        inDb!.DispatchStatus.Should().Be("Queued");
+    }
+
+    [Fact]
+    public async Task DispatchQueuedMessagesAsync_WhenDeviceQuotaExhausted_SkipsDispatch()
+    {
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+        var tenantId = Guid.NewGuid();
+
+        var device = AndroidSmsGatewayDevice.Create(tenantId, "Samsung A54", "IMEI-992211", "fcm-tok", dailyQuota: 100);
+        device.DailySentCount = 100; // Quota full
         db.AndroidSmsGatewayDevices.Add(device);
-        db.AndroidSmsDispatchRecords.Add(dispatchRecord);
+
+        var queuedMsg = new AndroidSmsDispatchRecord
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            RecipientPhone = "+21622334455",
+            MessageBody = "Verification OTP: 829104",
+            DispatchStatus = "Queued",
+            SentAtUtc = DateTime.UtcNow
+        };
+        db.AndroidSmsDispatchRecords.Add(queuedMsg);
+        await db.SaveChangesAsync();
+
+        var dispatched = await AndroidSmsQueueDispatcherDaemon.DispatchQueuedMessagesAsync(db);
+
+        dispatched.Should().Be(0);
+        var inDb = await db.AndroidSmsDispatchRecords.FindAsync(queuedMsg.Id);
+        inDb!.DispatchStatus.Should().Be("Queued");
+    }
+
+    [Fact]
+    public async Task DispatchQueuedMessagesAsync_WhenDeviceOnlineWithQuota_DispatchesAndIncrementsCount()
+    {
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+        var tenantId = Guid.NewGuid();
+
+        var device = AndroidSmsGatewayDevice.Create(tenantId, "Pixel 8 Pro Hub", "IMEI-774411", "fcm-tok", dailyQuota: 500);
+        device.DailySentCount = 20;
+        db.AndroidSmsGatewayDevices.Add(device);
+
+        var queuedMsg = new AndroidSmsDispatchRecord
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            RecipientPhone = "+21655112233",
+            MessageBody = "Votre livreur Yalidine arrivera entre 14h et 16h.",
+            DispatchStatus = "Queued",
+            SentAtUtc = DateTime.UtcNow
+        };
+        db.AndroidSmsDispatchRecords.Add(queuedMsg);
         await db.SaveChangesAsync();
 
         var dispatched = await AndroidSmsQueueDispatcherDaemon.DispatchQueuedMessagesAsync(db);
 
         dispatched.Should().Be(1);
 
-        var updatedRecord = await db.AndroidSmsDispatchRecords.FindAsync(dispatchRecord.Id);
-        updatedRecord!.DispatchStatus.Should().Be("Dispatched");
-        updatedRecord.DeviceId.Should().Be(device.Id);
+        var inDb = await db.AndroidSmsDispatchRecords.FindAsync(queuedMsg.Id);
+        inDb!.DispatchStatus.Should().Be("Dispatched");
+        inDb.DeviceId.Should().Be(device.Id);
 
-        var updatedDevice = await db.AndroidSmsGatewayDevices.FindAsync(device.Id);
-        updatedDevice!.DailySentCount.Should().Be(11);
+        var deviceInDb = await db.AndroidSmsGatewayDevices.FindAsync(device.Id);
+        deviceInDb!.DailySentCount.Should().Be(21);
     }
 
     [Fact]
-    public async Task DispatchQueuedMessagesAsync_WhenDeviceAtQuotaLimit_SkipsDevice()
+    public async Task DispatchQueuedMessagesAsync_WhenMoreThan25Queued_LimitsBatchTo25()
     {
-        using var db = CreateDbContext();
+        var (_, db) = SetupDependencies();
+        using var scope = db;
         var tenantId = Guid.NewGuid();
 
-        var device = AndroidSmsGatewayDevice.Create(
-            tenantId,
-            "Xiaomi Redmi Note 12",
-            "imei_865432109876543",
-            "fcm_token_redmi",
-            dailyQuota: 50
-        );
-        device.DailySentCount = 50; // Reached quota
-
-        var dispatchRecord = new AndroidSmsDispatchRecord
-        {
-            Id = Guid.NewGuid(),
-            TenantId = tenantId,
-            RecipientPhone = "+21620112233",
-            MessageBody = "Verification code OTP 849201",
-            DispatchStatus = "Queued",
-            SentAtUtc = DateTime.UtcNow
-        };
-
+        var device = AndroidSmsGatewayDevice.Create(tenantId, "Gateway Cluster #1", "IMEI-POOL-1", "fcm-tok", dailyQuota: 1000);
         db.AndroidSmsGatewayDevices.Add(device);
-        db.AndroidSmsDispatchRecords.Add(dispatchRecord);
+
+        for (int i = 0; i < 35; i++)
+        {
+            db.AndroidSmsDispatchRecords.Add(new AndroidSmsDispatchRecord
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                RecipientPhone = $"+216981100{i:D2}",
+                MessageBody = $"Bulk notification #{i}",
+                DispatchStatus = "Queued",
+                SentAtUtc = DateTime.UtcNow.AddSeconds(i)
+            });
+        }
         await db.SaveChangesAsync();
 
         var dispatched = await AndroidSmsQueueDispatcherDaemon.DispatchQueuedMessagesAsync(db);
 
-        dispatched.Should().Be(0);
-
-        var record = await db.AndroidSmsDispatchRecords.FindAsync(dispatchRecord.Id);
-        record!.DispatchStatus.Should().Be("Queued");
-        record.DeviceId.Should().Be(Guid.Empty);
+        dispatched.Should().Be(25);
+        var remainingQueued = await db.AndroidSmsDispatchRecords.CountAsync(r => r.DispatchStatus == "Queued");
+        remainingQueued.Should().Be(10);
     }
 
     [Fact]
-    public async Task DispatchQueuedMessagesAsync_WhenDeviceOffline_SkipsDevice()
+    public async Task DispatchQueuedMessagesAsync_EnsuresStrictTenantIsolation()
     {
-        using var db = CreateDbContext();
-        var tenantId = Guid.NewGuid();
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
 
-        var device = AndroidSmsGatewayDevice.Create(
-            tenantId,
-            "Pixel 7 Pro",
-            "imei_123456789012345",
-            "fcm_token_pixel",
-            dailyQuota: 100
-        );
-        device.IsOnline = false; // Offline
+        // Device belongs to Tenant B
+        var deviceTenantB = AndroidSmsGatewayDevice.Create(tenantB, "Gateway B", "IMEI-B", "fcm-tok", dailyQuota: 500);
+        db.AndroidSmsGatewayDevices.Add(deviceTenantB);
 
-        var dispatchRecord = new AndroidSmsDispatchRecord
+        // Message belongs to Tenant A
+        var msgTenantA = new AndroidSmsDispatchRecord
         {
             Id = Guid.NewGuid(),
-            TenantId = tenantId,
-            RecipientPhone = "+21620112233",
-            MessageBody = "Order Confirmation",
+            TenantId = tenantA,
+            RecipientPhone = "+21699001122",
+            MessageBody = "Tenant A message",
             DispatchStatus = "Queued",
             SentAtUtc = DateTime.UtcNow
         };
-
-        db.AndroidSmsGatewayDevices.Add(device);
-        db.AndroidSmsDispatchRecords.Add(dispatchRecord);
+        db.AndroidSmsDispatchRecords.Add(msgTenantA);
         await db.SaveChangesAsync();
 
         var dispatched = await AndroidSmsQueueDispatcherDaemon.DispatchQueuedMessagesAsync(db);
 
-        dispatched.Should().Be(0);
+        dispatched.Should().Be(0); // Tenant A has no device registered
+        var inDb = await db.AndroidSmsDispatchRecords.FindAsync(msgTenantA.Id);
+        inDb!.DispatchStatus.Should().Be("Queued");
     }
 }
