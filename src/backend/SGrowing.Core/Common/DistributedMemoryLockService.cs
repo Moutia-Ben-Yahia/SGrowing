@@ -10,9 +10,9 @@ public class DistributedMemoryLockService : IConcurrencyLockService
 {
     private class LockEntry
     {
+        public SemaphoreSlim Gate { get; } = new(1, 1);
         public string LockToken { get; set; } = string.Empty;
         public DateTime ExpiresAtUtc { get; set; }
-        public SemaphoreSlim Semaphore { get; } = new(1, 1);
     }
 
     private class ConcurrencyLockHandle : IConcurrencyLockHandle
@@ -55,88 +55,120 @@ public class DistributedMemoryLockService : IConcurrencyLockService
 
         string key = resourceKey.Trim();
         var leaseDuration = expiry ?? TimeSpan.FromSeconds(15);
-        var wait = waitTimeout ?? TimeSpan.FromSeconds(2);
+        var timeout = waitTimeout ?? TimeSpan.FromSeconds(2);
+        var deadline = DateTime.UtcNow.Add(timeout);
 
         var entry = _locks.GetOrAdd(key, _ => new LockEntry());
 
-        // Attempt to enter the semaphore within the wait timeout
-        bool acquired = await entry.Semaphore.WaitAsync(wait, ct);
-        if (!acquired)
-        {
-            return null;
-        }
-
-        try
+        while (!ct.IsCancellationRequested)
         {
             var now = DateTime.UtcNow;
+            var remaining = deadline - now;
+            var stepWait = remaining < TimeSpan.FromMilliseconds(50)
+                ? (remaining > TimeSpan.Zero ? remaining : TimeSpan.FromMilliseconds(1))
+                : TimeSpan.FromMilliseconds(50);
 
-            // Check if currently held and not expired
-            if (!string.IsNullOrEmpty(entry.LockToken) && entry.ExpiresAtUtc > now)
+            bool entered = await entry.Gate.WaitAsync(stepWait, ct);
+            if (entered)
             {
-                // Lock is active and held by an unexpired lease
-                entry.Semaphore.Release();
+                try
+                {
+                    now = DateTime.UtcNow;
+                    bool isFree = string.IsNullOrEmpty(entry.LockToken) || entry.ExpiresAtUtc <= now;
+                    if (isFree)
+                    {
+                        string token = Guid.NewGuid().ToString("N");
+                        var expiresAt = now.Add(leaseDuration);
+
+                        entry.LockToken = token;
+                        entry.ExpiresAtUtc = expiresAt;
+
+                        return new ConcurrencyLockHandle(this, key, token, expiresAt);
+                    }
+                }
+                finally
+                {
+                    entry.Gate.Release();
+                }
+            }
+
+            if (DateTime.UtcNow >= deadline)
+            {
                 return null;
             }
 
-            string token = Guid.NewGuid().ToString("N");
-            var expiresAt = now.Add(leaseDuration);
-
-            entry.LockToken = token;
-            entry.ExpiresAtUtc = expiresAt;
-
-            return new ConcurrencyLockHandle(this, key, token, expiresAt);
+            try
+            {
+                var delay = Math.Min(25, (int)(deadline - DateTime.UtcNow).TotalMilliseconds);
+                if (delay > 0)
+                {
+                    await Task.Delay(delay, ct);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
         }
-        catch
-        {
-            entry.Semaphore.Release();
-            throw;
-        }
+
+        return null;
     }
 
-    public Task<bool> ReleaseLockAsync(
+    public async Task<bool> ReleaseLockAsync(
         string resourceKey,
         string lockToken,
         CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(resourceKey) || string.IsNullOrWhiteSpace(lockToken))
-            return Task.FromResult(false);
+            return false;
 
         string key = resourceKey.Trim();
 
         if (_locks.TryGetValue(key, out var entry))
         {
-            if (entry.LockToken == lockToken)
+            await entry.Gate.WaitAsync(ct);
+            try
             {
-                entry.LockToken = string.Empty;
-                entry.ExpiresAtUtc = DateTime.MinValue;
-                try
+                if (entry.LockToken == lockToken)
                 {
-                    entry.Semaphore.Release();
+                    entry.LockToken = string.Empty;
+                    entry.ExpiresAtUtc = DateTime.MinValue;
+                    return true;
                 }
-                catch (SemaphoreFullException)
-                {
-                    // Already released
-                }
-                return Task.FromResult(true);
+            }
+            finally
+            {
+                entry.Gate.Release();
             }
         }
 
-        return Task.FromResult(false);
+        return false;
     }
 
-    public Task<bool> IsLockedAsync(string resourceKey, CancellationToken ct = default)
+    public async Task<bool> IsLockedAsync(string resourceKey, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(resourceKey))
-            return Task.FromResult(false);
+            return false;
 
         string key = resourceKey.Trim();
 
         if (_locks.TryGetValue(key, out var entry))
         {
-            bool locked = !string.IsNullOrEmpty(entry.LockToken) && entry.ExpiresAtUtc > DateTime.UtcNow;
-            return Task.FromResult(locked);
+            await entry.Gate.WaitAsync(ct);
+            try
+            {
+                return !string.IsNullOrEmpty(entry.LockToken) && entry.ExpiresAtUtc > DateTime.UtcNow;
+            }
+            finally
+            {
+                entry.Gate.Release();
+            }
         }
 
-        return Task.FromResult(false);
+        return false;
     }
 }
