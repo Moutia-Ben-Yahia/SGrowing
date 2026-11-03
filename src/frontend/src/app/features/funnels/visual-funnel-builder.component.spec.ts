@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+import '@angular/compiler';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { VisualFunnelBuilderComponent } from './visual-funnel-builder.component';
 import { TranslationService } from '../../core/services/translation.service';

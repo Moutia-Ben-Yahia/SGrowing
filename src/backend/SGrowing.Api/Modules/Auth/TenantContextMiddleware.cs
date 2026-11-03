@@ -15,17 +15,18 @@ public class TenantContextMiddleware
 
     public async Task InvokeAsync(HttpContext context, ITenantContext tenantContext)
     {
-        // 1. Try to extract from Authenticated User Claims (Bearer JWT)
+        // 1. Authoritative resolution: Authenticated User Claims (Bearer JWT)
         if (context.User.Identity?.IsAuthenticated == true)
         {
-            var tenantClaim = context.User.FindFirst("tenant_id")?.Value;
+            var tenantClaim = context.User.FindFirst("tenant_id")?.Value
+                              ?? context.User.FindFirst("TenantId")?.Value;
             if (!string.IsNullOrWhiteSpace(tenantClaim) && Guid.TryParse(tenantClaim, out var claimTenantId))
             {
                 tenantContext.SetTenant(claimTenantId);
             }
         }
 
-        // 2. Fallback to X-Tenant-Id header if not set yet (for service accounts, public webhooks, API keys)
+        // 2. Fallback for unauthenticated service hooks or public widgets (forms, webhooks, tracking)
         if (!tenantContext.HasTenant && context.Request.Headers.TryGetValue("X-Tenant-Id", out var headerVal))
         {
             if (Guid.TryParse(headerVal.FirstOrDefault(), out var headerTenantId))

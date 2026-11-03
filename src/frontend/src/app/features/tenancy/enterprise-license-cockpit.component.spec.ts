@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { EnterpriseLicenseCockpitComponent } from './enterprise-license-cockpit.component';
 
 describe('EnterpriseLicenseCockpitComponent', () => {
   let component: EnterpriseLicenseCockpitComponent;
-  let fixture: ComponentFixture<EnterpriseLicenseCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [EnterpriseLicenseCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(EnterpriseLicenseCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new EnterpriseLicenseCockpitComponent();
   });
 
   it('should initialize active air-gapped license details', () => {

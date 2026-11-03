@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { WebRtcSdrCockpitComponent } from './webrtc-sdr-cockpit.component';
 
 describe('WebRtcSdrCockpitComponent', () => {
   let component: WebRtcSdrCockpitComponent;
-  let fixture: ComponentFixture<WebRtcSdrCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [WebRtcSdrCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(WebRtcSdrCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new WebRtcSdrCockpitComponent();
   });
 
   it('should initialize in Idle state', () => {

@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { AffiliateLoyaltyCockpitComponent } from './affiliate-loyalty-cockpit.component';
 
 describe('AffiliateLoyaltyCockpitComponent', () => {
   let component: AffiliateLoyaltyCockpitComponent;
-  let fixture: ComponentFixture<AffiliateLoyaltyCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [AffiliateLoyaltyCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(AffiliateLoyaltyCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new AffiliateLoyaltyCockpitComponent();
   });
 
   it('should initialize with active affiliate partners and calculated commission totals', () => {

@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ProgrammaticSeoCockpitComponent } from './programmatic-seo-cockpit.component';
 
 describe('ProgrammaticSeoCockpitComponent', () => {
   let component: ProgrammaticSeoCockpitComponent;
-  let fixture: ComponentFixture<ProgrammaticSeoCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [ProgrammaticSeoCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(ProgrammaticSeoCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new ProgrammaticSeoCockpitComponent();
   });
 
   it('should initialize with landing pages and backlink opportunities', () => {

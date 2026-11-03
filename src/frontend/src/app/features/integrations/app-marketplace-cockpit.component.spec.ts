@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { AppMarketplaceCockpitComponent } from './app-marketplace-cockpit.component';
 
 describe('AppMarketplaceCockpitComponent', () => {
   let component: AppMarketplaceCockpitComponent;
-  let fixture: ComponentFixture<AppMarketplaceCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [AppMarketplaceCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(AppMarketplaceCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new AppMarketplaceCockpitComponent();
   });
 
   it('should create and initialize catalog', () => {

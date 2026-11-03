@@ -3,36 +3,80 @@ using Microsoft.EntityFrameworkCore;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.CRM;
 using SGrowing.Core.Entities;
+using SGrowing.Core.Tenancy;
 
 namespace SGrowing.Api.Modules.CRM;
+
+public record CreateWorkspaceDto(Guid TenantId, string Name, string? Slug);
 
 public static class CrmEndpoints
 {
     public static IEndpointRouteBuilder MapCrmEndpoints(this IEndpointRouteBuilder app)
     {
-        // Contacts
-        app.MapPost("/api/crm/contacts", async ([FromBody] CreateContactRequest req, CreateContactHandler handler) =>
+        // Workspaces (PRD Section 4.1 Operational Boundary)
+        app.MapGet("/api/crm/workspaces", async ([FromQuery] Guid tenantId, ITenantContext tenantContext, SGrowingDbContext db) =>
         {
+            var tid = tenantContext.HasTenant ? tenantContext.TenantId : tenantId;
+            var workspaces = await db.Workspaces.Where(w => w.TenantId == tid).OrderBy(w => w.Name).ToListAsync();
+            return Results.Ok(workspaces);
+        });
+
+        app.MapPost("/api/crm/workspaces", async ([FromQuery] Guid tenantId, [FromBody] CreateWorkspaceDto req, ITenantContext tenantContext, SGrowingDbContext db) =>
+        {
+            var tid = tenantContext.HasTenant ? tenantContext.TenantId : (req.TenantId != Guid.Empty ? req.TenantId : tenantId);
+            if (tid == Guid.Empty) return Results.BadRequest(new { error = "TenantId is required." });
+            if (string.IsNullOrWhiteSpace(req.Name)) return Results.BadRequest(new { error = "Workspace name is required." });
+
+            var slug = string.IsNullOrWhiteSpace(req.Slug)
+                ? req.Name.Trim().ToLowerInvariant().Replace(" ", "-")
+                : req.Slug.Trim().ToLowerInvariant();
+
+            var workspace = new Workspace
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tid,
+                Name = req.Name.Trim(),
+                Slug = slug,
+                Status = "Active",
+                CreatedAtUtc = DateTime.UtcNow,
+                IsActive = true
+            };
+
+            db.Workspaces.Add(workspace);
+            await db.SaveChangesAsync();
+            return Results.Ok(workspace);
+        });
+
+        // Contacts
+        app.MapPost("/api/crm/contacts", async ([FromBody] CreateContactRequest req, ITenantContext tenantContext, CreateContactHandler handler) =>
+        {
+            if (req.TenantId == Guid.Empty && tenantContext.HasTenant)
+            {
+                req = req with { TenantId = tenantContext.TenantId };
+            }
             var res = await handler.HandleAsync(req);
             return res.IsSuccess ? Results.Ok(res.Value) : Results.BadRequest(new { error = res.Error });
         });
 
-        app.MapGet("/api/crm/contacts/{id:guid}", async (Guid id, [FromQuery] Guid tenantId, GetContactHandler handler) =>
+        app.MapGet("/api/crm/contacts/{id:guid}", async (Guid id, [FromQuery] Guid tenantId, ITenantContext tenantContext, GetContactHandler handler) =>
         {
-            var res = await handler.HandleAsync(tenantId, id);
+            var tid = tenantContext.HasTenant ? tenantContext.TenantId : tenantId;
+            var res = await handler.HandleAsync(tid, id);
             return res.IsSuccess ? Results.Ok(res.Value) : Results.NotFound(new { error = res.Error });
         });
 
-        app.MapGet("/api/crm/contacts", async ([FromQuery] Guid tenantId, [FromQuery] string? query, SearchContactsHandler handler) =>
+        app.MapGet("/api/crm/contacts", async ([FromQuery] Guid tenantId, [FromQuery] string? query, ITenantContext tenantContext, SearchContactsHandler handler) =>
         {
-            var res = await handler.HandleAsync(new SearchContactsQuery(tenantId, query ?? ""));
+            var tid = tenantContext.HasTenant ? tenantContext.TenantId : tenantId;
+            var res = await handler.HandleAsync(new SearchContactsQuery(tid, query ?? ""));
             return res.IsSuccess ? Results.Ok(res.Value) : Results.BadRequest(new { error = res.Error });
         });
 
         // Deals / Pipeline
-        app.MapGet("/api/crm/deals", async ([FromQuery] Guid tenantId, SGrowingDbContext db) =>
+        app.MapGet("/api/crm/deals", async ([FromQuery] Guid tenantId, ITenantContext tenantContext, SGrowingDbContext db) =>
         {
-            var deals = await db.Deals.Where(d => d.TenantId == tenantId).OrderByDescending(d => d.CreatedAtUtc).ToListAsync();
+            var tid = tenantContext.HasTenant ? tenantContext.TenantId : tenantId;
+            var deals = await db.Deals.Where(d => d.TenantId == tid).OrderByDescending(d => d.CreatedAtUtc).ToListAsync();
             return Results.Ok(deals);
         });
 
@@ -50,21 +94,24 @@ public static class CrmEndpoints
         });
 
         // B2B CRM Accounts & Companies
-        app.MapGet("/api/crm/companies", async ([FromQuery] Guid tenantId, SGrowingDbContext db) =>
+        app.MapGet("/api/crm/companies", async ([FromQuery] Guid tenantId, ITenantContext tenantContext, SGrowingDbContext db) =>
         {
-            var companies = await db.Companies.Where(c => c.TenantId == tenantId).ToListAsync();
+            var tid = tenantContext.HasTenant ? tenantContext.TenantId : tenantId;
+            var companies = await db.Companies.Where(c => c.TenantId == tid).ToListAsync();
             return Results.Ok(companies);
         });
 
-        app.MapPost("/api/crm/companies", async ([FromQuery] Guid tenantId, [FromBody] CreateCompanyDto req, CompanyAccountService companyService) =>
+        app.MapPost("/api/crm/companies", async ([FromQuery] Guid tenantId, [FromBody] CreateCompanyDto req, ITenantContext tenantContext, CompanyAccountService companyService) =>
         {
-            var company = await companyService.CreateCompanyAsync(tenantId, req.Name, req.Domain, req.Industry, req.Revenue, req.ParentCompanyId);
+            var tid = tenantContext.HasTenant ? tenantContext.TenantId : tenantId;
+            var company = await companyService.CreateCompanyAsync(tid, req.Name, req.Domain, req.Industry, req.Revenue, req.ParentCompanyId);
             return Results.Ok(company);
         });
 
-        app.MapPost("/api/crm/companies/associate", async ([FromQuery] Guid tenantId, [FromBody] AssociateCompanyDto req, CompanyAccountService companyService) =>
+        app.MapPost("/api/crm/companies/associate", async ([FromQuery] Guid tenantId, [FromBody] AssociateCompanyDto req, ITenantContext tenantContext, CompanyAccountService companyService) =>
         {
-            var company = await companyService.AssociateContactByDomainAsync(tenantId, req.ContactId, req.ContactEmail);
+            var tid = tenantContext.HasTenant ? tenantContext.TenantId : tenantId;
+            var company = await companyService.AssociateContactByDomainAsync(tid, req.ContactId, req.ContactEmail);
             return company != null ? Results.Ok(company) : Results.NotFound(new { error = "No company found matching contact email domain." });
         });
 

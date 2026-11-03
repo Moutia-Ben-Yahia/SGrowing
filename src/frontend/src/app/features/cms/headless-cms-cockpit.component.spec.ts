@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { HeadlessCmsCockpitComponent } from './headless-cms-cockpit.component';
 
 describe('HeadlessCmsCockpitComponent', () => {
   let component: HeadlessCmsCockpitComponent;
-  let fixture: ComponentFixture<HeadlessCmsCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [HeadlessCmsCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(HeadlessCmsCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new HeadlessCmsCockpitComponent();
   });
 
   it('should initialize with published articles and average voice score', () => {

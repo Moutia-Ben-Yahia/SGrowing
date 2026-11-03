@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+import '@angular/compiler';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { B2BProposalCpqCockpitComponent } from './b2b-proposal-cpq-cockpit.component';
 import { TranslationService } from '../../core/services/translation.service';

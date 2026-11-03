@@ -1,19 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { AdSpendAutopilotCockpitComponent } from './ad-spend-autopilot-cockpit.component';
 
 describe('AdSpendAutopilotCockpitComponent', () => {
   let component: AdSpendAutopilotCockpitComponent;
-  let fixture: ComponentFixture<AdSpendAutopilotCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [AdSpendAutopilotCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(AdSpendAutopilotCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new AdSpendAutopilotCockpitComponent();
   });
 
   it('should create component and render initial managed campaigns', () => {

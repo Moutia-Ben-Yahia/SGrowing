@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { CollaborationAuditCockpitComponent } from './collaboration-audit-cockpit.component';
 
 describe('CollaborationAuditCockpitComponent', () => {
   let component: CollaborationAuditCockpitComponent;
-  let fixture: ComponentFixture<CollaborationAuditCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [CollaborationAuditCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(CollaborationAuditCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new CollaborationAuditCockpitComponent();
   });
 
   it('should initialize with active collaborators and computed critical logs count', () => {

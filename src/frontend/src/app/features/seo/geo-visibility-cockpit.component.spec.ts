@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { GeoVisibilityCockpitComponent } from './geo-visibility-cockpit.component';
 
 describe('GeoVisibilityCockpitComponent', () => {
   let component: GeoVisibilityCockpitComponent;
-  let fixture: ComponentFixture<GeoVisibilityCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [GeoVisibilityCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(GeoVisibilityCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new GeoVisibilityCockpitComponent();
   });
 
   it('should initialize GEO/AEO visibility metrics', () => {

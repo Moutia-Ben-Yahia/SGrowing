@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { AbmTerritoryCockpitComponent } from './abm-territory-cockpit.component';
 
 describe('AbmTerritoryCockpitComponent', () => {
   let component: AbmTerritoryCockpitComponent;
-  let fixture: ComponentFixture<AbmTerritoryCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [AbmTerritoryCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(AbmTerritoryCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new AbmTerritoryCockpitComponent();
   });
 
   it('should initialize with target accounts and calculated average surge index', () => {

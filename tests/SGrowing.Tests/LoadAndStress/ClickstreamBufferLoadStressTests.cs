@@ -18,7 +18,7 @@ public class ClickstreamBufferLoadStressTests
             .UseInMemoryDatabase(dbName)
             .Options;
         var tenantContext = new TenantContext();
-        tenantContext.SetTenant(Guid.NewGuid());
+        // tenantContext.SetTenant(Guid.NewGuid());
         return new SGrowingDbContext(options, tenantContext);
     }
 

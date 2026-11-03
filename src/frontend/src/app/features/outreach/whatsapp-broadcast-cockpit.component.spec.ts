@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { WhatsAppBroadcastCockpitComponent } from './whatsapp-broadcast-cockpit.component';
 
 describe('WhatsAppBroadcastCockpitComponent', () => {
   let component: WhatsAppBroadcastCockpitComponent;
-  let fixture: ComponentFixture<WhatsAppBroadcastCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [WhatsAppBroadcastCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(WhatsAppBroadcastCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new WhatsAppBroadcastCockpitComponent();
   });
 
   it('should initialize with approved templates and draft campaign', () => {

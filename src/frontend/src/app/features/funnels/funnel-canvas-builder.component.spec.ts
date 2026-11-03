@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { FunnelCanvasBuilderComponent } from './funnel-canvas-builder.component';
 
 describe('FunnelCanvasBuilderComponent', () => {
   let component: FunnelCanvasBuilderComponent;
-  let fixture: ComponentFixture<FunnelCanvasBuilderComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [FunnelCanvasBuilderComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(FunnelCanvasBuilderComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new FunnelCanvasBuilderComponent();
   });
 
   it('should initialize with default canvas elements and desktop viewport', () => {

@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { AppGeneratorCockpitComponent } from './app-generator-cockpit.component';
 
 describe('AppGeneratorCockpitComponent', () => {
   let component: AppGeneratorCockpitComponent;
-  let fixture: ComponentFixture<AppGeneratorCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [AppGeneratorCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(AppGeneratorCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new AppGeneratorCockpitComponent();
   });
 
   it('should initialize with 1 generated app and default records', () => {

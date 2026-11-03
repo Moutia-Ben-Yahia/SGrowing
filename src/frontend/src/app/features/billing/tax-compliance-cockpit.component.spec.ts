@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { TaxComplianceCockpitComponent } from './tax-compliance-cockpit.component';
 
 describe('TaxComplianceCockpitComponent', () => {
   let component: TaxComplianceCockpitComponent;
-  let fixture: ComponentFixture<TaxComplianceCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [TaxComplianceCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(TaxComplianceCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new TaxComplianceCockpitComponent();
   });
 
   it('should initialize with live FX rates and economic nexus jurisdictions', () => {

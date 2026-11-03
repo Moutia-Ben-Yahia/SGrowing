@@ -1,19 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ChurnRescueCockpitComponent } from './churn-rescue-cockpit.component';
 
 describe('ChurnRescueCockpitComponent', () => {
   let component: ChurnRescueCockpitComponent;
-  let fixture: ComponentFixture<ChurnRescueCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [ChurnRescueCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(ChurnRescueCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new ChurnRescueCockpitComponent();
   });
 
   it('should create component and render initial churn risk radar', () => {

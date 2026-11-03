@@ -17,9 +17,9 @@ public static class AdsSyncEndpoints
     {
         var group = endpoints.MapGroup("/api/v1/advertising").WithTags("Advertising Campaign & CAPI Sync");
 
-        group.MapPost("/conversions/capi-upload", (CapiUploadRequest request, IAdsSyncEngine engine) =>
+        group.MapPost("/conversions/capi-upload", async (CapiUploadRequest request, IAdsSyncEngine engine) =>
         {
-            var result = engine.UploadConversions(request);
+            var result = await engine.UploadConversionsAsync(request);
             return Results.Ok(result);
         }).WithName("UploadCapiConversions");
 

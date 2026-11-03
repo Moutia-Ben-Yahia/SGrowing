@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { SemanticRagCockpitComponent } from './semantic-rag-cockpit.component';
 
 describe('SemanticRagCockpitComponent', () => {
   let component: SemanticRagCockpitComponent;
-  let fixture: ComponentFixture<SemanticRagCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [SemanticRagCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(SemanticRagCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new SemanticRagCockpitComponent();
   });
 
   it('should initialize with vector metrics and default grounded answer', () => {

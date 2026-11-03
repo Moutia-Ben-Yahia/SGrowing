@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { WebhookMeshCockpitComponent } from './webhook-mesh-cockpit.component';
 
 describe('WebhookMeshCockpitComponent', () => {
   let component: WebhookMeshCockpitComponent;
-  let fixture: ComponentFixture<WebhookMeshCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [WebhookMeshCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(WebhookMeshCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new WebhookMeshCockpitComponent();
   });
 
   it('should initialize with endpoints, delivery logs, and computed DLQ count', () => {

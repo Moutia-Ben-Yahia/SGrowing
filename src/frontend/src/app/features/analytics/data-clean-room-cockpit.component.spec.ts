@@ -1,19 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { DataCleanRoomCockpitComponent } from './data-clean-room-cockpit.component';
 
 describe('DataCleanRoomCockpitComponent', () => {
   let component: DataCleanRoomCockpitComponent;
-  let fixture: ComponentFixture<DataCleanRoomCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [DataCleanRoomCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(DataCleanRoomCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new DataCleanRoomCockpitComponent();
   });
 
   it('should create component and render initial participants and datasets', () => {

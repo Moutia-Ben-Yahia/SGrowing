@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { KnowledgeGraphCockpitComponent } from './knowledge-graph-cockpit.component';
 
 describe('KnowledgeGraphCockpitComponent', () => {
   let component: KnowledgeGraphCockpitComponent;
-  let fixture: ComponentFixture<KnowledgeGraphCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [KnowledgeGraphCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(KnowledgeGraphCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new KnowledgeGraphCockpitComponent();
   });
 
   it('should initialize with default knowledge entities and computed average confidence', () => {

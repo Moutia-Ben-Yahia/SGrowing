@@ -1,3 +1,4 @@
+import '@angular/compiler';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { MultiTouchAttributionCockpitComponent } from './multi-touch-attribution-cockpit.component';
 import { TranslationService } from '../../core/services/translation.service';

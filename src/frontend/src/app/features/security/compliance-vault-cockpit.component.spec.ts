@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ComplianceVaultCockpitComponent } from './compliance-vault-cockpit.component';
 
 describe('ComplianceVaultCockpitComponent', () => {
   let component: ComplianceVaultCockpitComponent;
-  let fixture: ComponentFixture<ComplianceVaultCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [ComplianceVaultCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(ComplianceVaultCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new ComplianceVaultCockpitComponent();
   });
 
   it('should initialize with audit leaves, root hash, and residency boundaries', () => {

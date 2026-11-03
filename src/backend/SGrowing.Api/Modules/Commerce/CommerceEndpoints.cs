@@ -90,9 +90,13 @@ public static class CommerceEndpoints
         });
 
         // Payment & Store Webhooks
-        app.MapPost("/api/webhooks/stripe", async ([FromQuery] Guid tenantId, [FromBody] JsonElement payload, StripePaymentWebhookHandler stripeHandler) =>
+        app.MapPost("/api/webhooks/stripe", async (
+            [FromQuery] Guid tenantId,
+            [FromHeader(Name = "Stripe-Signature")] string? stripeSignature,
+            [FromBody] JsonElement payload,
+            StripePaymentWebhookHandler stripeHandler) =>
         {
-            var result = await stripeHandler.ProcessStripeEventAsync(tenantId, payload.ToString());
+            var result = await stripeHandler.ProcessStripeEventAsync(tenantId, payload.ToString(), stripeSignature);
             return Results.Ok(result);
         });
 

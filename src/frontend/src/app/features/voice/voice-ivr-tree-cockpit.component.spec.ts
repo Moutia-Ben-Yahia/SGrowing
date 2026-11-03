@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { VoiceIvrTreeCockpitComponent } from './voice-ivr-tree-cockpit.component';
 
 describe('VoiceIvrTreeCockpitComponent', () => {
   let component: VoiceIvrTreeCockpitComponent;
-  let fixture: ComponentFixture<VoiceIvrTreeCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [VoiceIvrTreeCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(VoiceIvrTreeCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new VoiceIvrTreeCockpitComponent();
   });
 
   it('should initialize with 4 IVR nodes and default campaigns', () => {

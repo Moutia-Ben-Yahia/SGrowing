@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { FraudFirewallCockpitComponent } from './fraud-firewall-cockpit.component';
 
 describe('FraudFirewallCockpitComponent', () => {
   let component: FraudFirewallCockpitComponent;
-  let fixture: ComponentFixture<FraudFirewallCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [FraudFirewallCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(FraudFirewallCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new FraudFirewallCockpitComponent();
   });
 
   it('should initialize with rules and default evaluations', () => {

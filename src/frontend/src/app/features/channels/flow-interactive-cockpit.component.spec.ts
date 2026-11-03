@@ -1,19 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { FlowInteractiveCockpitComponent } from './flow-interactive-cockpit.component';
 
 describe('FlowInteractiveCockpitComponent', () => {
   let component: FlowInteractiveCockpitComponent;
-  let fixture: ComponentFixture<FlowInteractiveCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [FlowInteractiveCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(FlowInteractiveCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new FlowInteractiveCockpitComponent();
   });
 
   it('should create component and render initial flow screens', () => {

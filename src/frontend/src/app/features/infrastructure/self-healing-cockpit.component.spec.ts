@@ -1,19 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SelfHealingMeshCockpitComponent } from './self-healing-cockpit.component';
 
 describe('SelfHealingMeshCockpitComponent', () => {
   let component: SelfHealingMeshCockpitComponent;
-  let fixture: ComponentFixture<SelfHealingMeshCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [SelfHealingMeshCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(SelfHealingMeshCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new SelfHealingMeshCockpitComponent();
   });
 
   it('should create component and render active health probes', () => {

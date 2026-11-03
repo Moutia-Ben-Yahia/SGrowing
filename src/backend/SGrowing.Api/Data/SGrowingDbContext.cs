@@ -8,6 +8,8 @@ public class SGrowingDbContext : DbContext
 {
     private readonly ITenantContext? _tenantContext;
 
+    public Guid? CurrentTenantId => (_tenantContext != null && _tenantContext.HasTenant) ? _tenantContext.TenantId : null;
+
     public SGrowingDbContext(DbContextOptions<SGrowingDbContext> options, ITenantContext? tenantContext = null)
         : base(options)
     {
@@ -15,6 +17,7 @@ public class SGrowingDbContext : DbContext
     }
 
     public DbSet<Tenant> Tenants => Set<Tenant>();
+    public DbSet<Workspace> Workspaces => Set<Workspace>();
     public DbSet<User> Users => Set<User>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
     public DbSet<Contact> Contacts => Set<Contact>();
@@ -378,6 +381,23 @@ public class SGrowingDbContext : DbContext
             b.Property(t => t.Slug).IsRequired().HasMaxLength(100);
             b.HasIndex(t => t.Slug).IsUnique();
         });
+
+        modelBuilder.Entity<Workspace>(b =>
+        {
+            b.HasKey(w => w.Id);
+            b.Property(w => w.Name).IsRequired().HasMaxLength(200);
+            b.Property(w => w.Slug).IsRequired().HasMaxLength(100);
+            b.HasIndex(w => new { w.TenantId, w.Slug }).IsUnique();
+        });
+
+        // Multi-Tenant Isolation Global Query Filters (PRD Section 4.2)
+        modelBuilder.Entity<Workspace>().HasQueryFilter(w => !CurrentTenantId.HasValue || w.TenantId == CurrentTenantId.GetValueOrDefault());
+        modelBuilder.Entity<Contact>().HasQueryFilter(c => !CurrentTenantId.HasValue || c.TenantId == CurrentTenantId.GetValueOrDefault());
+        modelBuilder.Entity<Company>().HasQueryFilter(c => !CurrentTenantId.HasValue || c.TenantId == CurrentTenantId.GetValueOrDefault());
+        modelBuilder.Entity<Deal>().HasQueryFilter(d => !CurrentTenantId.HasValue || d.TenantId == CurrentTenantId.GetValueOrDefault());
+        modelBuilder.Entity<Activity>().HasQueryFilter(a => !CurrentTenantId.HasValue || a.TenantId == CurrentTenantId.GetValueOrDefault());
+        modelBuilder.Entity<Conversation>().HasQueryFilter(c => !CurrentTenantId.HasValue || c.TenantId == CurrentTenantId.GetValueOrDefault());
+        modelBuilder.Entity<Message>().HasQueryFilter(m => !CurrentTenantId.HasValue || m.TenantId == CurrentTenantId.GetValueOrDefault());
 
         modelBuilder.Entity<User>(b =>
         {

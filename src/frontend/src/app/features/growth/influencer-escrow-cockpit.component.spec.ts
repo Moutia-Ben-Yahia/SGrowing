@@ -1,19 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { InfluencerEscrowCockpitComponent } from './influencer-escrow-cockpit.component';
 
 describe('InfluencerEscrowCockpitComponent', () => {
   let component: InfluencerEscrowCockpitComponent;
-  let fixture: ComponentFixture<InfluencerEscrowCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [InfluencerEscrowCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(InfluencerEscrowCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new InfluencerEscrowCockpitComponent();
   });
 
   it('should create component and render initial escrow contracts', () => {

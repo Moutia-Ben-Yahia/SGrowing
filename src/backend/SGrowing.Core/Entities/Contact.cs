@@ -14,6 +14,7 @@ public class Contact
 {
     public Guid Id { get; private set; }
     public Guid TenantId { get; private set; }
+    public Guid? WorkspaceId { get; set; }
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     [System.ComponentModel.DataAnnotations.Schema.NotMapped]

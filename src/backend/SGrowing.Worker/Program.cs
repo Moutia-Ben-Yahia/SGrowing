@@ -9,6 +9,7 @@ using SGrowing.Core.Messaging;
 using SGrowing.Core.Diagnostics;
 using SGrowing.Api.Modules.Diagnostics;
 using SGrowing.Worker.Services;
+using SGrowing.Worker.Services.Dispatchers;
 using SGrowing.Worker.BackgroundJobs;
 using StackExchange.Redis;
 
@@ -56,6 +57,11 @@ builder.Services.AddSingleton<SGrowing.Core.Common.IConcurrencyLockService, SGro
 // Daemon Heartbeat & Watchdog
 builder.Services.AddSingleton<IDaemonHeartbeatService, DaemonHeartbeatService>();
 builder.Services.AddHostedService<DaemonWatchdogService>();
+
+// Outbound Dispatchers
+builder.Services.AddHttpClient<ISmtpEmailDispatcher, SmtpEmailDispatcher>();
+builder.Services.AddHttpClient<ITwilioSmsDispatcher, TwilioSmsDispatcher>();
+builder.Services.AddHttpClient<IMetaWhatsAppDispatcher, MetaWhatsAppDispatcher>();
 
 // Hosted background daemons
 builder.Services.AddScoped<IMcpServerRegistryService, McpServerRegistryService>();

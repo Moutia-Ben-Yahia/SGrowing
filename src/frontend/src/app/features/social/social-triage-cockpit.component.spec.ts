@@ -1,19 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SocialTriageCockpitComponent } from './social-triage-cockpit.component';
 
 describe('SocialTriageCockpitComponent', () => {
   let component: SocialTriageCockpitComponent;
-  let fixture: ComponentFixture<SocialTriageCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [SocialTriageCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(SocialTriageCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new SocialTriageCockpitComponent();
   });
 
   it('should create component and render initial social triage queue', () => {

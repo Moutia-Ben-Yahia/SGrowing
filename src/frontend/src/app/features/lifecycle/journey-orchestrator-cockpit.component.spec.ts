@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { JourneyOrchestratorCockpitComponent } from './journey-orchestrator-cockpit.component';
 
 describe('JourneyOrchestratorCockpitComponent', () => {
   let component: JourneyOrchestratorCockpitComponent;
-  let fixture: ComponentFixture<JourneyOrchestratorCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [JourneyOrchestratorCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(JourneyOrchestratorCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new JourneyOrchestratorCockpitComponent();
   });
 
   it('should initialize with active lifecycle journey and stages', () => {

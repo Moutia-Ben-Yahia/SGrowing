@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { LiveCallCopilotCockpitComponent } from './live-call-copilot-cockpit.component';
 
 describe('LiveCallCopilotCockpitComponent', () => {
   let component: LiveCallCopilotCockpitComponent;
-  let fixture: ComponentFixture<LiveCallCopilotCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [LiveCallCopilotCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(LiveCallCopilotCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new LiveCallCopilotCockpitComponent();
   });
 
   it('should initialize with diarized utterances and calculate average sentiment', () => {

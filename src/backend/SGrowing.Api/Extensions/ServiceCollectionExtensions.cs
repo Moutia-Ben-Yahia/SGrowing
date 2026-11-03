@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SGrowing.Api.Common;
+using SGrowing.Api.Modules.AI.Gateway;
 using SGrowing.Api.Modules.Attribution.MultiTouch;
 using SGrowing.Api.Modules.AI.Governance;
 using SGrowing.Api.Modules.Marketing.SocialPublishing;
@@ -730,6 +731,17 @@ public static class ServiceCollectionExtensions
         services.AddAiGovernanceServices();
         services.AddSingleton<ICryptographicPromptCanaryService, CryptographicPromptCanaryService>();
         services.AddSingleton<ISemanticVectorToolCacheService, SemanticVectorToolCacheService>();
+        // Real LLM Provider Gateway Clients
+        services.AddHttpClient<GoogleGeminiLlmClient>();
+        services.AddHttpClient<OpenAiLlmClient>();
+        services.AddHttpClient<AnthropicLlmClient>();
+        services.AddHttpClient<LocalLlmClient>();
+
+        services.AddTransient<ILlmProviderClient>(sp => sp.GetRequiredService<GoogleGeminiLlmClient>());
+        services.AddTransient<ILlmProviderClient>(sp => sp.GetRequiredService<OpenAiLlmClient>());
+        services.AddTransient<ILlmProviderClient>(sp => sp.GetRequiredService<AnthropicLlmClient>());
+        services.AddTransient<ILlmProviderClient>(sp => sp.GetRequiredService<LocalLlmClient>());
+
         services.AddSingleton<ICascadingModelRouterService, CascadingModelRouterService>();
         services.AddSingleton<IPiiSanitizationGatewayService, PiiSanitizationGatewayService>();
 

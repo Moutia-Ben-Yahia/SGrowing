@@ -4,6 +4,7 @@ public class Company
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid TenantId { get; set; }
+    public Guid? WorkspaceId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Domain { get; set; } = string.Empty;
     public string? Industry { get; set; }
@@ -44,6 +45,7 @@ public class WorkflowGraph
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid TenantId { get; set; }
+    public Guid? WorkspaceId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string TriggerType { get; set; } = "Event";
     public string NodesJson { get; set; } = "[]";
@@ -78,6 +80,7 @@ public class WorkflowExecution
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid TenantId { get; set; }
+    public Guid? WorkspaceId { get; set; }
     public Guid WorkflowGraphId { get; set; }
     public string Status { get; set; } = "Running";
     public int ExecutedNodesCount { get; set; }

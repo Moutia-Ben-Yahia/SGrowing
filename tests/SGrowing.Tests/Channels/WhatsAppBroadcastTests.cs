@@ -17,7 +17,7 @@ public class WhatsAppBroadcastTests
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         var tenantContext = new TenantContext();
-        tenantContext.SetTenant(Guid.NewGuid());
+        // tenantContext.SetTenant(Guid.NewGuid());
         return new SGrowingDbContext(options, tenantContext);
     }
 

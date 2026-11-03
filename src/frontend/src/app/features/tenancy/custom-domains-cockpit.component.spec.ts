@@ -1,19 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CustomDomainsCockpitComponent } from './custom-domains-cockpit.component';
 
 describe('CustomDomainsCockpitComponent', () => {
   let component: CustomDomainsCockpitComponent;
-  let fixture: ComponentFixture<CustomDomainsCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [CustomDomainsCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(CustomDomainsCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new CustomDomainsCockpitComponent();
   });
 
   it('should create component and render initial domains', () => {

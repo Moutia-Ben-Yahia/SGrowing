@@ -1,4 +1,11 @@
+using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
+using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Advertising.MetaGoogleAdsSync;
 using Xunit;
 
@@ -165,5 +172,160 @@ public class MetaGoogleAdsSyncTests
         var winnerRec = result.Recommendations.First(r => r.CampaignId == "camp-winner");
         winnerRec.AllocationAction.Should().Be("Scale");
         winnerRec.RecommendedSpend.Should().Be(500m); // Absorbed the 200m paused budget
+    }
+
+    [Fact]
+    public async Task UploadConversionsAsync_WithMetaCredentials_DispatchesRealHttpAndPersistsToDb()
+    {
+        var mockHandler = new TestHttpMessageHandler();
+        var httpClient = new HttpClient(mockHandler);
+        var factory = new TestHttpClientFactory(httpClient);
+
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Advertising:Meta:PixelId"] = "987654321",
+                ["Advertising:Meta:AccessToken"] = "meta_test_access_token_xyz"
+            })
+            .Build();
+
+        var dbOptions = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(databaseName: $"MetaCapiDb_{Guid.NewGuid()}")
+            .Options;
+        using var db = new SGrowingDbContext(dbOptions);
+
+        var engine = new AdsSyncEngine(
+            httpClientFactory: factory,
+            configuration: config,
+            dbContext: db,
+            logger: NullLogger<AdsSyncEngine>.Instance);
+
+        var request = new CapiUploadRequest(
+            TenantId: "tenant_meta_live",
+            AdAccountId: "act_test_acc",
+            Platform: "Meta",
+            Events: new List<ConversionEvent>
+            {
+                new(
+                    EventId: "evt_meta_live_001",
+                    EventName: "Purchase",
+                    EventTimeUtc: DateTime.UtcNow,
+                    Platform: "Meta",
+                    Email: "test.buyer@example.com",
+                    ConversionValue: 99.50m,
+                    Currency: "USD"
+                )
+            }
+        );
+
+        var result = await engine.UploadConversionsAsync(request);
+
+        result.Success.Should().BeTrue();
+        result.AcceptedEventsCount.Should().Be(1);
+
+        mockHandler.LastRequest.Should().NotBeNull();
+        mockHandler.LastRequest!.RequestUri!.ToString().Should().Be("https://graph.facebook.com/v21.0/987654321/events");
+        mockHandler.LastRequest.Headers.Authorization.Should().NotBeNull();
+        mockHandler.LastRequest.Headers.Authorization!.Scheme.Should().Be("Bearer");
+        mockHandler.LastRequest.Headers.Authorization!.Parameter.Should().Be("meta_test_access_token_xyz");
+        mockHandler.LastRequestBody.Should().Contain("evt_meta_live_001");
+
+        // Verify persistence in CapiConversions
+        var savedEntity = await db.CapiConversions.FirstOrDefaultAsync(c => c.EventId == "evt_meta_live_001");
+        savedEntity.Should().NotBeNull();
+        savedEntity!.TenantId.Should().Be("tenant_meta_live");
+        savedEntity.Platform.Should().Be("Meta");
+        savedEntity.ConversionValue.Should().Be(99.50m);
+        savedEntity.IsDeduplicated.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task UploadConversionsAsync_WithGoogleCredentials_DispatchesRealHttpAndPersistsToDb()
+    {
+        var mockHandler = new TestHttpMessageHandler();
+        var httpClient = new HttpClient(mockHandler);
+        var factory = new TestHttpClientFactory(httpClient);
+
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Advertising:Google:CustomerId"] = "456-789-0123",
+                ["Advertising:Google:DeveloperToken"] = "google_dev_token_456"
+            })
+            .Build();
+
+        var dbOptions = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(databaseName: $"GoogleCapiDb_{Guid.NewGuid()}")
+            .Options;
+        using var db = new SGrowingDbContext(dbOptions);
+
+        var engine = new AdsSyncEngine(
+            httpClientFactory: factory,
+            configuration: config,
+            dbContext: db,
+            logger: NullLogger<AdsSyncEngine>.Instance);
+
+        var request = new CapiUploadRequest(
+            TenantId: "tenant_google_live",
+            AdAccountId: "act_google_acc",
+            Platform: "Google",
+            Events: new List<ConversionEvent>
+            {
+                new(
+                    EventId: "evt_google_live_001",
+                    EventName: "Lead",
+                    EventTimeUtc: DateTime.UtcNow,
+                    Platform: "Google",
+                    Email: "lead@acme.com",
+                    ConversionValue: 45.00m,
+                    Currency: "USD"
+                )
+            }
+        );
+
+        var result = await engine.UploadConversionsAsync(request);
+
+        result.Success.Should().BeTrue();
+        result.AcceptedEventsCount.Should().Be(1);
+
+        mockHandler.LastRequest.Should().NotBeNull();
+        mockHandler.LastRequest!.RequestUri!.ToString().Should().Be("https://googleads.googleapis.com/v17/customers/4567890123:uploadClickConversions");
+        mockHandler.LastRequest.Headers.GetValues("developer-token").First().Should().Be("google_dev_token_456");
+        mockHandler.LastRequestBody.Should().Contain("evt_google_live_001");
+
+        // Verify persistence in CapiConversions
+        var savedEntity = await db.CapiConversions.FirstOrDefaultAsync(c => c.EventId == "evt_google_live_001");
+        savedEntity.Should().NotBeNull();
+        savedEntity!.TenantId.Should().Be("tenant_google_live");
+        savedEntity.Platform.Should().Be("Google");
+        savedEntity.ConversionValue.Should().Be(45.00m);
+        savedEntity.IsDeduplicated.Should().BeFalse();
+    }
+
+    private class TestHttpMessageHandler : HttpMessageHandler
+    {
+        public HttpRequestMessage? LastRequest { get; private set; }
+        public string? LastRequestBody { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            LastRequest = request;
+            if (request.Content != null)
+            {
+                LastRequestBody = await request.Content.ReadAsStringAsync(cancellationToken);
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"status\":\"success\"}", Encoding.UTF8, "application/json")
+            };
+        }
+    }
+
+    private class TestHttpClientFactory : IHttpClientFactory
+    {
+        private readonly HttpClient _client;
+        public TestHttpClientFactory(HttpClient client) => _client = client;
+        public HttpClient CreateClient(string name) => _client;
     }
 }

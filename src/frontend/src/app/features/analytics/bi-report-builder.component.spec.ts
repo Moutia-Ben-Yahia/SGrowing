@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { BiReportBuilderComponent } from './bi-report-builder.component';
 
 describe('BiReportBuilderComponent', () => {
   let component: BiReportBuilderComponent;
-  let fixture: ComponentFixture<BiReportBuilderComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [BiReportBuilderComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(BiReportBuilderComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new BiReportBuilderComponent();
   });
 
   it('should initialize with Monte Carlo scenario distribution and base ARR', () => {

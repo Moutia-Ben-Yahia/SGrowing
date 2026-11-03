@@ -13,6 +13,7 @@ public class Deal
 {
     public Guid Id { get; private set; }
     public Guid TenantId { get; private set; }
+    public Guid? WorkspaceId { get; set; }
     public Guid ContactId { get; private set; }
     public Guid? CompanyId { get; set; }
     public string Title { get; set; } = string.Empty;

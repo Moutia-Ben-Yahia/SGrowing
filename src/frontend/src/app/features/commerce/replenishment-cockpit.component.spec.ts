@@ -1,19 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ReplenishmentCockpitComponent } from './replenishment-cockpit.component';
 
 describe('ReplenishmentCockpitComponent', () => {
   let component: ReplenishmentCockpitComponent;
-  let fixture: ComponentFixture<ReplenishmentCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [ReplenishmentCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(ReplenishmentCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new ReplenishmentCockpitComponent();
   });
 
   it('should create component and evaluate replenishment recommendations', () => {

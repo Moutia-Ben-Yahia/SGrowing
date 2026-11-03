@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { FulfillmentMatrixCockpitComponent } from './fulfillment-matrix-cockpit.component';
 
 describe('FulfillmentMatrixCockpitComponent', () => {
   let component: FulfillmentMatrixCockpitComponent;
-  let fixture: ComponentFixture<FulfillmentMatrixCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [FulfillmentMatrixCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(FulfillmentMatrixCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new FulfillmentMatrixCockpitComponent();
   });
 
   it('should initialize with 4 regional hubs and computed stock', () => {

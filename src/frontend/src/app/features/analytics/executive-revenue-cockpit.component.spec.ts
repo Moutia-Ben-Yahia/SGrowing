@@ -1,18 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import '@angular/compiler';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ExecutiveRevenueCockpitComponent } from './executive-revenue-cockpit.component';
 
 describe('ExecutiveRevenueCockpitComponent', () => {
   let component: ExecutiveRevenueCockpitComponent;
-  let fixture: ComponentFixture<ExecutiveRevenueCockpitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [ExecutiveRevenueCockpitComponent]
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(ExecutiveRevenueCockpitComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+  beforeEach(() => {
+    component = new ExecutiveRevenueCockpitComponent();
   });
 
   it('should initialize revenue KPIs', () => {

@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using SGrowing.Api.Modules.AI.Gateway;
 
 namespace SGrowing.Api.Modules.AI.Firewall;
 
@@ -87,7 +88,8 @@ public class CascadingModelRouterService : ICascadingModelRouterService
     [
         new(Priority: 0, TierName: "Primary", Provider: "OpenAI", Model: "gpt-4o", Description: "OpenAI GPT-4o / Realtime API"),
         new(Priority: 1, TierName: "Fallback1", Provider: "Anthropic", Model: "claude-3-5-sonnet", Description: "Anthropic Claude 3.5 Sonnet"),
-        new(Priority: 2, TierName: "Fallback2", Provider: "Local", Model: "llama-3.3-70b", Description: "Local Llama 3.3 / Mistral Large")
+        new(Priority: 2, TierName: "Fallback2", Provider: "Local", Model: "llama-3.3-70b", Description: "Local Llama 3.3 / Mistral Large"),
+        new(Priority: 3, TierName: "Fallback3", Provider: "Google", Model: "gemini-2.5-flash", Description: "Google Gemini 2.5 Flash")
     ];
 
     private TimeSpan _cooldownPeriod = TimeSpan.FromSeconds(60);
@@ -107,14 +109,30 @@ public class CascadingModelRouterService : ICascadingModelRouterService
     }
 
     private readonly ConcurrentDictionary<string, ProviderCircuitState> _states = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, ILlmProviderClient> _providerClients = new(StringComparer.OrdinalIgnoreCase);
 
-    public CascadingModelRouterService(ILogger<CascadingModelRouterService>? logger = null)
+    public CascadingModelRouterService(
+        IEnumerable<ILlmProviderClient>? providerClients = null,
+        ILogger<CascadingModelRouterService>? logger = null)
     {
         _logger = logger;
+        if (providerClients != null)
+        {
+            foreach (var client in providerClients)
+            {
+                _providerClients[client.ProviderName] = client;
+            }
+        }
+
         foreach (var tier in DefaultTiers)
         {
             _states.TryAdd(tier.Provider, new ProviderCircuitState());
         }
+    }
+
+    public CascadingModelRouterService(ILogger<CascadingModelRouterService>? logger)
+        : this(null, logger)
+    {
     }
 
     public async Task<CascadingRouteExecutionResult> ExecuteAsync(
@@ -152,6 +170,26 @@ public class CascadingModelRouterService : ICascadingModelRouterService
                 {
                     response = await customInvoker(tier, ct);
                 }
+                else if (_providerClients.TryGetValue(tier.Provider, out var client))
+                {
+                    var llmRequest = new LlmCompletionRequest(
+                        Prompt: request.Prompt,
+                        SystemPrompt: request.SystemPrompt,
+                        Model: tier.Model,
+                        Temperature: request.Temperature,
+                        MaxTokens: request.MaxTokens
+                    );
+
+                    var llmResult = await client.CompleteAsync(llmRequest, ct);
+
+                    response = new ModelProviderResponse(
+                        Success: llmResult.Success,
+                        StatusCode: llmResult.StatusCode,
+                        Content: llmResult.Content,
+                        ErrorMessage: llmResult.ErrorMessage,
+                        LatencyMs: llmResult.LatencyMs
+                    );
+                }
                 else
                 {
                     // Built-in resilient simulator
@@ -159,7 +197,7 @@ public class CascadingModelRouterService : ICascadingModelRouterService
                 }
 
                 tierSw.Stop();
-                var latencyMs = (int)tierSw.ElapsedMilliseconds;
+                var latencyMs = response.LatencyMs > 0 ? response.LatencyMs : (int)tierSw.ElapsedMilliseconds;
 
                 // Rule 1: HTTP 429 Rate Limit triggers circuit breaker
                 if (response.StatusCode == 429)
