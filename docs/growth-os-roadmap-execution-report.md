@@ -771,6 +771,23 @@ graph TD
   - Low-latency (<25ms) serverless Wasm micro-execution for real-time header rewriting, bot filtering, and geo-steering.
   - Verification: 3 backend tests in `EdgeWasmMeshTests.cs`, 2 Vitest tests, and Playwright E2E verification.
 
+### Horizon Wave 29: Horizons 141 to 145 Enterprise Capabilities
+- **Horizon 141: Autonomous B2B Account Stakeholder Buying Committee Influence Graph & Sentiment Journey Mesh (`Domain B25 & J22`)**
+  - Multi-stakeholder directed influence graph with weighted consensus scoring and automated blocker intervention playbooks.
+  - Verification: 3 backend tests in `BuyingCommitteeTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 142: Autonomous Programmatic Audio Dynamic Ad Insertion (DAI) & Podcast Attribution Mesh (`Domain D26 & C22`)**
+  - Dynamic audio ad insertion with acoustic watermark stamping, frequency capping, and cross-device conversion attribution.
+  - Verification: 3 backend tests in `AudioDaiTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 143: Autonomous AI Voice Telephony Simultaneous Dual-Channel Real-Time Whisper Coach & Supervisory Takeover Mesh (`Domain E23 & F20`)**
+  - Sub-100ms real-time dual-channel audio whisper coaching to agent earpieces and hot seamless supervisory call takeover.
+  - Verification: 3 backend tests in `TelephonyWhisperTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 144: Autonomous Global Sovereign Indirect Tax Exemption Certificate & Reverse Charge VAT Clearance Ledger (`Domain H25 & G21`)**
+  - Sovereign VIES/HMRC tax registry validation, Article 196 reverse charge invoicing, and tamper-evident SHA-256 certificate proofs.
+  - Verification: 3 backend tests in `TaxExemptionTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 145: Autonomous Zero-Trust Multi-Cloud BGP Anycast BFD Fast-Failover & Edge Anycast Route Health Mesh (`Domain K24 & A27`)**
+  - Microsecond BFD link heartbeat telemetry, sub-800ms Anycast route withdrawal, and automated tier-1 carrier failover.
+  - Verification: 3 backend tests in `BgpBfdTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+
 ### Infrastructure & Benchmarking: Self-Hosted Packaging, Grafana & CI/CD
 - **Observability:**
   - Full Grafana dashboard in `deploy/grafana/growth-os-overview.json` monitoring OpenTelemetry throughput, sub-150ms voice latency, RAG latency, WhatsApp queues, and error budgets.
@@ -792,11 +809,11 @@ graph TD
 
 | Verification Gate | Result | Status |
 |---|---|---|
-| **Backend Unit & Integration Tests** | **5,523 passed / 0 failed / 0 skipped** | **100% Pass** (8.5s) |
+| **Backend Unit & Integration Tests** | **5,538 passed / 0 failed / 0 skipped** | **100% Pass** (8.5s) |
 | **Backend Compilation (`TreatWarningsAsErrors = true`)** | **0 Warnings, 0 Errors** | **100% Pass** |
-| **Frontend Vitest Unit & Component Suite** | **425 passed / 0 failed** across 134 suites | **100% Pass** (6.1s) |
-| **Playwright End-to-End Suite** | **149 passed / 0 failed** across 149 suites | **100% Pass** (1.6m) |
-| **Frontend Production Build (`ng build`)** | **0 Errors, 13.1s bundle generation, 185+ chunks** | **100% Pass** |
+| **Frontend Vitest Unit & Component Suite** | **435 passed / 0 failed** across 139 suites | **100% Pass** (6.1s) |
+| **Playwright End-to-End Suite** | **154 passed / 0 failed** across 154 suites | **100% Pass** (1.6m) |
+| **Frontend Production Build (`ng build`)** | **0 Errors, 14.1s bundle generation, 190+ chunks** | **100% Pass** |
 
 ---
 
@@ -845,3 +862,4 @@ graph TD
 - `a910f34`: `feat(growth-os): deliver Horizons 126 to 130 (Collaborative Deal Room MAP, In-Store Retail Media Signage, Multilingual S2S Speech Translation, Sovereign E-Invoicing Clearance, Kubernetes Ephemeral Pod Sandboxing)`
 - `5819b18`: `feat(growth-os): deliver Horizons 131 to 135 (Competitive Battlecards, Off-Site Retail Co-Op DSP, Telephony State Resumption, Sovereign CBAM Carbon Ledger, Zero-Trust eBPF Lateral Firewall)`
 - `9051684`: `feat(growth-os): deliver Horizons 136 to 140 (Enterprise RFP Response Engine, Synthetic Geo Incrementality, Voice Dialect Adaptation, Cap Table Equity Ledger, Multi-Cloud Edge Wasm Mesh)`
+- `7d9cfb9`: `feat(growth-os): deliver Horizons 141 to 145 (Buying Committee Influence Graph, Programmatic Audio DAI, Voice Telephony Whisper Coach, Sovereign Indirect Tax Exemption Ledger, Multi-Cloud BGP BFD Failover Mesh)`
