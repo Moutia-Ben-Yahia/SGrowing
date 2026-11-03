@@ -381,6 +381,11 @@ using SGrowing.Api.Modules.Advertising.AudioDai;
 using SGrowing.Api.Modules.Voice.TelephonyWhisper;
 using SGrowing.Api.Modules.Finance.TaxExemption;
 using SGrowing.Api.Modules.Infrastructure.BgpBfd;
+using SGrowing.Api.Modules.Sales.ContractRedline;
+using SGrowing.Api.Modules.Advertising.DoohBidding;
+using SGrowing.Api.Modules.Voice.VoiceBiometric;
+using SGrowing.Api.Modules.Finance.TaxRdCredit;
+using SGrowing.Api.Modules.Infrastructure.SpiffeSpire;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Diagnostics;
@@ -1248,6 +1253,11 @@ public static class ServiceCollectionExtensions
         services.AddTelephonyWhisperServices();
         services.AddTaxExemptionServices();
         services.AddBgpBfdServices();
+        services.AddContractRedlineServices();
+        services.AddDoohBiddingServices();
+        services.AddVoiceBiometricServices();
+        services.AddTaxRdCreditServices();
+        services.AddSpiffeSpireServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

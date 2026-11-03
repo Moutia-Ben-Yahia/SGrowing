@@ -340,5 +340,10 @@ export const routes: Routes = [
   { path: 'voice/telephony-whisper', loadComponent: () => import('./features/voice/telephony-whisper-cockpit.component').then(m => m.TelephonyWhisperCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/tax-exemption', loadComponent: () => import('./features/finance/tax-exemption-cockpit.component').then(m => m.TaxExemptionCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/bgp-bfd', loadComponent: () => import('./features/infrastructure/bgp-bfd-cockpit.component').then(m => m.BgpBfdCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/contract-redline', loadComponent: () => import('./features/sales/contract-redline-cockpit.component').then(m => m.ContractRedlineCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/dooh-bidding', loadComponent: () => import('./features/advertising/dooh-bidding-cockpit.component').then(m => m.DoohBiddingCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/voice-biometric', loadComponent: () => import('./features/voice/voice-biometric-cockpit.component').then(m => m.VoiceBiometricCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/tax-rd-credit', loadComponent: () => import('./features/finance/tax-rd-credit-cockpit.component').then(m => m.TaxRdCreditCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/spiffe-spire', loadComponent: () => import('./features/infrastructure/spiffe-spire-cockpit.component').then(m => m.SpiffeSpireCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

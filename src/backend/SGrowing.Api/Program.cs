@@ -131,6 +131,11 @@ using SGrowing.Api.Modules.Advertising.AudioDai;
 using SGrowing.Api.Modules.Voice.TelephonyWhisper;
 using SGrowing.Api.Modules.Finance.TaxExemption;
 using SGrowing.Api.Modules.Infrastructure.BgpBfd;
+using SGrowing.Api.Modules.Sales.ContractRedline;
+using SGrowing.Api.Modules.Advertising.DoohBidding;
+using SGrowing.Api.Modules.Voice.VoiceBiometric;
+using SGrowing.Api.Modules.Finance.TaxRdCredit;
+using SGrowing.Api.Modules.Infrastructure.SpiffeSpire;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -1007,6 +1012,11 @@ app.MapAudioDaiEndpoints();
 app.MapTelephonyWhisperEndpoints();
 app.MapTaxExemptionEndpoints();
 app.MapBgpBfdEndpoints();
+app.MapContractRedlineEndpoints();
+app.MapDoohBiddingEndpoints();
+app.MapVoiceBiometricEndpoints();
+app.MapTaxRdCreditEndpoints();
+app.MapSpiffeSpireEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
