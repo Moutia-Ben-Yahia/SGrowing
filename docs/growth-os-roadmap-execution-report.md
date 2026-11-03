@@ -882,7 +882,7 @@ graph TD
 - `7d9cfb9`: `feat(growth-os): deliver Horizons 141 to 145 (Buying Committee Influence Graph, Programmatic Audio DAI, Voice Telephony Whisper Coach, Sovereign Indirect Tax Exemption Ledger, Multi-Cloud BGP BFD Failover Mesh)`
 - `0d11b95`: `feat(growth-os): deliver Horizons 146 to 150 (Contract Redline Auto-Negotiator, DOOH Real-Time Bidding, Voice Biometric Deepfake Defense, Sovereign R&D Tax Credit Ledger, Multi-Cloud SPIFFE/SPIRE Identity Federation Mesh)`
 - `b7b4eb5`: `feat(growth-os): deliver Horizons 151 to 155 (Customer Advisory Board Matrix, In-Car Infotainment Ad Bidding, Voice Intent Fast-Path, OECD Pillar 2 Tax Ledger, Cilium eBPF WireGuard Transit Mesh)`
-- `Stage 32`: `feat(growth-os): deliver Horizons 156 to 160 (Customer Success QBR Deck Generator, Weather DPA Triggers, Telephony Disfluency Mesh, Sovereign Export Control Ledger, Multi-Cloud Wasm Micro-VM Arbiter)`
+- `db2c7b3`: `feat(growth-os): deliver Horizons 156 to 160 (Customer Success QBR Deck Generator, Weather DPA Triggers, Telephony Disfluency Mesh, Sovereign Export Control Ledger, Multi-Cloud Wasm Micro-VM Arbiter)`
 
 ### Horizon 156 to 160 Implementation Details
 - **Horizon 156 (Sales / Customer Success QBR Deck Generator):** Automated realized ROI telemetry attestation, executive slide compiler, peer benchmarking, and expansion ARR proposal generation (`ValueRealizationEngine.cs`, `value-realization-cockpit.component.ts`).
