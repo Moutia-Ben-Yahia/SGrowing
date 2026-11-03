@@ -171,6 +171,11 @@ using SGrowing.Api.Modules.Advertising.CrossDeviceSync;
 using SGrowing.Api.Modules.Voice.VocalTremor;
 using SGrowing.Api.Modules.Finance.GlobeTopUpTax;
 using SGrowing.Api.Modules.Infrastructure.Rocev2Fabric;
+using SGrowing.Api.Modules.Sales.QuotaCapacity;
+using SGrowing.Api.Modules.Advertising.StoreFootfallLift;
+using SGrowing.Api.Modules.Voice.DialectSynthesis;
+using SGrowing.Api.Modules.Finance.SttrTreatyTax;
+using SGrowing.Api.Modules.Infrastructure.NvmeOverFabrics;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -1087,6 +1092,11 @@ app.MapCrossDeviceSyncEndpoints();
 app.MapVocalTremorEndpoints();
 app.MapGlobeTopUpTaxEndpoints();
 app.MapRocev2FabricEndpoints();
+app.MapQuotaCapacityEndpoints();
+app.MapStoreFootfallLiftEndpoints();
+app.MapDialectSynthesisEndpoints();
+app.MapSttrTreatyTaxEndpoints();
+app.MapNvmeOverFabricsEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

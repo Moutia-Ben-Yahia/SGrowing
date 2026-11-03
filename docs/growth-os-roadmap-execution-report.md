@@ -888,17 +888,18 @@ graph TD
 - `8a66d20`: `feat(growth-os): deliver Horizons 171 to 175 (Sales SPIFF Gamification, Vehicle Audio DSP, Voice Dereverberation, Section 174 Amortization, eBGP EVPN VXLAN Overlay)`
 - `3736203`: `feat(growth-os): deliver Horizons 176 to 180 (Win-Rate Deal Autopsy, Retail Media Sponsored Brand Ads, Speech Prosody Empathy Tuning, Intercompany Multilateral Netting, SRv6 Traffic Engineering)`
 - `05dfd32`: `feat(growth-os): deliver Horizons 181 to 185 (Sales Rep Ramp Acceleration, Cross-Device CAPI Graph, Whisper Voice Tremor Stress, Pillar Two GloBE Tax, RoCEv2 RDMA Fabric)`
+- `[pending-commit]`: `feat(growth-os): deliver Horizons 186 to 190 (Sales Quota Capacity, Store Footfall Lift, Dialect Synthesis, STTR Treaty Tax, NVMe-oF Mesh)`
 
-### Horizon 181 to 185 Implementation Details
-- **Horizon 181 (Sales / Sales Rep Ramp Acceleration & Shadow-Call Co-Pilot Mesh):** Rep onboarding competency matrix, sub-second shadow call transcript analysis, discovery gap whisper interventions, and cohort ramp velocity projection (`RepRampEngine.cs`, `rep-ramp-cockpit.component.ts`).
-- **Horizon 182 (Advertising / Cross-Device Graph Sync & CAPI Offline Conversion Matcher):** Multi-identifier graph clustering (SHA-256 email/phone, GAID, IDFA, UID2), 14-day offline POS receipt attribution, and server-side CAPI event payload forwarding (`CrossDeviceSyncEngine.cs`, `cross-device-sync-cockpit.component.ts`).
-- **Horizon 183 (Voice / Whisper Voice Isolation & Micro-Vocal Cord Tremor Stress Detector):** Adaptive low-energy unvoiced speech detection, +14.5dB formant boosting, 8-14 Hz physiological micro-tremor extraction, and automated supervisor duress escalation (`VocalTremorEngine.cs`, `vocal-tremor-cockpit.component.ts`).
-- **Horizon 184 (Finance / Sovereign Pillar Two GloBE Top-Up Tax Return & Safe Harbor Ledger):** OECD GloBE 15% minimum tax calculation, Transitional CbCR Safe Harbor tests (De Minimis, Simplified ETR, Routine Profits), SBIE payroll/tangible asset carveouts, and QDMTT/IIR allocation (`GlobeTopUpTaxEngine.cs`, `globe-top-up-tax-cockpit.component.ts`).
-- **Horizon 185 (Infrastructure / Multi-Cloud High-Performance RoCEv2 / RDMA over Converged Ethernet Fabric Arbiter):** Lossless RoCEv2 fabric management, ECN congestion marking, PFC pause frame deadlock detection, automated watchdog queue draining, and DCQCN collective communication tuning (`Rocev2FabricEngine.cs`, `rocev2-fabric-cockpit.component.ts`).
+### Horizon 186 to 190 Implementation Details
+- **Horizon 186 (Sales / Sales Quota Capacity & Territory Heatmap Arbiter):** Territory TAM modeling, 3.5x pipeline coverage optimization, rep burnout risk arbitration, and whitespace redistribution (`QuotaCapacityEngine.cs`, `quota-capacity-cockpit.component.ts`).
+- **Horizon 187 (Advertising / Multi-Touch Offline Store Footfall & Geofence Polygon Lift Matrix):** WGS84 store polygon geofencing, indoor dwell-time spatial filtering (>= 7 mins), synthetic control cohort uplift, and CPIV calculation (`StoreFootfallLiftEngine.cs`, `store-footfall-lift-cockpit.component.ts`).
+- **Horizon 188 (Voice / Real-Time Dialect Idiom & Vernacular Synthesizer Mesh):** Sub-45ms caller dialect detection, colloquial idiom replacement, acoustic formant pitch-contour shifting, and rapport sentiment lift (`DialectSynthesisEngine.cs`, `dialect-synthesis-cockpit.component.ts`).
+- **Horizon 189 (Finance / Sovereign Pillar Two Subject to Tax Rule (STTR) & Treaty Clearance Ledger):** OECD STTR 9.0% nominal rate threshold evaluation, intragroup royalty/interest withholding calculation, and SHA-256 treaty clearance certificate issuance (`SttrTreatyTaxEngine.cs`, `sttr-treaty-tax-cockpit.component.ts`).
+- **Horizon 190 (Infrastructure / Multi-Cloud High-Throughput NVMe-over-Fabrics (NVMe-oF) Storage Mesh):** High-IOPS NVMe-oF storage targets over RDMA/TCP, sub-millisecond AI checkpointing, and sub-10ms Asymmetric Namespace Access (ANA) multipath failover with zero data loss (`NvmeOverFabricsEngine.cs`, `nvme-over-fabrics-cockpit.component.ts`).
 
 ### Current Verified Quality Metrics
-- **Backend xUnit Tests:** 5,658 passing tests (0 failures, 100% pass rate).
-- **Frontend Vitest Specs:** 515 passing tests across 118 standalone component suites.
-- **Playwright E2E Tests:** 194 passing tests across full browser execution runs.
-- **Production Build:** Angular 22 `ng build` succeeded cleanly with 230 lazy chunk bundles.
+- **Backend xUnit Tests:** 5,673 passing tests (0 failures, 100% pass rate).
+- **Frontend Vitest Specs:** 525 passing tests across 123 standalone component suites.
+- **Playwright E2E Tests:** 199 passing tests across full browser execution runs.
+- **Production Build:** Angular 22 `ng build` succeeded cleanly with 235 lazy chunk bundles.
 - **Compiler Health:** .NET 10 compilation with `TreatWarningsAsErrors=true` (0 warnings, 0 errors).

@@ -380,5 +380,10 @@ export const routes: Routes = [
   { path: 'voice/vocal-tremor', loadComponent: () => import('./features/voice/vocal-tremor-cockpit.component').then(m => m.VocalTremorCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/globe-top-up-tax', loadComponent: () => import('./features/finance/globe-top-up-tax-cockpit.component').then(m => m.GlobeTopUpTaxCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/rocev2-fabric', loadComponent: () => import('./features/infrastructure/rocev2-fabric-cockpit.component').then(m => m.Rocev2FabricCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/quota-capacity', loadComponent: () => import('./features/sales/quota-capacity-cockpit.component').then(m => m.QuotaCapacityCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/store-footfall-lift', loadComponent: () => import('./features/advertising/store-footfall-lift-cockpit.component').then(m => m.StoreFootfallLiftCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/dialect-synthesis', loadComponent: () => import('./features/voice/dialect-synthesis-cockpit.component').then(m => m.DialectSynthesisCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/sttr-treaty-tax', loadComponent: () => import('./features/finance/sttr-treaty-tax-cockpit.component').then(m => m.SttrTreatyTaxCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/nvme-over-fabrics', loadComponent: () => import('./features/infrastructure/nvme-over-fabrics-cockpit.component').then(m => m.NvmeOverFabricsCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];
