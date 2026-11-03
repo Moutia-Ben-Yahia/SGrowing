@@ -345,5 +345,10 @@ export const routes: Routes = [
   { path: 'voice/voice-biometric', loadComponent: () => import('./features/voice/voice-biometric-cockpit.component').then(m => m.VoiceBiometricCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/tax-rd-credit', loadComponent: () => import('./features/finance/tax-rd-credit-cockpit.component').then(m => m.TaxRdCreditCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/spiffe-spire', loadComponent: () => import('./features/infrastructure/spiffe-spire-cockpit.component').then(m => m.SpiffeSpireCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/cab-matrix', loadComponent: () => import('./features/sales/cab-matrix-cockpit.component').then(m => m.CabMatrixCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/in-car-ads', loadComponent: () => import('./features/advertising/in-car-ad-cockpit.component').then(m => m.InCarAdCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/voice-intent', loadComponent: () => import('./features/voice/voice-intent-cockpit.component').then(m => m.VoiceIntentCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/sovereign-dst', loadComponent: () => import('./features/finance/sovereign-dst-cockpit.component').then(m => m.SovereignDstCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/cilium-ebpf', loadComponent: () => import('./features/infrastructure/cilium-ebpf-cockpit.component').then(m => m.CiliumEbpfCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

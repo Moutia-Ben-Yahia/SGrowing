@@ -386,6 +386,11 @@ using SGrowing.Api.Modules.Advertising.DoohBidding;
 using SGrowing.Api.Modules.Voice.VoiceBiometric;
 using SGrowing.Api.Modules.Finance.TaxRdCredit;
 using SGrowing.Api.Modules.Infrastructure.SpiffeSpire;
+using SGrowing.Api.Modules.Sales.CustomerAdvisoryBoard;
+using SGrowing.Api.Modules.Advertising.InCarAds;
+using SGrowing.Api.Modules.Voice.VoiceIntentFastPath;
+using SGrowing.Api.Modules.Finance.SovereignDst;
+using SGrowing.Api.Modules.Infrastructure.CiliumEbpf;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Diagnostics;
@@ -1258,6 +1263,11 @@ public static class ServiceCollectionExtensions
         services.AddVoiceBiometricServices();
         services.AddTaxRdCreditServices();
         services.AddSpiffeSpireServices();
+        services.AddCustomerAdvisoryBoardServices();
+        services.AddInCarAdServices();
+        services.AddVoiceIntentFastPathServices();
+        services.AddSovereignDstServices();
+        services.AddCiliumEbpfServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
