@@ -71,6 +71,11 @@ using SGrowing.Api.Modules.Advertising.CatalogFeeds;
 using SGrowing.Api.Modules.Support.CapacityPlanning;
 using SGrowing.Api.Modules.Finance.FxHedgingEscrow;
 using SGrowing.Api.Modules.Security.MicroSegmentation;
+using SGrowing.Api.Modules.Intelligence.AccountExpansion;
+using SGrowing.Api.Modules.Commerce.InfluencerEscrowV2;
+using SGrowing.Api.Modules.Voice.CallTransferMesh;
+using SGrowing.Api.Modules.Finance.Asc606Revenue;
+using SGrowing.Api.Modules.Security.SecretVaultMesh;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -887,6 +892,11 @@ app.MapCatalogFeedsEndpoints();
 app.MapCapacityPlanningEndpoints();
 app.MapFxHedgingEscrowEndpoints();
 app.MapMicroSegmentationEndpoints();
+app.MapAccountExpansionEndpoints();
+app.MapInfluencerEscrowV2Endpoints();
+app.MapCallTransferMeshEndpoints();
+app.MapAsc606RevenueEndpoints();
+app.MapSecretVaultMeshEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

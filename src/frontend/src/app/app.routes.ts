@@ -280,5 +280,10 @@ export const routes: Routes = [
   { path: 'support/capacity-planning', loadComponent: () => import('./features/support/capacity-planning-cockpit.component').then(m => m.CapacityPlanningCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/fx-hedging', loadComponent: () => import('./features/finance/fx-hedging-cockpit.component').then(m => m.FxHedgingCockpitComponent), canActivate: [authGuard] },
   { path: 'security/micro-segmentation', loadComponent: () => import('./features/security/micro-segmentation-cockpit.component').then(m => m.MicroSegmentationCockpitComponent), canActivate: [authGuard] },
+  { path: 'intelligence/account-expansion', loadComponent: () => import('./features/intelligence/account-expansion-cockpit.component').then(m => m.AccountExpansionCockpitComponent), canActivate: [authGuard] },
+  { path: 'commerce/influencer-escrow-v2', loadComponent: () => import('./features/commerce/influencer-escrow-v2-cockpit.component').then(m => m.InfluencerEscrowV2CockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/call-transfer', loadComponent: () => import('./features/voice/call-transfer-cockpit.component').then(m => m.CallTransferCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/asc606-revenue', loadComponent: () => import('./features/finance/asc606-revenue-cockpit.component').then(m => m.Asc606RevenueCockpitComponent), canActivate: [authGuard] },
+  { path: 'security/secret-vault-mesh', loadComponent: () => import('./features/security/secret-vault-mesh-cockpit.component').then(m => m.SecretVaultMeshCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

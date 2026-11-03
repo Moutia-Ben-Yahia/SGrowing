@@ -77,6 +77,11 @@ using SGrowing.Api.Modules.Advertising.CatalogFeeds;
 using SGrowing.Api.Modules.Support.CapacityPlanning;
 using SGrowing.Api.Modules.Finance.FxHedgingEscrow;
 using SGrowing.Api.Modules.Security.MicroSegmentation;
+using SGrowing.Api.Modules.Intelligence.AccountExpansion;
+using SGrowing.Api.Modules.Commerce.InfluencerEscrowV2;
+using SGrowing.Api.Modules.Voice.CallTransferMesh;
+using SGrowing.Api.Modules.Finance.Asc606Revenue;
+using SGrowing.Api.Modules.Security.SecretVaultMesh;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
@@ -1128,6 +1133,11 @@ public static class ServiceCollectionExtensions
         services.AddCapacityPlanningServices();
         services.AddFxHedgingEscrowServices();
         services.AddMicroSegmentationServices();
+        services.AddAccountExpansionServices();
+        services.AddInfluencerEscrowV2Services();
+        services.AddCallTransferMeshServices();
+        services.AddAsc606RevenueServices();
+        services.AddSecretVaultMeshServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
