@@ -98,13 +98,13 @@ public static class CommerceEndpoints
         {
             var result = await stripeHandler.ProcessStripeEventAsync(tenantId, payload.ToString(), stripeSignature);
             return Results.Ok(result);
-        });
+        }).AllowAnonymous();
 
         app.MapPost("/api/integrations/shopify/webhook", async ([FromQuery] Guid tenantId, [FromHeader(Name = "X-Shopify-Topic")] string? topic, [FromBody] JsonElement payload, ShopifyWebhookReceiver receiver) =>
         {
             var result = await receiver.ProcessWebhookAsync(tenantId, topic ?? "checkouts/create", payload.ToString());
             return Results.Ok(result);
-        });
+        }).AllowAnonymous();
 
         app.MapPost("/api/integrations/carts/abandoned/scan", async ([FromQuery] Guid tenantId, AbandonedCartRecoveryService recoveryService) =>
         {

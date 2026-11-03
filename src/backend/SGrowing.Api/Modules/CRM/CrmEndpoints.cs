@@ -13,15 +13,17 @@ public static class CrmEndpoints
 {
     public static IEndpointRouteBuilder MapCrmEndpoints(this IEndpointRouteBuilder app)
     {
+        var group = app.MapGroup("/api/crm").RequireAuthorization();
+
         // Workspaces (PRD Section 4.1 Operational Boundary)
-        app.MapGet("/api/crm/workspaces", async ([FromQuery] Guid tenantId, ITenantContext tenantContext, SGrowingDbContext db) =>
+        group.MapGet("/workspaces", async ([FromQuery] Guid tenantId, ITenantContext tenantContext, SGrowingDbContext db) =>
         {
             var tid = tenantContext.HasTenant ? tenantContext.TenantId : tenantId;
             var workspaces = await db.Workspaces.Where(w => w.TenantId == tid).OrderBy(w => w.Name).ToListAsync();
             return Results.Ok(workspaces);
         });
 
-        app.MapPost("/api/crm/workspaces", async ([FromQuery] Guid tenantId, [FromBody] CreateWorkspaceDto req, ITenantContext tenantContext, SGrowingDbContext db) =>
+        group.MapPost("/workspaces", async ([FromQuery] Guid tenantId, [FromBody] CreateWorkspaceDto req, ITenantContext tenantContext, SGrowingDbContext db) =>
         {
             var tid = tenantContext.HasTenant ? tenantContext.TenantId : (req.TenantId != Guid.Empty ? req.TenantId : tenantId);
             if (tid == Guid.Empty) return Results.BadRequest(new { error = "TenantId is required." });
@@ -48,7 +50,7 @@ public static class CrmEndpoints
         });
 
         // Contacts
-        app.MapPost("/api/crm/contacts", async ([FromBody] CreateContactRequest req, ITenantContext tenantContext, CreateContactHandler handler) =>
+        group.MapPost("/contacts", async ([FromBody] CreateContactRequest req, ITenantContext tenantContext, CreateContactHandler handler) =>
         {
             if (req.TenantId == Guid.Empty && tenantContext.HasTenant)
             {
@@ -58,14 +60,14 @@ public static class CrmEndpoints
             return res.IsSuccess ? Results.Ok(res.Value) : Results.BadRequest(new { error = res.Error });
         });
 
-        app.MapGet("/api/crm/contacts/{id:guid}", async (Guid id, [FromQuery] Guid tenantId, ITenantContext tenantContext, GetContactHandler handler) =>
+        group.MapGet("/contacts/{id:guid}", async (Guid id, [FromQuery] Guid tenantId, ITenantContext tenantContext, GetContactHandler handler) =>
         {
             var tid = tenantContext.HasTenant ? tenantContext.TenantId : tenantId;
             var res = await handler.HandleAsync(tid, id);
             return res.IsSuccess ? Results.Ok(res.Value) : Results.NotFound(new { error = res.Error });
         });
 
-        app.MapGet("/api/crm/contacts", async ([FromQuery] Guid tenantId, [FromQuery] string? query, ITenantContext tenantContext, SearchContactsHandler handler) =>
+        group.MapGet("/contacts", async ([FromQuery] Guid tenantId, [FromQuery] string? query, ITenantContext tenantContext, SearchContactsHandler handler) =>
         {
             var tid = tenantContext.HasTenant ? tenantContext.TenantId : tenantId;
             var res = await handler.HandleAsync(new SearchContactsQuery(tid, query ?? ""));
@@ -73,7 +75,7 @@ public static class CrmEndpoints
         });
 
         // Deals / Pipeline
-        app.MapGet("/api/crm/deals", async ([FromQuery] Guid tenantId, ITenantContext tenantContext, SGrowingDbContext db) =>
+        group.MapGet("/deals", async ([FromQuery] Guid tenantId, ITenantContext tenantContext, SGrowingDbContext db) =>
         {
             var tid = tenantContext.HasTenant ? tenantContext.TenantId : tenantId;
             var deals = await db.Deals.Where(d => d.TenantId == tid).OrderByDescending(d => d.CreatedAtUtc).ToListAsync();
@@ -81,34 +83,34 @@ public static class CrmEndpoints
         });
 
         // Identity 360
-        app.MapPost("/api/crm/resolve-contact", async ([FromQuery] Guid tenantId, [FromBody] ResolveContactDto req, IdentityResolverService resolver) =>
+        group.MapPost("/resolve-contact", async ([FromQuery] Guid tenantId, [FromBody] ResolveContactDto req, IdentityResolverService resolver) =>
         {
             var res = await resolver.ResolveOrCreateContactAsync(tenantId, req.Email, req.Phone, req.FirstName, req.LastName);
             return res.IsSuccess ? Results.Ok(res.Value) : Results.BadRequest(new { error = res.Error });
         });
 
-        app.MapGet("/api/crm/contacts/{id:guid}/timeline", async (Guid id, [FromQuery] Guid tenantId, IdentityResolverService resolver) =>
+        group.MapGet("/contacts/{id:guid}/timeline", async (Guid id, [FromQuery] Guid tenantId, IdentityResolverService resolver) =>
         {
             var res = await resolver.GetUnifiedCustomerTimelineAsync(tenantId, id);
             return res.IsSuccess ? Results.Ok(res.Value) : Results.NotFound(new { error = res.Error });
         });
 
         // B2B CRM Accounts & Companies
-        app.MapGet("/api/crm/companies", async ([FromQuery] Guid tenantId, ITenantContext tenantContext, SGrowingDbContext db) =>
+        group.MapGet("/companies", async ([FromQuery] Guid tenantId, ITenantContext tenantContext, SGrowingDbContext db) =>
         {
             var tid = tenantContext.HasTenant ? tenantContext.TenantId : tenantId;
             var companies = await db.Companies.Where(c => c.TenantId == tid).ToListAsync();
             return Results.Ok(companies);
         });
 
-        app.MapPost("/api/crm/companies", async ([FromQuery] Guid tenantId, [FromBody] CreateCompanyDto req, ITenantContext tenantContext, CompanyAccountService companyService) =>
+        group.MapPost("/companies", async ([FromQuery] Guid tenantId, [FromBody] CreateCompanyDto req, ITenantContext tenantContext, CompanyAccountService companyService) =>
         {
             var tid = tenantContext.HasTenant ? tenantContext.TenantId : tenantId;
             var company = await companyService.CreateCompanyAsync(tid, req.Name, req.Domain, req.Industry, req.Revenue, req.ParentCompanyId);
             return Results.Ok(company);
         });
 
-        app.MapPost("/api/crm/companies/associate", async ([FromQuery] Guid tenantId, [FromBody] AssociateCompanyDto req, ITenantContext tenantContext, CompanyAccountService companyService) =>
+        group.MapPost("/companies/associate", async ([FromQuery] Guid tenantId, [FromBody] AssociateCompanyDto req, ITenantContext tenantContext, CompanyAccountService companyService) =>
         {
             var tid = tenantContext.HasTenant ? tenantContext.TenantId : tenantId;
             var company = await companyService.AssociateContactByDomainAsync(tid, req.ContactId, req.ContactEmail);
@@ -116,51 +118,51 @@ public static class CrmEndpoints
         });
 
         // B2B Lead Enrichment & In-Chat E-Signatures
-        app.MapPost("/api/crm/leads/enrich", async ([FromBody] EnrichLeadDto req, LeadEnrichmentService enrichmentService) =>
+        group.MapPost("/leads/enrich", async ([FromBody] EnrichLeadDto req, LeadEnrichmentService enrichmentService) =>
         {
             var profile = await enrichmentService.EnrichLeadAsync(req.TenantId, req.DomainOrEmail);
             return Results.Ok(profile);
         });
 
-        app.MapPost("/api/crm/contracts", async ([FromBody] CreateContractDto req, ContractSigningService contractService) =>
+        group.MapPost("/contracts", async ([FromBody] CreateContractDto req, ContractSigningService contractService) =>
         {
             var contract = await contractService.CreateContractAsync(
                 req.TenantId, req.Title, req.ContractType, req.SignerName, req.SignerEmail, req.ContractValue, req.CompanyId, req.DealId);
             return Results.Ok(contract);
         });
 
-        app.MapPost("/api/crm/contracts/{id:guid}/dispatch", async (Guid id, [FromQuery] Guid tenantId, ContractSigningService contractService) =>
+        group.MapPost("/contracts/{id:guid}/dispatch", async (Guid id, [FromQuery] Guid tenantId, ContractSigningService contractService) =>
         {
             var dispatch = await contractService.DispatchInChatContractAsync(tenantId, id);
             return Results.Ok(dispatch);
         });
 
-        app.MapGet("/api/crm/contracts/sign/{token}", async (string token, ContractSigningService contractService) =>
+        group.MapGet("/contracts/sign/{token}", async (string token, ContractSigningService contractService) =>
         {
             var contract = await contractService.GetAndMarkViewedAsync(token);
             return contract != null ? Results.Ok(contract) : Results.NotFound();
-        });
+        }).AllowAnonymous();
 
-        app.MapPost("/api/crm/contracts/sign/{token}", async (string token, [FromBody] SignContractDto req, ContractSigningService contractService) =>
+        group.MapPost("/contracts/sign/{token}", async (string token, [FromBody] SignContractDto req, ContractSigningService contractService) =>
         {
             var result = await contractService.CompleteSigningAsync(token, req.SignerSignatureName, req.SignedPdfUrl);
             return Results.Ok(result);
-        });
+        }).AllowAnonymous();
 
         // Customer Identity Graph 360
-        app.MapPost("/api/crm/customers/resolve", async ([FromBody] ResolveCustomerDto req, ICustomerIdentityGraphService idGraph) =>
+        group.MapPost("/customers/resolve", async ([FromBody] ResolveCustomerDto req, ICustomerIdentityGraphService idGraph) =>
         {
             var profile = await idGraph.ResolveCustomerAsync(req.TenantId, req.Name, req.Phone, req.Email, req.ChannelType, req.ChannelValue);
             return Results.Ok(profile);
         });
 
-        app.MapGet("/api/crm/customers/{id:guid}/360", async (Guid id, [FromQuery] Guid tenantId, ICustomerIdentityGraphService idGraph) =>
+        group.MapGet("/customers/{id:guid}/360", async (Guid id, [FromQuery] Guid tenantId, ICustomerIdentityGraphService idGraph) =>
         {
             var detail = await idGraph.GetCustomer360Async(tenantId, id);
             return Results.Ok(detail);
         });
 
-        app.MapPost("/api/crm/customers/merge", async ([FromBody] MergeCustomersDto req, ICustomerIdentityGraphService idGraph) =>
+        group.MapPost("/customers/merge", async ([FromBody] MergeCustomersDto req, ICustomerIdentityGraphService idGraph) =>
         {
             var merged = await idGraph.MergeCustomerProfilesAsync(req.TenantId, req.PrimaryCustomerId, req.DuplicateCustomerId, req.PerformedBy ?? "Admin");
             return Results.Ok(merged);

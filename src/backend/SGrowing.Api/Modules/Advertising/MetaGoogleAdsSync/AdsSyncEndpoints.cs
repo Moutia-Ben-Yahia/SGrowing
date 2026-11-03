@@ -15,7 +15,9 @@ public static class AdsSyncEndpoints
 
     public static IEndpointRouteBuilder MapAdsSyncEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var group = endpoints.MapGroup("/api/v1/advertising").WithTags("Advertising Campaign & CAPI Sync");
+        var group = endpoints.MapGroup("/api/v1/advertising")
+            .WithTags("Advertising Campaign & CAPI Sync")
+            .RequireAuthorization();
 
         group.MapPost("/conversions/capi-upload", async (CapiUploadRequest request, IAdsSyncEngine engine) =>
         {

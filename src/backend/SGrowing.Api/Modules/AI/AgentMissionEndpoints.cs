@@ -25,7 +25,8 @@ public static class AgentMissionEndpoints
     public static IEndpointRouteBuilder MapAgentMissionEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/api/agents/missions")
-            .WithTags("Autonomous Agent Missions & Multi-Step MCP Loop");
+            .WithTags("Autonomous Agent Missions & Multi-Step MCP Loop")
+            .RequireAuthorization();
 
         group.MapPost("", async ([FromBody] CreateAgentMissionDto req, IAutonomousAgentMissionService service, CancellationToken ct) =>
         {

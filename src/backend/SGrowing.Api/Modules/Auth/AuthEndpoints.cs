@@ -28,7 +28,7 @@ public static class AuthEndpoints
             {
                 return Results.Conflict(new { error = ex.Message });
             }
-        });
+        }).AllowAnonymous();
 
         group.MapPost("/login", async (LoginRequest request, IAuthService authService, HttpContext context) =>
         {
@@ -46,7 +46,7 @@ public static class AuthEndpoints
             {
                 return Results.BadRequest(new { error = ex.Message });
             }
-        });
+        }).AllowAnonymous();
 
         group.MapPost("/refresh", async (RefreshTokenRequest request, IAuthService authService, HttpContext context) =>
         {
@@ -60,7 +60,7 @@ public static class AuthEndpoints
             {
                 return Results.Json(new { error = ex.Message }, statusCode: StatusCodes.Status401Unauthorized);
             }
-        });
+        }).AllowAnonymous();
 
         group.MapGet("/me", async (ClaimsPrincipal userPrincipal, IAuthService authService) =>
         {
