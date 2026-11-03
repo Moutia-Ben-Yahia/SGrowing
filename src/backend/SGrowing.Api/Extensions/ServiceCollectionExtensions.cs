@@ -40,7 +40,6 @@ using SGrowing.Api.Modules.Security.CollaborationAudit;
 using SGrowing.Api.Modules.Dev.AppGenerator;
 using SGrowing.Api.Modules.Tenancy.CustomDomains;
 using SGrowing.Api.Modules.AI.VideoAvatar;
-using SGrowing.Api.Modules.SupplyChain.EdiReplenishment;
 using SGrowing.Api.Modules.Social.AutoTriage;
 using SGrowing.Api.Modules.Contracts.ChurnRescue;
 using SGrowing.Api.Modules.Growth.Influencers;
@@ -72,12 +71,9 @@ using SGrowing.Api.Modules.Intelligence.WinLoss;
 using SGrowing.Api.Modules.Advertising.RetargetingMatrix;
 using SGrowing.Api.Modules.Support.SentimentDeescalation;
 using SGrowing.Api.Modules.Billing.ConsumptionMetering;
-using SGrowing.Api.Modules.Infrastructure.ShardMesh;
 using SGrowing.Api.Modules.Intelligence.MutualActionPlan;
 using SGrowing.Api.Modules.Advertising.CatalogFeeds;
 using SGrowing.Api.Modules.Support.CapacityPlanning;
-using SGrowing.Api.Modules.Finance.FxHedgingEscrow;
-using SGrowing.Api.Modules.Security.MicroSegmentation;
 using SGrowing.Api.Modules.Intelligence.AccountExpansion;
 using SGrowing.Api.Modules.Commerce.InfluencerEscrowV2;
 using SGrowing.Api.Modules.Voice.CallTransferMesh;
@@ -86,8 +82,6 @@ using SGrowing.Api.Modules.Security.SecretVaultMesh;
 using SGrowing.Api.Modules.Intelligence.PipelineVelocity;
 using SGrowing.Api.Modules.Advertising.BidPacing;
 using SGrowing.Api.Modules.Voice.CallCompliance;
-using SGrowing.Api.Modules.Finance.TaxNexus;
-using SGrowing.Api.Modules.Infrastructure.ChaosMesh;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
@@ -97,148 +91,48 @@ using SGrowing.Api.Modules.Dev.Gateway;
 using SGrowing.Api.Modules.Agents.Swarm;
 using SGrowing.Api.Modules.Commerce.DynamicPricing;
 using SGrowing.Api.Modules.Commerce.LiveStreaming;
-using SGrowing.Api.Modules.Field.Sync;
-using SGrowing.Api.Modules.Finance.Ledger;
-using SGrowing.Api.Modules.SupplyChain.Replenishment;
-using SGrowing.Api.Modules.DataArchitecture.EventSourcing;
 using SGrowing.Api.Modules.Security.GraphFraud;
 using SGrowing.Api.Modules.Conversations.Unified;
 using SGrowing.Api.Modules.Sales.Proposals;
 using SGrowing.Api.Modules.Documents.Idp;
 using SGrowing.Api.Modules.FrontendArchitecture.MicroFrontends;
-using SGrowing.Api.Modules.SupplyChain.Procurement;
-using SGrowing.Api.Modules.Security.ZeroKnowledge;
 using SGrowing.Api.Modules.Tenancy.MultiRegion;
 using SGrowing.Api.Modules.Commerce.Robotics;
 using SGrowing.Api.Modules.Marketing.Retention;
-using SGrowing.Api.Modules.SupplyChain.Customs;
 using SGrowing.Api.Modules.Analytics.SessionReplay;
 using SGrowing.Api.Modules.Marketing.Copywriting;
-using SGrowing.Api.Modules.Security.VerifiableIdentity;
 using SGrowing.Api.Modules.Resilience.Chaos;
-using SGrowing.Api.Modules.Logistics.Fleet;
-using SGrowing.Api.Modules.Security.Confidential;
 using SGrowing.Api.Modules.Commerce.VisualSearch;
 using SGrowing.Api.Modules.Voice.Synthesis;
-using SGrowing.Api.Modules.Infrastructure.Autopilot;
-using SGrowing.Api.Modules.Finance.Factoring;
-using SGrowing.Api.Modules.Logistics.ColdChain;
 using SGrowing.Api.Modules.Commerce.QualityGate;
 using SGrowing.Api.Modules.CRM.SupportSwarm;
-using SGrowing.Api.Modules.Infrastructure.MultiCloud;
-using SGrowing.Api.Modules.Logistics.Esg;
-using SGrowing.Api.Modules.Security.PostQuantum;
 using SGrowing.Api.Modules.Commerce.Shrinkage;
 using SGrowing.Api.Modules.Marketing.AdSpend;
 using SGrowing.Api.Modules.Tenancy.Governance;
-using SGrowing.Api.Modules.Logistics.Satellite;
 using SGrowing.Api.Modules.Commerce.Neuromorphic;
-using SGrowing.Api.Modules.Finance.SettlementBridge;
 using SGrowing.Api.Modules.Commerce.CoOp;
-using SGrowing.Api.Modules.Infrastructure.EdgeObservability;
 using SGrowing.Api.Modules.Commerce.DigitalTwin;
-using SGrowing.Api.Modules.SupplyChain.ZkTraceability;
-using SGrowing.Api.Modules.Logistics.Routing;
 using SGrowing.Api.Modules.CRM.RetentionConcierge;
-using SGrowing.Api.Modules.Security.ConfidentialEnclave;
 using SGrowing.Api.Modules.Revenue.YieldManagement;
-using SGrowing.Api.Modules.AI.KnowledgeHypergraph;
-using SGrowing.Api.Modules.SupplyChain.DisruptionSimulator;
 using SGrowing.Api.Modules.Security.VoiceLiveness;
-using SGrowing.Api.Modules.Infrastructure.FinOps;
 
-using SGrowing.Api.Modules.Security.VerifiableCredentials;
 
-using SGrowing.Api.Modules.SupplyChain.HsClassification;
-using SGrowing.Api.Modules.Infrastructure.ServiceMesh;
 using SGrowing.Api.Modules.Commerce.WarehouseSlotting;
-using SGrowing.Api.Modules.Finance.FxHedging;
 using SGrowing.Api.Modules.AI.SyntheticData;
-using SGrowing.Api.Modules.Logistics.DroneCorridors;
-using SGrowing.Api.Modules.Security.ZtnaContinuousPosture;
 using SGrowing.Api.Modules.Tenancy.DataSovereignty;
-using SGrowing.Api.Modules.SupplyChain.DemandSensing;
-using SGrowing.Api.Modules.Voice.SentimentDeescalation;
 
-using SGrowing.Api.Modules.Security.PostQuantumCrypto;
-using SGrowing.Api.Modules.Logistics.DrayageScheduler;
-using SGrowing.Api.Modules.Security.HomomorphicAnalytics;
-using SGrowing.Api.Modules.Finance.ConcentratedLiquidity;
-using SGrowing.Api.Modules.Media.ProsodyDubbing;
-using SGrowing.Api.Modules.Security.ZkRollupBridge;
-using SGrowing.Api.Modules.Logistics.MaritimeEcoRouting;
 
-using SGrowing.Api.Modules.Security.MpcThresholdSigner;
 
-using SGrowing.Api.Modules.Finance.CreditRiskUnderwriting;
 using SGrowing.Api.Modules.AI.DocumentGrounding;
-using SGrowing.Api.Modules.Security.ZkIdentityVerification;
-using SGrowing.Api.Modules.Infrastructure.DePinWorkerArbiter;
-using SGrowing.Api.Modules.Finance.BepsPillarTwo;
-using SGrowing.Api.Modules.Governance.EnterpriseImmuneSystem;
-using SGrowing.Api.Modules.Finance.MicroPaymentMesh;
-using SGrowing.Api.Modules.Logistics.RailHumpYardScheduler;
-using SGrowing.Api.Modules.Security.ConfidentialRemoteAttestation;
 
-using SGrowing.Api.Modules.Finance.CbdcCrossBorderBridge;
 
-using SGrowing.Api.Modules.Security.QkdSatelliteArbiter;
 
-using SGrowing.Api.Modules.Security.ZkIrisBiometrics;
 
-using SGrowing.Api.Modules.Finance.HftOrderBookMicrostructure;
-using SGrowing.Api.Modules.Security.RingSignatureIdentity;
-using SGrowing.Api.Modules.Security.ThresholdMlDsaSigner;
-using SGrowing.Api.Modules.AI.SpikingRetinaGazeArbiter;
-using SGrowing.Api.Modules.Finance.ZkStateRelayAggregator;
-using SGrowing.Api.Modules.Security.CvQkdCoherentState;
-using SGrowing.Api.Modules.Finance.ZkL3WatchtowerFraudProof;
-using SGrowing.Api.Modules.Finance.ZkSolvencyMerkleSumTree;
-using SGrowing.Api.Modules.Finance.PqcCrossChainHtlc;
-using SGrowing.Api.Modules.Finance.AmmLossVersusRebalancing;
-using SGrowing.Api.Modules.Finance.OrderFlowAuctionMev;
 
-using SGrowing.Api.Modules.Finance.ZkDarkPoolVdfBatching;
-using SGrowing.Api.Modules.Finance.DeFiLendingBadDebtSocialization;
-using SGrowing.Api.Modules.Security.CvQkdExcessNoiseSecretKeyRate;
-using SGrowing.Api.Modules.Finance.HftVwapMicroPriceQueue;
-using SGrowing.Api.Modules.AI.NeuromorphicStdpSynapticEnergy;
-using SGrowing.Api.Modules.Finance.RestakingCryptoeconomicSlashing;
-using SGrowing.Api.Modules.Finance.CbdcAtomicDvpLiquiditySaving;
 
-using SGrowing.Api.Modules.Security.ZkRecursiveFoldingScheme;
 
-using SGrowing.Api.Modules.Finance.ZkRollupCensorshipResistance;
-using SGrowing.Api.Modules.Finance.ZkSolvencyMerkleSumAudit;
-using SGrowing.Api.Modules.Finance.LsdDepegArbitrageRedemption;
 
-using SGrowing.Api.Modules.Finance.SovereignDebtClimateResilience;
-using SGrowing.Api.Modules.Infrastructure.SeismicMetamaterialPhononicCloak;
-using SGrowing.Api.Modules.Finance.VpinMarketMakerToxicFlow;
-using SGrowing.Api.Modules.Finance.CrossAssetLiquiditySpillover;
-using SGrowing.Api.Modules.Finance.DynamicMarginCollateralVar;
-using SGrowing.Api.Modules.Finance.AmmDynamicImpermanentLossHedge;
-using SGrowing.Api.Modules.Finance.CrossCurrencyFlashSwapArbitrage;
-using SGrowing.Api.Modules.Finance.OrderFlowAdverseSelectionDrain;
-using SGrowing.Api.Modules.Finance.StatisticalArbitrageOrnsteinUhlenbeck;
-using SGrowing.Api.Modules.Finance.SabrVolatilitySurfaceCalibration;
-using SGrowing.Api.Modules.Finance.HierarchicalRiskParityClustering;
-using SGrowing.Api.Modules.Finance.CrossCurrencyFxBasisSwapCip;
-using SGrowing.Api.Modules.Finance.MicrostructureKylesLambdaAdverseSelection;
-using SGrowing.Api.Modules.Finance.MertonJumpDiffusionOptionPricing;
-using SGrowing.Api.Modules.Finance.BondPortfolioDurationConvexityImmunization;
-using SGrowing.Api.Modules.Finance.CdoGaussianCopulaTrancheCorrelation;
-using SGrowing.Api.Modules.Finance.AlmgrenChrissOptimalLiquidation;
-using SGrowing.Api.Modules.Finance.FxLocalStochasticVolatility;
-using SGrowing.Api.Modules.Finance.TipsRealYieldBreakevenInflation;
-using SGrowing.Api.Modules.Finance.CdsIndexTrancheCorrelation;
-using SGrowing.Api.Modules.Finance.CrossCurrencyBasisConvexity;
-using SGrowing.Api.Modules.Finance.SviVolatilitySurfaceCalibration;
 
-using SGrowing.Api.Modules.Finance.AccountsPayableThreeWayMatching;
-using SGrowing.Api.Modules.SupplyChain.WarehouseBinCycleCounting;
-using SGrowing.Api.Modules.Workforce.MultiTierPayrollEngine;
-using SGrowing.Api.Modules.Logistics.CashOnDeliverySettlement;
 using SGrowing.Api.Modules.CustomerData.IdentityResolution;
 using SGrowing.Api.Modules.CustomerData.Firmographics;
 using SGrowing.Api.Modules.Advertising.MetaGoogleAdsSync;
@@ -330,103 +224,40 @@ using SGrowing.Api.Modules.Voice.Streaming;
 using SGrowing.Api.Modules.Conversations.Incidents;
 using SGrowing.Api.Modules.Conversations.Hierarchy;
 using SGrowing.Api.Modules.Notifications;
-using SGrowing.Api.Modules.Workforce.Shifts;
-using SGrowing.Api.Modules.Workforce.Timesheets;
 using SGrowing.Api.Modules.Commerce.CpqApproval;
 using SGrowing.Api.Modules.Marketing.AdSpendRedistribution;
-using SGrowing.Api.Modules.Voice.PitchTuning;
-using SGrowing.Api.Modules.Finance.TreasuryYield;
-using SGrowing.Api.Modules.Infrastructure.EdgeMesh;
 using SGrowing.Api.Modules.Commerce.CommissionSettlement;
-using SGrowing.Api.Modules.Advertising.RetailMediaAuction;
-using SGrowing.Api.Modules.Voice.AudioNoiseCancellation;
-using SGrowing.Api.Modules.Finance.VendorBillMatching;
-using SGrowing.Api.Modules.Infrastructure.K8sIsolationMesh;
 using SGrowing.Api.Modules.Sales.TerritoryRebalancing;
-using SGrowing.Api.Modules.Advertising.CtvAdInsertion;
 using SGrowing.Api.Modules.Support.ScreenDiagnostic;
-using SGrowing.Api.Modules.Finance.TransferPricing;
-using SGrowing.Api.Modules.Infrastructure.BgpGeoSteering;
 using SGrowing.Api.Modules.Sales.IntentRollup;
-using SGrowing.Api.Modules.Advertising.Uid2Tokenizer;
 using SGrowing.Api.Modules.Voice.AgentWhisper;
-using SGrowing.Api.Modules.Finance.FxExposureRebalancing;
 using SGrowing.Api.Modules.Infrastructure.DbQueryRouter;
 using SGrowing.Api.Modules.Personalization.ContentPersonalization;
 using SGrowing.Api.Modules.Advertising.VideoDco;
 using SGrowing.Api.Modules.Voice.EmotionDeescalation;
-using SGrowing.Api.Modules.Finance.PayrollTaxWithholding;
-using SGrowing.Api.Modules.Infrastructure.ApiRateLimiterMesh;
 using SGrowing.Api.Modules.Sales.DirectMailMesh;
-using SGrowing.Api.Modules.Advertising.SpatialAdBidding;
 using SGrowing.Api.Modules.Voice.SpeechStreamingMesh;
-using SGrowing.Api.Modules.Finance.AssetDepreciation;
-using SGrowing.Api.Modules.Infrastructure.SecretRotationMesh;
 using SGrowing.Api.Modules.Sales.CollaborativeDealRoom;
-using SGrowing.Api.Modules.Advertising.RetailSignageMesh;
 using SGrowing.Api.Modules.Voice.MultilingualVoiceMesh;
-using SGrowing.Api.Modules.Finance.SovereignEInvoicing;
-using SGrowing.Api.Modules.Infrastructure.PodSandboxingMesh;
 using SGrowing.Api.Modules.Sales.CompetitiveBattlecard;
-using SGrowing.Api.Modules.Advertising.RetailCoopDsp;
 using SGrowing.Api.Modules.Voice.CallStateResumption;
-using SGrowing.Api.Modules.Finance.SovereignCbam;
-using SGrowing.Api.Modules.Infrastructure.EbpfSecurityMesh;
 using SGrowing.Api.Modules.Sales.RfpResponse;
 using SGrowing.Api.Modules.Advertising.GeoIncrementality;
-using SGrowing.Api.Modules.Voice.VoiceDialect;
-using SGrowing.Api.Modules.Finance.CapTableEquity;
-using SGrowing.Api.Modules.Infrastructure.EdgeWasmMesh;
 using SGrowing.Api.Modules.Sales.BuyingCommittee;
-using SGrowing.Api.Modules.Advertising.AudioDai;
 using SGrowing.Api.Modules.Voice.TelephonyWhisper;
-using SGrowing.Api.Modules.Finance.TaxExemption;
-using SGrowing.Api.Modules.Infrastructure.BgpBfd;
 using SGrowing.Api.Modules.Sales.ContractRedline;
-using SGrowing.Api.Modules.Advertising.DoohBidding;
-using SGrowing.Api.Modules.Voice.VoiceBiometric;
-using SGrowing.Api.Modules.Finance.TaxRdCredit;
-using SGrowing.Api.Modules.Infrastructure.SpiffeSpire;
 using SGrowing.Api.Modules.Sales.CustomerAdvisoryBoard;
-using SGrowing.Api.Modules.Advertising.InCarAds;
 using SGrowing.Api.Modules.Voice.VoiceIntentFastPath;
-using SGrowing.Api.Modules.Finance.SovereignDst;
-using SGrowing.Api.Modules.Infrastructure.CiliumEbpf;
 using SGrowing.Api.Modules.Sales.ValueRealization;
-using SGrowing.Api.Modules.Advertising.WeatherAdTriggers;
-using SGrowing.Api.Modules.Voice.TelephonyDisfluency;
-using SGrowing.Api.Modules.Finance.ExportCompliance;
-using SGrowing.Api.Modules.Infrastructure.WasmSandbox;
 using SGrowing.Api.Modules.Sales.CustomerAdvocacy;
-using SGrowing.Api.Modules.Advertising.MicroGeofence;
-using SGrowing.Api.Modules.Voice.EchoCancellation;
-using SGrowing.Api.Modules.Finance.CapitalAllocation;
-using SGrowing.Api.Modules.Infrastructure.WireGuardDiscovery;
 using SGrowing.Api.Modules.Sales.DealCoaching;
-using SGrowing.Api.Modules.Advertising.SignageSsp;
-using SGrowing.Api.Modules.Voice.NeuralPlc;
-using SGrowing.Api.Modules.Finance.SecondaryLiquidity;
-using SGrowing.Api.Modules.Infrastructure.RouteFlapDamping;
 using SGrowing.Api.Modules.Sales.SpiffGamification;
-using SGrowing.Api.Modules.Advertising.VehicleAudioDsp;
-using SGrowing.Api.Modules.Voice.Dereverberation;
-using SGrowing.Api.Modules.Finance.Section174;
-using SGrowing.Api.Modules.Infrastructure.EvpnVxlan;
 using SGrowing.Api.Modules.Sales.DealAutopsy;
 using SGrowing.Api.Modules.Advertising.SponsoredBrandAds;
-using SGrowing.Api.Modules.Voice.ProsodyEmpathy;
-using SGrowing.Api.Modules.Finance.IntercompanyNetting;
-using SGrowing.Api.Modules.Infrastructure.Srv6Traffic;
 using SGrowing.Api.Modules.Sales.RepRamp;
 using SGrowing.Api.Modules.Advertising.CrossDeviceSync;
-using SGrowing.Api.Modules.Voice.VocalTremor;
-using SGrowing.Api.Modules.Finance.GlobeTopUpTax;
-using SGrowing.Api.Modules.Infrastructure.Rocev2Fabric;
 using SGrowing.Api.Modules.Sales.QuotaCapacity;
-using SGrowing.Api.Modules.Advertising.StoreFootfallLift;
 using SGrowing.Api.Modules.Voice.DialectSynthesis;
-using SGrowing.Api.Modules.Finance.SttrTreatyTax;
-using SGrowing.Api.Modules.Infrastructure.NvmeOverFabrics;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Diagnostics;
@@ -795,7 +626,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IWarehouseRoutingService, WarehouseRoutingService>();
         services.AddSingleton<IGeodeticFleetDispatchService, GeodeticFleetDispatchService>();
         services.AddScoped<IOrganizationHierarchyService, OrganizationHierarchyService>();
-        services.AddScoped<ITimesheetService, TimesheetService>();
         services.AddScoped<IWhatsAppGatewayService, WhatsAppGatewayService>();
         services.AddScoped<IMediaVaultService, MediaVaultService>();
         services.AddScoped<IInboundMessageRouterService, InboundMessageRouterService>();
@@ -882,7 +712,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IIncidentOnCallService, IncidentOnCallService>();
         services.AddSingleton<INotificationOrchestratorService, NotificationOrchestratorService>();
         services.AddSingleton<IConversationHierarchyService, ConversationHierarchyService>();
-        services.AddSingleton<IWorkforceShiftService, WorkforceShiftService>();
         services.AddSingleton<IDocumentSecurityService, DocumentSecurityService>();
         services.AddSingleton<IDealSlippageRadarService, DealSlippageRadarService>();
         services.AddSingleton<ISocialListeningSentinelService, SocialListeningSentinelService>();
@@ -896,271 +725,171 @@ public static class ServiceCollectionExtensions
         services.AddMultiAgentSwarmServices();
         services.AddGrowthDirectorServices();
         services.AddDynamicElasticityPricingServices();
-        services.AddDoubleEntryLedgerServices();
-        services.AddCrdtDeltaSyncServices();
         services.AddLiveCommerceServices();
 
         // Horizons 21-25 Services
-        services.AddSupplyChainReplenishmentServices();
-        services.AddEventSourcingCqrsServices();
         services.AddIdentityGraphFraudServices();
         services.AddIdpServices();
         services.AddMicroFrontendServices();
 
         // Horizons 26-30 Services
-        services.AddProcurementBiddingServices();
-        services.AddZeroKnowledgeSolvencyServices();
         services.AddMultiRegionSovereignServices();
         services.AddAmrRoboticsBinPackingServices();
         services.AddPredictiveRetentionServices();
 
         // Horizons 31-35 Services
-        services.AddCustomsServices();
         services.AddSessionReplayServices();
         services.AddCopywritingServices();
-        services.AddVerifiableIdentityServices();
         services.AddChaosResilienceServices();
 
         // Horizons 36-40 Services
-        services.AddFleetServices();
-        services.AddConfidentialServices();
         services.AddVisualSearchServices();
         services.AddVoiceSynthesisServices();
-        services.AddAutopilotServices();
 
         // Horizons 41-45 Services
-        services.AddFactoringServices();
-        services.AddColdChainServices();
         services.AddQualityGateServices();
         services.AddSupportSwarmServices();
-        services.AddMultiCloudServices();
 
         // Horizons 46-50 Services
-        services.AddEsgServices();
-        services.AddPostQuantumServices();
         services.AddShrinkageServices();
         services.AddAdSpendServices();
         services.AddSovereignGovernanceServices();
 
         // Horizons 51-55 Services
-        services.AddSatelliteCommsServices();
         services.AddNeuromorphicVisionServices();
-        services.AddSettlementBridgeServices();
         services.AddCollaborativeCommerceServices();
-        services.AddEdgeObservabilityServices();
 
         // Horizons 56-60 Services
         services.AddDigitalTwinServices();
-        services.AddZkTraceabilityServices();
-        services.AddRouteOptimizationServices();
         services.AddRetentionConciergeServices();
-        services.AddConfidentialEnclaveServices();
 
         // Horizons 61-65 Services
         services.AddYieldManagementServices();
-        services.AddKnowledgeHypergraphServices();
-        services.AddDisruptionSimulationServices();
         services.AddVoiceLivenessServices();
-        services.AddFinOpsArbitrageServices();
 
         // Horizons 66-70 Services
         
-        services.AddVerifiableCredentialsServices();
         
-        services.AddHsClassificationServices();
-        services.AddServiceMeshServices();
 
         // Horizons 71-75 Services
         services.AddWarehouseSlottingServices();
-        services.AddFxHedgingServices();
         services.AddDifferentialPrivacySandboxServices();
-        services.AddDroneCorridorServices();
-        services.AddZtnaServices();
 
         // Horizons 76-80 Services
         services.AddDataSovereigntyServices();
-        services.AddDemandSensingServices();
-        services.AddVoiceSentimentDeescalationServices();
         
-        services.AddPostQuantumCryptoServices();
 
         // Horizons 81-85 Services
-        services.AddDrayageSchedulerServices();
-        services.AddHomomorphicAnalyticsServices();
-        services.AddConcentratedLiquidityServices();
-        services.AddProsodyDubbingServices();
-        services.AddZkRollupBridgeServices();
 
         // Horizons 86-90 Services
-        services.AddMaritimeEcoRoutingServices();
         
-        services.AddMpcThresholdSignerServices();
 
         // Horizons 91-95 Services
         
-        services.AddCreditRiskUnderwritingServices();
         services.AddDocumentGroundingServices();
-        services.AddZkIdentityVerificationServices();
 
         // Horizons 96-100 Services (Century Capstone Wave)
-        services.AddDePinServices();
-        services.AddBepsPillarTwoServices();
-        services.AddEnterpriseImmuneServices();
 
         // Horizons 101-105 Services (Next-Era Wave)
-        services.AddMicroPaymentMeshServices();
 
         // Horizons 106-110 Services (Deep Infrastructure Wave)
-        services.AddRailHumpYardServices();
-        services.AddConfidentialRemoteAttestationServices();
 
         // Horizons 111-115 Services (Precision Decarbonization & Cyber-Physical Systems)
         
-        services.AddCbdcCrossBorderServices();
         
 
         // Horizons 116-120 Services (Nuclear SMR, Hypersonic Aerospace, QKD, Global Trade & ZK Biometrics)
-        services.AddQkdSatelliteArbiterServices();
         
-        services.AddZkIrisBiometricServices();
 
         // Horizons 121-125 Services (Fusion Tokamak MHD, BCI Kinematics, Gravitational Interferometer, EUV Pellicle & HFT Microstructure)
         
-        services.AddHftOrderBookMicrostructureServices();
 
         // Horizons 126-130 Services (Deep-Sea Submersible, Cryo Turbopump, CRISPR Cleavage, Ring Signatures & UHV Corona)
-        services.AddRingSignatureIdentityServices();
 
         // Horizons 131-135 Services (Solid-State Battery EIS, Subsea DWDM Raman, Superconducting Qubit Gates, Aerocapture Guidance & Threshold ML-DSA)
-        services.AddThresholdMlDsaSignerServices();
 
         // Horizons 136-140 Services (MRI Quench Arbiter, Space Elevator Tether, PEM Electrolyzer, Spiking Retina & ZK State Relay)
-        services.AddSpikingRetinaGazeArbiterServices();
-        services.AddZkStateRelayAggregatorServices();
 
         // Horizons 141-145 Services (CV-QKD Coherent State, Molten Salt CSP Thermocline, Microbial CRISPR Cascade, Fusion Divertor Detachment & Hypersonic Waverider Shock)
-        services.AddCvQkdCoherentStateServices();
 
         // Horizons 146-150 Services (Quantum Dot MEG, Hall Thruster Pole Erosion, Nanopore Basecaller, ZK L3 Watchtower & Superhot EGS)
-        services.AddZkL3WatchtowerFraudProofServices();
 
         // Horizons 151-155 Services (THz 6G Beam Squint, Cryo Fusion Pellets, CAR-T Exhaustion, DMFC Poisoning & Deep-Space RTG Decay)
 
         // Horizons 156-160 Services (Gravitational Microlensing Exoplanets, HTS REBCO Delamination, Antibody Affinity Maturation, ZK Solvency & Hypersonic BLT)
-        services.AddZkSolvencyServices();
 
         // Horizons 161-165 Services (SOEC Co-Electrolysis, OISL Laser Jitter, Spatial Transcriptomics, PQC-HTLC & Tokamak Runaway Suppression)
-        services.AddPqcCrossChainHtlcServices();
 
         // Horizons 166-170 Services (QCL Photoacoustic Spectroscopy, Scramjet Shock Train, CRISPR Prime Editing Flap, AMM LVR & Supercritical Wellbore)
-        services.AddAmmLossVersusRebalancingServices();
 
         // Horizons 171-175 Services (Liquid Metal Blanket Hartmann Flow, Microbial Electrosynthesis, VASIMR Propulsion, OFA MEV & High-NA EUV)
-        services.AddOrderFlowAuctionServices();
         
 
         // Horizons 176-180 Services (sCO2 Brayton Compressor Surge, Direct-to-Cell LEO Doppler, CRISPR Cas12a DETECTR, ZK Dark Pool VDF & Lunar Regolith Microwave Sintering)
-        services.AddZkDarkPoolServices();
 
         // Horizons 181-185 Services (SMES Quench Fast Dump, Adaptive Optics Phase Conjugation, Cell-Free Protein Translation, DeFi Bad Debt Socialization & Hypersonic Skip-Glide)
-        services.AddDeFiLendingServices();
 
         // Horizons 186-190 Services (CV-QKD Excess Noise, DAC Solid-Amine Chemisorption, Martian Aerocapture Guidance, HFT Micro-Price & LNG BOG Re-Liquefaction)
-        services.AddCvQkdExcessNoiseServices();
-        services.AddHftMicroPriceServices();
 
         // Horizons 191-195 Services (Kilopower Space Brayton, Neuromorphic STDP, API Polymorph Continuous Crystallization, Re-Staking Slashing & HEMP Substation Protection)
-        services.AddNeuromorphicStdpServices();
-        services.AddRestakingSlashingServices();
 
         // Horizons 196-200 Services (Double Century Milestone: Dilution Refrigerator ADR, Targeted Alpha TRT, Oblique Detonation Wave Engine, CBDC Atomic DvP & Neutrino Tomography)
-        services.AddCbdcLiquiditySavingServices();
 
         // Horizons 201-205 Services (MBE RHEED Growth, CRISPR Base Editing Bystander, Stratospheric HALE Solar Balance, ZK Recursive Folding & MCFC Carbon Capture)
         
-        services.AddZkRecursiveFoldingServices();
 
         // Horizons 206-210 Services (Maglev Inductrack EDS, Optical Coherence Elastography, Superconducting Marine MHD, ZK Rollup Censorship Resistance & Supercritical Thermosiphon Geothermal)
         
-        services.AddZkRollupCensorshipServices();
 
         // Horizons 211-215 Services (Microfluidic LNP mRNA, QCL Atmospheric Plume, Dual-Stage Hall Thruster, ZK Solvency Audit & Tokamak Liquid Lithium CPS Divertor)
-        services.AddZkSolvencyAuditServices();
 
         // Horizons 216-220 Services (Strontium-87 Optical Clock, AMD Bioleaching, Aerogel TPS Ablation, LSD Depeg Arbitrage & Hyperloop Kantrowitz Aerodynamics)
-        services.AddLsdDepegArbitrageServices();
         
 
         // Horizons 221-225 Services (STED Super-Resolution, PACE Continuous Evolution, M2P2 Plasma Propulsion, Sovereign Debt Climate Resilience & Seismic Metamaterial Cloak)
-        services.AddSovereignDebtClimateResilienceServices();
-        services.AddSeismicMetamaterialCloakServices();
 
         // Horizons 226-230 Services (Photonic GBS, Epigenetic Clock, Electrodynamic Tether, VPIN Toxic Flow & Adiabatic CAES)
-        services.AddVpinToxicFlowServices();
 
         // Horizons 231-235 Services (Cold Atom Gravimeter, IVT mRNA Capping, Aerogravity-Assist, Cross-Asset Spillover & SCWO PFAS Elimination)
-        services.AddCrossAssetLiquiditySpilloverServices();
 
         // Horizons 236-240 Services (Neutral Atom Rydberg Gates, CAR-T Exhaustion Reprogramming, Solar Sail Radiation Pressure, Dynamic Margin Collateral VaR & Microbial Fuel Cell Bioenergy)
-        services.AddDynamicMarginCollateralVarServices();
 
         // Horizons 241-245 Services (NV Center Magnetometry, Prime Editing Search-and-Replace, MHD Boundary Layer Flow Control, AMM Impermanent Loss Dynamic Hedge & Direct Methanol Fuel Cell)
-        services.AddAmmDynamicImpermanentLossHedgeServices();
 
         // Horizons 246-250 Services (Topological Majorana Braiding, CRISPR RNP Electroporation, Nuclear Thermal Propulsion, Cross-Currency Flash Swap Arbitrage & Ocean Thermal Energy Conversion)
-        services.AddCrossCurrencyFlashSwapServices();
 
         // Horizons 251-255 Services (Cavity Optomechanics Phonon Squeezing, AAV Capsid Evolution, Rotating Detonation Combustor, Order Flow Adverse Selection & Alkaline Water Electrolysis)
-        services.AddOrderFlowAdverseSelectionDrainServices();
 
         // Horizons 256-260 Services (Superconducting Fluxonium Coherence, Cytidine Base Editing Bystander, Hypersonic Aerocapture, Ornstein-Uhlenbeck Stat Arb & SOEC Co-Electrolysis)
-        services.AddStatisticalArbitrageOrnsteinUhlenbeckServices();
 
         // Horizons 261-265 Services (NV Center Nuclear Spin Register, Lentiviral Integration Oncogenesis, Lunar Crater Tether, SABR Volatility Surface & LFP Battery Thermal Runaway)
-        services.AddSabrVolatilitySurfaceCalibrationServices();
 
         // Horizons 266-270 Services (Bosonic Cat Qubit Protection, Engineered Exosome Cargo, Asteroid Kinetic Impactor, Hierarchical Risk Parity & VRFB Spectrophotometry Balancing)
-        services.AddHierarchicalRiskParityClusteringServices();
 
         // Horizons 271-275 Services (TWPA Readout, PROTAC Kinetics, Scramjet Isolator, FX Basis CIP & Compressed Gas Geothermal)
-        services.AddCrossCurrencyFxBasisSwapCipServices();
 
         // Horizons 276-280 Services (Neutral Atom Tweezer Rearrangement, Cell-Free Protein Synthesis, Hall-Effect Thruster Erosion, Microstructure Kyle's Lambda & Solid-State Battery Dendrite Suppression)
-        services.AddMicrostructureKylesLambdaServices();
 
         // Horizons 281-285 Services (Diamond Color Center Nanophotonics, Oligo Synthesis, Dual-Comb Spectroscopy, Merton Jump Diffusion & Perovskite Tandem)
-        services.AddMertonJumpDiffusionServices();
 
         // Horizons 286-290 Services (Superconducting Crosstalk Cancellation, Single-Cell Ambient RNA Decontamination, Reaction Wheel Jitter, Bond Portfolio Immunization & Molten Salt CSP)
-        services.AddBondPortfolioImmunizationServices();
 
         // Horizons 291-295 Services (Rare-Earth Optical Memory, HMW DNA Extraction, Lunar Orbit Insertion, CDO Copula Tranches & Solid Oxide Fuel Cells)
-        services.AddCdoCopulaTrancheServices();
 
         // Horizons 296-300 Services (Silicon Spin Qubit Exchange, Nanopore Squiggle Basecalling, Aerobraking Drag, Almgren-Chriss Liquidation & Tokamak NTM ECCD Suppression)
-        services.AddAlmgrenChrissLiquidationServices();
 
         // Horizons 301-305 Services (CV Cluster Teleportation, Cryo-ET Subtomogram Averaging, Solar CME Shock Arrival, FX LSV Barrier Options & PEM Electrolyzer Gas Crossover)
-        services.AddFxLsvBarrierServices();
 
         // Horizons 306-310 Services (Superconducting Quantum Acoustics, GUIDE-Seq Prime Editing, Atmospheric Entry Guidance, TIPS Real Yield & DAC TVSA Sorbent)
-        services.AddTipsRealYieldServices();
 
         // Horizons 311-315 Services (Majorana Zero Modes, Organoid Morphogenesis, OISL Crosslink PAT, CDS Index Tranche & Fischer-Tropsch SAF)
-        services.AddCdsIndexTrancheServices();
 
         // Horizons 316-320 Services (Surface Code Lattice Surgery, Droplet Single-Cell Microfluidics, Spacecraft Charging, Cross-Currency Basis & VRFB Shunt Currents)
-        services.AddCrossCurrencyBasisServices();
 
         // Horizons 321-325 Services (Dual-Species Tweezers, CODEX Proteomics, Spacecraft RCS Plume Impingement, SVI Volatility Surface & SOEC Steam Electrolysis)
-        services.AddSviVolatilityServices();
 
         // Horizons 326-330 Core ERP Suite (MRP II, AP 3-Way Match, Warehouse Bin Cycle Counting, Multi-Tier Payroll & COD Settlement)
         
-        services.AddApThreeWayMatchServices();
-        services.AddWarehouseBinAuditServices();
-        services.AddMultiTierPayrollServices();
-        services.AddCodSettlementServices();
 
         // Domain B3 CDP Identity Resolution, Domain C6 Advertising Sync & Domain E1 Automation Visual DAG Telemetry
         services.AddCdpIdentityServices();
@@ -1207,7 +936,6 @@ public static class ServiceCollectionExtensions
         services.AddAppGeneratorServices();
         services.AddCustomDomainServices();
         services.AddVideoAvatarServices();
-        services.AddEdiReplenishmentServices();
         services.AddSocialTriageServices();
         services.AddChurnRescueServices();
         services.AddInfluencerEscrowServices();
@@ -1237,14 +965,10 @@ public static class ServiceCollectionExtensions
         services.AddEphemeralVaultServices();
         services.AddWinLossServices();
         services.AddRetargetingMatrixServices();
-        services.AddSentimentDeescalationServices();
         services.AddConsumptionMeteringServices();
-        services.AddShardMeshServices();
         services.AddMutualActionPlanServices();
         services.AddCatalogFeedsServices();
         services.AddCapacityPlanningServices();
-        services.AddFxHedgingEscrowServices();
-        services.AddMicroSegmentationServices();
         services.AddAccountExpansionServices();
         services.AddInfluencerEscrowV2Services();
         services.AddCallTransferMeshServices();
@@ -1253,103 +977,40 @@ public static class ServiceCollectionExtensions
         services.AddPipelineVelocityServices();
         services.AddBidPacingServices();
         services.AddCallComplianceServices();
-        services.AddTaxNexusServices();
-        services.AddChaosMeshServices();
         services.AddCpqApprovalServices();
         services.AddAdSpendRedistributionServices();
-        services.AddPitchTuningServices();
-        services.AddTreasuryYieldServices();
-        services.AddEdgeMeshServices();
         services.AddCommissionSettlementServices();
-        services.AddRetailMediaAuctionServices();
-        services.AddAudioNoiseCancellationServices();
-        services.AddVendorBillMatchingServices();
-        services.AddK8sIsolationMeshServices();
         services.AddTerritoryRebalancingServices();
-        services.AddCtvAdInsertionServices();
         services.AddScreenDiagnosticServices();
-        services.AddTransferPricingServices();
-        services.AddBgpGeoSteeringServices();
         services.AddIntentRollupServices();
-        services.AddUid2TokenizerServices();
         services.AddAgentWhisperServices();
-        services.AddFxExposureRebalancingServices();
         services.AddDbQueryRouterServices();
         services.AddContentPersonalizationServices();
         services.AddVideoDcoServices();
         services.AddEmotionDeescalationServices();
-        services.AddPayrollTaxWithholdingServices();
-        services.AddApiRateLimiterMeshServices();
         services.AddDirectMailMeshServices();
-        services.AddSpatialAdBiddingServices();
         services.AddSpeechStreamingMeshServices();
-        services.AddAssetDepreciationServices();
-        services.AddSecretRotationMeshServices();
         services.AddCollaborativeDealRoomServices();
-        services.AddRetailSignageMeshServices();
         services.AddMultilingualVoiceMeshServices();
-        services.AddSovereignEInvoicingServices();
-        services.AddPodSandboxingMeshServices();
         services.AddCompetitiveBattlecardServices();
-        services.AddRetailCoopDspServices();
         services.AddCallStateResumptionServices();
-        services.AddSovereignCbamServices();
-        services.AddEbpfSecurityMeshServices();
         services.AddRfpResponseServices();
         services.AddGeoIncrementalityServices();
-        services.AddVoiceDialectServices();
-        services.AddCapTableEquityServices();
-        services.AddEdgeWasmMeshServices();
         services.AddBuyingCommitteeGraphServices();
-        services.AddAudioDaiServices();
         services.AddTelephonyWhisperServices();
-        services.AddTaxExemptionServices();
-        services.AddBgpBfdServices();
         services.AddContractRedlineServices();
-        services.AddDoohBiddingServices();
-        services.AddVoiceBiometricServices();
-        services.AddTaxRdCreditServices();
-        services.AddSpiffeSpireServices();
         services.AddCustomerAdvisoryBoardServices();
-        services.AddInCarAdServices();
         services.AddVoiceIntentFastPathServices();
-        services.AddSovereignDstServices();
-        services.AddCiliumEbpfServices();
         services.AddValueRealizationServices();
-        services.AddWeatherAdTriggersServices();
-        services.AddTelephonyDisfluencyServices();
-        services.AddExportComplianceServices();
-        services.AddWasmSandboxServices();
         services.AddCustomerAdvocacyServices();
-        services.AddMicroGeofenceServices();
-        services.AddEchoCancellationServices();
-        services.AddCapitalAllocationServices();
-        services.AddWireGuardDiscoveryServices();
         services.AddDealCoachingServices();
-        services.AddSignageSspServices();
-        services.AddNeuralPlcServices();
-        services.AddSecondaryLiquidityServices();
-        services.AddRouteFlapDampingServices();
         services.AddSpiffGamificationServices();
-        services.AddVehicleAudioDspServices();
-        services.AddDereverberationServices();
-        services.AddSection174Services();
-        services.AddEvpnVxlanServices();
         services.AddDealAutopsyServices();
         services.AddSponsoredBrandAdsServices();
-        services.AddProsodyEmpathyServices();
-        services.AddIntercompanyNettingServices();
-        services.AddSrv6TrafficServices();
         services.AddRepRampServices();
         services.AddCrossDeviceSyncServices();
-        services.AddVocalTremorServices();
-        services.AddGlobeTopUpTaxServices();
-        services.AddRocev2FabricServices();
         services.AddQuotaCapacityServices();
-        services.AddStoreFootfallLiftServices();
         services.AddDialectSynthesisServices();
-        services.AddSttrTreatyTaxServices();
-        services.AddNvmeOverFabricsServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

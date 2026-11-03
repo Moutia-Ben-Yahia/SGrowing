@@ -8,7 +8,6 @@ using SGrowing.Api.Modules.Funnels.Autonomous;
 using SGrowing.Api.Modules.Messaging;
 using SGrowing.Api.Modules.Organizations;
 using SGrowing.Api.Modules.Storage.Media;
-using SGrowing.Api.Modules.Workforce.Timesheets;
 using SGrowing.Core.Common;
 using SGrowing.Core.Entities;
 using Xunit;
@@ -195,72 +194,6 @@ public class StrategicNextStepsTests
         );
 
         Assert.NotNull(badRequestResult);
-    }
-
-    // =========================================================================
-    // 5. Workforce Timesheets & True Margin Cost Rollup (Ever-Gauzy)
-    // =========================================================================
-
-    [Fact]
-    public async Task Timesheets_ApproveTimecard_RollsLaborCostDirectlyIntoDealMargin()
-    {
-        using var db = CreateInMemoryDb();
-        var tenantId = Guid.NewGuid();
-        var dealId = Guid.NewGuid();
-        var orgId = Guid.NewGuid();
-
-        // Create initial DealMarginRecord: Revenue = $10,000, COGS = $3,000, Courier = $500, Initial Labor = $0
-        var dealMargin = new DealMarginRecord
-        {
-            Id = Guid.NewGuid(),
-            TenantId = tenantId,
-            DealId = dealId,
-            OrganizationId = orgId,
-            DealTitle = "Enterprise Hypermarket Deal",
-            Revenue = 10000m,
-            CostOfGoodsSold = 3000m,
-            CourierShippingFees = 500m,
-            OperatorLaborHours = 0m,
-            OperatorHourlyRate = 30m,
-            OperatorLaborCost = 0m,
-            TrueGrossMargin = 6500m, // 10000 - 3000 - 500
-            GrossMarginPercentage = 65.0m
-        };
-        db.DealMarginRecords.Add(dealMargin);
-        await db.SaveChangesAsync();
-
-        var timesheetService = new TimesheetService(db);
-
-        // Log 10 hours at $30/hr ($300 labor cost)
-        var logReq = new LogTimecardRequest(
-            TeamMemberId: Guid.NewGuid(),
-            TeamMemberName: "Sarah Jenkins",
-            TaskId: Guid.NewGuid(),
-            TaskTitle: "Phase 3: Catalog Ingestion & ERP Data Migration",
-            DealId: dealId,
-            DealTitle: "Enterprise Hypermarket Deal",
-            Description: "Imported 4,200 SKU records",
-            HoursWorked: 10m,
-            HourlyRate: 30m
-        );
-
-        var entry = await timesheetService.LogTimecardAsync(tenantId, logReq);
-        Assert.NotNull(entry);
-        Assert.Equal("Submitted", entry.Status);
-        Assert.Equal(300m, entry.TotalLaborCost);
-
-        // Approve timecard
-        var approved = await timesheetService.ApproveTimecardAsync(tenantId, entry.Id, new ApproveTimecardRequest("Operations Director"));
-        Assert.NotNull(approved);
-        Assert.Equal("Approved", approved.Status);
-
-        // Verify DealMarginRecord has been dynamically recalculated
-        var updatedMargin = await db.DealMarginRecords.FirstAsync(d => d.Id == dealMargin.Id);
-        Assert.Equal(10m, updatedMargin.OperatorLaborHours);
-        Assert.Equal(300m, updatedMargin.OperatorLaborCost);
-        // True Gross Margin = 10000 - 3000 - 500 - 300 = 6200
-        Assert.Equal(6200m, updatedMargin.TrueGrossMargin);
-        Assert.Equal(62.0m, updatedMargin.GrossMarginPercentage);
     }
 
     // =========================================================================
