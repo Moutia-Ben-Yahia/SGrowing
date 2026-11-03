@@ -267,6 +267,7 @@ app.MapDefaultEndpoints();
 // Middleware Pipeline
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 app.UseCors();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<TenantContextMiddleware>();

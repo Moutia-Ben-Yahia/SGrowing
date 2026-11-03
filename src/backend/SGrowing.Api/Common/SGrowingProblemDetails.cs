@@ -68,4 +68,17 @@ public static class SGrowingProblemDetails
             detail,
             instance,
             "https://sgrowing.io/errors/validation-error");
+
+    public static IResult TooManyRequests(
+        string detail,
+        string instance,
+        string title = "Too Many Requests",
+        IDictionary<string, object?>? extensions = null) =>
+        Create(
+            StatusCodes.Status429TooManyRequests,
+            title,
+            detail,
+            instance,
+            "https://sgrowing.io/errors/rate-limit-exceeded",
+            extensions);
 }

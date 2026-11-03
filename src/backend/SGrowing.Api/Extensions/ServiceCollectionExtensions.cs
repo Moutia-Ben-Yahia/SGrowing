@@ -1,4 +1,5 @@
 using System.Text;
+using SGrowing.Api.Common.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -1009,6 +1010,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<DatabaseSeeder>();
+        services.AddSGrowingRateLimiting();
         services.AddOpenApi(options =>
         {
             options.AddDocumentTransformer<SGrowing.Api.Common.OpenApi.OpenApiSecurityTransformer>();
