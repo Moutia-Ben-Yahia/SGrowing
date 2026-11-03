@@ -886,7 +886,7 @@ graph TD
 - `0d4d860`: `feat(growth-os): deliver Horizons 161 to 165 (Customer Advocacy Reference Mesh, Micro-Geofence DSP Bidding, Neural Echo Cancellation, Sovereign Capital Allocation, WireGuard Peer Discovery & IPsec Fallback)`
 - `92d5362`: `feat(growth-os): deliver Horizons 166 to 170 (Live Deal Coaching, In-Store Signage SSP, Neural Packet Loss Concealment, Cap Table Secondary Liquidity, BGP Route Flap Damping)`
 - `8a66d20`: `feat(growth-os): deliver Horizons 171 to 175 (Sales SPIFF Gamification, Vehicle Audio DSP, Voice Dereverberation, Section 174 Amortization, eBGP EVPN VXLAN Overlay)`
-- `[pending-commit]`: `feat(growth-os): deliver Horizons 176 to 180 (Win-Rate Deal Autopsy, Retail Media Sponsored Brand Ads, Speech Prosody Empathy Tuning, Intercompany Multilateral Netting, SRv6 Traffic Engineering)`
+- `3736203`: `feat(growth-os): deliver Horizons 176 to 180 (Win-Rate Deal Autopsy, Retail Media Sponsored Brand Ads, Speech Prosody Empathy Tuning, Intercompany Multilateral Netting, SRv6 Traffic Engineering)`
 
 ### Horizon 176 to 180 Implementation Details
 - **Horizon 176 (Sales / Win-Rate Deal Autopsy & Lost Opportunity Forensic Mesh):** Lost opportunity root cause decomposition, buying committee ghosting forensic markers, competitor displacement telemetry, and automated remediation playbooks (`DealAutopsyEngine.cs`, `deal-autopsy-cockpit.component.ts`).
