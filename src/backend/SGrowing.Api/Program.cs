@@ -141,6 +141,11 @@ using SGrowing.Api.Modules.Advertising.InCarAds;
 using SGrowing.Api.Modules.Voice.VoiceIntentFastPath;
 using SGrowing.Api.Modules.Finance.SovereignDst;
 using SGrowing.Api.Modules.Infrastructure.CiliumEbpf;
+using SGrowing.Api.Modules.Sales.ValueRealization;
+using SGrowing.Api.Modules.Advertising.WeatherAdTriggers;
+using SGrowing.Api.Modules.Voice.TelephonyDisfluency;
+using SGrowing.Api.Modules.Finance.ExportCompliance;
+using SGrowing.Api.Modules.Infrastructure.WasmSandbox;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -1027,6 +1032,11 @@ app.MapInCarAdEndpoints();
 app.MapVoiceIntentFastPathEndpoints();
 app.MapSovereignDstEndpoints();
 app.MapCiliumEbpfEndpoints();
+app.MapValueRealizationEndpoints();
+app.MapWeatherAdTriggersEndpoints();
+app.MapTelephonyDisfluencyEndpoints();
+app.MapExportComplianceEndpoints();
+app.MapWasmSandboxEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

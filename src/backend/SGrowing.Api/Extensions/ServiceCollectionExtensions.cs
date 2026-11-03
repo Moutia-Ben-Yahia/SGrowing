@@ -391,6 +391,11 @@ using SGrowing.Api.Modules.Advertising.InCarAds;
 using SGrowing.Api.Modules.Voice.VoiceIntentFastPath;
 using SGrowing.Api.Modules.Finance.SovereignDst;
 using SGrowing.Api.Modules.Infrastructure.CiliumEbpf;
+using SGrowing.Api.Modules.Sales.ValueRealization;
+using SGrowing.Api.Modules.Advertising.WeatherAdTriggers;
+using SGrowing.Api.Modules.Voice.TelephonyDisfluency;
+using SGrowing.Api.Modules.Finance.ExportCompliance;
+using SGrowing.Api.Modules.Infrastructure.WasmSandbox;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Diagnostics;
@@ -1268,6 +1273,11 @@ public static class ServiceCollectionExtensions
         services.AddVoiceIntentFastPathServices();
         services.AddSovereignDstServices();
         services.AddCiliumEbpfServices();
+        services.AddValueRealizationServices();
+        services.AddWeatherAdTriggersServices();
+        services.AddTelephonyDisfluencyServices();
+        services.AddExportComplianceServices();
+        services.AddWasmSandboxServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

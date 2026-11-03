@@ -350,5 +350,10 @@ export const routes: Routes = [
   { path: 'voice/voice-intent', loadComponent: () => import('./features/voice/voice-intent-cockpit.component').then(m => m.VoiceIntentCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/sovereign-dst', loadComponent: () => import('./features/finance/sovereign-dst-cockpit.component').then(m => m.SovereignDstCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/cilium-ebpf', loadComponent: () => import('./features/infrastructure/cilium-ebpf-cockpit.component').then(m => m.CiliumEbpfCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/value-realization', loadComponent: () => import('./features/sales/value-realization-cockpit.component').then(m => m.ValueRealizationCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/weather-triggers', loadComponent: () => import('./features/advertising/weather-triggers-cockpit.component').then(m => m.WeatherTriggersCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/telephony-disfluency', loadComponent: () => import('./features/voice/telephony-disfluency-cockpit.component').then(m => m.TelephonyDisfluencyCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/export-compliance', loadComponent: () => import('./features/finance/export-compliance-cockpit.component').then(m => m.ExportComplianceCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/wasm-sandbox', loadComponent: () => import('./features/infrastructure/wasm-sandbox-cockpit.component').then(m => m.WasmSandboxCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];
