@@ -884,7 +884,7 @@ graph TD
 - `b7b4eb5`: `feat(growth-os): deliver Horizons 151 to 155 (Customer Advisory Board Matrix, In-Car Infotainment Ad Bidding, Voice Intent Fast-Path, OECD Pillar 2 Tax Ledger, Cilium eBPF WireGuard Transit Mesh)`
 - `db2c7b3`: `feat(growth-os): deliver Horizons 156 to 160 (Customer Success QBR Deck Generator, Weather DPA Triggers, Telephony Disfluency Mesh, Sovereign Export Control Ledger, Multi-Cloud Wasm Micro-VM Arbiter)`
 - `0d4d860`: `feat(growth-os): deliver Horizons 161 to 165 (Customer Advocacy Reference Mesh, Micro-Geofence DSP Bidding, Neural Echo Cancellation, Sovereign Capital Allocation, WireGuard Peer Discovery & IPsec Fallback)`
-- In-Progress: `feat(growth-os): deliver Horizons 166 to 170 (Live Deal Coaching, In-Store Signage SSP, Neural Packet Loss Concealment, Cap Table Secondary Liquidity, BGP Route Flap Damping)`
+- `92d5362`: `feat(growth-os): deliver Horizons 166 to 170 (Live Deal Coaching, In-Store Signage SSP, Neural Packet Loss Concealment, Cap Table Secondary Liquidity, BGP Route Flap Damping)`
 
 ### Horizon 166 to 170 Implementation Details
 - **Horizon 166 (Sales / Live Deal Coaching & Buyer Objections Counter-Tactics Mesh):** Sub-200ms acoustic objection recognition, live battlecard counter-tactic recommendations, rep adherence scoring during active negotiations (`DealCoachingEngine.cs`, `deal-coaching-cockpit.component.ts`).
