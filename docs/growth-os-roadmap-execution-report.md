@@ -881,7 +881,7 @@ graph TD
 - `9051684`: `feat(growth-os): deliver Horizons 136 to 140 (Enterprise RFP Response Engine, Synthetic Geo Incrementality, Voice Dialect Adaptation, Cap Table Equity Ledger, Multi-Cloud Edge Wasm Mesh)`
 - `7d9cfb9`: `feat(growth-os): deliver Horizons 141 to 145 (Buying Committee Influence Graph, Programmatic Audio DAI, Voice Telephony Whisper Coach, Sovereign Indirect Tax Exemption Ledger, Multi-Cloud BGP BFD Failover Mesh)`
 - `0d11b95`: `feat(growth-os): deliver Horizons 146 to 150 (Contract Redline Auto-Negotiator, DOOH Real-Time Bidding, Voice Biometric Deepfake Defense, Sovereign R&D Tax Credit Ledger, Multi-Cloud SPIFFE/SPIRE Identity Federation Mesh)`
-- `Stage 31`: `feat(growth-os): deliver Horizons 151 to 155 (Customer Advisory Board Matrix, In-Car Infotainment Ad Bidding, Voice Intent Fast-Path, OECD Pillar 2 Tax Ledger, Cilium eBPF WireGuard Transit Mesh)`
+- `b7b4eb5`: `feat(growth-os): deliver Horizons 151 to 155 (Customer Advisory Board Matrix, In-Car Infotainment Ad Bidding, Voice Intent Fast-Path, OECD Pillar 2 Tax Ledger, Cilium eBPF WireGuard Transit Mesh)`
 
 ### Horizon 151 to 155 Implementation Details
 - **Horizon 151 (Sales / Customer Advisory Board & Executive Alignment):** C-suite pairing matrix, strategic co-innovation roadmap voting, account ARR influence tracking (`CustomerAdvisoryBoardEngine.cs`, `cab-matrix-cockpit.component.ts`).
