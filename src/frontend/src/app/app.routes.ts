@@ -330,5 +330,10 @@ export const routes: Routes = [
   { path: 'voice/call-state-resumption', loadComponent: () => import('./features/voice/call-state-resumption-cockpit.component').then(m => m.CallStateResumptionCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/sovereign-cbam', loadComponent: () => import('./features/finance/sovereign-cbam-cockpit.component').then(m => m.SovereignCbamCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/ebpf-security-mesh', loadComponent: () => import('./features/infrastructure/ebpf-security-mesh-cockpit.component').then(m => m.EbpfSecurityMeshCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/rfp-response', loadComponent: () => import('./features/sales/rfp-response-cockpit.component').then(m => m.RfpResponseCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/geo-incrementality', loadComponent: () => import('./features/advertising/geo-incrementality-cockpit.component').then(m => m.GeoIncrementalityCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/voice-dialect', loadComponent: () => import('./features/voice/voice-dialect-cockpit.component').then(m => m.VoiceDialectCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/cap-table-equity', loadComponent: () => import('./features/finance/cap-table-equity-cockpit.component').then(m => m.CapTableEquityCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/edge-wasm-mesh', loadComponent: () => import('./features/infrastructure/edge-wasm-mesh-cockpit.component').then(m => m.EdgeWasmMeshCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

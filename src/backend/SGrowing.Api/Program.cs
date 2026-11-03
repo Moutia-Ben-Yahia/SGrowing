@@ -121,6 +121,11 @@ using SGrowing.Api.Modules.Advertising.RetailCoopDsp;
 using SGrowing.Api.Modules.Voice.CallStateResumption;
 using SGrowing.Api.Modules.Finance.SovereignCbam;
 using SGrowing.Api.Modules.Infrastructure.EbpfSecurityMesh;
+using SGrowing.Api.Modules.Sales.RfpResponse;
+using SGrowing.Api.Modules.Advertising.GeoIncrementality;
+using SGrowing.Api.Modules.Voice.VoiceDialect;
+using SGrowing.Api.Modules.Finance.CapTableEquity;
+using SGrowing.Api.Modules.Infrastructure.EdgeWasmMesh;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -987,6 +992,11 @@ app.MapRetailCoopDspEndpoints();
 app.MapCallStateResumptionEndpoints();
 app.MapSovereignCbamEndpoints();
 app.MapEbpfSecurityMeshEndpoints();
+app.MapRfpResponseEndpoints();
+app.MapGeoIncrementalityEndpoints();
+app.MapVoiceDialectEndpoints();
+app.MapCapTableEquityEndpoints();
+app.MapEdgeWasmMeshEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

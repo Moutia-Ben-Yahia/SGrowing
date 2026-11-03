@@ -371,6 +371,11 @@ using SGrowing.Api.Modules.Advertising.RetailCoopDsp;
 using SGrowing.Api.Modules.Voice.CallStateResumption;
 using SGrowing.Api.Modules.Finance.SovereignCbam;
 using SGrowing.Api.Modules.Infrastructure.EbpfSecurityMesh;
+using SGrowing.Api.Modules.Sales.RfpResponse;
+using SGrowing.Api.Modules.Advertising.GeoIncrementality;
+using SGrowing.Api.Modules.Voice.VoiceDialect;
+using SGrowing.Api.Modules.Finance.CapTableEquity;
+using SGrowing.Api.Modules.Infrastructure.EdgeWasmMesh;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Diagnostics;
@@ -1228,6 +1233,11 @@ public static class ServiceCollectionExtensions
         services.AddCallStateResumptionServices();
         services.AddSovereignCbamServices();
         services.AddEbpfSecurityMeshServices();
+        services.AddRfpResponseServices();
+        services.AddGeoIncrementalityServices();
+        services.AddVoiceDialectServices();
+        services.AddCapTableEquityServices();
+        services.AddEdgeWasmMeshServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
