@@ -121,6 +121,33 @@ public static class WhatsAppCloudWebhookEndpoints
                     {
                         var changeVal = changesArray[0].GetProperty("value");
 
+                        // Handle Meta Delivery & Read Status Receipts
+                        if (changeVal.TryGetProperty("statuses", out var statusesArray) && statusesArray.GetArrayLength() > 0)
+                        {
+                            var s = statusesArray[0];
+                            string sStatus = s.TryGetProperty("status", out var st) ? (st.GetString() ?? "") : "";
+                            string sMsgId = s.TryGetProperty("id", out var mid) ? (mid.GetString() ?? "") : "";
+                            string sRecipient = s.TryGetProperty("recipient_id", out var r) ? (r.GetString() ?? "") : "";
+
+                            if (!string.IsNullOrEmpty(sMsgId))
+                            {
+                                var existingMsg = await db.Messages.FirstOrDefaultAsync(m => m.ExternalMessageId == sMsgId, ct);
+                                if (existingMsg != null)
+                                {
+                                    existingMsg.DeliveryStatus = (sStatus.ToLowerInvariant()) switch
+                                    {
+                                        "delivered" => DeliveryStatus.Delivered,
+                                        "read" => DeliveryStatus.Read,
+                                        "failed" => DeliveryStatus.Failed,
+                                        _ => DeliveryStatus.Sent
+                                    };
+                                    await db.SaveChangesAsync(ct);
+                                }
+                            }
+
+                            return Results.Ok(new { status = "StatusReceiptProcessed", messageId = sMsgId, deliveryStatus = sStatus, recipient = sRecipient });
+                        }
+
                         // Extract Contact metadata
                         if (changeVal.TryGetProperty("contacts", out var contactsArray) && contactsArray.GetArrayLength() > 0)
                         {

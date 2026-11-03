@@ -514,6 +514,7 @@ app.MapContractSigningEndpoints();
 app.MapCommercePillarEndpoints();
 app.MapCommerceConnectorEndpoints();
 app.MapWhatsAppCloudWebhookEndpoints();
+app.MapDeliveryWebhookEndpoints();
 app.MapProjectTaskEndpoints();
 app.MapDeepWebResearchEndpoints();
 app.MapWarehouseRoutingEndpoints();
