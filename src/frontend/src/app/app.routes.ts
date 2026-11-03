@@ -365,5 +365,10 @@ export const routes: Routes = [
   { path: 'voice/neural-plc', loadComponent: () => import('./features/voice/neural-plc-cockpit.component').then(m => m.NeuralPlcCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/secondary-liquidity', loadComponent: () => import('./features/finance/secondary-liquidity-cockpit.component').then(m => m.SecondaryLiquidityCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/route-flap-damping', loadComponent: () => import('./features/infrastructure/route-flap-damping-cockpit.component').then(m => m.RouteFlapDampingCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/spiff-gamification', loadComponent: () => import('./features/sales/spiff-gamification-cockpit.component').then(m => m.SpiffGamificationCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/vehicle-audio-dsp', loadComponent: () => import('./features/advertising/vehicle-audio-dsp-cockpit.component').then(m => m.VehicleAudioDspCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/dereverberation', loadComponent: () => import('./features/voice/dereverberation-cockpit.component').then(m => m.DereverberationCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/section174', loadComponent: () => import('./features/finance/section174-cockpit.component').then(m => m.Section174CockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/evpn-vxlan', loadComponent: () => import('./features/infrastructure/evpn-vxlan-cockpit.component').then(m => m.EvpnVxlanCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

@@ -885,17 +885,18 @@ graph TD
 - `db2c7b3`: `feat(growth-os): deliver Horizons 156 to 160 (Customer Success QBR Deck Generator, Weather DPA Triggers, Telephony Disfluency Mesh, Sovereign Export Control Ledger, Multi-Cloud Wasm Micro-VM Arbiter)`
 - `0d4d860`: `feat(growth-os): deliver Horizons 161 to 165 (Customer Advocacy Reference Mesh, Micro-Geofence DSP Bidding, Neural Echo Cancellation, Sovereign Capital Allocation, WireGuard Peer Discovery & IPsec Fallback)`
 - `92d5362`: `feat(growth-os): deliver Horizons 166 to 170 (Live Deal Coaching, In-Store Signage SSP, Neural Packet Loss Concealment, Cap Table Secondary Liquidity, BGP Route Flap Damping)`
+- In-Progress: `feat(growth-os): deliver Horizons 171 to 175 (Sales SPIFF Gamification, Vehicle Audio DSP, Voice Dereverberation, Section 174 Amortization, eBGP EVPN VXLAN Overlay)`
 
-### Horizon 166 to 170 Implementation Details
-- **Horizon 166 (Sales / Live Deal Coaching & Buyer Objections Counter-Tactics Mesh):** Sub-200ms acoustic objection recognition, live battlecard counter-tactic recommendations, rep adherence scoring during active negotiations (`DealCoachingEngine.cs`, `deal-coaching-cockpit.component.ts`).
-- **Horizon 167 (Advertising / In-Store Digital Signage SSP Dynamic Slot Auction & Verification):** OpenRTB 3.0 dynamic slot auctions for physical in-store displays, footfall density bid multipliers, cryptographically verified proof-of-play hardware attestations (`SignageSspEngine.cs`, `signage-ssp-cockpit.component.ts`).
-- **Horizon 168 (Voice / Deep Neural Packet Loss Concealment & Jitter Arbiter):** Deep neural autoregressive waveform synthesis across lost 20ms audio frames, dynamic jitter buffer sizing (<18ms latency), zero acoustic clicking (`NeuralPlcEngine.cs`, `neural-plc-cockpit.component.ts`).
-- **Horizon 169 (Finance / Secondary Share Liquidity, Cap Table Dilution & Tender Offer Ledger):** Company-sponsored tender offer windows, automated Right of First Refusal (ROFR) clearance tokens, cap table anti-dilution simulation, sovereign tax withholding (`SecondaryLiquidityEngine.cs`, `secondary-liquidity-cockpit.component.ts`).
-- **Horizon 170 (Infrastructure / Multi-Cloud BGP Route Flap Damping & Anycast Flap Penalty Ledger):** RFC 2439 mathematical flap penalty accumulation, dynamic exponential decay damping, automatic prefix suppression, zero-downtime anycast PoP evacuation (`RouteFlapDampingEngine.cs`, `route-flap-damping-cockpit.component.ts`).
+### Horizon 171 to 175 Implementation Details
+- **Horizon 171 (Sales / Sales Performance SPIFF & Real-Time Deal Gamification Escrow):** Sub-second deal closing bounty escrow allocation, real-time leaderboard acceleration, and transparent milestone rewards (`SpiffGamificationEngine.cs`, `spiff-gamification-cockpit.component.ts`).
+- **Horizon 172 (Advertising / Connected Vehicle Contextual Audio DSP Ads & In-Cabin Commute Attribution):** OpenRTB in-cabin audio ad insertion, speed and commute context awareness, EBU R128 volume normalization, and drive-by footfall attribution (`VehicleAudioDspEngine.cs`, `vehicle-audio-dsp-cockpit.component.ts`).
+- **Horizon 173 (Voice / AI Voice Telephony Dynamic Acoustic Room Profiling & Dereverberation Mesh):** Microsecond RT60 reverberation estimation, deep spectral neural inverse filtering, zero hollow-room acoustic echo artifacts (`DereverberationEngine.cs`, `dereverberation-cockpit.component.ts`).
+- **Horizon 174 (Finance / Sovereign R&D Section 174 Amortization & Capitalized Software Ledger):** TCJA Section 174 mandatory R&D capitalization schedules, US 5-year vs Foreign 15-year mid-year amortization, dual-basis tax shield accounting (`Section174Engine.cs`, `section174-cockpit.component.ts`).
+- **Horizon 175 (Infrastructure / Zero-Trust Multi-Cloud eBGP EVPN VXLAN Overlay Mesh):** BGP EVPN Type-2 (MAC/IP) and Type-5 (IP Prefix) route distribution across bare-metal GPU and multi-cloud Kubernetes clusters with distributed anycast gateways (`EvpnVxlanEngine.cs`, `evpn-vxlan-cockpit.component.ts`).
 
 ### Current Verified Quality Metrics
-- **Backend xUnit Tests:** 5,613 passing tests (0 failures, 100% pass rate).
-- **Frontend Vitest Specs:** 485 passing tests across 106 standalone component suites.
-- **Playwright E2E Tests:** 179 passing tests across full browser execution runs.
-- **Production Build:** Angular 22 `ng build` succeeded cleanly with 225 lazy chunk bundles.
+- **Backend xUnit Tests:** 5,628 passing tests (0 failures, 100% pass rate).
+- **Frontend Vitest Specs:** 495 passing tests across 111 standalone component suites.
+- **Playwright E2E Tests:** 184 passing tests across full browser execution runs.
+- **Production Build:** Angular 22 `ng build` succeeded cleanly with 230 lazy chunk bundles.
 - **Compiler Health:** .NET 10 compilation with `TreatWarningsAsErrors=true` (0 warnings, 0 errors).

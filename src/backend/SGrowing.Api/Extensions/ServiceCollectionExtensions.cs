@@ -406,6 +406,11 @@ using SGrowing.Api.Modules.Advertising.SignageSsp;
 using SGrowing.Api.Modules.Voice.NeuralPlc;
 using SGrowing.Api.Modules.Finance.SecondaryLiquidity;
 using SGrowing.Api.Modules.Infrastructure.RouteFlapDamping;
+using SGrowing.Api.Modules.Sales.SpiffGamification;
+using SGrowing.Api.Modules.Advertising.VehicleAudioDsp;
+using SGrowing.Api.Modules.Voice.Dereverberation;
+using SGrowing.Api.Modules.Finance.Section174;
+using SGrowing.Api.Modules.Infrastructure.EvpnVxlan;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Diagnostics;
@@ -1298,6 +1303,11 @@ public static class ServiceCollectionExtensions
         services.AddNeuralPlcServices();
         services.AddSecondaryLiquidityServices();
         services.AddRouteFlapDampingServices();
+        services.AddSpiffGamificationServices();
+        services.AddVehicleAudioDspServices();
+        services.AddDereverberationServices();
+        services.AddSection174Services();
+        services.AddEvpnVxlanServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
