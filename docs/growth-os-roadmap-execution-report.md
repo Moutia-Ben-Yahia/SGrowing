@@ -654,6 +654,26 @@ graph TD
   - Active synthetic POP latency, jitter, and packet loss probing, automated DNS geo-steering failover, and route flap dampening.
   - Standalone cockpit (`/infrastructure/bgp-geo-steering`) rendering global edge POP health matrix and dynamic DNS steering overrides.
   - **Verification:** 4 backend tests in `BgpGeoSteeringTests.cs`, 3 Vitest tests, and Playwright E2E verification.
+- **Horizon 111: Autonomous Multi-Channel Buyer Intent De-Duplication & Account Rollup Engine (Domain B19 & J17)**
+  - Unified corporate hierarchy resolution, cross-channel intent deduplication (G2, Bombora, web visit, product signup), multi-rep territory conflict prevention with exclusivity locking.
+  - Standalone cockpit (`/sales/intent-rollup`) displaying aggregated account intent, signal provenance, and lock ownership controls.
+  - **Verification:** 3 backend tests in `IntentRollupTests.cs`, 3 Vitest tests, and Playwright E2E verification.
+- **Horizon 112: Autonomous Cookieless First-Party Identity Graph Stitching & UID2 Tokenizer (Domain D20 & C16)**
+  - SHA256 hashed email/phone ingestion, client-side cryptographic salt rotation, Unified ID 2.0 advertising token synthesis, privacy-safe identity graph stitching.
+  - Standalone cockpit (`/advertising/uid2-tokenizer`) managing active hashed identities, token rotation schedules, and privacy opt-out compliance.
+  - **Verification:** 3 backend tests in `Uid2TokenizerTests.cs`, 3 Vitest tests, and Playwright E2E verification.
+- **Horizon 113: Autonomous Conversational AI Real-Time Agent Whisper & Deal Negotiation Co-Pilot (Domain E17 & F14)**
+  - Sub-150ms real-time audio transcription parsing, dynamic objection detection, objection handling rebuttal recommendations, margin guardrails, and concession simulation.
+  - Standalone cockpit (`/voice/agent-whisper`) displaying active call negotiation state, live suggested talking points, and concession approval triggers.
+  - **Verification:** 4 backend tests in `AgentWhisperTests.cs`, 3 Vitest tests, and Playwright E2E verification.
+- **Horizon 114: Autonomous Dynamic Multi-Currency Hedging & Foreign Exchange (FX) Exposure Rebalancing Mesh (Domain H19 & G15)**
+  - Real-time foreign exchange spot rate ingestion, unhedged balance risk threshold evaluation, automated forward hedge execution, Value at Risk (VaR) reduction.
+  - Standalone cockpit (`/finance/fx-exposure-rebalancing`) rendering multi-currency net exposure, active derivative hedges, and automated rebalance actions.
+  - **Verification:** 4 backend tests in `FxExposureRebalancingTests.cs`, 3 Vitest tests, and Playwright E2E verification.
+- **Horizon 115: Autonomous Cross-Region Database Read Replica Latency Probing & Dynamic Query Router (Domain K18 & A21)**
+  - Continuous replication lag and round-trip latency probing across global database replicas, intelligent read query routing, automatic replica degradation and failback.
+  - Standalone cockpit (`/infrastructure/db-query-router`) visualizing regional database replica health, routing weights, and synthetic probe triggers.
+  - **Verification:** 3 backend tests in `DbQueryRouterTests.cs`, 3 Vitest tests, and Playwright E2E verification.
 
 ### Infrastructure & Benchmarking: Self-Hosted Packaging, Grafana & CI/CD
 - **Observability:**
@@ -676,11 +696,11 @@ graph TD
 
 | Verification Gate | Result | Status |
 |---|---|---|
-| **Backend Unit & Integration Tests** | **5,430 passed / 0 failed / 0 skipped** | **100% Pass** (8.5s) |
+| **Backend Unit & Integration Tests** | **5,447 passed / 0 failed / 0 skipped** | **100% Pass** (8.5s) |
 | **Backend Compilation (`TreatWarningsAsErrors = true`)** | **0 Warnings, 0 Errors** | **100% Pass** |
-| **Frontend Vitest Unit & Component Suite** | **360 passed / 0 failed** across 104 suites | **100% Pass** (5.9s) |
-| **Playwright End-to-End Suite** | **119 passed / 0 failed** across 119 suites | **100% Pass** (1.5m) |
-| **Frontend Production Build (`ng build`)** | **0 Errors, 12.5s bundle generation, 145+ chunks** | **100% Pass** |
+| **Frontend Vitest Unit & Component Suite** | **375 passed / 0 failed** across 109 suites | **100% Pass** (5.9s) |
+| **Playwright End-to-End Suite** | **124 passed / 0 failed** across 124 suites | **100% Pass** (1.5m) |
+| **Frontend Production Build (`ng build`)** | **0 Errors, 12.9s bundle generation, 160+ chunks** | **100% Pass** |
 
 ---
 
@@ -723,4 +743,4 @@ graph TD
 - `f736773`: `docs: finalize delivery record for Horizons 96 to 100 Centennial Milestone in growth OS execution report`
 - `ca6d09e`: `feat(growth-os): deliver Horizons 101 to 105 (Sales Commission Settlement, Retail Media Auction, Audio Noise Cancellation DSP, Vendor Bill 3-Way Reconciliation, Multi-Cloud K8s Isolation Mesh)`
 - `1edb1d9`: `feat(growth-os): deliver Horizons 106 to 110 (Dynamic Sales Territory Rebalancing, Connected TV Ad Insertion, Multimodal Screen Diagnostic Cursor Guidance, Cross-Border Transfer Pricing Ledger, Global BGP Anycast Geo-Steering DNS Mesh)`
-- `[Active]`: `feat(growth-os): deliver Horizons 111 to 115 (Buyer Intent De-Duplication & Account Rollup, Cookieless UID2 Tokenizer, Real-Time Agent Whisper Negotiation Co-Pilot, Multi-Currency FX Hedging Mesh, Cross-Region Read Replica Dynamic Query Router)`
+- `29fdc4a`: `feat(growth-os): deliver Horizons 111 to 115 (Buyer Intent De-Duplication & Account Rollup, Cookieless UID2 Tokenizer, Real-Time Agent Whisper Negotiation Co-Pilot, Multi-Currency FX Hedging Mesh, Cross-Region Read Replica Dynamic Query Router)`
