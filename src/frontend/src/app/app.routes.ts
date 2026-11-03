@@ -325,5 +325,10 @@ export const routes: Routes = [
   { path: 'voice/multilingual-voice-mesh', loadComponent: () => import('./features/voice/multilingual-voice-mesh-cockpit.component').then(m => m.MultilingualVoiceMeshCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/sovereign-e-invoicing', loadComponent: () => import('./features/finance/sovereign-e-invoicing-cockpit.component').then(m => m.SovereignEInvoicingCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/pod-sandboxing-mesh', loadComponent: () => import('./features/infrastructure/pod-sandboxing-mesh-cockpit.component').then(m => m.PodSandboxingMeshCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/competitive-battlecard', loadComponent: () => import('./features/sales/competitive-battlecard-cockpit.component').then(m => m.CompetitiveBattlecardCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/retail-coop-dsp', loadComponent: () => import('./features/advertising/retail-coop-dsp-cockpit.component').then(m => m.RetailCoopDspCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/call-state-resumption', loadComponent: () => import('./features/voice/call-state-resumption-cockpit.component').then(m => m.CallStateResumptionCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/sovereign-cbam', loadComponent: () => import('./features/finance/sovereign-cbam-cockpit.component').then(m => m.SovereignCbamCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/ebpf-security-mesh', loadComponent: () => import('./features/infrastructure/ebpf-security-mesh-cockpit.component').then(m => m.EbpfSecurityMeshCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];
