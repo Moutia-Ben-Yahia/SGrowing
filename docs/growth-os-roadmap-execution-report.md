@@ -788,6 +788,23 @@ graph TD
   - Microsecond BFD link heartbeat telemetry, sub-800ms Anycast route withdrawal, and automated tier-1 carrier failover.
   - Verification: 3 backend tests in `BgpBfdTests.cs`, 2 Vitest tests, and Playwright E2E verification.
 
+### Horizon Wave 30: Horizons 146 to 150 Enterprise Capabilities
+- **Horizon 146: Autonomous B2B Account Contract Redline Auto-Negotiator & Legal Clause Deviation Ledger (`Domain B26 & J23`)**
+  - Vector comparison of incoming contract clauses against playbook policies, clause risk deviation scoring, balanced compromise generation, and audit seals.
+  - Verification: 3 backend tests in `ContractRedlineTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 147: Autonomous DOOH (Digital Out-of-Home) Real-Time Programmatic Bidding & Mobile Device Graph Attribution Mesh (`Domain D27 & C23`)**
+  - Programmatic OpenRTB DOOH billboard bidding with sensor audience multipliers and geofenced mobile device graph foot-traffic visit lift attribution.
+  - Verification: 3 backend tests in `DoohBiddingTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 148: Autonomous AI Voice Telephony Biometric Speaker Verification & Synthetic Deepfake Audio Defense Mesh (`Domain E24 & F21`)**
+  - In-flight acoustic voiceprint feature extraction, vocoder diffusion artifact detection, and automated synthetic audio quarantine (>80% prob).
+  - Verification: 3 backend tests in `VoiceBiometricTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 149: Autonomous Sovereign Corporate Income Tax R&D Credit (Form 6765) & Patent Box Deduction Ledger (`Domain H26 & G22`)**
+  - Section 41 four-part test qualification of engineering wages and cloud GPU compute expenses, ASC 14% credit calculation, and audit defense binders.
+  - Verification: 3 backend tests in `TaxRdCreditTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 150: Autonomous Zero-Trust Multi-Cloud SPIFFE/SPIRE Ephemeral Workload Attestation & Mutual Identity Federation Mesh (`Domain K25 & A28`)**
+  - Cryptographic X.509 SVID issuance, 1-hour automated rotation, and multi-cloud trust domain bundle federation across AWS, GCP, and Azure.
+  - Verification: 3 backend tests in `SpiffeSpireTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+
 ### Infrastructure & Benchmarking: Self-Hosted Packaging, Grafana & CI/CD
 - **Observability:**
   - Full Grafana dashboard in `deploy/grafana/growth-os-overview.json` monitoring OpenTelemetry throughput, sub-150ms voice latency, RAG latency, WhatsApp queues, and error budgets.
@@ -809,11 +826,11 @@ graph TD
 
 | Verification Gate | Result | Status |
 |---|---|---|
-| **Backend Unit & Integration Tests** | **5,538 passed / 0 failed / 0 skipped** | **100% Pass** (8.5s) |
+| **Backend Unit & Integration Tests** | **5,553 passed / 0 failed / 0 skipped** | **100% Pass** (8.5s) |
 | **Backend Compilation (`TreatWarningsAsErrors = true`)** | **0 Warnings, 0 Errors** | **100% Pass** |
-| **Frontend Vitest Unit & Component Suite** | **435 passed / 0 failed** across 139 suites | **100% Pass** (6.1s) |
-| **Playwright End-to-End Suite** | **154 passed / 0 failed** across 154 suites | **100% Pass** (1.6m) |
-| **Frontend Production Build (`ng build`)** | **0 Errors, 14.1s bundle generation, 190+ chunks** | **100% Pass** |
+| **Frontend Vitest Unit & Component Suite** | **445 passed / 0 failed** across 144 suites | **100% Pass** (6.1s) |
+| **Playwright End-to-End Suite** | **159 passed / 0 failed** across 159 suites | **100% Pass** (1.6m) |
+| **Frontend Production Build (`ng build`)** | **0 Errors, 13.1s bundle generation, 195+ chunks** | **100% Pass** |
 
 ---
 
@@ -863,3 +880,4 @@ graph TD
 - `5819b18`: `feat(growth-os): deliver Horizons 131 to 135 (Competitive Battlecards, Off-Site Retail Co-Op DSP, Telephony State Resumption, Sovereign CBAM Carbon Ledger, Zero-Trust eBPF Lateral Firewall)`
 - `9051684`: `feat(growth-os): deliver Horizons 136 to 140 (Enterprise RFP Response Engine, Synthetic Geo Incrementality, Voice Dialect Adaptation, Cap Table Equity Ledger, Multi-Cloud Edge Wasm Mesh)`
 - `7d9cfb9`: `feat(growth-os): deliver Horizons 141 to 145 (Buying Committee Influence Graph, Programmatic Audio DAI, Voice Telephony Whisper Coach, Sovereign Indirect Tax Exemption Ledger, Multi-Cloud BGP BFD Failover Mesh)`
+- `0d11b95`: `feat(growth-os): deliver Horizons 146 to 150 (Contract Redline Auto-Negotiator, DOOH Real-Time Bidding, Voice Biometric Deepfake Defense, Sovereign R&D Tax Credit Ledger, Multi-Cloud SPIFFE/SPIRE Identity Federation Mesh)`
