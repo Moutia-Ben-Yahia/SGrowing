@@ -9,6 +9,7 @@ public class SGrowingDbContext : DbContext
     private readonly ITenantContext? _tenantContext;
 
     public Guid? CurrentTenantId => (_tenantContext != null && _tenantContext.HasTenant) ? _tenantContext.TenantId : null;
+    public Guid? CurrentWorkspaceId => _tenantContext?.WorkspaceId;
 
     public SGrowingDbContext(DbContextOptions<SGrowingDbContext> options, ITenantContext? tenantContext = null)
         : base(options)

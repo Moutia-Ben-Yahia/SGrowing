@@ -23,7 +23,8 @@ public record UserDto(
     string Email,
     string FullName,
     string Role,
-    string? AvatarUrl
+    string? AvatarUrl,
+    Guid? WorkspaceId = null
 );
 
 public record TenantDto(

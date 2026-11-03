@@ -110,6 +110,16 @@ public class AuthTests
         Assert.Equal("karim@atlas.com", registerRes.User.Email);
         Assert.Equal("Atlas Commerce Group", registerRes.Tenant.Name);
 
+        // Verify Default Workspace was generated for tenant and assigned to user
+        var defaultWs = await db.Workspaces.FirstOrDefaultAsync(w => w.TenantId == registerRes.Tenant.Id);
+        Assert.NotNull(defaultWs);
+        Assert.Equal("Main Workspace", defaultWs.Name);
+        Assert.Equal(defaultWs.Id, registerRes.User.WorkspaceId);
+
+        var regClaims = jwt.ValidateToken(registerRes.AccessToken);
+        Assert.NotNull(regClaims);
+        Assert.Equal(defaultWs.Id.ToString(), regClaims.FindFirst("workspace_id")?.Value);
+
         // Verify Default Roles were generated for tenant
         var roles = await db.SystemRoles.Where(r => r.TenantId == registerRes.Tenant.Id).ToListAsync();
         Assert.Equal(6, roles.Count);

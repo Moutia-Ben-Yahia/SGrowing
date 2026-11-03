@@ -24,6 +24,13 @@ public class TenantContextMiddleware
             {
                 tenantContext.SetTenant(claimTenantId);
             }
+
+            var workspaceClaim = context.User.FindFirst("workspace_id")?.Value
+                                 ?? context.User.FindFirst("WorkspaceId")?.Value;
+            if (!string.IsNullOrWhiteSpace(workspaceClaim) && Guid.TryParse(workspaceClaim, out var claimWorkspaceId))
+            {
+                tenantContext.SetWorkspace(claimWorkspaceId);
+            }
         }
 
         // 2. Fallback for unauthenticated service hooks or public widgets (forms, webhooks, tracking)
@@ -32,6 +39,14 @@ public class TenantContextMiddleware
             if (Guid.TryParse(headerVal.FirstOrDefault(), out var headerTenantId))
             {
                 tenantContext.SetTenant(headerTenantId);
+            }
+        }
+
+        if (context.Request.Headers.TryGetValue("X-Workspace-Id", out var wsHeaderVal))
+        {
+            if (Guid.TryParse(wsHeaderVal.FirstOrDefault(), out var headerWsId))
+            {
+                tenantContext.SetWorkspace(headerWsId);
             }
         }
 

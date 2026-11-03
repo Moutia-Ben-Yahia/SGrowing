@@ -11,6 +11,7 @@ public class User
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid TenantId { get; set; }
+    public Guid? WorkspaceId { get; set; }
     public string Email { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
     public UserRole Role { get; set; } = UserRole.Agent;

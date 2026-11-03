@@ -46,6 +46,11 @@ public class JwtTokenService : IJwtTokenService
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
+        if (user.WorkspaceId.HasValue)
+        {
+            claims.Add(new Claim("workspace_id", user.WorkspaceId.Value.ToString()));
+        }
+
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),

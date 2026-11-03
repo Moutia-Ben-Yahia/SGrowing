@@ -54,6 +54,19 @@ public class AuthService : IAuthService
         };
         _db.Tenants.Add(tenant);
 
+        // 1b. Create Default Workspace
+        var defaultWorkspace = new Workspace
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenant.Id,
+            Name = "Main Workspace",
+            Slug = "main",
+            Status = "Active",
+            IsActive = true,
+            CreatedAtUtc = DateTime.UtcNow
+        };
+        _db.Workspaces.Add(defaultWorkspace);
+
         // 2. Initialize Default Roles for this Tenant
         var defaultRoles = new[]
         {
@@ -74,6 +87,7 @@ public class AuthService : IAuthService
         {
             Id = Guid.NewGuid(),
             TenantId = tenant.Id,
+            WorkspaceId = defaultWorkspace.Id,
             Email = normalizedEmail,
             FullName = request.FullName.Trim(),
             Role = UserRole.Admin,
@@ -98,7 +112,7 @@ public class AuthService : IAuthService
             Action = "UserRegistration",
             Resource = "Tenant",
             ResourceId = tenant.Id.ToString(),
-            Details = $"Organization '{tenant.Name}' and root Admin '{user.Email}' created.",
+            Details = $"Organization '{tenant.Name}', default Workspace '{defaultWorkspace.Name}', and root Admin '{user.Email}' created.",
             IpAddress = ipAddress ?? "127.0.0.1",
             TimestampUtc = DateTime.UtcNow
         });
@@ -106,7 +120,7 @@ public class AuthService : IAuthService
         await _db.SaveChangesAsync();
 
         string accessToken = _jwt.GenerateAccessToken(user, tenant.Name);
-        var userDto = new UserDto(user.Id, user.TenantId, user.Email, user.FullName, user.Role.ToString(), user.AvatarUrl);
+        var userDto = new UserDto(user.Id, user.TenantId, user.Email, user.FullName, user.Role.ToString(), user.AvatarUrl, user.WorkspaceId);
         var tenantDto = new TenantDto(tenant.Id, tenant.Name, tenant.Slug);
 
         return new AuthResponse(
@@ -162,10 +176,19 @@ public class AuthService : IAuthService
             TimestampUtc = DateTime.UtcNow
         });
 
+        if (!user.WorkspaceId.HasValue)
+        {
+            var ws = await _db.Workspaces.FirstOrDefaultAsync(w => w.TenantId == tenant.Id && w.IsActive);
+            if (ws != null)
+            {
+                user.WorkspaceId = ws.Id;
+            }
+        }
+
         await _db.SaveChangesAsync();
 
         string accessToken = _jwt.GenerateAccessToken(user, tenant.Name);
-        var userDto = new UserDto(user.Id, user.TenantId, user.Email, user.FullName, user.Role.ToString(), user.AvatarUrl);
+        var userDto = new UserDto(user.Id, user.TenantId, user.Email, user.FullName, user.Role.ToString(), user.AvatarUrl, user.WorkspaceId);
         var tenantDto = new TenantDto(tenant.Id, tenant.Name, tenant.Slug);
 
         return new AuthResponse(
@@ -201,10 +224,19 @@ public class AuthService : IAuthService
         user.RefreshToken = newRefreshToken;
         user.RefreshTokenExpiresAtUtc = DateTime.UtcNow.AddDays(30);
 
+        if (!user.WorkspaceId.HasValue)
+        {
+            var ws = await _db.Workspaces.FirstOrDefaultAsync(w => w.TenantId == tenant.Id && w.IsActive);
+            if (ws != null)
+            {
+                user.WorkspaceId = ws.Id;
+            }
+        }
+
         await _db.SaveChangesAsync();
 
         string accessToken = _jwt.GenerateAccessToken(user, tenant.Name);
-        var userDto = new UserDto(user.Id, user.TenantId, user.Email, user.FullName, user.Role.ToString(), user.AvatarUrl);
+        var userDto = new UserDto(user.Id, user.TenantId, user.Email, user.FullName, user.Role.ToString(), user.AvatarUrl, user.WorkspaceId);
         var tenantDto = new TenantDto(tenant.Id, tenant.Name, tenant.Slug);
 
         return new AuthResponse(
@@ -244,7 +276,7 @@ public class AuthService : IAuthService
             permissions.AddRange(new[] { "ViewOrders", "ProcessShipments", "ConfirmCalls" });
         }
 
-        var userDto = new UserDto(user.Id, user.TenantId, user.Email, user.FullName, user.Role.ToString(), user.AvatarUrl);
+        var userDto = new UserDto(user.Id, user.TenantId, user.Email, user.FullName, user.Role.ToString(), user.AvatarUrl, user.WorkspaceId);
         var tenantDto = new TenantDto(tenant.Id, tenant.Name, tenant.Slug);
 
         return new UserProfileResponse(userDto, tenantDto, permissions);
