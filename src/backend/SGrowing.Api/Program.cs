@@ -56,6 +56,11 @@ using SGrowing.Api.Modules.Advertising.CreativeBandit;
 using SGrowing.Api.Modules.Commerce.CpqMargin;
 using SGrowing.Api.Modules.Support.Localization;
 using SGrowing.Api.Modules.Infrastructure.DisasterRecovery;
+using SGrowing.Api.Modules.Content.Repurposing;
+using SGrowing.Api.Modules.Analytics.ShapleyAttribution;
+using SGrowing.Api.Modules.Voice.AgentAssist;
+using SGrowing.Api.Modules.Commerce.Tariffs;
+using SGrowing.Api.Modules.Security.EphemeralVault;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -857,6 +862,11 @@ app.MapCreativeBanditEndpoints();
 app.MapCpqMarginEndpoints();
 app.MapSupportLocalizationEndpoints();
 app.MapDisasterRecoveryEndpoints();
+app.MapContentRepurposingEndpoints();
+app.MapShapleyAttributionEndpoints();
+app.MapAgentAssistEndpoints();
+app.MapTariffCalculatorEndpoints();
+app.MapEphemeralVaultEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

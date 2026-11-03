@@ -265,5 +265,10 @@ export const routes: Routes = [
   { path: 'commerce/cpq-margin', loadComponent: () => import('./features/commerce/cpq-margin-cockpit.component').then(m => m.CpqMarginCockpitComponent), canActivate: [authGuard] },
   { path: 'support/localization', loadComponent: () => import('./features/support/localization-cockpit.component').then(m => m.LocalizationCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/disaster-recovery', loadComponent: () => import('./features/infrastructure/disaster-recovery-cockpit.component').then(m => m.DisasterRecoveryCockpitComponent), canActivate: [authGuard] },
+  { path: 'content/repurposing', loadComponent: () => import('./features/content/content-repurposing-cockpit.component').then(m => m.ContentRepurposingCockpitComponent), canActivate: [authGuard] },
+  { path: 'analytics/attribution-shapley', loadComponent: () => import('./features/analytics/attribution-shapley-cockpit.component').then(m => m.AttributionShapleyCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/agent-assist', loadComponent: () => import('./features/voice/agent-assist-cockpit.component').then(m => m.AgentAssistCockpitComponent), canActivate: [authGuard] },
+  { path: 'commerce/tariffs', loadComponent: () => import('./features/commerce/tariff-calculator-cockpit.component').then(m => m.TariffCalculatorCockpitComponent), canActivate: [authGuard] },
+  { path: 'security/ephemeral-vault', loadComponent: () => import('./features/security/ephemeral-vault-cockpit.component').then(m => m.EphemeralVaultCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

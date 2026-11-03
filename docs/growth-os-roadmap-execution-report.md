@@ -539,6 +539,38 @@ graph TD
   - Standalone cockpit with multi-cloud cluster status cards, replication lag indicators, and one-click failover controls.
   - **Verification:** 3 backend tests in `DisasterRecoveryTests.cs`, 2 Vitest tests, and Playwright E2E verification.
 
+### Horizon Wave 15: Horizons 71 to 75 Enterprise Capabilities
+- **Horizon 71: Autonomous Multi-Agent Content Repurposing & Omnichannel Derivative Engine (`Domain C9 & J10`)**
+  - Long-form cornerstone asset deconstruction (webinars, whitepapers, keynotes) extracting thesis statements, proof metrics, and contrarian hooks.
+  - Channel-native derivative synthesis for LinkedIn thought leadership, X technical threads, and executive briefings.
+  - 5-slide visual carousel JSON generator ready for instant LinkedIn PDF document exports.
+  - Standalone cockpit featuring source asset preview, tabbed multichannel derivatives, and one-click short video script synthesis.
+  - **Verification:** 3 backend tests in `ContentRepurposingTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 72: Autonomous B2B Multi-Touch Pipeline Attribution Modeling & Shapley Value Revenue Fairness Mesh (`Domain D12 & B11`)**
+  - Cooperative game theory Shapley value computation evaluating all 2^n coalition permutations across touchpoint buyer journeys.
+  - Multi-touch model comparison matrix highlighting heuristic bias in first-touch and last-touch attribution (e.g. 4.2x over-credit on retargeting ads).
+  - Algorithmic budget reallocation engine recommending spend shifts from low-leverage to high-contribution mid-funnel assets.
+  - Standalone cockpit displaying touchpoint sequence, fair-value ARR distribution, and one-click budget rebalancing.
+  - **Verification:** 2 backend tests in `ShapleyAttributionTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 73: Autonomous Conversational AI Real-Time Agent Assist & Live Whisper Coaching Mesh (`Domain E9 & I7`)**
+  - Dual-channel live audio transcript streaming with sub-100ms processing latency.
+  - Semantic competitor mention detection triggering structured differentiator battlecards (Salesforce, HubSpot, Gong) on the rep's screen.
+  - Live talk-to-listen ratio tracking with automatic pacing guardrails warning reps when talk time exceeds 65%.
+  - Standalone cockpit featuring live audio transcript waterfall, talk-to-listen gauges, active battlecard cards, and whisper suggestions.
+  - **Verification:** 3 backend tests in `AgentAssistTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 74: Autonomous Global Sales Tax, Cross-Border Customs & Harmonized Tariff (HS Code) Calculator (`Domain H10 & G8`)**
+  - WCO Harmonized System classifier categorizing physical/digital appliances into 6-to-10 digit HS codes with confidence scores.
+  - Delivered Duty Paid (DDP) landed cost calculation factoring CIF value, destination customs duties, carrier handling, and statutory VAT/GST.
+  - Multi-country tax rate engine (e.g., DE 19% MwSt, GB 20% VAT, JP 10% JCT, US destination tax) guaranteeing zero border customs holds.
+  - Standalone cockpit displaying landed cost waterfalls, HS code classification cards, and destination country recalculations.
+  - **Verification:** 3 backend tests in `TariffCalculatorTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 75: Autonomous Zero-Trust Ephemeral Credential Vault & Just-In-Time (JIT) Privilege Mesh (`Domain K10 & A13`)**
+  - Time-bounded, single-use credential generation with short cryptographic self-destruct TTLs (5 to 60 minutes).
+  - SHA-256 non-repudiation signature sealing binding access scopes (DbReadOnly, ProdDeploy, CustomerPiiAccess) to verified justifications.
+  - Distributed mesh emergency revocation and global kill switch invalidating all active tokens in under 5ms.
+  - Standalone cockpit featuring live credential countdown bars, scope authorization badges, and instant kill switches.
+  - **Verification:** 4 backend tests in `EphemeralVaultTests.cs`, 3 Vitest tests, and Playwright E2E verification.
+
 ### Infrastructure & Benchmarking: Self-Hosted Packaging, Grafana & CI/CD
 - **Observability:**
   - Full Grafana dashboard in `deploy/grafana/growth-os-overview.json` monitoring OpenTelemetry throughput, sub-150ms voice latency, RAG latency, WhatsApp queues, and error budgets.
@@ -560,11 +592,11 @@ graph TD
 
 | Verification Gate | Result | Status |
 |---|---|---|
-| **Backend Unit & Integration Tests** | **5,349 passed / 0 failed / 0 skipped** | **100% Pass** (10s) |
+| **Backend Unit & Integration Tests** | **5,364 passed / 0 failed / 0 skipped** | **100% Pass** (9s) |
 | **Backend Compilation (`TreatWarningsAsErrors = true`)** | **0 Warnings, 0 Errors** | **100% Pass** |
-| **Frontend Vitest Unit & Component Suite** | **285 passed / 0 failed** across 79 suites | **100% Pass** (5.9s) |
-| **Playwright End-to-End Suite** | **94 passed / 0 failed** across 94 suites | **100% Pass** (1.3m) |
-| **Frontend Production Build (`ng build`)** | **0 Errors, 12.0s bundle generation, 120+ chunks** | **100% Pass** |
+| **Frontend Vitest Unit & Component Suite** | **296 passed / 0 failed** across 84 suites | **100% Pass** (5.9s) |
+| **Playwright End-to-End Suite** | **99 passed / 0 failed** across 99 suites | **100% Pass** (1.3m) |
+| **Frontend Production Build (`ng build`)** | **0 Errors, 12.3s bundle generation, 125+ chunks** | **100% Pass** |
 
 ---
 
@@ -593,3 +625,5 @@ graph TD
 - `11f0398`: `feat(growth-os): deliver Horizons 61 to 65 (Waterfall Lead Enrichment, Social Proof Collector, Cart Rescue, Partner Deal Registration, Semantic Cache)`
 - `d4739a3`: `docs: finalize delivery record for Horizons 61 to 65 in growth OS execution report`
 - `51824ae`: `feat(growth-os): deliver Horizons 66 to 70 (Buying Committee Graph, Creative Variance Bandit, CPQ Margin Guardrails, Multilingual Support, Multi-Cloud Disaster Recovery)`
+- `3d40b82`: `docs: finalize delivery record for Horizons 66 to 70 in growth OS execution report`
+- `pending`: `feat(growth-os): deliver Horizons 71 to 75 (Content Repurposing, Shapley Attribution, Voice Agent Assist, Global Customs HS Tariffs, Ephemeral Credential Vault)`

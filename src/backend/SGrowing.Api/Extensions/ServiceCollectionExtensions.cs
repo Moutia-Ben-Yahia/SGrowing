@@ -62,6 +62,11 @@ using SGrowing.Api.Modules.Advertising.CreativeBandit;
 using SGrowing.Api.Modules.Commerce.CpqMargin;
 using SGrowing.Api.Modules.Support.Localization;
 using SGrowing.Api.Modules.Infrastructure.DisasterRecovery;
+using SGrowing.Api.Modules.Content.Repurposing;
+using SGrowing.Api.Modules.Analytics.ShapleyAttribution;
+using SGrowing.Api.Modules.Voice.AgentAssist;
+using SGrowing.Api.Modules.Commerce.Tariffs;
+using SGrowing.Api.Modules.Security.EphemeralVault;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
@@ -1098,6 +1103,11 @@ public static class ServiceCollectionExtensions
         services.AddCpqMarginServices();
         services.AddSupportLocalizationServices();
         services.AddDisasterRecoveryServices();
+        services.AddContentRepurposingServices();
+        services.AddShapleyAttributionServices();
+        services.AddAgentAssistServices();
+        services.AddTariffCalculatorServices();
+        services.AddEphemeralVaultServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
