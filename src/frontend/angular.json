@@ -68,7 +68,8 @@
               "buildTarget": "marketing-studio-web:build:production"
             },
             "development": {
-              "buildTarget": "marketing-studio-web:build:development"
+              "buildTarget": "marketing-studio-web:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
