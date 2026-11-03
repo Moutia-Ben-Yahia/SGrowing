@@ -90,6 +90,11 @@ public static class Extensions
             Predicate = r => r.Tags.Contains("live")
         });
 
+        app.MapHealthChecks("/ready", new HealthCheckOptions
+        {
+            Predicate = r => r.Tags.Contains("ready")
+        });
+
         return app;
     }
 }

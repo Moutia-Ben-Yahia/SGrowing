@@ -1009,7 +1009,14 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<DatabaseSeeder>();
-        services.AddOpenApi();
+        services.AddOpenApi(options =>
+        {
+            options.AddDocumentTransformer<SGrowing.Api.Common.OpenApi.OpenApiSecurityTransformer>();
+        });
+
+        services.AddHealthChecks()
+            .AddCheck<SGrowing.Api.Common.Health.DatabaseHealthCheck>("postgres_db", tags: ["ready"])
+            .AddCheck<SGrowing.Api.Common.Health.RedisHealthCheck>("redis_cache", tags: ["ready"]);
 
         return services;
     }
