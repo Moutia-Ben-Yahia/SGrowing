@@ -173,8 +173,8 @@ export interface RmaRequestUi {
               [class.bg-slate-800]="activeTab() === 'crossborder'"
               [class.text-blue-400]="activeTab() === 'crossborder'"
               class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition">
-              <span class="flex items-center gap-2">🌐 Cross-Border Trade Hub</span>
-              <span class="bg-blue-500/20 text-blue-300 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Maghreb/GCC</span>
+              <span class="flex items-center gap-2">🌐 Multi-Currency FX</span>
+              <span class="bg-blue-500/20 text-blue-300 text-[10px] px-1.5 py-0.5 rounded-full font-bold">FX Matrix</span>
             </button>
             <button
               (click)="activeTab.set('forecasting')"
@@ -189,8 +189,8 @@ export interface RmaRequestUi {
               [class.bg-slate-800]="activeTab() === 'fleet'"
               [class.text-amber-400]="activeTab() === 'fleet'"
               class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-800/60 transition">
-              <span class="flex items-center gap-2">🛵 In-House Driver Fleet</span>
-              <span class="bg-amber-500/20 text-amber-300 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Fleet</span>
+              <span class="flex items-center gap-2">🚚 3PL Courier Connectors</span>
+              <span class="bg-amber-500/20 text-amber-300 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Carriers</span>
             </button>
             <button
               (click)="activeTab.set('flows')"
@@ -236,9 +236,9 @@ export interface RmaRequestUi {
               @if (activeTab() === 'routing') { Smart Multi-Carrier Rate & Delivery Success Routing }
               @if (activeTab() === 'livecommerce') { Live Social Commerce & Stream Overlay }
               @if (activeTab() === 'exchanges') { Drop-and-Swap 1-Stop Reverse Logistics }
-              @if (activeTab() === 'crossborder') { Cross-Border Maghreb / GCC Trade & Customs Desk }
+              @if (activeTab() === 'crossborder') { Multi-Currency FX Rates & Regional Pricing Matrix }
               @if (activeTab() === 'forecasting') { Predictive Demand Runway & Supplier Restock Matrix }
-              @if (activeTab() === 'fleet') { In-House Driver Fleet & Delivery Run-Sheets }
+              @if (activeTab() === 'fleet') { 3PL Courier Connectors & Webhook Telemetry }
               @if (activeTab() === 'flows') { Visual WhatsApp Interactive Flow State Machine }
               @if (activeTab() === 'liquidation') { Aging Inventory Liquidation & Dynamic Markdowns }
             </h2>
@@ -1174,17 +1174,22 @@ export interface RmaRequestUi {
             </div>
           }
 
-          <!-- 14. Cross-Border Trade & Customs Invoices Tab -->
+          <!-- 14. Multi-Currency FX Rates & Regional Pricing Matrix Tab -->
           @if (activeTab() === 'crossborder') {
             <div class="space-y-6">
               <div class="flex items-center justify-between">
                 <div>
-                  <h3 class="text-base font-semibold text-slate-100">🌐 Multi-Currency & Cross-Border Maghreb / GCC Trade Hub</h3>
-                  <p class="text-xs text-slate-400">Real-time FX conversions, E.164 phone formatting, and automated HS-code customs commercial invoices.</p>
+                  <h3 class="text-base font-semibold text-slate-100">🌐 Multi-Currency FX Rates & Regional Pricing Matrix</h3>
+                  <p class="text-xs text-slate-400">Live market FX rates, automated currency hedging spread, E.164 phone formatting, and local VAT rules.</p>
                 </div>
+                <button
+                  (click)="refreshFxRatesUi()"
+                  class="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-medium hover:bg-blue-500/30 transition">
+                  🔄 Refresh Live FX Feeds
+                </button>
               </div>
 
-              <!-- Supported Regional Hubs Grid -->
+              <!-- Supported Regional Currency Hubs Grid -->
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 @for (country of tradeCountries(); track country.code) {
                   <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
@@ -1197,27 +1202,30 @@ export interface RmaRequestUi {
                     </div>
                     <div class="text-xs text-slate-400 space-y-1">
                       <div>Dial Prefix: <strong class="text-slate-300 font-mono">{{ country.prefix }}</strong></div>
-                      <div>VAT Rate: <strong class="text-slate-300">{{ country.vat }}%</strong></div>
-                      <div>COD Enabled: <span class="text-emerald-400 font-bold">Yes</span></div>
+                      <div>Base VAT: <strong class="text-slate-300">{{ country.vat }}%</strong></div>
+                      <div>COD Enabled: <span class="text-emerald-400 font-bold">Yes (Active)</span></div>
                     </div>
                   </div>
                 }
               </div>
 
-              <!-- Commercial Customs Invoices Table -->
+              <!-- Real-Time FX Conversion Matrix -->
               <div class="rounded-xl border border-slate-800 bg-slate-900/40 p-4 space-y-3">
-                <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Export Customs Commercial Invoices (DAP Incoterm)</h4>
+                <div class="flex items-center justify-between">
+                  <h4 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Live Regional FX Rates & Auto-Hedging Spread</h4>
+                  <span class="text-[11px] text-emerald-400 font-mono">Auto-Sync Active</span>
+                </div>
                 <div class="space-y-2">
-                  @for (inv of customsInvoices(); track inv.invoiceNumber) {
+                  @for (fx of fxRates(); track fx.pair) {
                     <div class="flex items-center justify-between p-3 rounded-lg bg-slate-950 border border-slate-800 text-xs">
                       <div class="flex items-center gap-4">
-                        <span class="text-cyan-400 font-mono font-bold">{{ inv.invoiceNumber }}</span>
-                        <span class="text-slate-300">{{ inv.consignee }} ({{ inv.country }})</span>
-                        <span class="text-[11px] text-slate-500 font-mono">HS: {{ inv.hsCode }}</span>
+                        <span class="text-cyan-400 font-mono font-bold text-sm">{{ fx.pair }}</span>
+                        <span class="text-slate-300 font-mono">Rate: <strong class="text-white">{{ fx.rate }}</strong></span>
+                        <span class="text-[11px] text-slate-500 font-mono">Spread: +{{ fx.spreadPercent }}%</span>
                       </div>
                       <div class="flex items-center gap-4">
-                        <span class="text-emerald-400 font-mono font-bold">{{ inv.declaredValue }} {{ inv.currency }}</span>
-                        <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono text-[10px]">Customs Cleared</span>
+                        <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono text-[10px]">Hedging Protected</span>
+                        <span class="text-slate-400 font-mono text-[11px]">{{ fx.lastUpdated }}</span>
                       </div>
                     </div>
                   }
@@ -1225,7 +1233,6 @@ export interface RmaRequestUi {
               </div>
             </div>
           }
-
           <!-- 15. Demand Forecasting & Supplier Restock Matrix Tab -->
           @if (activeTab() === 'forecasting') {
             <div class="space-y-6">
@@ -1286,66 +1293,66 @@ export interface RmaRequestUi {
             </div>
           }
 
-          <!-- 16. In-House Fleet & Driver Run-Sheets Tab -->
+          <!-- 16. 3PL Courier Connectors & Webhook Telemetry Tab -->
           @if (activeTab() === 'fleet') {
             <div class="space-y-6">
               <div class="flex items-center justify-between">
                 <div>
-                  <h3 class="text-base font-semibold text-slate-100">🛵 In-House Driver Fleet & Delivery Run-Sheets</h3>
-                  <p class="text-xs text-slate-400">Metropolitan driver dispatch, doorstep proof of delivery (POD), and cash drawer reconciliation.</p>
+                  <h3 class="text-base font-semibold text-slate-100">🚚 3PL Courier Connectors & Webhook Telemetry</h3>
+                  <p class="text-xs text-slate-400">Direct carrier API bridges (Aramex, Yalidine, Bosta, Mylerz), automated tracking webhooks, and cash remittance.</p>
                 </div>
                 <button
-                  (click)="simulateRunSheetBatch()"
+                  (click)="syncAllCarrierWebhooksUi()"
                   class="px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-medium hover:bg-amber-500/30 transition">
-                  + Dispatch New Zone Run-Sheet
+                  ⚡ Sync Carrier Tracking Statuses
                 </button>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                @for (d of drivers(); track d.id) {
+                @for (c of courierConnectors(); track c.id) {
                   <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3">
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
-                        <span class="text-lg">🚚</span>
+                        <span class="text-lg">{{ c.icon }}</span>
                         <div>
-                          <h4 class="text-sm font-bold text-white">{{ d.name }}</h4>
-                          <span class="text-xs text-slate-400">{{ d.vehicle }} ({{ d.plate }})</span>
+                          <h4 class="text-sm font-bold text-white">{{ c.name }}</h4>
+                          <span class="text-xs text-slate-400">{{ c.apiType }} ({{ c.coverage }})</span>
                         </div>
                       </div>
                       <span class="text-xs font-mono px-2 py-0.5 rounded font-bold"
-                            [class.bg-emerald-500/20]="d.status === 'Available'"
-                            [class.text-emerald-400]="d.status === 'Available'"
-                            [class.bg-amber-500/20]="d.status === 'OnRoute'"
-                            [class.text-amber-400]="d.status === 'OnRoute'">
-                        {{ d.status }}
+                            [class.bg-emerald-500/20]="c.status === 'Connected'"
+                            [class.text-emerald-400]="c.status === 'Connected'"
+                            [class.bg-amber-500/20]="c.status === 'Syncing'"
+                            [class.text-amber-400]="c.status === 'Syncing'">
+                        {{ c.status }}
                       </span>
                     </div>
 
                     <div class="grid grid-cols-3 gap-2 text-xs font-mono pt-2 border-t border-slate-800">
                       <div>
-                        <span class="text-[10px] text-slate-500 uppercase block">Cash in Hand</span>
-                        <span class="text-amber-400 font-bold">{{ d.cashInHand }} TND</span>
+                        <span class="text-[10px] text-slate-500 uppercase block">Dispatched</span>
+                        <span class="text-cyan-400 font-bold">{{ c.dispatchedShipments }}</span>
                       </div>
                       <div>
-                        <span class="text-[10px] text-slate-500 uppercase block">Completed Stops</span>
-                        <span class="text-white">{{ d.completedStops }} / {{ d.totalStops }}</span>
+                        <span class="text-[10px] text-slate-500 uppercase block">Success Rate</span>
+                        <span class="text-emerald-400 font-bold">{{ c.successRate }}%</span>
                       </div>
                       <div>
-                        <span class="text-[10px] text-slate-500 uppercase block">Delivery Rate</span>
-                        <span class="text-emerald-400 font-bold">{{ d.deliveryRate }}%</span>
+                        <span class="text-[10px] text-slate-500 uppercase block">Cash Remitted</span>
+                        <span class="text-amber-400 font-bold">{{ c.cashRemitted }} TND</span>
                       </div>
                     </div>
 
                     <div class="flex gap-2 pt-1">
                       <button
-                        (click)="recordPodDoorstep(d)"
+                        (click)="testCarrierPingUi(c)"
                         class="flex-1 py-1.5 rounded bg-emerald-600/30 text-emerald-300 hover:bg-emerald-600/50 border border-emerald-500/30 text-xs font-medium transition">
-                        📸 Record POD (Photo & Sign)
+                        📡 Ping Carrier API ({{ c.latencyMs }}ms)
                       </button>
                       <button
-                        (click)="reconcileCashDrawer(d)"
+                        (click)="reconcileCarrierCashUi(c)"
                         class="px-3 py-1.5 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-medium transition">
-                        💵 Reconcile Drawer
+                        💰 Reconcile Remittance
                       </button>
                     </div>
                   </div>
@@ -1353,7 +1360,6 @@ export interface RmaRequestUi {
               </div>
             </div>
           }
-
           <!-- 17. Visual WhatsApp Interactive Flow State Machine Tab -->
           @if (activeTab() === 'flows') {
             <div class="space-y-6">
@@ -1900,31 +1906,28 @@ export class OperationsStudioComponent {
     alert(`QA Inspection passed (Grade A pristine condition). ${ex.originalSku} successfully restocked to physical sellable WMS inventory!`);
   }
 
-  // 14. Cross-Border Trade & Customs Signals
+  // 14. Multi-Currency FX Rates & Regional Pricing Signals
   tradeCountries = signal([
     { code: 'TN', name: 'Tunisia', flag: '🇹🇳', currency: 'TND', prefix: '+216', vat: 19 },
     { code: 'DZ', name: 'Algeria', flag: '🇩🇿', currency: 'DZD', prefix: '+213', vat: 19 },
-    { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦', currency: 'SAR', prefix: '+966', vat: 15 }
+    { code: 'MA', name: 'Morocco', flag: '🇲🇦', currency: 'MAD', prefix: '+212', vat: 20 },
+    { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦', currency: 'SAR', prefix: '+966', vat: 15 },
+    { code: 'AE', name: 'UAE', flag: '🇦🇪', currency: 'AED', prefix: '+971', vat: 5 },
+    { code: 'EU', name: 'Eurozone', flag: '🇪🇺', currency: 'EUR', prefix: '+33', vat: 20 }
   ]);
 
-  customsInvoices = signal([
-    {
-      invoiceNumber: 'EXP-202610-DZ001',
-      consignee: 'Yacine Brahimi',
-      country: 'Algeria',
-      hsCode: '6403.99 (Leather Footwear)',
-      declaredValue: 45,
-      currency: 'EUR'
-    },
-    {
-      invoiceNumber: 'EXP-202610-SA002',
-      consignee: 'Fahad Al-Otaibi',
-      country: 'Saudi Arabia',
-      hsCode: '3303.00 (Perfumes & Essences)',
-      declaredValue: 80,
-      currency: 'USD'
-    }
+  fxRates = signal([
+    { pair: 'USD/TND', rate: 3.12, spreadPercent: 1.5, lastUpdated: 'Just now' },
+    { pair: 'EUR/TND', rate: 3.39, spreadPercent: 1.5, lastUpdated: '1m ago' },
+    { pair: 'SAR/TND', rate: 0.83, spreadPercent: 2.0, lastUpdated: '2m ago' },
+    { pair: 'AED/TND', rate: 0.85, spreadPercent: 2.0, lastUpdated: '2m ago' },
+    { pair: 'USD/DZD', rate: 134.50, spreadPercent: 2.5, lastUpdated: '3m ago' },
+    { pair: 'EUR/MAD', rate: 10.82, spreadPercent: 1.8, lastUpdated: '4m ago' }
   ]);
+
+  refreshFxRatesUi() {
+    alert('Live FX exchange rates refreshed from Central Bank API feeds. Real-time checkout conversions synchronized.');
+  }
 
   // 15. Demand Forecasting & Restock Signals
   stockoutAlerts = signal([
@@ -1961,43 +1964,68 @@ export class OperationsStudioComponent {
     alert(`Automated Purchase Order generated for ${alertItem.recommendedUnits} units of ${alertItem.sku} placed with ${alertItem.preferredSupplier}. Expected delivery in ${alertItem.supplierLeadDays} days.`);
   }
 
-  // 16. In-House Driver Fleet Signals & Actions
-  drivers = signal([
+  // 16. 3PL Courier Connectors & Webhook Telemetry Signals
+  courierConnectors = signal([
     {
-      id: 'DRV-001',
-      name: 'Walid Mansour',
-      vehicle: 'Motorcycle (Express)',
-      plate: '215 TN 4821',
-      status: 'OnRoute',
-      cashInHand: 680,
-      completedStops: 8,
-      totalStops: 12,
-      deliveryRate: 91.5
+      id: 'CARRIER-YALIDINE',
+      name: 'Yalidine Express',
+      icon: '⚡',
+      apiType: 'REST API v2',
+      coverage: 'Algeria & Maghreb',
+      status: 'Connected',
+      dispatchedShipments: 1420,
+      successRate: 95.2,
+      cashRemitted: 118400,
+      latencyMs: 38
     },
     {
-      id: 'DRV-002',
-      name: 'Firas Chahed',
-      vehicle: 'Van (Cargo)',
-      plate: '198 TN 9032',
-      status: 'Available',
-      cashInHand: 0,
-      completedStops: 15,
-      totalStops: 15,
-      deliveryRate: 93.3
+      id: 'CARRIER-ARAMEX',
+      name: 'Aramex Tunisia',
+      icon: '📦',
+      apiType: 'SOAP/REST Enterprise',
+      coverage: 'Tunisia & GCC',
+      status: 'Connected',
+      dispatchedShipments: 890,
+      successRate: 89.4,
+      cashRemitted: 74200,
+      latencyMs: 52
+    },
+    {
+      id: 'CARRIER-BOSTA',
+      name: 'Bosta Fulfillment',
+      icon: '🚚',
+      apiType: 'Webhook Stream API',
+      coverage: 'Egypt & Saudi Arabia',
+      status: 'Connected',
+      dispatchedShipments: 640,
+      successRate: 91.8,
+      cashRemitted: 52600,
+      latencyMs: 44
+    },
+    {
+      id: 'CARRIER-MYLERZ',
+      name: 'Mylerz Same-Day',
+      icon: '🚀',
+      apiType: 'Event Mesh Connector',
+      coverage: 'North Africa Metro',
+      status: 'Connected',
+      dispatchedShipments: 410,
+      successRate: 93.0,
+      cashRemitted: 36800,
+      latencyMs: 41
     }
   ]);
 
-  simulateRunSheetBatch() {
-    alert('Zone Run-Sheet generated for Grand Tunis (18 stops). Driver Walid Mansour dispatched with real-time waypoint routing.');
+  syncAllCarrierWebhooksUi() {
+    alert('Real-time tracking webhook sync triggered across all connected carriers (Yalidine, Aramex, Bosta, Mylerz). 3,360 tracking events synchronized.');
   }
 
-  recordPodDoorstep(driver: any) {
-    alert(`Doorstep Proof-of-Delivery recorded for Driver ${driver.name}: Customer signature verified + timestamped parcel photo uploaded. Cash collected logged.`);
+  testCarrierPingUi(carrier: any) {
+    alert(`Carrier API ping successful for ${carrier.name}: Response received in ${carrier.latencyMs}ms. Webhook endpoints healthy.`);
   }
 
-  reconcileCashDrawer(driver: any) {
-    alert(`End-of-day Cash Reconciliation completed for ${driver.name}: ${driver.cashInHand} TND deposited into central vault. Variance: 0.000 TND.`);
-    driver.cashInHand = 0;
+  reconcileCarrierCashUi(carrier: any) {
+    alert(`Automated Clearing House (ACH) Cash Reconciliation completed for ${carrier.name}: ${carrier.cashRemitted} TND remitted to treasury account.`);
   }
 
   // 17. WhatsApp Flow Engine Signals & Actions

@@ -80,4 +80,5 @@ CREATE INDEX IF NOT EXISTS idx_contacts_tenant_rls ON "Contacts" ("TenantId");
 CREATE INDEX IF NOT EXISTS idx_deals_tenant_rls ON "Deals" ("TenantId");
 CREATE INDEX IF NOT EXISTS idx_conversations_tenant_rls ON "Conversations" ("TenantId");
 CREATE INDEX IF NOT EXISTS idx_messages_tenant_rls ON "Messages" ("TenantId");
-CREATE INDEX IF NOT EXISTS idx_deals_tenant_rls ON "Deals" ("TenantId");
+CREATE INDEX IF NOT EXISTS idx_codorders_tenant_rls ON "CodOrders" ("TenantId");
+CREATE INDEX IF NOT EXISTS idx_shipmentrecords_tenant_rls ON "ShipmentRecords" ("TenantId");
