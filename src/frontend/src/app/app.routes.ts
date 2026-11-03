@@ -27,7 +27,6 @@ import { DigitalGoodsStudioComponent } from './features/digital-goods/digital-go
 import { FormsStudioComponent } from './features/forms/forms-studio.component';
 import { HeadlessFormBuilderComponent } from './features/forms/headless-form-builder.component';
 import { DeveloperStudioComponent } from './features/developer/developer-studio.component';
-import { CourierCompanionComponent } from './features/courier/courier-companion.component';
 import { CheckoutWidgetComponent } from './features/checkout/checkout-widget.component';
 import { CreativeRadarStudioComponent } from './features/marketing/creative-radar-studio.component';
 import { DocumentsStudioComponent } from './features/documents/documents-studio.component';
@@ -45,7 +44,6 @@ import { OmnichannelCockpitComponent } from './features/inbox/omnichannel-cockpi
 import { CsvImportCockpitComponent } from './features/accounts/csv-import-cockpit.component';
 import { BotSimulatorRunnerComponent } from './features/funnels/bot-simulator-runner.component';
 import { MultipartySigningCockpitComponent } from './features/contracts/multiparty-signing-cockpit.component';
-import { CodLogisticsFraudCockpitComponent } from './features/courier/cod-logistics-fraud-cockpit.component';
 import { AgentConsoleComponent } from './features/agents/agent-console.component';
 import { OnboardingWizardComponent } from './features/billing/onboarding-wizard.component';
 import { AgentMissionCockpitComponent } from './features/agents/agent-mission-cockpit.component';
@@ -115,14 +113,11 @@ export const routes: Routes = [
   { path: 'chatbots/simulator', component: BotSimulatorRunnerComponent, canActivate: [authGuard] },
   { path: 'contracts/multi-party', component: MultipartySigningCockpitComponent, canActivate: [authGuard] },
   { path: 'contracts/e-sign', loadComponent: () => import('./features/contracts/contract-esign-studio.component').then(m => m.ContractEsignStudioComponent), canActivate: [authGuard] },
-  { path: 'courier/cod-fraud', component: CodLogisticsFraudCockpitComponent, canActivate: [authGuard] },
-  { path: 'courier/fleet-dispatch', loadComponent: () => import('./features/courier/geodetic-fleet-dispatch-cockpit.component').then(m => m.GeodeticFleetDispatchCockpitComponent), canActivate: [authGuard] },
   { path: 'agents/console', component: AgentConsoleComponent, canActivate: [authGuard] },
   { path: 'documents', component: DocumentsStudioComponent, canActivate: [authGuard] },
   { path: 'publications', component: PublicationStudioComponent, canActivate: [authGuard] },
   { path: 'forecasting', component: ForecastingStudioComponent, canActivate: [authGuard] },
   { path: 'roadmap', component: RoadmapBoardComponent, canActivate: [authGuard] },
-  { path: 'courier', component: CourierCompanionComponent, canActivate: [authGuard] },
   { path: 'checkout', component: CheckoutWidgetComponent },
   { path: 'creatives', component: CreativeRadarStudioComponent, canActivate: [authGuard] },
   { path: 'digital-goods', component: DigitalGoodsStudioComponent, canActivate: [authGuard] },
@@ -282,61 +277,37 @@ export const routes: Routes = [
   { path: 'voice/call-compliance', loadComponent: () => import('./features/voice/call-compliance-cockpit.component').then(m => m.CallComplianceCockpitComponent), canActivate: [authGuard] },
   { path: 'commerce/cpq-approval', loadComponent: () => import('./features/commerce/cpq-approval-cockpit.component').then(m => m.CpqApprovalCockpitComponent), canActivate: [authGuard] },
   { path: 'marketing/shapley-attribution', loadComponent: () => import('./features/marketing/shapley-attribution-cockpit.component').then(m => m.ShapleyAttributionCockpitComponent), canActivate: [authGuard] },
-  { path: 'voice/pitch-tuning', loadComponent: () => import('./features/voice/pitch-tuning-cockpit.component').then(m => m.PitchTuningCockpitComponent), canActivate: [authGuard] },
   { path: 'commerce/commission-settlement', loadComponent: () => import('./features/commerce/commission-settlement-cockpit.component').then(m => m.CommissionSettlementCockpitComponent), canActivate: [authGuard] },
-  { path: 'advertising/retail-media-auction', loadComponent: () => import('./features/advertising/retail-media-auction-cockpit.component').then(m => m.RetailMediaAuctionCockpitComponent), canActivate: [authGuard] },
-  { path: 'voice/audio-noise-cancellation', loadComponent: () => import('./features/voice/audio-noise-cancellation-cockpit.component').then(m => m.AudioNoiseCancellationCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/territory-rebalancing', loadComponent: () => import('./features/sales/territory-rebalancing-cockpit.component').then(m => m.TerritoryRebalancingCockpitComponent), canActivate: [authGuard] },
-  { path: 'advertising/ctv-ad-insertion', loadComponent: () => import('./features/advertising/ctv-ad-insertion-cockpit.component').then(m => m.CtvAdInsertionCockpitComponent), canActivate: [authGuard] },
   { path: 'support/screen-diagnostic', loadComponent: () => import('./features/support/screen-diagnostic-cockpit.component').then(m => m.ScreenDiagnosticCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/intent-rollup', loadComponent: () => import('./features/sales/intent-rollup-cockpit.component').then(m => m.IntentRollupCockpitComponent), canActivate: [authGuard] },
-  { path: 'advertising/uid2-tokenizer', loadComponent: () => import('./features/advertising/uid2-tokenizer-cockpit.component').then(m => m.Uid2TokenizerCockpitComponent), canActivate: [authGuard] },
   { path: 'voice/agent-whisper', loadComponent: () => import('./features/voice/agent-whisper-cockpit.component').then(m => m.AgentWhisperCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/db-query-router', loadComponent: () => import('./features/infrastructure/db-query-router-cockpit.component').then(m => m.DbQueryRouterCockpitComponent), canActivate: [authGuard] },
   { path: 'personalization/content-personalization', loadComponent: () => import('./features/personalization/content-personalization-cockpit.component').then(m => m.ContentPersonalizationCockpitComponent), canActivate: [authGuard] },
   { path: 'advertising/video-dco', loadComponent: () => import('./features/advertising/video-dco-cockpit.component').then(m => m.VideoDcoCockpitComponent), canActivate: [authGuard] },
   { path: 'voice/emotion-deescalation', loadComponent: () => import('./features/voice/emotion-deescalation-cockpit.component').then(m => m.EmotionDeescalationCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/direct-mail-mesh', loadComponent: () => import('./features/sales/direct-mail-mesh-cockpit.component').then(m => m.DirectMailMeshCockpitComponent), canActivate: [authGuard] },
-  { path: 'advertising/spatial-ad-bidding', loadComponent: () => import('./features/advertising/spatial-ad-bidding-cockpit.component').then(m => m.SpatialAdBiddingCockpitComponent), canActivate: [authGuard] },
   { path: 'voice/speech-streaming-mesh', loadComponent: () => import('./features/voice/speech-streaming-mesh-cockpit.component').then(m => m.SpeechStreamingMeshCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/mutual-action-plan', loadComponent: () => import('./features/sales/mutual-action-plan-cockpit.component').then(m => m.MutualActionPlanCockpitComponent), canActivate: [authGuard] },
-  { path: 'advertising/retail-signage-mesh', loadComponent: () => import('./features/advertising/retail-signage-mesh-cockpit.component').then(m => m.RetailSignageMeshCockpitComponent), canActivate: [authGuard] },
   { path: 'voice/multilingual-voice-mesh', loadComponent: () => import('./features/voice/multilingual-voice-mesh-cockpit.component').then(m => m.MultilingualVoiceMeshCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/competitive-battlecard', loadComponent: () => import('./features/sales/competitive-battlecard-cockpit.component').then(m => m.CompetitiveBattlecardCockpitComponent), canActivate: [authGuard] },
-  { path: 'advertising/retail-coop-dsp', loadComponent: () => import('./features/advertising/retail-coop-dsp-cockpit.component').then(m => m.RetailCoopDspCockpitComponent), canActivate: [authGuard] },
   { path: 'voice/call-state-resumption', loadComponent: () => import('./features/voice/call-state-resumption-cockpit.component').then(m => m.CallStateResumptionCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/rfp-response', loadComponent: () => import('./features/sales/rfp-response-cockpit.component').then(m => m.RfpResponseCockpitComponent), canActivate: [authGuard] },
   { path: 'advertising/geo-incrementality', loadComponent: () => import('./features/advertising/geo-incrementality-cockpit.component').then(m => m.GeoIncrementalityCockpitComponent), canActivate: [authGuard] },
-  { path: 'voice/voice-dialect', loadComponent: () => import('./features/voice/voice-dialect-cockpit.component').then(m => m.VoiceDialectCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/buying-committee', loadComponent: () => import('./features/sales/buying-committee-cockpit.component').then(m => m.BuyingCommitteeCockpitComponent), canActivate: [authGuard] },
-  { path: 'advertising/audio-dai', loadComponent: () => import('./features/advertising/audio-dai-cockpit.component').then(m => m.AudioDaiCockpitComponent), canActivate: [authGuard] },
   { path: 'voice/telephony-whisper', loadComponent: () => import('./features/voice/telephony-whisper-cockpit.component').then(m => m.TelephonyWhisperCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/contract-redline', loadComponent: () => import('./features/sales/contract-redline-cockpit.component').then(m => m.ContractRedlineCockpitComponent), canActivate: [authGuard] },
-  { path: 'advertising/dooh-bidding', loadComponent: () => import('./features/advertising/dooh-bidding-cockpit.component').then(m => m.DoohBiddingCockpitComponent), canActivate: [authGuard] },
-  { path: 'voice/voice-biometric', loadComponent: () => import('./features/voice/voice-biometric-cockpit.component').then(m => m.VoiceBiometricCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/cab-matrix', loadComponent: () => import('./features/sales/cab-matrix-cockpit.component').then(m => m.CabMatrixCockpitComponent), canActivate: [authGuard] },
-  { path: 'advertising/in-car-ads', loadComponent: () => import('./features/advertising/in-car-ad-cockpit.component').then(m => m.InCarAdCockpitComponent), canActivate: [authGuard] },
   { path: 'voice/voice-intent', loadComponent: () => import('./features/voice/voice-intent-cockpit.component').then(m => m.VoiceIntentCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/value-realization', loadComponent: () => import('./features/sales/value-realization-cockpit.component').then(m => m.ValueRealizationCockpitComponent), canActivate: [authGuard] },
-  { path: 'advertising/weather-triggers', loadComponent: () => import('./features/advertising/weather-triggers-cockpit.component').then(m => m.WeatherTriggersCockpitComponent), canActivate: [authGuard] },
-  { path: 'voice/telephony-disfluency', loadComponent: () => import('./features/voice/telephony-disfluency-cockpit.component').then(m => m.TelephonyDisfluencyCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/customer-advocacy', loadComponent: () => import('./features/sales/customer-advocacy-cockpit.component').then(m => m.CustomerAdvocacyCockpitComponent), canActivate: [authGuard] },
-  { path: 'advertising/micro-geofence', loadComponent: () => import('./features/advertising/micro-geofence-cockpit.component').then(m => m.MicroGeofenceCockpitComponent), canActivate: [authGuard] },
-  { path: 'voice/echo-cancellation', loadComponent: () => import('./features/voice/echo-cancellation-cockpit.component').then(m => m.EchoCancellationCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/deal-coaching', loadComponent: () => import('./features/sales/deal-coaching-cockpit.component').then(m => m.DealCoachingCockpitComponent), canActivate: [authGuard] },
-  { path: 'advertising/signage-ssp', loadComponent: () => import('./features/advertising/signage-ssp-cockpit.component').then(m => m.SignageSspCockpitComponent), canActivate: [authGuard] },
-  { path: 'voice/neural-plc', loadComponent: () => import('./features/voice/neural-plc-cockpit.component').then(m => m.NeuralPlcCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/spiff-gamification', loadComponent: () => import('./features/sales/spiff-gamification-cockpit.component').then(m => m.SpiffGamificationCockpitComponent), canActivate: [authGuard] },
-  { path: 'advertising/vehicle-audio-dsp', loadComponent: () => import('./features/advertising/vehicle-audio-dsp-cockpit.component').then(m => m.VehicleAudioDspCockpitComponent), canActivate: [authGuard] },
-  { path: 'voice/dereverberation', loadComponent: () => import('./features/voice/dereverberation-cockpit.component').then(m => m.DereverberationCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/deal-autopsy', loadComponent: () => import('./features/sales/deal-autopsy-cockpit.component').then(m => m.DealAutopsyCockpitComponent), canActivate: [authGuard] },
   { path: 'advertising/sponsored-brand-ads', loadComponent: () => import('./features/advertising/sponsored-brand-ads-cockpit.component').then(m => m.SponsoredBrandAdsCockpitComponent), canActivate: [authGuard] },
-  { path: 'voice/prosody-empathy', loadComponent: () => import('./features/voice/prosody-empathy-cockpit.component').then(m => m.ProsodyEmpathyCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/rep-ramp', loadComponent: () => import('./features/sales/rep-ramp-cockpit.component').then(m => m.RepRampCockpitComponent), canActivate: [authGuard] },
   { path: 'advertising/cross-device-sync', loadComponent: () => import('./features/advertising/cross-device-sync-cockpit.component').then(m => m.CrossDeviceSyncCockpitComponent), canActivate: [authGuard] },
-  { path: 'voice/vocal-tremor', loadComponent: () => import('./features/voice/vocal-tremor-cockpit.component').then(m => m.VocalTremorCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/quota-capacity', loadComponent: () => import('./features/sales/quota-capacity-cockpit.component').then(m => m.QuotaCapacityCockpitComponent), canActivate: [authGuard] },
-  { path: 'advertising/store-footfall-lift', loadComponent: () => import('./features/advertising/store-footfall-lift-cockpit.component').then(m => m.StoreFootfallLiftCockpitComponent), canActivate: [authGuard] },
   { path: 'voice/dialect-synthesis', loadComponent: () => import('./features/voice/dialect-synthesis-cockpit.component').then(m => m.DialectSynthesisCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

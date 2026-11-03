@@ -319,7 +319,6 @@ public class SGrowingDbContext : DbContext
     public DbSet<DealMarginRecord> DealMarginRecords => Set<DealMarginRecord>();
 
     // Frontier Enhancements & Ingested Capability Expansions
-    public DbSet<TimesheetEntryRecord> TimesheetEntries => Set<TimesheetEntryRecord>();
     public DbSet<WhatsAppInstanceRecord> WhatsAppInstances => Set<WhatsAppInstanceRecord>();
     public DbSet<AutonomousFunnelRunRecord> AutonomousFunnelRuns => Set<AutonomousFunnelRunRecord>();
     public DbSet<FunnelSplitTestRecord> FunnelSplitTests => Set<FunnelSplitTestRecord>();
@@ -572,15 +571,6 @@ public class SGrowingDbContext : DbContext
             b.Property(d => d.GrossMarginPercentage).HasPrecision(18, 2);
         });
 
-        modelBuilder.Entity<TimesheetEntryRecord>(b =>
-        {
-            b.HasKey(t => t.Id);
-            b.HasIndex(t => new { t.TenantId, t.DealId });
-            b.HasIndex(t => new { t.TenantId, t.TeamMemberId });
-            b.Property(t => t.HoursWorked).HasPrecision(18, 2);
-            b.Property(t => t.HourlyRate).HasPrecision(18, 2);
-            b.Property(t => t.TotalLaborCost).HasPrecision(18, 2);
-        });
 
         modelBuilder.Entity<WhatsAppInstanceRecord>(b =>
         {
