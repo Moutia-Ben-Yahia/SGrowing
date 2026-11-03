@@ -694,6 +694,26 @@ graph TD
   - Distributed in-memory token-bucket rate limiting, entropy scraper detection, progressive tarpit latency delays, and multi-cloud edge IP quarantine synchronization.
   - Standalone cockpit (`/infrastructure/api-rate-limiter-mesh`) managing active token buckets, quarantine blacklist, and real-time DDoS mitigation verdicts.
   - **Verification:** 4 backend tests in `ApiRateLimiterMeshTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 121: Autonomous B2B Account-Based Marketing (ABM) Executive Gift & Direct Mail Orchestration Mesh (Domain B21 & J18)**
+  - Programmatic multi-carrier physical gifting triggers, corporate anti-bribery threshold rules validation ($100-$250 limits), and delivery-to-meeting pipeline attribution.
+  - Standalone cockpit (`/sales/direct-mail-mesh`) displaying curated gift tiers, real-time courier tracking, and direct-to-desk delivery confirmation.
+  - **Verification:** 3 backend tests in `DirectMailMeshTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 122: Autonomous In-Game & Metaverse 3D Spatial Programmatic Ad Bidding Mesh (Domain D22 & C18)**
+  - Sub-30ms spatial RTB evaluation, 3D camera view frustum calculation, occlusion & PBR lighting adaptation, dynamic mesh texture projection, and dwell-time gaze verification.
+  - Standalone cockpit (`/advertising/spatial-ad-bidding`) managing virtual 3D placements across UE5/Unity, bid win rates, and gaze dwell attestations.
+  - **Verification:** 3 backend tests in `SpatialAdBiddingTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 123: Autonomous AI Voice Telephony Speech-to-Speech (S2S) Ultra-Low-Latency Audio Streaming Mesh (Domain E19 & F16)**
+  - Sub-80ms full-duplex neural audio frame streaming, zero-latency acoustic barge-in cancellation, continuous pitch modulation, and expressive emotion inflections without text intermediate delays.
+  - Standalone cockpit (`/voice/speech-streaming-mesh`) rendering live Opus/PCM audio streams, round-trip latency monitors, and acoustic barge-in cutoff triggers.
+  - **Verification:** 3 backend tests in `SpeechStreamingMeshTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 124: Autonomous Dynamic Capital Expenditure (CapEx) Depreciation & Asset Lifecycle Ledger (Domain H21 & G17)**
+  - Dual-book depreciation engine (US MACRS 200% declining balance vs IFRS straight-line), Section 179 bonus depreciation, and automated impairment write-downs.
+  - Standalone cockpit (`/finance/asset-depreciation`) visualizing capital asset register, carrying book values, and statutory depreciation accruals.
+  - **Verification:** 3 backend tests in `AssetDepreciationTests.cs`, 2 Vitest tests, and Playwright E2E verification.
+- **Horizon 125: Autonomous Multi-Cloud Edge Secret Rotation & Ephemeral mTLS Zero-Trust Mesh (Domain K20 & A23)**
+  - Zero-downtime dual-credential secret rotation for databases and APIs, short-lived 15-minute ephemeral mTLS X.509 certificate issuance, and multi-cloud HSM sync.
+  - Standalone cockpit (`/infrastructure/secret-rotation-mesh`) managing enterprise secret profiles, HSM status, and ephemeral sovereign mTLS certificates.
+  - **Verification:** 3 backend tests in `SecretRotationMeshTests.cs`, 2 Vitest tests, and Playwright E2E verification.
 
 ### Infrastructure & Benchmarking: Self-Hosted Packaging, Grafana & CI/CD
 - **Observability:**
@@ -716,11 +736,11 @@ graph TD
 
 | Verification Gate | Result | Status |
 |---|---|---|
-| **Backend Unit & Integration Tests** | **5,463 passed / 0 failed / 0 skipped** | **100% Pass** (8.5s) |
+| **Backend Unit & Integration Tests** | **5,478 passed / 0 failed / 0 skipped** | **100% Pass** (8.5s) |
 | **Backend Compilation (`TreatWarningsAsErrors = true`)** | **0 Warnings, 0 Errors** | **100% Pass** |
-| **Frontend Vitest Unit & Component Suite** | **385 passed / 0 failed** across 114 suites | **100% Pass** (5.9s) |
-| **Playwright End-to-End Suite** | **129 passed / 0 failed** across 129 suites | **100% Pass** (1.5m) |
-| **Frontend Production Build (`ng build`)** | **0 Errors, 13.2s bundle generation, 165+ chunks** | **100% Pass** |
+| **Frontend Vitest Unit & Component Suite** | **395 passed / 0 failed** across 119 suites | **100% Pass** (5.9s) |
+| **Playwright End-to-End Suite** | **134 passed / 0 failed** across 134 suites | **100% Pass** (1.5m) |
+| **Frontend Production Build (`ng build`)** | **0 Errors, 13.7s bundle generation, 170+ chunks** | **100% Pass** |
 
 ---
 
@@ -765,3 +785,4 @@ graph TD
 - `1edb1d9`: `feat(growth-os): deliver Horizons 106 to 110 (Dynamic Sales Territory Rebalancing, Connected TV Ad Insertion, Multimodal Screen Diagnostic Cursor Guidance, Cross-Border Transfer Pricing Ledger, Global BGP Anycast Geo-Steering DNS Mesh)`
 - `29fdc4a`: `feat(growth-os): deliver Horizons 111 to 115 (Buyer Intent De-Duplication & Account Rollup, Cookieless UID2 Tokenizer, Real-Time Agent Whisper Negotiation Co-Pilot, Multi-Currency FX Hedging Mesh, Cross-Region Read Replica Dynamic Query Router)`
 - `e60f2c1`: `feat(growth-os): deliver Horizons 116 to 120 (Content Personalization Mesh, Programmatic Video DCO, Voice Call Emotion De-escalation, Payroll Tax Withholding Ledger, Zero-Trust API Rate Limiter Mesh)`
+- `ba282df`: `feat(growth-os): deliver Horizons 121 to 125 (Direct Mail ABM Gifting Mesh, 3D Spatial Metaverse Ad Bidding, S2S Audio Streaming, CapEx Asset Depreciation Ledger, Multi-Cloud Ephemeral mTLS Secret Rotation Mesh)`
