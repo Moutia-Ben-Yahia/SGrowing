@@ -285,5 +285,10 @@ export const routes: Routes = [
   { path: 'voice/call-transfer', loadComponent: () => import('./features/voice/call-transfer-cockpit.component').then(m => m.CallTransferCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/asc606-revenue', loadComponent: () => import('./features/finance/asc606-revenue-cockpit.component').then(m => m.Asc606RevenueCockpitComponent), canActivate: [authGuard] },
   { path: 'security/secret-vault-mesh', loadComponent: () => import('./features/security/secret-vault-mesh-cockpit.component').then(m => m.SecretVaultMeshCockpitComponent), canActivate: [authGuard] },
+  { path: 'intelligence/pipeline-velocity', loadComponent: () => import('./features/intelligence/pipeline-velocity-cockpit.component').then(m => m.PipelineVelocityCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/bid-pacing', loadComponent: () => import('./features/advertising/bid-pacing-cockpit.component').then(m => m.BidPacingCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/call-compliance', loadComponent: () => import('./features/voice/call-compliance-cockpit.component').then(m => m.CallComplianceCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/tax-nexus', loadComponent: () => import('./features/finance/tax-nexus-cockpit.component').then(m => m.TaxNexusCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/chaos-mesh', loadComponent: () => import('./features/infrastructure/chaos-mesh-cockpit.component').then(m => m.ChaosMeshCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

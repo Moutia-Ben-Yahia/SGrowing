@@ -592,11 +592,11 @@ graph TD
 
 | Verification Gate | Result | Status |
 |---|---|---|
-| **Backend Unit & Integration Tests** | **5,414 passed / 0 failed / 0 skipped** | **100% Pass** (8.5s) |
+| **Backend Unit & Integration Tests** | **5,430 passed / 0 failed / 0 skipped** | **100% Pass** (8.5s) |
 | **Backend Compilation (`TreatWarningsAsErrors = true`)** | **0 Warnings, 0 Errors** | **100% Pass** |
-| **Frontend Vitest Unit & Component Suite** | **345 passed / 0 failed** across 99 suites | **100% Pass** (5.9s) |
-| **Playwright End-to-End Suite** | **114 passed / 0 failed** across 114 suites | **100% Pass** (1.5m) |
-| **Frontend Production Build (`ng build`)** | **0 Errors, 12.8s bundle generation, 140+ chunks** | **100% Pass** |
+| **Frontend Vitest Unit & Component Suite** | **360 passed / 0 failed** across 104 suites | **100% Pass** (5.9s) |
+| **Playwright End-to-End Suite** | **119 passed / 0 failed** across 119 suites | **100% Pass** (1.5m) |
+| **Frontend Production Build (`ng build`)** | **0 Errors, 12.5s bundle generation, 145+ chunks** | **100% Pass** |
 
 ---
 
@@ -633,3 +633,5 @@ graph TD
 - `d5effb8`: `feat(growth-os): deliver Horizons 81 to 85 (Sales Champion MAP, DPA Catalog Feeds, Workforce Capacity Planning, FX Hedging Escrow, Zero-Trust Micro-Segmentation)`
 - `7be643b`: `docs: finalize delivery record for Horizons 81 to 85 in growth OS execution report`
 - `a65fb5d`: `feat(growth-os): deliver Horizons 86 to 90 (Account Expansion Radar, Influencer Escrow V2, Voice Call Transfer Mesh, ASC 606 Revenue Ledger, Secret Vault Mesh)`
+- `6e380fc`: `docs: finalize delivery record for Horizons 86 to 90 in growth OS execution report`
+- `[Active]`: `feat(growth-os): deliver Horizons 91 to 95 (Sales Pipeline Velocity, ABM Bid Pacing, Voice Call Compliance QA, Global Tax Nexus Tracking, Multi-Region Chaos Mesh)`

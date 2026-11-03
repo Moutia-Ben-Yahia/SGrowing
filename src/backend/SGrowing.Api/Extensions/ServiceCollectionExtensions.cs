@@ -82,6 +82,11 @@ using SGrowing.Api.Modules.Commerce.InfluencerEscrowV2;
 using SGrowing.Api.Modules.Voice.CallTransferMesh;
 using SGrowing.Api.Modules.Finance.Asc606Revenue;
 using SGrowing.Api.Modules.Security.SecretVaultMesh;
+using SGrowing.Api.Modules.Intelligence.PipelineVelocity;
+using SGrowing.Api.Modules.Advertising.BidPacing;
+using SGrowing.Api.Modules.Voice.CallCompliance;
+using SGrowing.Api.Modules.Finance.TaxNexus;
+using SGrowing.Api.Modules.Infrastructure.ChaosMesh;
 using SGrowing.Api.Data;
 using SGrowing.Api.Hubs;
 using SGrowing.Api.Modules.Agents;
@@ -1138,6 +1143,11 @@ public static class ServiceCollectionExtensions
         services.AddCallTransferMeshServices();
         services.AddAsc606RevenueServices();
         services.AddSecretVaultMeshServices();
+        services.AddPipelineVelocityServices();
+        services.AddBidPacingServices();
+        services.AddCallComplianceServices();
+        services.AddTaxNexusServices();
+        services.AddChaosMeshServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
