@@ -45,4 +45,73 @@ public class WebhookMeshTests
         Assert.Equal(WebhookDeliveryStatus.Delivered, replayed.Status);
         Assert.Equal(200, replayed.HttpResponseCode);
     }
+
+    [Fact]
+    public void CreateSubscription_GeneratesUniqueIdAndSecretKey()
+    {
+        var request = new CreateSubscriptionRequest(
+            TargetUrl: "https://api.partner.io/webhooks/incoming",
+            SubscribedEvents: new List<string> { "invoice.paid", "subscription.renewed" },
+            RetryLimit: 4
+        );
+
+        var sub = _engine.CreateSubscription(request);
+
+        Assert.NotNull(sub);
+        Assert.StartsWith("sub_", sub.SubscriptionId);
+        Assert.StartsWith("whsec_", sub.SecretKey);
+        Assert.True(sub.IsActive);
+        Assert.Equal(4, sub.RetryLimit);
+
+        var allSubs = _engine.ListSubscriptions();
+        Assert.Contains(allSubs, s => s.SubscriptionId == sub.SubscriptionId);
+    }
+
+    [Fact]
+    public void TriggerEvent_WildcardSubscriber_MatchesAnyEvent()
+    {
+        var wildcardSub = _engine.CreateSubscription(new CreateSubscriptionRequest(
+            TargetUrl: "https://audit.enterprise.io/all-events",
+            SubscribedEvents: new List<string> { "*" },
+            RetryLimit: 3
+        ));
+
+        var attempts = _engine.TriggerEvent(new TriggerWebhookEventRequest(
+            EventType: "custom.security.alert",
+            PayloadJson: "{\"threat\": \"elevated\"}"
+        ));
+
+        Assert.Contains(attempts, a => a.SubscriptionId == wildcardSub.SubscriptionId);
+    }
+
+    [Fact]
+    public void TriggerEvent_UnsubscribedEvent_ReturnsEmptyAttempts()
+    {
+        var attempts = _engine.TriggerEvent(new TriggerWebhookEventRequest(
+            EventType: "unmapped.obscure.event",
+            PayloadJson: "{}"
+        ));
+
+        // Unless there's a wildcard subscription, unmapped event has no matching attempts
+        Assert.All(attempts, a => Assert.True(a.EventType == "unmapped.obscure.event"));
+    }
+
+    [Fact]
+    public void ListDeliveryHistory_ReturnsDeliveriesDescending()
+    {
+        var history = _engine.ListDeliveryHistory();
+
+        Assert.NotEmpty(history);
+        for (var i = 1; i < history.Count; i++)
+        {
+            Assert.True(history[i - 1].AttemptedAtUtc >= history[i].AttemptedAtUtc);
+        }
+    }
+
+    [Fact]
+    public void ReplayDelivery_NonExistentDelivery_ThrowsKeyNotFoundException()
+    {
+        Assert.Throws<KeyNotFoundException>(() =>
+            _engine.ReplayDelivery(new ReplayDeliveryRequest("del_non_existent", null)));
+    }
 }

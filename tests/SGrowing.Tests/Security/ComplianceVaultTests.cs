@@ -46,4 +46,39 @@ public class ComplianceVaultTests
         Assert.Contains(boundaries, b => b.RegionCode == "eu-central-1" && b.IsEnforced);
         Assert.Contains(boundaries, b => b.RegionCode == "us-east-1" && b.IsEnforced);
     }
+
+    [Fact]
+    public void RedactPii_NullOrEmptyInput_ReturnsZeroMatches()
+    {
+        var nullResult = _engine.RedactPii(new ScanPiiRequest(null!));
+        Assert.Equal(0, nullResult.TotalPiiCount);
+        Assert.Empty(nullResult.Matches);
+        Assert.Equal(string.Empty, nullResult.SanitizedText);
+
+        var emptyResult = _engine.RedactPii(new ScanPiiRequest("   "));
+        Assert.Equal(0, emptyResult.TotalPiiCount);
+        Assert.Empty(emptyResult.Matches);
+    }
+
+    [Fact]
+    public void RedactPii_CleanInputWithoutPii_ReturnsTextUnmodified()
+    {
+        var text = "Standard B2B marketing cadence with high open rates and domain deliverability.";
+        var result = _engine.RedactPii(new ScanPiiRequest(text));
+
+        Assert.Equal(0, result.TotalPiiCount);
+        Assert.Empty(result.Matches);
+        Assert.Equal(text, result.SanitizedText);
+    }
+
+    [Fact]
+    public void RecordAuditLeaf_ComputesDeterministicSha256OfPayload()
+    {
+        var payload = "{\"event\": \"security_rotation_trigger\"}";
+        var expectedHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
+
+        var leaf = _engine.RecordAuditLeaf("SYSTEM_EVENT", "operator_1", "tenant_1", payload);
+
+        Assert.Equal(expectedHash, leaf.PayloadSha256);
+    }
 }

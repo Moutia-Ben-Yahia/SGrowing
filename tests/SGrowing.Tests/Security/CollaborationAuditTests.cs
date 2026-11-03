@@ -55,4 +55,29 @@ public sealed class CollaborationAuditTests
         var logs = _engine.ListAuditLogs();
         Assert.Contains(logs, l => l.Action == "UserSessionsTerminated" && l.UserId == "usr_alice");
     }
+
+    [Fact]
+    public void ListActiveCollaborators_WithNonExistentResourceId_ReturnsEmpty()
+    {
+        var active = _engine.ListActiveCollaborators("res_non_existent_canvas");
+        Assert.Empty(active);
+    }
+
+    [Fact]
+    public void ListAuditLogs_WithTakeParameter_LimitsReturnedLogCount()
+    {
+        var logs = _engine.ListAuditLogs(take: 1);
+        Assert.Single(logs);
+    }
+
+    [Fact]
+    public void RevokeUserSessions_NonExistentUser_StillLogsAuditAndReturnsTrue()
+    {
+        var request = new RevokeUserSessionsRequest("usr_ghost", "Routine account decommissioning");
+        var result = _engine.RevokeUserSessions(request);
+
+        Assert.True(result);
+        var logs = _engine.ListAuditLogs();
+        Assert.Contains(logs, l => l.Action == "UserSessionsTerminated" && l.UserId == "usr_ghost");
+    }
 }

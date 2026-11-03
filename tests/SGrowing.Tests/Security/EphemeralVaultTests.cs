@@ -59,4 +59,44 @@ public class EphemeralVaultTests
         var tokens = _engine.GetActiveTokens();
         Assert.All(tokens, t => Assert.Equal(TokenStatus.RevokedEmergency, t.Status));
     }
+
+    [Theory]
+    [InlineData(1, 5)]
+    [InlineData(120, 60)]
+    public void IssueToken_ClampsDurationBetweenFiveAndSixtyMinutes(int requestedMinutes, int expectedDurationMinutes)
+    {
+        var request = new RequestEphemeralTokenRequest(
+            "usr_duration_clamp",
+            AccessScope.ProdDeploy,
+            "Testing boundary clamp",
+            requestedMinutes
+        );
+
+        var token = _engine.IssueToken(request);
+
+        Assert.NotNull(token);
+        var span = token.ExpiresAtUtc - token.IssuedAtUtc;
+        Assert.Equal(expectedDurationMinutes, (int)Math.Round(span.TotalMinutes));
+    }
+
+    [Fact]
+    public void RevokeToken_NonExistentToken_ReturnsFailureResult()
+    {
+        var result = _engine.RevokeToken("eph_tok_nonexistent_999", "SecurityOperator");
+
+        Assert.False(result.Success);
+        Assert.Equal("eph_tok_nonexistent_999", result.TokenId);
+        Assert.Equal("Token not found.", result.Message);
+    }
+
+    [Fact]
+    public void EmergencyRevokeAll_WhenAlreadyRevoked_ReturnsZero()
+    {
+        // First emergency revoke invalidates all
+        _engine.EmergencyRevokeAll("CisoAdmin");
+
+        // Second call should find 0 ActiveValid tokens to revoke
+        var countAgain = _engine.EmergencyRevokeAll("CisoAdmin");
+        Assert.Equal(0, countAgain);
+    }
 }

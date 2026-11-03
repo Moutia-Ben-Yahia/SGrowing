@@ -95,4 +95,66 @@ public class DaemonHeartbeatWatchdogTests
         status.SecondsSinceLastHeartbeat.Should().Be(0.0);
         status.IsAlive.Should().BeTrue();
     }
+
+    [Fact]
+    public async Task DaemonHeartbeatService_DelayedDaemon_ShouldReportDegraded()
+    {
+        DaemonHeartbeatService.ResetHeartbeatsForTesting();
+        var service = new DaemonHeartbeatService(null);
+
+        // 45 seconds elapsed (> 35s and <= 90s)
+        DaemonHeartbeatService.SetHeartbeatForTesting("DealRottingWatchdogDaemon", DateTime.UtcNow.AddSeconds(-45));
+
+        var status = await service.GetDaemonStatusAsync("DealRottingWatchdogDaemon");
+        status.Should().NotBeNull();
+        status.Status.Should().Be("Degraded");
+        status.MissedTicks.Should().Be(1);
+        status.IsAlive.Should().BeTrue();
+        status.Message.Should().Contain("Daemon delayed");
+    }
+
+    [Fact]
+    public async Task DaemonHeartbeatService_SeverelyStalledDaemon_ShouldReportUnhealthyWithCalculatedMissedTicks()
+    {
+        DaemonHeartbeatService.ResetHeartbeatsForTesting();
+        var service = new DaemonHeartbeatService(null);
+
+        // 180 seconds elapsed (> 90s) -> 180 / 30 = 6 missed ticks
+        DaemonHeartbeatService.SetHeartbeatForTesting("DurableSocialPublishingDaemon", DateTime.UtcNow.AddSeconds(-180));
+
+        var status = await service.GetDaemonStatusAsync("DurableSocialPublishingDaemon");
+        status.Should().NotBeNull();
+        status.Status.Should().Be("Unhealthy");
+        status.MissedTicks.Should().BeGreaterThanOrEqualTo(6);
+        status.IsAlive.Should().BeFalse();
+        status.Message.Should().Contain("missed");
+    }
+
+    [Fact]
+    public async Task GetHealthReport_PartiallyHealthyDaemons_ShouldReportDegradedOverall()
+    {
+        DaemonHeartbeatService.ResetHeartbeatsForTesting();
+        var service = new DaemonHeartbeatService(null);
+
+        // Record heartbeat for only first 2 daemons
+        await service.RecordHeartbeatAsync(DaemonHeartbeatService.DefaultMonitoredDaemons[0]);
+        await service.RecordHeartbeatAsync(DaemonHeartbeatService.DefaultMonitoredDaemons[1]);
+
+        var report = await service.GetHealthReportAsync();
+        report.HealthyCount.Should().Be(2);
+        report.UnhealthyCount.Should().Be(4);
+        report.OverallStatus.Should().Be("Degraded");
+    }
+
+    [Fact]
+    public async Task GetHealthReport_ZeroHealthyDaemons_ShouldReportUnhealthyOverall()
+    {
+        DaemonHeartbeatService.ResetHeartbeatsForTesting();
+        var service = new DaemonHeartbeatService(null);
+
+        var report = await service.GetHealthReportAsync();
+        report.HealthyCount.Should().Be(0);
+        report.UnhealthyCount.Should().Be(6);
+        report.OverallStatus.Should().Be("Unhealthy");
+    }
 }

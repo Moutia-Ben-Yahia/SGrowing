@@ -65,4 +65,39 @@ public sealed class AppGeneratorTests
         var records = _engine.ListRecords("app_onboarding_tracker");
         Assert.Contains(records, r => r.Id == record.Id);
     }
+
+    [Fact]
+    public void GetApp_ExistingAndNonExisting_ReturnsExpectedResult()
+    {
+        var existing = _engine.GetApp("app_onboarding_tracker");
+        Assert.NotNull(existing);
+        Assert.Equal("VIP Client Onboarding Tracker", existing.Name);
+
+        var nonExisting = _engine.GetApp("app_ghost_999");
+        Assert.Null(nonExisting);
+    }
+
+    [Fact]
+    public void ListRecords_NonExistentApp_ReturnsEmptyArray()
+    {
+        var records = _engine.ListRecords("app_does_not_exist");
+        Assert.Empty(records);
+    }
+
+    [Fact]
+    public void CreateApp_EmptyFields_DefaultsPrimaryFieldToName()
+    {
+        var request = new CreateAppRequest(
+            Name: "Minimal App",
+            Description: "App without initial custom fields",
+            Fields: Array.Empty<AppFieldSchema>(),
+            Permissions: "Private"
+        );
+
+        var app = _engine.CreateApp(request);
+
+        Assert.NotNull(app);
+        Assert.Equal("Name", app.PrimaryField);
+        Assert.Equal("minimal-app", app.Slug);
+    }
 }

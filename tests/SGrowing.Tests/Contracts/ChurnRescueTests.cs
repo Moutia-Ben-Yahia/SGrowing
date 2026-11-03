@@ -70,4 +70,63 @@ public sealed class ChurnRescueTests
         Assert.Equal(2, agreement.PriceLockYears);
         Assert.Equal("PendingSignature", agreement.SignatureStatus);
     }
+
+    [Fact]
+    public async Task GetRescueMetrics_CalculatesArrAtRiskAndSummaryMetrics()
+    {
+        var metrics = await _engine.GetRescueMetricsAsync();
+
+        Assert.NotNull(metrics);
+        Assert.True(metrics.TotalArrAtRisk > 0);
+        Assert.Equal(339000m, metrics.RescuedArrAmount);
+        Assert.Equal(114.6, metrics.NetRevenueRetentionRate);
+        Assert.Equal(14, metrics.RescuedContractsCount);
+        Assert.True(metrics.HighRiskAccountsCount >= 1);
+    }
+
+    [Fact]
+    public async Task AssessAccountRisk_NonExistentAccount_ThrowsKeyNotFoundException()
+    {
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _engine.AssessAccountRiskAsync("acc_ghost_company"));
+    }
+
+    [Theory]
+    [InlineData("ExecutiveSponsorSync", "VIP sponsor sync")]
+    [InlineData("UsageCredits", "promotional platform usage credits")]
+    [InlineData("CustomRetentionSequence", "proactive customer retention")]
+    public async Task ExecutePlaybook_VariousPlaybookTypes_GeneratesExpectedSummary(string playbookType, string expectedSnippet)
+    {
+        var request = new TriggerPlaybookRequest("acc_novus_health", playbookType);
+        var result = await _engine.ExecutePlaybookAsync(request);
+
+        Assert.NotNull(result);
+        Assert.Equal(playbookType, result.PlaybookType);
+        Assert.Contains(expectedSnippet, result.ActionSummary);
+        Assert.Equal("Initiated", result.Status);
+    }
+
+    [Fact]
+    public async Task ExecutePlaybook_NullOrMissingAccount_ThrowsExpectedExceptions()
+    {
+        // 1. Null request
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            _engine.ExecutePlaybookAsync(null!));
+
+        // 2. Non-existent account
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _engine.ExecutePlaybookAsync(new TriggerPlaybookRequest("acc_unknown", "DiscountLock")));
+    }
+
+    [Fact]
+    public async Task GenerateRenewalAgreement_NullOrMissingAccount_ThrowsExpectedExceptions()
+    {
+        // 1. Null request
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            _engine.GenerateRenewalAgreementAsync(null!));
+
+        // 2. Non-existent account
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _engine.GenerateRenewalAgreementAsync(new GenerateRenewalAgreementRequest("acc_unknown", 50000m, 10, 1)));
+    }
 }
