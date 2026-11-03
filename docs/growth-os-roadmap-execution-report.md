@@ -887,17 +887,18 @@ graph TD
 - `92d5362`: `feat(growth-os): deliver Horizons 166 to 170 (Live Deal Coaching, In-Store Signage SSP, Neural Packet Loss Concealment, Cap Table Secondary Liquidity, BGP Route Flap Damping)`
 - `8a66d20`: `feat(growth-os): deliver Horizons 171 to 175 (Sales SPIFF Gamification, Vehicle Audio DSP, Voice Dereverberation, Section 174 Amortization, eBGP EVPN VXLAN Overlay)`
 - `3736203`: `feat(growth-os): deliver Horizons 176 to 180 (Win-Rate Deal Autopsy, Retail Media Sponsored Brand Ads, Speech Prosody Empathy Tuning, Intercompany Multilateral Netting, SRv6 Traffic Engineering)`
+- `[pending-commit]`: `feat(growth-os): deliver Horizons 181 to 185 (Sales Rep Ramp Acceleration, Cross-Device CAPI Graph, Whisper Voice Tremor Stress, Pillar Two GloBE Tax, RoCEv2 RDMA Fabric)`
 
-### Horizon 176 to 180 Implementation Details
-- **Horizon 176 (Sales / Win-Rate Deal Autopsy & Lost Opportunity Forensic Mesh):** Lost opportunity root cause decomposition, buying committee ghosting forensic markers, competitor displacement telemetry, and automated remediation playbooks (`DealAutopsyEngine.cs`, `deal-autopsy-cockpit.component.ts`).
-- **Horizon 177 (Advertising / Retail Media Sponsored Brand Multi-Product Banner DSP Auction Mesh):** OpenRTB 2.6 multi-product carousel ad insertion, SKU inventory stock-level availability gating, first-price bid shading, and multi-touch halo ROAS calculation (`SponsoredBrandAdsEngine.cs`, `sponsored-brand-ads-cockpit.component.ts`).
-- **Horizon 178 (Voice / Speech-to-Speech Prosody & Emotional Empathy Tone Shifter Engine):** Sub-50ms acoustic emotion telemetry, fundamental frequency (F0) pitch contour shifting, speech rate deceleration, and conversational de-escalation (`ProsodyEmpathyEngine.cs`, `prosody-empathy-cockpit.component.ts`).
-- **Horizon 179 (Finance / Real-Time Intercompany Trade Settlement & Multilateral Netting Ledger):** Global subsidiary trade matrix settlement, debt-chain graph cycle collapse, FX conversion toll elimination, and OECD transfer pricing compliance (`IntercompanyNettingEngine.cs`, `intercompany-netting-cockpit.component.ts`).
-- **Horizon 180 (Infrastructure / Multi-Cloud Segment Routing over IPv6 (SRv6) Traffic Engineering Mesh):** Native IPv6 Segment Routing, explicit End/End.X locator path steering, deterministic sub-15ms cross-cloud GPU cluster interconnects, and strict zero-loss SLA enforcement (`Srv6TrafficEngine.cs`, `srv6-traffic-cockpit.component.ts`).
+### Horizon 181 to 185 Implementation Details
+- **Horizon 181 (Sales / Sales Rep Ramp Acceleration & Shadow-Call Co-Pilot Mesh):** Rep onboarding competency matrix, sub-second shadow call transcript analysis, discovery gap whisper interventions, and cohort ramp velocity projection (`RepRampEngine.cs`, `rep-ramp-cockpit.component.ts`).
+- **Horizon 182 (Advertising / Cross-Device Graph Sync & CAPI Offline Conversion Matcher):** Multi-identifier graph clustering (SHA-256 email/phone, GAID, IDFA, UID2), 14-day offline POS receipt attribution, and server-side CAPI event payload forwarding (`CrossDeviceSyncEngine.cs`, `cross-device-sync-cockpit.component.ts`).
+- **Horizon 183 (Voice / Whisper Voice Isolation & Micro-Vocal Cord Tremor Stress Detector):** Adaptive low-energy unvoiced speech detection, +14.5dB formant boosting, 8-14 Hz physiological micro-tremor extraction, and automated supervisor duress escalation (`VocalTremorEngine.cs`, `vocal-tremor-cockpit.component.ts`).
+- **Horizon 184 (Finance / Sovereign Pillar Two GloBE Top-Up Tax Return & Safe Harbor Ledger):** OECD GloBE 15% minimum tax calculation, Transitional CbCR Safe Harbor tests (De Minimis, Simplified ETR, Routine Profits), SBIE payroll/tangible asset carveouts, and QDMTT/IIR allocation (`GlobeTopUpTaxEngine.cs`, `globe-top-up-tax-cockpit.component.ts`).
+- **Horizon 185 (Infrastructure / Multi-Cloud High-Performance RoCEv2 / RDMA over Converged Ethernet Fabric Arbiter):** Lossless RoCEv2 fabric management, ECN congestion marking, PFC pause frame deadlock detection, automated watchdog queue draining, and DCQCN collective communication tuning (`Rocev2FabricEngine.cs`, `rocev2-fabric-cockpit.component.ts`).
 
 ### Current Verified Quality Metrics
-- **Backend xUnit Tests:** 5,643 passing tests (0 failures, 100% pass rate).
-- **Frontend Vitest Specs:** 505 passing tests across 113 standalone component suites.
-- **Playwright E2E Tests:** 189 passing tests across full browser execution runs.
-- **Production Build:** Angular 22 `ng build` succeeded cleanly with 235 lazy chunk bundles.
+- **Backend xUnit Tests:** 5,658 passing tests (0 failures, 100% pass rate).
+- **Frontend Vitest Specs:** 515 passing tests across 118 standalone component suites.
+- **Playwright E2E Tests:** 194 passing tests across full browser execution runs.
+- **Production Build:** Angular 22 `ng build` succeeded cleanly with 230 lazy chunk bundles.
 - **Compiler Health:** .NET 10 compilation with `TreatWarningsAsErrors=true` (0 warnings, 0 errors).

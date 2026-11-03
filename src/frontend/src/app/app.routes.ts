@@ -375,5 +375,10 @@ export const routes: Routes = [
   { path: 'voice/prosody-empathy', loadComponent: () => import('./features/voice/prosody-empathy-cockpit.component').then(m => m.ProsodyEmpathyCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/intercompany-netting', loadComponent: () => import('./features/finance/intercompany-netting-cockpit.component').then(m => m.IntercompanyNettingCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/srv6-traffic', loadComponent: () => import('./features/infrastructure/srv6-traffic-cockpit.component').then(m => m.Srv6TrafficCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/rep-ramp', loadComponent: () => import('./features/sales/rep-ramp-cockpit.component').then(m => m.RepRampCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/cross-device-sync', loadComponent: () => import('./features/advertising/cross-device-sync-cockpit.component').then(m => m.CrossDeviceSyncCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/vocal-tremor', loadComponent: () => import('./features/voice/vocal-tremor-cockpit.component').then(m => m.VocalTremorCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/globe-top-up-tax', loadComponent: () => import('./features/finance/globe-top-up-tax-cockpit.component').then(m => m.GlobeTopUpTaxCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/rocev2-fabric', loadComponent: () => import('./features/infrastructure/rocev2-fabric-cockpit.component').then(m => m.Rocev2FabricCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

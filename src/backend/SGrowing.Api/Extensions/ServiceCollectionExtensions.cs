@@ -416,6 +416,11 @@ using SGrowing.Api.Modules.Advertising.SponsoredBrandAds;
 using SGrowing.Api.Modules.Voice.ProsodyEmpathy;
 using SGrowing.Api.Modules.Finance.IntercompanyNetting;
 using SGrowing.Api.Modules.Infrastructure.Srv6Traffic;
+using SGrowing.Api.Modules.Sales.RepRamp;
+using SGrowing.Api.Modules.Advertising.CrossDeviceSync;
+using SGrowing.Api.Modules.Voice.VocalTremor;
+using SGrowing.Api.Modules.Finance.GlobeTopUpTax;
+using SGrowing.Api.Modules.Infrastructure.Rocev2Fabric;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Diagnostics;
@@ -1318,6 +1323,11 @@ public static class ServiceCollectionExtensions
         services.AddProsodyEmpathyServices();
         services.AddIntercompanyNettingServices();
         services.AddSrv6TrafficServices();
+        services.AddRepRampServices();
+        services.AddCrossDeviceSyncServices();
+        services.AddVocalTremorServices();
+        services.AddGlobeTopUpTaxServices();
+        services.AddRocev2FabricServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
