@@ -52,7 +52,6 @@ import { FunnelAttributionCockpitComponent } from './features/analytics/funnel-a
 import { EcommerceConnectorsCockpitComponent } from './features/commerce/ecommerce-connectors-cockpit.component';
 import { ProjectTaskBoardComponent } from './features/projects/project-task-board.component';
 import { ProspectResearchCockpitComponent } from './features/outbound/prospect-research-cockpit.component';
-import { MultiWarehouseCockpitComponent } from './features/commerce/multi-warehouse-cockpit.component';
 import { OrganizationMarginCockpitComponent } from './features/organizations/organization-margin-cockpit.component';
 import { ClientOnboardingPortalComponent } from './features/projects/client-onboarding-portal.component';
 import { WhatsAppGatewayCockpitComponent } from './features/channels/whatsapp-gateway-cockpit.component';
@@ -64,7 +63,6 @@ import { CallCenterCockpitComponent } from './features/commerce/call-center-cock
 import { ProposalViewerComponent } from './features/documents/proposal-viewer.component';
 import { VideoMeetingRoomComponent } from './features/calendar/video-meeting-room.component';
 import { MultiInboxCockpitComponent } from './features/deliverability/multi-inbox-cockpit.component';
-import { CarrierReconciliationCockpitComponent } from './features/commerce/carrier-reconciliation-cockpit.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -73,12 +71,10 @@ export const routes: Routes = [
   { path: 'p/:token', component: ProposalViewerComponent },
   { path: 'meet/:roomToken', component: VideoMeetingRoomComponent },
   { path: 'deliverability/multi-inbox', component: MultiInboxCockpitComponent, canActivate: [authGuard] },
-  { path: 'commerce/reconciliation', component: CarrierReconciliationCockpitComponent, canActivate: [authGuard] },
   { path: 'commerce/b2b-wholesale', loadComponent: () => import('./features/commerce/b2b-wholesale-portal.component').then(m => m.B2BWholesalePortalComponent), canActivate: [authGuard] },
   { path: 'commerce/affiliates', loadComponent: () => import('./features/commerce/affiliate-commission-cockpit.component').then(m => m.AffiliateCommissionCockpitComponent), canActivate: [authGuard] },
   { path: 'projects/tasks', component: ProjectTaskBoardComponent, canActivate: [authGuard] },
   { path: 'outbound/research', component: ProspectResearchCockpitComponent, canActivate: [authGuard] },
-  { path: 'commerce/warehouses', component: MultiWarehouseCockpitComponent, canActivate: [authGuard] },
   { path: 'commerce/callcenter', component: CallCenterCockpitComponent, canActivate: [authGuard] },
   { path: 'organizations/margin', component: OrganizationMarginCockpitComponent, canActivate: [authGuard] },
   { path: 'channels/whatsapp-gateway', component: WhatsAppGatewayCockpitComponent, canActivate: [authGuard] },
@@ -193,7 +189,6 @@ export const routes: Routes = [
   { path: 'documents/security', loadComponent: () => import('./features/documents/document-security-studio.component').then(m => m.DocumentSecurityStudioComponent), canActivate: [authGuard] },
   { path: 'crm/deal-slippage', loadComponent: () => import('./features/crm/deal-slippage-studio.component').then(m => m.DealSlippageStudioComponent), canActivate: [authGuard] },
   { path: 'social/listening', loadComponent: () => import('./features/social/social-listening-studio.component').then(m => m.SocialListeningStudioComponent), canActivate: [authGuard] },
-  { path: 'commerce/fulfillment-routing', loadComponent: () => import('./features/commerce/split-shipment-studio.component').then(m => m.SplitShipmentStudioComponent), canActivate: [authGuard] },
   { path: 'analytics/pltv', loadComponent: () => import('./features/analytics/pltv-analytics-studio.component').then(m => m.PltvAnalyticsStudioComponent), canActivate: [authGuard] },
   { path: 'voice/ivr-flow', loadComponent: () => import('./features/voice/voice-ivr-studio.component').then(m => m.VoiceIvrStudioComponent), canActivate: [authGuard] },
   { path: 'security/synthetic-data', loadComponent: () => import('./features/security/synthetic-data-studio.component').then(m => m.SyntheticDataStudioComponent), canActivate: [authGuard] },
@@ -224,7 +219,6 @@ export const routes: Routes = [
   { path: 'security/compliance-vault', loadComponent: () => import('./features/security/compliance-vault-cockpit.component').then(m => m.ComplianceVaultCockpitComponent), canActivate: [authGuard] },
   { path: 'lifecycle/journey-orchestrator', loadComponent: () => import('./features/lifecycle/journey-orchestrator-cockpit.component').then(m => m.JourneyOrchestratorCockpitComponent), canActivate: [authGuard] },
   { path: 'funnels/canvas-builder', loadComponent: () => import('./features/funnels/funnel-canvas-builder.component').then(m => m.FunnelCanvasBuilderComponent), canActivate: [authGuard] },
-  { path: 'commerce/fulfillment-matrix', loadComponent: () => import('./features/commerce/fulfillment-matrix-cockpit.component').then(m => m.FulfillmentMatrixCockpitComponent), canActivate: [authGuard] },
   { path: 'analytics/bi-report-builder', loadComponent: () => import('./features/analytics/bi-report-builder.component').then(m => m.BiReportBuilderComponent), canActivate: [authGuard] },
   { path: 'developer/webhook-mesh', loadComponent: () => import('./features/developer/webhook-mesh-cockpit.component').then(m => m.WebhookMeshCockpitComponent), canActivate: [authGuard] },
   { path: 'ai/knowledge-graph', loadComponent: () => import('./features/ai/knowledge-graph-cockpit.component').then(m => m.KnowledgeGraphCockpitComponent), canActivate: [authGuard] },
@@ -260,7 +254,6 @@ export const routes: Routes = [
   { path: 'content/repurposing', loadComponent: () => import('./features/content/content-repurposing-cockpit.component').then(m => m.ContentRepurposingCockpitComponent), canActivate: [authGuard] },
   { path: 'analytics/attribution-shapley', loadComponent: () => import('./features/analytics/attribution-shapley-cockpit.component').then(m => m.AttributionShapleyCockpitComponent), canActivate: [authGuard] },
   { path: 'voice/agent-assist', loadComponent: () => import('./features/voice/agent-assist-cockpit.component').then(m => m.AgentAssistCockpitComponent), canActivate: [authGuard] },
-  { path: 'commerce/tariffs', loadComponent: () => import('./features/commerce/tariff-calculator-cockpit.component').then(m => m.TariffCalculatorCockpitComponent), canActivate: [authGuard] },
   { path: 'intelligence/win-loss', loadComponent: () => import('./features/intelligence/win-loss-cockpit.component').then(m => m.WinLossCockpitComponent), canActivate: [authGuard] },
   { path: 'advertising/retargeting-matrix', loadComponent: () => import('./features/advertising/retargeting-matrix-cockpit.component').then(m => m.RetargetingMatrixCockpitComponent), canActivate: [authGuard] },
   { path: 'support/sentiment-deescalation', loadComponent: () => import('./features/support/sentiment-deescalation-cockpit.component').then(m => m.SentimentDeescalationCockpitComponent), canActivate: [authGuard] },

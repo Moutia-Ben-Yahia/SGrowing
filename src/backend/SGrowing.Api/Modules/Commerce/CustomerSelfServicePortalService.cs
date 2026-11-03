@@ -27,12 +27,10 @@ public record PublicTrackingResult(
 public class CustomerSelfServicePortalService : ICustomerSelfServicePortalService
 {
     private readonly SGrowingDbContext _dbContext;
-    private readonly ICourierLogisticsHubService _courierHub;
 
-    public CustomerSelfServicePortalService(SGrowingDbContext dbContext, ICourierLogisticsHubService courierHub)
+    public CustomerSelfServicePortalService(SGrowingDbContext dbContext)
     {
         _dbContext = dbContext;
-        _courierHub = courierHub;
     }
 
     private static string MaskName(string name)
@@ -144,8 +142,6 @@ public class CustomerSelfServicePortalService : ICustomerSelfServicePortalServic
         if (isApproved && dispatchReverseCourier && courierId.HasValue)
         {
             rma.Status = RmaStatus.ReverseCourierDispatched;
-            // Dispatch reverse shipment through logistics hub
-            await _courierHub.DispatchOrderAsync(tenantId, rma.OrderId, courierId.Value);
         }
 
         await _dbContext.SaveChangesAsync();

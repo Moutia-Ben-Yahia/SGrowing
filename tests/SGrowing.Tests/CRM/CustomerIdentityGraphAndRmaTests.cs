@@ -57,21 +57,25 @@ public class CustomerIdentityGraphAndRmaTests
     public async Task PublicTracking_And_RmaRequest_Should_Verify_Phone_And_Process_Return()
     {
         var db = CreateDbContext();
-        var courierHub = new CourierLogisticsHubService(db);
-        var portal = new CustomerSelfServicePortalService(db, courierHub);
+        var portal = new CustomerSelfServicePortalService(db);
         var tenantId = Guid.NewGuid();
 
-        var courier = new CourierProvider { TenantId = tenantId, Name = "Bosta Egypt", ApiCode = "BST", IsActive = true };
-        db.CourierProviders.Add(courier);
-
         var order = CodOrder.Create(tenantId, "ORD-EG-990", "Omar Farouk", "+201012345678", "25 El Nasr St", "Cairo", "Nasr City", 450m, countryCode: "EG", codCurrency: "EGP");
-        order.Status = CodOrderStatus.Confirmed;
+        order.Status = CodOrderStatus.Dispatched;
         order.ConfirmedAtUtc = DateTime.UtcNow;
         db.CodOrders.Add(order);
-        await db.SaveChangesAsync();
 
-        // Dispatch
-        await courierHub.DispatchOrderAsync(tenantId, order.Id, courier.Id);
+        var shipment = new ShipmentRecord
+        {
+            TenantId = tenantId,
+            OrderId = order.Id,
+            TrackingNumber = "TRK-EG-990",
+            CourierName = "Bosta Egypt",
+            Status = CourierShipmentStatus.InTransit,
+            DispatchedAtUtc = DateTime.UtcNow
+        };
+        db.ShipmentRecords.Add(shipment);
+        await db.SaveChangesAsync();
 
         // Public tracking lookup authenticated with phone suffix
         var tracking = await portal.LookupTrackingAsync("ORD-EG-990", "5678");
@@ -85,7 +89,7 @@ public class CustomerIdentityGraphAndRmaTests
         Assert.StartsWith("RMA-ORD-EG-990", rma.RmaNumber);
 
         // Merchant Review and Reverse Courier Dispatch
-        var approvedRma = await portal.ReviewRmaRequestAsync(tenantId, rma.Id, isApproved: true, resolutionNotes: "Approved size exchange", dispatchReverseCourier: true, courierId: courier.Id);
+        var approvedRma = await portal.ReviewRmaRequestAsync(tenantId, rma.Id, isApproved: true, resolutionNotes: "Approved size exchange", dispatchReverseCourier: true, courierId: Guid.NewGuid());
         Assert.Equal(RmaStatus.ReverseCourierDispatched, approvedRma.Status);
     }
 }

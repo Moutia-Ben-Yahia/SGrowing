@@ -109,9 +109,7 @@ public class SGrowingDbContext : DbContext
     public DbSet<CodOrder> CodOrders => Set<CodOrder>();
     public DbSet<OrderCollisionLock> OrderCollisionLocks => Set<OrderCollisionLock>();
     public DbSet<CallOutcomeRecord> CallOutcomeRecords => Set<CallOutcomeRecord>();
-    public DbSet<CourierProvider> CourierProviders => Set<CourierProvider>();
     public DbSet<ShipmentRecord> ShipmentRecords => Set<ShipmentRecord>();
-    public DbSet<ShippingManifest> ShippingManifests => Set<ShippingManifest>();
     public DbSet<BlacklistEntry> BlacklistEntries => Set<BlacklistEntry>();
     public DbSet<Warehouse> Warehouses => Set<Warehouse>();
     public DbSet<WarehouseInventory> WarehouseInventories => Set<WarehouseInventory>();
@@ -128,8 +126,6 @@ public class SGrowingDbContext : DbContext
     // Ad Conversions, Remittance Clearing, In-Chat Commerce & Storefront Sync
     public DbSet<ServerConversionEvent> ServerConversionEvents => Set<ServerConversionEvent>();
     public DbSet<ConversionTrackingConfig> ConversionTrackingConfigs => Set<ConversionTrackingConfig>();
-    public DbSet<CourierRemittanceStatement> CourierRemittanceStatements => Set<CourierRemittanceStatement>();
-    public DbSet<RemittanceItemMatch> RemittanceItemMatches => Set<RemittanceItemMatch>();
     public DbSet<InChatCartSession> InChatCartSessions => Set<InChatCartSession>();
     public DbSet<ExternalStoreSyncRecord> ExternalStoreSyncRecords => Set<ExternalStoreSyncRecord>();
     public DbSet<GoogleSheetsSyncConfig> GoogleSheetsSyncConfigs => Set<GoogleSheetsSyncConfig>();
@@ -137,11 +133,6 @@ public class SGrowingDbContext : DbContext
     // Autonomous Fulfillment & Operations Expansion
     public DbSet<VoiceConfirmationCampaign> VoiceConfirmationCampaigns => Set<VoiceConfirmationCampaign>();
     public DbSet<OutboundCallAttempt> OutboundCallAttempts => Set<OutboundCallAttempt>();
-    public DbSet<WarehousePickSlip> WarehousePickSlips => Set<WarehousePickSlip>();
-    public DbSet<PickSlipItem> PickSlipItems => Set<PickSlipItem>();
-    public DbSet<CourierManifestRunSheet> CourierManifestRunSheets => Set<CourierManifestRunSheet>();
-    public DbSet<ManifestParcelItem> ManifestParcelItems => Set<ManifestParcelItem>();
-    public DbSet<WarehouseRmaInspection> WarehouseRmaInspections => Set<WarehouseRmaInspection>();
     public DbSet<MetaCatalogItem> MetaCatalogItems => Set<MetaCatalogItem>();
     public DbSet<MetaCatalogSyncFeed> MetaCatalogSyncFeeds => Set<MetaCatalogSyncFeed>();
     public DbSet<StorefrontDomain> StorefrontDomains => Set<StorefrontDomain>();
@@ -150,14 +141,9 @@ public class SGrowingDbContext : DbContext
     public DbSet<MicroDepositPaymentLink> MicroDepositPaymentLinks => Set<MicroDepositPaymentLink>();
 
     // Enterprise Operations: Smart Routing, Retention LTV, Multi-Hub WMS, Live Commerce & Float
-    public DbSet<CarrierPerformanceMetric> CarrierPerformanceMetrics => Set<CarrierPerformanceMetric>();
-    public DbSet<CarrierRateCard> CarrierRateCards => Set<CarrierRateCard>();
     public DbSet<PostPurchaseSurvey> PostPurchaseSurveys => Set<PostPurchaseSurvey>();
     public DbSet<ProductBurnRateConfig> ProductBurnRateConfigs => Set<ProductBurnRateConfig>();
     public DbSet<ReplenishmentSchedule> ReplenishmentSchedules => Set<ReplenishmentSchedule>();
-    public DbSet<RegionalHubProximityRule> RegionalHubProximityRules => Set<RegionalHubProximityRule>();
-    public DbSet<InterHubStockTransfer> InterHubStockTransfers => Set<InterHubStockTransfer>();
-    public DbSet<SupplierPurchaseOrder> SupplierPurchaseOrders => Set<SupplierPurchaseOrder>();
     public DbSet<LiveStreamSession> LiveStreamSessions => Set<LiveStreamSession>();
     public DbSet<LiveFlashDeal> LiveFlashDeals => Set<LiveFlashDeal>();
     public DbSet<CarrierRemittanceScheduleConfig> CarrierRemittanceScheduleConfigs => Set<CarrierRemittanceScheduleConfig>();
@@ -170,14 +156,8 @@ public class SGrowingDbContext : DbContext
     public DbSet<CreatorPayoutRecord> CreatorPayoutRecords => Set<CreatorPayoutRecord>();
 
     // Automated Reverse Logistics & Drop-and-Swap (Frontier 2)
-    public DbSet<OrderExchangeRequest> OrderExchangeRequests => Set<OrderExchangeRequest>();
-    public DbSet<ExchangeCourierSwapManifest> ExchangeCourierSwapManifests => Set<ExchangeCourierSwapManifest>();
-    public DbSet<ItemReturnInspection> ItemReturnInspections => Set<ItemReturnInspection>();
 
     // Cross-Border Trade & Customs Invoices (Frontier 3)
-    public DbSet<CountryTradeConfig> CountryTradeConfigs => Set<CountryTradeConfig>();
-    public DbSet<FxExchangeRate> FxExchangeRates => Set<FxExchangeRate>();
-    public DbSet<CustomsCommercialInvoice> CustomsCommercialInvoices => Set<CustomsCommercialInvoice>();
 
     // Predictive Demand Forecasting & Supplier Restock (Frontier 4)
     public DbSet<ProductSalesVelocity> ProductSalesVelocities => Set<ProductSalesVelocity>();
@@ -210,11 +190,6 @@ public class SGrowingDbContext : DbContext
     public DbSet<AdPlatformExecutionLog> AdPlatformExecutionLogs => Set<AdPlatformExecutionLog>();
 
     // In-House Fleet Dispatcher & Mobile Courier Driver Delivery Engine (Next-Gen Frontier 2)
-    public DbSet<DeliveryDriver> DeliveryDrivers => Set<DeliveryDriver>();
-    public DbSet<DriverRunSheet> DriverRunSheets => Set<DriverRunSheet>();
-    public DbSet<RunSheetStop> RunSheetStops => Set<RunSheetStop>();
-    public DbSet<ProofOfDeliveryRecord> ProofOfDeliveryRecords => Set<ProofOfDeliveryRecord>();
-    public DbSet<DriverCashReconciliation> DriverCashReconciliations => Set<DriverCashReconciliation>();
 
     // Visual WhatsApp Interactive Flow Engine & State Machine (Next-Gen Frontier 3)
     public DbSet<FlowDefinition> FlowDefinitions => Set<FlowDefinition>();
@@ -244,8 +219,6 @@ public class SGrowingDbContext : DbContext
     public DbSet<BillingInvoiceRecord> BillingInvoiceRecords => Set<BillingInvoiceRecord>();
 
     // Horizon 1: Mobile Courier Companion & Headless COD Checkout
-    public DbSet<DriverMobileSession> DriverMobileSessions => Set<DriverMobileSession>();
-    public DbSet<DoorstepProofOfDelivery> DoorstepProofOfDeliveries => Set<DoorstepProofOfDelivery>();
     public DbSet<CodCheckoutSession> CodCheckoutSessions => Set<CodCheckoutSession>();
     public DbSet<WilayaZone> WilayaZones => Set<WilayaZone>();
 
@@ -308,9 +281,7 @@ public class SGrowingDbContext : DbContext
     public DbSet<WebResearchRecord> WebResearchRecords => Set<WebResearchRecord>();
     public DbSet<CrawlerSecretRecord> CrawlerSecretRecords => Set<CrawlerSecretRecord>();
 
-    public DbSet<WarehouseRecord> WarehouseRecords => Set<WarehouseRecord>();
     public DbSet<WarehouseStockRecord> WarehouseStockRecords => Set<WarehouseStockRecord>();
-    public DbSet<StockTransferManifest> StockTransferManifests => Set<StockTransferManifest>();
 
     public DbSet<OrganizationRecord> OrganizationRecords => Set<OrganizationRecord>();
     public DbSet<BranchRecord> BranchRecords => Set<BranchRecord>();
@@ -510,25 +481,12 @@ public class SGrowingDbContext : DbContext
             b.HasIndex(cs => new { cs.TenantId, cs.Provider });
         });
 
-        modelBuilder.Entity<WarehouseRecord>(b =>
-        {
-            b.HasKey(w => w.Id);
-            b.HasIndex(w => new { w.TenantId, w.Code });
-            b.HasIndex(w => new { w.TenantId, w.IsActive, w.Latitude, w.Longitude });
-        });
-
         modelBuilder.Entity<WarehouseStockRecord>(b =>
         {
             b.HasKey(s => s.Id);
             b.HasIndex(s => new { s.TenantId, s.WarehouseId, s.Sku });
             b.Property(s => s.UnitCost).HasPrecision(18, 2);
             b.Property(s => s.RowVersion).IsConcurrencyToken();
-        });
-
-        modelBuilder.Entity<StockTransferManifest>(b =>
-        {
-            b.HasKey(m => m.Id);
-            b.HasIndex(m => new { m.TenantId, m.ManifestNumber });
         });
 
         modelBuilder.Entity<OrganizationRecord>(b =>

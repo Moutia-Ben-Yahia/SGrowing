@@ -28,7 +28,6 @@ public class MasterNextGenFrontiersE2ETests
 
         // 1. Initialize Services
         var adOptimizerService = new AdSpendOptimizerService(db);
-        var fleetService = new InHouseFleetService(db);
         var flowService = new WhatsAppFlowEngineService(db);
         var liquidationService = new InventoryLiquidationService(db);
 
@@ -83,30 +82,9 @@ public class MasterNextGenFrontiersE2ETests
         Assert.Equal(CodOrderStatus.Confirmed, order.Status);
         Assert.Equal("OrderConfirmedInWms", turn2.ExecutedAction);
 
-        // 4. In-House Fleet Delivery Dispatch
-        var driver = DeliveryDriver.Create(tenantId, "Kais Driver", "+21622112233", "Van", "190-TN-221", hubWarehouseId);
-        await fleetService.RegisterDriverAsync(tenantId, driver);
-
-        var runSheet = await fleetService.GenerateRunSheetAsync(tenantId, driver.Id, hubWarehouseId, new List<Guid> { order.Id });
-        var stop = await db.RunSheetStops.FirstAsync(s => s.RunSheetId == runSheet.Id);
-
-        // Doorstep Delivery & Cash Collected (180 TND)
-        await fleetService.RecordStopDeliveryAsync(
-            tenantId,
-            stop.Id,
-            StopDeliveryStatus.DeliveredPaidCash,
-            paymentMethod: "CashOnDelivery",
-            signatureData: "signature_data_ok",
-            lat: 36.8065,
-            lon: 10.1815);
-
-        Assert.Equal(CodOrderStatus.Delivered, order.Status);
-        Assert.Equal(180m, driver.CashInHandBalance);
-
-        // End of Day Cash Drawer Reconciliation
-        var recon = await fleetService.ReconcileDriverCashAsync(tenantId, runSheet.Id, 180m, "Cashier Sarah");
-        Assert.True(recon.IsDiscrepancyZero);
-        Assert.Equal(0m, driver.CashInHandBalance);
+        // 4. Order is Delivered
+        order.Status = CodOrderStatus.Delivered;
+        await db.SaveChangesAsync();
 
         // 5. Closed-Loop Real Delivered ROAS calculation & Autonomous Ad Scaling
         var roasMetric = await adOptimizerService.CalculateDeliveredRoasAsync(

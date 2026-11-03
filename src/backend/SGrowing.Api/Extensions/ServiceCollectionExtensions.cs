@@ -30,7 +30,6 @@ using SGrowing.Api.Modules.Sales.TerritoryRouting;
 using SGrowing.Api.Modules.Security.ComplianceVault;
 using SGrowing.Api.Modules.Journeys.LifecycleOrchestrator;
 using SGrowing.Api.Modules.Funnels.CanvasBuilder;
-using SGrowing.Api.Modules.Commerce.FulfillmentMatrix;
 using SGrowing.Api.Modules.Analytics.BiReportBuilder;
 using SGrowing.Api.Modules.Dev.WebhookMesh;
 using SGrowing.Api.Modules.Ai.KnowledgeGraph;
@@ -65,7 +64,6 @@ using SGrowing.Api.Modules.Infrastructure.DisasterRecovery;
 using SGrowing.Api.Modules.Content.Repurposing;
 using SGrowing.Api.Modules.Analytics.ShapleyAttribution;
 using SGrowing.Api.Modules.Voice.AgentAssist;
-using SGrowing.Api.Modules.Commerce.Tariffs;
 using SGrowing.Api.Modules.Security.EphemeralVault;
 using SGrowing.Api.Modules.Intelligence.WinLoss;
 using SGrowing.Api.Modules.Advertising.RetargetingMatrix;
@@ -97,27 +95,21 @@ using SGrowing.Api.Modules.Sales.Proposals;
 using SGrowing.Api.Modules.Documents.Idp;
 using SGrowing.Api.Modules.FrontendArchitecture.MicroFrontends;
 using SGrowing.Api.Modules.Tenancy.MultiRegion;
-using SGrowing.Api.Modules.Commerce.Robotics;
 using SGrowing.Api.Modules.Marketing.Retention;
 using SGrowing.Api.Modules.Analytics.SessionReplay;
 using SGrowing.Api.Modules.Marketing.Copywriting;
 using SGrowing.Api.Modules.Resilience.Chaos;
 using SGrowing.Api.Modules.Commerce.VisualSearch;
 using SGrowing.Api.Modules.Voice.Synthesis;
-using SGrowing.Api.Modules.Commerce.QualityGate;
 using SGrowing.Api.Modules.CRM.SupportSwarm;
-using SGrowing.Api.Modules.Commerce.Shrinkage;
 using SGrowing.Api.Modules.Marketing.AdSpend;
 using SGrowing.Api.Modules.Tenancy.Governance;
-using SGrowing.Api.Modules.Commerce.Neuromorphic;
 using SGrowing.Api.Modules.Commerce.CoOp;
-using SGrowing.Api.Modules.Commerce.DigitalTwin;
 using SGrowing.Api.Modules.CRM.RetentionConcierge;
 using SGrowing.Api.Modules.Revenue.YieldManagement;
 using SGrowing.Api.Modules.Security.VoiceLiveness;
 
 
-using SGrowing.Api.Modules.Commerce.WarehouseSlotting;
 using SGrowing.Api.Modules.AI.SyntheticData;
 using SGrowing.Api.Modules.Tenancy.DataSovereignty;
 
@@ -158,9 +150,6 @@ using SGrowing.Api.Modules.Commerce.AntiFraud;
 using SGrowing.Api.Modules.Commerce.CallCenter;
 using SGrowing.Api.Modules.Commerce.CartReservations;
 using SGrowing.Api.Modules.Commerce.Connectors;
-using SGrowing.Api.Modules.Commerce.Logistics;
-using SGrowing.Api.Modules.Commerce.Shipping;
-using SGrowing.Api.Modules.Commerce.Warehouses;
 using SGrowing.Api.Modules.Contracts;
 using SGrowing.Api.Modules.Conversations;
 using SGrowing.Api.Modules.Conversations.Macros;
@@ -207,7 +196,6 @@ using SGrowing.Api.Modules.Security;
 using SGrowing.Api.Modules.Security.Vault;
 using SGrowing.Api.Modules.SEO;
 using SGrowing.Api.Modules.Social;
-using SGrowing.Api.Modules.Commerce.Fulfillment;
 using SGrowing.Api.Modules.CRM.Pipeline;
 using SGrowing.Api.Modules.Documents.Security;
 using SGrowing.Api.Modules.Social.Listening;
@@ -414,41 +402,25 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ShopifyWebhookReceiver>();
         services.AddScoped<AbandonedCartRecoveryService>();
         services.AddScoped<ICodConfirmationService, CodConfirmationService>();
-        services.AddScoped<ICourierLogisticsHubService, CourierLogisticsHubService>();
         services.AddScoped<IDefensiveWmsService, DefensiveWmsService>();
-        services.AddScoped<ICourierRemittanceClearingService, CourierRemittanceClearingService>();
         services.AddScoped<IConversationalCartEngine, ConversationalCartEngine>();
         services.AddScoped<IExternalStoreAndSheetsService, ExternalStoreAndSheetsService>();
-        services.AddScoped<IBarcodeFulfillmentService, BarcodeFulfillmentService>();
         services.AddScoped<IWhatsAppCatalogEngine, WhatsAppCatalogEngine>();
         services.AddScoped<IStorefrontDomainService, StorefrontDomainService>();
         services.AddScoped<ICustomerReputationService, CustomerReputationService>();
-        services.AddScoped<ISmartCourierRoutingService, SmartCourierRoutingService>();
-        services.AddScoped<IMultiWarehouseService, MultiWarehouseService>();
         services.AddScoped<ILiveCommerceOverlayService, LiveCommerceOverlayService>();
         services.AddScoped<ITreasuryFloatService, TreasuryFloatService>();
         services.AddScoped<ICreatorAffiliateService, CreatorAffiliateService>();
-        services.AddScoped<SGrowing.Api.Modules.Commerce.IReverseExchangeService, SGrowing.Api.Modules.Commerce.ReverseExchangeService>();
-        services.AddScoped<ICrossBorderTradeService, CrossBorderTradeService>();
         services.AddScoped<IDemandForecastingService, DemandForecastingService>();
         services.AddScoped<IAdSpendOptimizerService, AdSpendOptimizerService>();
-        services.AddScoped<IInHouseFleetService, InHouseFleetService>();
         services.AddScoped<IWhatsAppFlowEngineService, WhatsAppFlowEngineService>();
         services.AddScoped<IInventoryLiquidationService, InventoryLiquidationService>();
-        services.AddScoped<ICourierCompanionService, CourierCompanionService>();
         services.AddScoped<ICodCheckoutService, CodCheckoutService>();
         services.AddScoped<IB2BCreditAndFactoringService, B2BCreditAndFactoringService>();
         services.AddScoped<ICallCenterAntiCollisionService, CallCenterAntiCollisionService>();
         services.AddScoped<ICodNetMarginLedgerService, CodNetMarginLedgerService>();
-        services.AddScoped<ICodCarrierAutoDispatchService, CodCarrierAutoDispatchService>();
         services.AddScoped<ICartReservationService, CartReservationService>();
         services.AddSingleton<IAffiliateCommissionService, AffiliateCommissionService>();
-
-        // Autonomous Multi-Carrier Logistics & Reverse COD Orchestration
-        services.AddSingleton<ICodFraudPredictorService, CodFraudPredictorService>();
-        services.AddSingleton<ICarrierSmartRouterService, CarrierSmartRouterService>();
-        services.AddSingleton<SGrowing.Api.Modules.Commerce.Logistics.IReverseExchangeService, SGrowing.Api.Modules.Commerce.Logistics.ReverseExchangeService>();
-        services.AddSingleton<ICourierRemittanceService, CourierRemittanceService>();
 
         // Customer 360, RMA & Self-Service Portal
         services.AddScoped<ICustomerIdentityGraphService, CustomerIdentityGraphService>();
@@ -582,7 +554,6 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient<IWhatsAppCloudApiClient, WhatsAppCloudApiAdapter>();
         services.AddSingleton<ILiveKitMediaClient, LiveKitMediaServerAdapter>();
         services.AddSingleton<ISmtpSocketClient, SmtpSocketClientAdapter>();
-        services.AddSingleton<ICourierLogisticsGateway, CourierLogisticsGateway>();
         services.AddScoped<ISemanticVectorRagService, SemanticVectorRagService>();
 
         // Inspiration Repository Modules
@@ -614,7 +585,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICsvImportService, CsvImportService>();
         services.AddSingleton<IBotSimulatorService, BotSimulatorService>();
         services.AddSingleton<IMultiPartySigningService, MultiPartySigningService>();
-        services.AddSingleton<ICarrierShippingGateway, CarrierShippingGateway>();
         services.AddScoped<ICodAntiFraudEngine, CodAntiFraudEngine>();
         services.AddScoped<IShopifyConnectorService, ShopifyConnectorService>();
         services.AddScoped<IWooCommerceConnectorService, WooCommerceConnectorService>();
@@ -623,8 +593,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProjectTaskService, ProjectTaskService>();
         services.AddScoped<IScraperVaultService, ScraperVaultService>();
         services.AddScoped<IDeepWebResearchService, DeepWebResearchService>();
-        services.AddScoped<IWarehouseRoutingService, WarehouseRoutingService>();
-        services.AddSingleton<IGeodeticFleetDispatchService, GeodeticFleetDispatchService>();
         services.AddScoped<IOrganizationHierarchyService, OrganizationHierarchyService>();
         services.AddScoped<IWhatsAppGatewayService, WhatsAppGatewayService>();
         services.AddScoped<IMediaVaultService, MediaVaultService>();
@@ -715,7 +683,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDocumentSecurityService, DocumentSecurityService>();
         services.AddSingleton<IDealSlippageRadarService, DealSlippageRadarService>();
         services.AddSingleton<ISocialListeningSentinelService, SocialListeningSentinelService>();
-        services.AddSingleton<ISplitShipmentRoutingService, SplitShipmentRoutingService>();
         services.AddSingleton<IPredictiveLtvService, PredictiveLtvService>();
         services.AddSingleton<IVoiceIvrEngineService, VoiceIvrEngineService>();
         services.AddSingleton<ISyntheticDataGeneratorService, SyntheticDataGeneratorService>();
@@ -734,7 +701,6 @@ public static class ServiceCollectionExtensions
 
         // Horizons 26-30 Services
         services.AddMultiRegionSovereignServices();
-        services.AddAmrRoboticsBinPackingServices();
         services.AddPredictiveRetentionServices();
 
         // Horizons 31-35 Services
@@ -747,20 +713,16 @@ public static class ServiceCollectionExtensions
         services.AddVoiceSynthesisServices();
 
         // Horizons 41-45 Services
-        services.AddQualityGateServices();
         services.AddSupportSwarmServices();
 
         // Horizons 46-50 Services
-        services.AddShrinkageServices();
         services.AddAdSpendServices();
         services.AddSovereignGovernanceServices();
 
         // Horizons 51-55 Services
-        services.AddNeuromorphicVisionServices();
         services.AddCollaborativeCommerceServices();
 
         // Horizons 56-60 Services
-        services.AddDigitalTwinServices();
         services.AddRetentionConciergeServices();
 
         // Horizons 61-65 Services
@@ -772,7 +734,6 @@ public static class ServiceCollectionExtensions
         
 
         // Horizons 71-75 Services
-        services.AddWarehouseSlottingServices();
         services.AddDifferentialPrivacySandboxServices();
 
         // Horizons 76-80 Services
@@ -926,7 +887,6 @@ public static class ServiceCollectionExtensions
         services.AddZeroTrustVaultServices();
         services.AddLifecycleJourneyServices();
         services.AddCanvasBuilderServices();
-        services.AddFulfillmentMatrixServices();
         services.AddBiReportBuilderServices();
         services.AddBiDirectionalWebhookMeshServices();
         services.AddKnowledgeGraphServices();
@@ -961,7 +921,6 @@ public static class ServiceCollectionExtensions
         services.AddContentRepurposingServices();
         services.AddShapleyAttributionServices();
         services.AddAgentAssistServices();
-        services.AddTariffCalculatorServices();
         services.AddEphemeralVaultServices();
         services.AddWinLossServices();
         services.AddRetargetingMatrixServices();

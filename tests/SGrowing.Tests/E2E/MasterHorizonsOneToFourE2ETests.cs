@@ -25,7 +25,6 @@ public class MasterHorizonsOneToFourE2ETests
         // HORIZON 1: Headless COD Checkout & Mobile Courier Driver Companion
         // =========================================================================
         var checkoutService = new CodCheckoutService(db);
-        var courierService = new CourierCompanionService(db);
 
         // 1.1 Customer initiates checkout
         var cartJson = "[{\"sku\":\"PERFUME-ROYAL-OUD-50ML\",\"qty\":1,\"price\":120.0}]";
@@ -52,60 +51,6 @@ public class MasterHorizonsOneToFourE2ETests
         await checkoutService.ApplyUpsellOfferAsync(tenantId, checkoutSession.SessionKey, "OUD-TRAVEL-MINI", 30.0m);
         var orderConfirmation = await checkoutService.CompleteCodOrderAsync(tenantId, checkoutSession.SessionKey);
         Assert.Equal(157.0m, orderConfirmation.TotalAmountDueOnDoorstep); // 120 + 7 (shipping) + 30 (upsell)
-
-        // 1.5 Courier Driver starts mobile PWA session & delivers stop
-        var driver = DeliveryDriver.Create(tenantId, "Tarek Driver", "+21699001122", "Motorcycle", "210 TN 1234", Guid.NewGuid());
-        db.DeliveryDrivers.Add(driver);
-
-        var runSheet = new DriverRunSheet
-        {
-            TenantId = tenantId,
-            DriverId = driver.Id,
-            HubWarehouseId = Guid.NewGuid(),
-            SheetNumber = "RS-20261026-99",
-            DateUtc = DateTime.UtcNow,
-            TotalParcels = 1,
-            TotalCashToCollect = 157.0m
-        };
-        db.DriverRunSheets.Add(runSheet);
-
-        var stop = new RunSheetStop
-        {
-            TenantId = tenantId,
-            RunSheetId = runSheet.Id,
-            OrderId = Guid.NewGuid(),
-            OrderNumber = orderConfirmation.OrderNumber,
-            StopSequence = 1,
-            CustomerName = "Kais Saidi",
-            CustomerPhone = "+21698223344",
-            ShippingAddress = "12 Rue Sidi Bou Said, La Marsa",
-            AmountToCollect = 157.0m
-        };
-        db.RunSheetStops.Add(stop);
-        runSheet.TotalParcels = 1;
-        runSheet.TotalCashToCollect = 157.0m;
-        await db.SaveChangesAsync();
-
-        var driverSession = await courierService.StartDriverSessionAsync(tenantId, driver.Id, driver.FullName, "Samsung A54 PWA");
-        Assert.NotNull(driverSession);
-
-        var pod = await courierService.SubmitDoorstepProofOfDeliveryAsync(
-            tenantId,
-            stop.Id,
-            stop.OrderId,
-            orderConfirmation.OrderNumber,
-            driver.Id,
-            signatureBase64: "data:image/png;base64,mockSignatureKais",
-            photoUrl: "https://cdn.sgrowing.net/pod/order-99.jpg",
-            cashCollected: 157.0m,
-            recipientName: "Kais Saidi",
-            paymentMethod: "CashOnDelivery"
-        );
-        Assert.Equal(157.0m, pod.CashCollected);
-
-        var driverCashSummary = await courierService.GetDriverCashSummaryAsync(tenantId, driver.Id);
-        Assert.Equal(157.0m, driverCashSummary.TotalCashInHand);
-        Assert.Equal(1, driverCashSummary.CompletedStopsCount);
 
         // =========================================================================
         // HORIZON 3: Autonomous UGC Creative Engine & Competitor Radar

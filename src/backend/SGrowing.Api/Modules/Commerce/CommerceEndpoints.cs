@@ -5,8 +5,6 @@ using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Commerce;
 using SGrowing.Api.Modules.Commerce.AntiFraud;
 using SGrowing.Api.Modules.Commerce.Connectors;
-using SGrowing.Api.Modules.Commerce.Shipping;
-using SGrowing.Api.Modules.Commerce.Warehouses;
 using SGrowing.Api.Modules.CRM;
 using SGrowing.Api.Modules.Integrations;
 using SGrowing.Api.Modules.Marketing;
@@ -158,25 +156,6 @@ public static class CommerceEndpoints
             return Results.Ok(order);
         });
 
-        // Logistics & Manifests
-        app.MapPost("/api/logistics/dispatch", async ([FromBody] DispatchShipmentDto req, ICourierLogisticsHubService logisticsHub) =>
-        {
-            var shipment = await logisticsHub.DispatchOrderAsync(req.TenantId, req.OrderId, req.CourierProviderId);
-            return Results.Ok(shipment);
-        });
-
-        app.MapPost("/api/logistics/manifests", async ([FromBody] GenerateManifestDto req, ICourierLogisticsHubService logisticsHub) =>
-        {
-            var manifest = await logisticsHub.GenerateBordereauManifestAsync(req.TenantId, req.CourierProviderId, req.OrderIds);
-            return Results.Ok(manifest);
-        });
-
-        app.MapPost("/api/logistics/webhooks/tracking", async ([FromBody] IngestCourierWebhookDto req, ICourierLogisticsHubService logisticsHub) =>
-        {
-            var shipment = await logisticsHub.ProcessTrackingWebhookAsync(req.TenantId, req.TrackingNumber, req.Status, req.CashRemitted, req.Notes);
-            return Results.Ok(shipment);
-        });
-
         // Defensive WMS
         app.MapGet("/api/wms/inventory", async ([FromQuery] Guid tenantId, [FromQuery] Guid warehouseId, [FromQuery] string sku, IDefensiveWmsService wmsService) =>
         {
@@ -241,24 +220,6 @@ public static class CommerceEndpoints
             return Results.Ok(events);
         });
 
-        app.MapPost("/api/remittance/reconcile", async ([FromBody] ReconcileRemittanceDto req, ICourierRemittanceClearingService clearingService) =>
-        {
-            var result = await clearingService.ReconcileStatementAsync(req.TenantId, req.CourierProviderId, req.StatementReference, req.Items, req.ReconciledBy ?? "FinanceManager");
-            return Results.Ok(result);
-        });
-
-        app.MapPost("/api/remittance/discrepancies/resolve", async ([FromBody] ResolveDiscrepancyDto req, ICourierRemittanceClearingService clearingService) =>
-        {
-            var match = await clearingService.ResolveDiscrepancyAsync(req.TenantId, req.MatchId, req.ResolutionNotes);
-            return Results.Ok(match);
-        });
-
-        app.MapGet("/api/remittance/profitability", async ([FromQuery] Guid tenantId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] decimal cogsPercent, ICourierRemittanceClearingService clearingService) =>
-        {
-            var summary = await clearingService.CalculateNetProfitabilityAsync(tenantId, startDate, endDate, cogsPercent <= 0 ? 35.0m : cogsPercent);
-            return Results.Ok(summary);
-        });
-
         // In-Chat Commerce & Cart Builder
         app.MapPost("/api/chat-commerce/parse", ([FromBody] ParseChatCartDto req, IConversationalCartEngine cartEngine) =>
         {
@@ -289,43 +250,6 @@ public static class CommerceEndpoints
         {
             var row = await storeService.GenerateGoogleSheetsRowAsync(req.TenantId, req.OrderId);
             return Results.Ok(new { Row = row });
-        });
-
-        // Barcode Fulfillment Desk
-        app.MapPost("/api/fulfillment/pickslips", async ([FromBody] CreatePickSlipDto req, IBarcodeFulfillmentService fulfillmentService) =>
-        {
-            var slip = await fulfillmentService.CreatePickSlipAsync(req.TenantId, req.OrderId, req.WarehouseId);
-            return Results.Ok(slip);
-        });
-
-        app.MapPost("/api/fulfillment/pickslips/scan", async ([FromBody] ScanPickItemDto req, IBarcodeFulfillmentService fulfillmentService) =>
-        {
-            var result = await fulfillmentService.ScanItemToPickSlipAsync(req.TenantId, req.PickSlipId, req.ScannedBarcodeOrSku);
-            return Results.Ok(result);
-        });
-
-        app.MapPost("/api/fulfillment/pickslips/complete-pack", async ([FromBody] CompletePackDto req, IBarcodeFulfillmentService fulfillmentService) =>
-        {
-            var slip = await fulfillmentService.CompletePackAndAssignAwbAsync(req.TenantId, req.PickSlipId, req.TrackingNumber, req.CourierName);
-            return Results.Ok(slip);
-        });
-
-        app.MapPost("/api/fulfillment/manifests/scan", async ([FromBody] ScanManifestParcelDto req, IBarcodeFulfillmentService fulfillmentService) =>
-        {
-            var manifest = await fulfillmentService.ScanParcelToManifestAsync(req.TenantId, req.ManifestId, req.TrackingNumber);
-            return Results.Ok(manifest);
-        });
-
-        app.MapPost("/api/fulfillment/manifests/close-sign", async ([FromBody] CloseManifestDto req, IBarcodeFulfillmentService fulfillmentService) =>
-        {
-            var manifest = await fulfillmentService.CloseAndSignManifestAsync(req.TenantId, req.ManifestId, req.DriverName, req.DriverPhone, req.DriverSignature);
-            return Results.Ok(manifest);
-        });
-
-        app.MapPost("/api/fulfillment/rma/inspect", async ([FromBody] InspectRmaParcelDto req, IBarcodeFulfillmentService fulfillmentService) =>
-        {
-            var rma = await fulfillmentService.InspectAndRestockRmaParcelAsync(req.TenantId, req.TrackingNumber, req.InspectorId, req.Condition, req.Notes, req.WarehouseId);
-            return Results.Ok(rma);
         });
 
         // Storefront White-Labeling & Custom Domains
@@ -386,106 +310,6 @@ public static class CommerceEndpoints
             return Results.Ok(order);
         });
 
-        // Smart Courier Routing
-        app.MapGet("/api/commerce/routing/rank", async ([FromQuery] Guid tenantId, [FromQuery] string governorate, [FromQuery] decimal weight, [FromQuery] decimal codAmount, ISmartCourierRoutingService routingService) =>
-        {
-            var recommendations = await routingService.RankCarriersForOrderAsync(tenantId, governorate, weight, codAmount);
-            return Results.Ok(recommendations);
-        });
-
-        app.MapPost("/api/commerce/routing/auto-assign", async ([FromBody] AutoAssignCarrierDto req, ISmartCourierRoutingService routingService) =>
-        {
-            var optimal = await routingService.AutoAssignOptimalCarrierAsync(req.TenantId, req.OrderId, req.PackageWeightKg);
-            return Results.Ok(optimal);
-        });
-
-        app.MapPost("/api/commerce/routing/sla-breach-fallback", async ([FromBody] SlaBreachFallbackDto req, ISmartCourierRoutingService routingService) =>
-        {
-            var order = await routingService.HandlePickupSlaBreachFallbackAsync(req.TenantId, req.CurrentTrackingNumber);
-            return Results.Ok(order);
-        });
-
-        // Multi-Warehouse Proximity & Inter-Hub Transfers
-        app.MapGet("/api/warehouses/proximity-allocate", async ([FromQuery] Guid tenantId, [FromQuery] string governorate, [FromQuery] string sku, [FromQuery] int quantity, IMultiWarehouseService whService) =>
-        {
-            var allocation = await whService.AllocateOrderToOptimalWarehouseAsync(tenantId, governorate, sku, quantity);
-            return Results.Ok(allocation);
-        });
-
-        app.MapPost("/api/warehouses/transfers", async ([FromBody] CreateTransferDto req, IMultiWarehouseService whService) =>
-        {
-            var transfer = await whService.CreateInterHubTransferAsync(req.TenantId, req.SourceWarehouseId, req.DestinationWarehouseId, req.Sku, req.Quantity);
-            return Results.Ok(transfer);
-        });
-
-        app.MapPost("/api/warehouses/transfers/dispatch", async ([FromBody] ActionTransferDto req, IMultiWarehouseService whService) =>
-        {
-            var transfer = await whService.DispatchInterHubTransferAsync(req.TenantId, req.TransferId);
-            return Results.Ok(transfer);
-        });
-
-        app.MapPost("/api/warehouses/transfers/receive", async ([FromBody] ActionTransferDto req, IMultiWarehouseService whService) =>
-        {
-            var transfer = await whService.ReceiveInterHubTransferAsync(req.TenantId, req.TransferId);
-            return Results.Ok(transfer);
-        });
-
-        app.MapPost("/api/warehouses/evaluate-rop", async ([FromBody] EvaluateRopDto req, IMultiWarehouseService whService) =>
-        {
-            var po = await whService.EvaluateReorderPointAndGeneratePoAsync(req.TenantId, req.WarehouseId, req.Sku, req.DailyDemand, req.LeadDays, req.UnitCost);
-            return Results.Ok(po);
-        });
-
-        // Reverse Logistics & Drop-and-Swap
-        app.MapGet("/api/commerce/exchanges", async ([FromQuery] Guid tenantId, [FromQuery] ExchangeStatus? status, IReverseExchangeService reverseService) =>
-        {
-            var list = await reverseService.ListExchangeRequestsAsync(tenantId, status);
-            return Results.Ok(list);
-        });
-
-        app.MapPost("/api/commerce/exchanges/request", async ([FromBody] RequestExchangeDto req, IReverseExchangeService reverseService) =>
-        {
-            var result = await reverseService.RequestExchangeAsync(req.TenantId, req.OrderId, req.OriginalSku, req.ReplacementSku, req.ReplacementDesc, req.Reason, req.CashAdjustment);
-            return Results.Ok(result);
-        });
-
-        app.MapPost("/api/commerce/exchanges/manifest", async ([FromBody] DispatchSwapManifestDto req, IReverseExchangeService reverseService) =>
-        {
-            var manifest = await reverseService.ApproveAndDispatchSwapManifestAsync(req.TenantId, req.ExchangeRequestId, req.CourierProviderId, req.CourierName, req.SwapDeliveryFee);
-            return Results.Ok(manifest);
-        });
-
-        app.MapPost("/api/commerce/exchanges/doorstep-confirm", async ([FromBody] ConfirmDoorstepSwapDto req, IReverseExchangeService reverseService) =>
-        {
-            var result = await reverseService.ConfirmDoorstepSwapAsync(req.TenantId, req.ManifestId, req.HandoverNewParcel, req.ReturnParcelCollected);
-            return Results.Ok(result);
-        });
-
-        app.MapPost("/api/commerce/exchanges/intake-inspect", async ([FromBody] ReturnIntakeInspectDto req, IReverseExchangeService reverseService) =>
-        {
-            var inspection = await reverseService.ProcessWarehouseReturnIntakeAsync(req.TenantId, req.ExchangeRequestId, req.Grade, req.Notes);
-            return Results.Ok(inspection);
-        });
-
-        // Cross-Border Trade & Customs Invoices
-        app.MapGet("/api/commerce/cross-border/countries", async ([FromQuery] Guid tenantId, ICrossBorderTradeService tradeService) =>
-        {
-            var countries = await tradeService.ListSupportedCountriesAsync(tenantId);
-            return Results.Ok(countries);
-        });
-
-        app.MapPost("/api/commerce/cross-border/countries", async ([FromBody] CountryTradeConfig config, ICrossBorderTradeService tradeService) =>
-        {
-            var result = await tradeService.ConfigureCountryAsync(config.TenantId, config);
-            return Results.Ok(result);
-        });
-
-        app.MapGet("/api/commerce/cross-border/invoices", async ([FromQuery] Guid tenantId, ICrossBorderTradeService tradeService) =>
-        {
-            var invoices = await tradeService.ListCommercialInvoicesAsync(tenantId);
-            return Results.Ok(invoices);
-        });
-
         // Demand Forecasting & Restock
         app.MapGet("/api/commerce/forecasting/alerts", async ([FromQuery] Guid tenantId, [FromQuery] RestockPriority? minPriority, IDemandForecastingService forecastService) =>
         {
@@ -511,37 +335,6 @@ public static class CommerceEndpoints
             return Results.Ok(order);
         });
 
-        // In-House Fleet & Driver Management
-        app.MapGet("/api/commerce/fleet/drivers", async ([FromQuery] Guid tenantId, IInHouseFleetService fleetService) =>
-        {
-            var drivers = await fleetService.ListDriversAsync(tenantId);
-            return Results.Ok(drivers);
-        });
-
-        app.MapPost("/api/commerce/fleet/drivers", async ([FromBody] DeliveryDriver driver, IInHouseFleetService fleetService) =>
-        {
-            var result = await fleetService.RegisterDriverAsync(driver.TenantId, driver);
-            return Results.Ok(result);
-        });
-
-        app.MapPost("/api/commerce/fleet/run-sheets", async ([FromBody] GenerateRunSheetDto req, IInHouseFleetService fleetService) =>
-        {
-            var sheet = await fleetService.GenerateRunSheetAsync(req.TenantId, req.DriverId, req.HubWarehouseId, req.OrderIds);
-            return Results.Ok(sheet);
-        });
-
-        app.MapPost("/api/commerce/fleet/stops/{stopId}/deliver", async (Guid stopId, [FromBody] DeliverStopDto req, IInHouseFleetService fleetService) =>
-        {
-            var result = await fleetService.RecordStopDeliveryAsync(req.TenantId, stopId, req.Status, req.PaymentMethod, req.FailureReason, req.SignatureData, req.PhotoUrl, req.Lat, req.Lon);
-            return Results.Ok(result);
-        });
-
-        app.MapPost("/api/commerce/fleet/run-sheets/{runSheetId}/reconcile", async (Guid runSheetId, [FromBody] ReconcileCashDto req, IInHouseFleetService fleetService) =>
-        {
-            var recon = await fleetService.ReconcileDriverCashAsync(req.TenantId, runSheetId, req.ActualCashTurnedIn, req.ReconciledBy, req.Notes);
-            return Results.Ok(recon);
-        });
-
         // Inventory Liquidation & Markdown
         app.MapGet("/api/commerce/liquidation/aging", async ([FromQuery] Guid tenantId, [FromQuery] StockAgeTier? tier, IInventoryLiquidationService liquidationService) =>
         {
@@ -565,47 +358,6 @@ public static class CommerceEndpoints
         {
             var bundles = await liquidationService.ListActiveBundleOffersAsync(tenantId);
             return Results.Ok(bundles);
-        });
-
-        // Courier Companion Mobile PWA
-        app.MapPost("/api/commerce/courier/session", async ([FromBody] StartDriverSessionDto req, ICourierCompanionService courierService) =>
-        {
-            var sess = await courierService.StartDriverSessionAsync(req.TenantId, req.DriverId, req.DriverName, req.DeviceModel ?? "Android PWA");
-            return Results.Ok(sess);
-        });
-
-        app.MapGet("/api/commerce/courier/run-sheet", async ([FromQuery] Guid tenantId, [FromQuery] Guid driverId, ICourierCompanionService courierService) =>
-        {
-            var sheet = await courierService.GetActiveRunSheetAsync(tenantId, driverId);
-            return Results.Ok(sheet);
-        });
-
-        app.MapGet("/api/commerce/courier/run-sheets/{runSheetId}/stops", async (Guid runSheetId, [FromQuery] Guid tenantId, ICourierCompanionService courierService) =>
-        {
-            var stops = await courierService.GetRunSheetStopsAsync(tenantId, runSheetId);
-            return Results.Ok(stops);
-        });
-
-        app.MapPost("/api/commerce/courier/pod", async ([FromBody] SubmitPodDto req, ICourierCompanionService courierService) =>
-        {
-            var pod = await courierService.SubmitDoorstepProofOfDeliveryAsync(
-                req.TenantId, req.StopId, req.OrderId, req.OrderNumber, req.DriverId,
-                req.SignatureBase64, req.PhotoUrl, req.CashCollected, req.RecipientName,
-                req.RecipientRelation ?? "Self", req.Lat ?? 36.8065, req.Lng ?? 10.1815, req.PaymentMethod ?? "CashOnDelivery"
-            );
-            return Results.Ok(pod);
-        });
-
-        app.MapGet("/api/commerce/courier/cash-summary", async ([FromQuery] Guid tenantId, [FromQuery] Guid driverId, ICourierCompanionService courierService) =>
-        {
-            var summary = await courierService.GetDriverCashSummaryAsync(tenantId, driverId);
-            return Results.Ok(summary);
-        });
-
-        app.MapPost("/api/commerce/courier/gps-heartbeat", async ([FromBody] DriverGpsHeartbeatDto req, ICourierCompanionService courierService) =>
-        {
-            var ok = await courierService.PingDriverGpsHeartbeatAsync(req.TenantId, req.DriverId, req.Latitude, req.Longitude, req.BatteryPercent);
-            return Results.Ok(new { success = ok });
         });
 
         // Headless 1-Page COD Checkout

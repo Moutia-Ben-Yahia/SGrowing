@@ -25,7 +25,7 @@ jobs:
       - name: Build Backend (TreatWarningsAsErrors = true)
         run: dotnet build SGrowing.slnx -c Release
 
-      - name: Execute Full Test Suite (5,700+ Tests)
+      - name: Execute Full Test Suite (3,790+ Tests)
         run: dotnet test tests/SGrowing.Tests/SGrowing.Tests.csproj -c Release --no-restore --logger "trx;LogFileName=test-results.trx"
 
   frontend-verification:

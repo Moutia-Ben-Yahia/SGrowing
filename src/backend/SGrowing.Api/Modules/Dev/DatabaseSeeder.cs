@@ -233,17 +233,6 @@ public class DatabaseSeeder
             );
         }
 
-        // 9. Cross-Border Trade Config
-        if (!await _db.CountryTradeConfigs.AnyAsync(c => c.TenantId == tenantId))
-        {
-            _db.CountryTradeConfigs.AddRange(
-                CountryTradeConfig.Create(tenantId, "TN", "Tunisia", "TND", "+216", 8, 19m, 7m, true),
-                CountryTradeConfig.Create(tenantId, "DZ", "Algeria", "DZD", "+213", 9, 19m, 600m, true),
-                CountryTradeConfig.Create(tenantId, "MA", "Morocco", "MAD", "+212", 9, 20m, 35m, true),
-                CountryTradeConfig.Create(tenantId, "FR", "France", "EUR", "+33", 9, 20m, 15m, false)
-            );
-        }
-
         // 10. Security Audit Trail
         _db.SecurityAuditLogEntries.Add(new SecurityAuditLogEntry
         {

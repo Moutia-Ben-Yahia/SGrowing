@@ -185,36 +185,17 @@ public class AgentPersonaService : IAgentPersonaService
 
             foreach (var shortage in shortages)
             {
-                var destinationWh = await _db.WarehouseRecords.FirstOrDefaultAsync(w => w.Id == shortage.WarehouseId, ct);
-                var sourceWh = await _db.WarehouseRecords.FirstOrDefaultAsync(w => w.TenantId == tenantId && w.Id != shortage.WarehouseId && w.IsActive, ct)
-                               ?? destinationWh;
-
-                var manifest = new StockTransferManifest
-                {
-                    Id = Guid.NewGuid(),
-                    TenantId = tenantId,
-                    ManifestNumber = $"TRF-AUTO-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6].ToUpperInvariant()}",
-                    SourceWarehouseId = sourceWh?.Id ?? Guid.NewGuid(),
-                    SourceWarehouseName = sourceWh?.Name ?? "Central Fulfillment Depot",
-                    DestinationWarehouseId = shortage.WarehouseId,
-                    DestinationWarehouseName = destinationWh?.Name ?? "Regional Hub",
-                    Sku = shortage.Sku,
-                    Quantity = 100,
-                    Status = "Dispatched",
-                    CreatedAtUtc = DateTime.UtcNow
-                };
-
-                _db.StockTransferManifests.Add(manifest);
+                var destinationWh = await _db.Warehouses.FirstOrDefaultAsync(w => w.Id == shortage.WarehouseId, ct);
                 shortage.QuantityAvailable += 100;
 
                 results.Add(new AgentRemediationResult(
                     RemediationId: Guid.NewGuid(),
                     RoleKey: "logistics-controller",
                     AgentName: "Logistics Controller",
-                    ActionTaken: "Created Stock Transfer Manifest",
+                    ActionTaken: "Triggered Auto-Replenishment",
                     EntityAffected: $"SKU '{shortage.Sku}' @ {destinationWh?.Name ?? "Regional Hub"}",
                     Success: true,
-                    Details: $"Issued transfer {manifest.ManifestNumber} (+100 units) from '{manifest.SourceWarehouseName}' to replenish depleted buffer.",
+                    Details: $"Replenished 100 units for shortage alert (new balance: {shortage.QuantityAvailable}).",
                     ExecutedAtUtc: DateTime.UtcNow
                 ));
             }

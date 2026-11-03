@@ -1,7 +1,6 @@
 using System.Text.Json;
 using SGrowing.Core.Entities;
 using SGrowing.Api.Modules.Commerce;
-using SGrowing.Api.Modules.Commerce.Shipping;
 using SGrowing.Api.Modules.Gateways;
 using SGrowing.Api.Modules.Marketing;
 using SGrowing.Api.Modules.Outbound;
@@ -77,8 +76,6 @@ public record ReviewRmaDto(Guid TenantId, Guid RmaId, bool IsApproved, string Re
 
 // Conversion Mesh, Courier Clearing, In-Chat Commerce & Storefront DTOs
 public record TrackConversionDto(Guid TenantId, AdPlatform Platform, ConversionEventType EventType, decimal ValueAmount, string? Currency = "USD", string? Email = null, string? Phone = null, string? FirstName = null, string? LastName = null, string? City = null, string? Country = null, string? Fbc = null, string? Fbp = null, string? UserAgent = null, string? IpAddress = null, string? CustomDataJson = null, string? EventId = null);
-public record ReconcileRemittanceDto(Guid TenantId, Guid CourierProviderId, string StatementReference, List<ReportedRemittanceItemDto> Items, string? ReconciledBy = null);
-public record ResolveDiscrepancyDto(Guid TenantId, Guid MatchId, string ResolutionNotes);
 public record ParseChatCartDto(string MessageText, decimal DefaultUnitPrice = 65.0m, string? Currency = "TND");
 public record CreateChatOrderDto(Guid TenantId, Guid ConversationId, InChatCartIntent Intent, Guid? WarehouseId = null);
 public record PushFulfillmentDto(Guid TenantId, Guid OrderId, string CourierName, string TrackingNumber);
@@ -87,12 +84,6 @@ public record GenerateSheetsRowDto(Guid TenantId, Guid OrderId);
 // Autonomous Fulfillment & Operations Expansion DTOs
 public record QueueVoiceOrderDto(Guid TenantId, Guid OrderId, Guid? CampaignId = null);
 public record ProcessVoiceTurnDto(Guid TenantId, Guid AttemptId, string? SpeechText, string? DtmfDigit);
-public record CreatePickSlipDto(Guid TenantId, Guid OrderId, Guid WarehouseId);
-public record ScanPickItemDto(Guid TenantId, Guid PickSlipId, string ScannedBarcodeOrSku);
-public record CompletePackDto(Guid TenantId, Guid PickSlipId, string TrackingNumber, string CourierName);
-public record ScanManifestParcelDto(Guid TenantId, Guid ManifestId, string TrackingNumber);
-public record CloseManifestDto(Guid TenantId, Guid ManifestId, string DriverName, string DriverPhone, string DriverSignature);
-public record InspectRmaParcelDto(Guid TenantId, string TrackingNumber, string InspectorId, RmaItemCondition Condition, string? Notes, Guid WarehouseId);
 public record SyncMetaCatalogDto(Guid TenantId, string CatalogId);
 public record WhatsAppInboundOrderWebhookDto(Guid TenantId, string CustomerPhone, string CustomerName, string CatalogId, List<WhatsAppInboundOrderItem> Items, string? ShippingAddress = null, string? ShippingGovernorate = null);
 public record RegisterDomainDto(Guid TenantId, string Hostname, bool IsPrimary = true);
@@ -102,37 +93,22 @@ public record GenerateDepositLinkDto(Guid TenantId, Guid OrderId, string Custome
 public record SettleDepositDto(Guid TenantId, Guid LinkId);
 
 // Enterprise Operations Expansion DTOs
-public record AutoAssignCarrierDto(Guid TenantId, Guid OrderId, decimal PackageWeightKg = 1.0m);
-public record SlaBreachFallbackDto(Guid TenantId, string CurrentTrackingNumber);
 public record ScheduleRetentionDto(Guid TenantId, Guid OrderId);
 public record SubmitRetentionSurveyDto(Guid TenantId, Guid SurveyId, int Rating, string? Notes = null);
 public record ProcessReplenishmentsDto(Guid TenantId, DateTime CurrentTimeUtc);
-public record CreateTransferDto(Guid TenantId, Guid SourceWarehouseId, Guid DestinationWarehouseId, string Sku, int Quantity);
-public record ActionTransferDto(Guid TenantId, Guid TransferId);
-public record EvaluateRopDto(Guid TenantId, Guid WarehouseId, string Sku, int DailyDemand = 5, int LeadDays = 7, decimal UnitCost = 25.0m);
 public record ProcessLiveCommentDto(Guid TenantId, Guid SessionId, string CommenterUsername, string CommentText, string? CustomerPhone = null, string? Governorate = null);
 
 // Enterprise Scale Expansion DTOs
 public record TenantActionDto(Guid TenantId);
-public record RequestExchangeDto(Guid TenantId, Guid OrderId, string OriginalSku, string ReplacementSku, string ReplacementDesc, string Reason, decimal CashAdjustment = 0m);
-public record DispatchSwapManifestDto(Guid TenantId, Guid ExchangeRequestId, Guid CourierProviderId, string CourierName, decimal SwapDeliveryFee = 9.5m);
-public record ConfirmDoorstepSwapDto(Guid TenantId, Guid ManifestId, bool HandoverNewParcel = true, bool ReturnParcelCollected = true);
-public record ReturnIntakeInspectDto(Guid TenantId, Guid ExchangeRequestId, SwapInspectionResult Grade, string Notes = "");
 public record GenerateRestockOrderDto(Guid TenantId, Guid AlertId, Guid SupplierId, decimal UnitCost);
 
 // Next-Gen Strategic Frontiers DTOs
 public record CalculateRoasDto(Guid TenantId, AdPlatformType Platform, string AdSetId, string AdSetName, DateTime Date, decimal AdSpend, List<Guid> AttributedOrderIds);
-public record GenerateRunSheetDto(Guid TenantId, Guid DriverId, Guid HubWarehouseId, List<Guid> OrderIds);
-public record DeliverStopDto(Guid TenantId, StopDeliveryStatus Status, string PaymentMethod = "CashOnDelivery", string? FailureReason = null, string SignatureData = "", string PhotoUrl = "", double? Lat = null, double? Lon = null);
-public record ReconcileCashDto(Guid TenantId, decimal ActualCashTurnedIn, string ReconciledBy, string Notes = "");
 public record ExecuteFlowTurnDto(Guid TenantId, Guid FlowId, string CustomerPhone, string Message);
 public record IntakeAgingDto(Guid TenantId, Guid ProductId, string Sku, string ProductName, Guid WarehouseId, int Quantity, decimal CostPrice, decimal RetailPrice, int DaysInWarehouse);
 public record GenerateBundleDto(Guid TenantId, string WinningSku, string AgingSku, string BundleName, decimal BundleDiscountPct = 30m);
 
 // Horizon 1-4 Strategic DTOs
-public record StartDriverSessionDto(Guid TenantId, Guid DriverId, string DriverName, string? DeviceModel);
-public record SubmitPodDto(Guid TenantId, Guid StopId, Guid OrderId, string OrderNumber, Guid DriverId, string SignatureBase64, string PhotoUrl, decimal CashCollected, string RecipientName, string? RecipientRelation, double? Lat, double? Lng, string? PaymentMethod);
-public record DriverGpsHeartbeatDto(Guid TenantId, Guid DriverId, double Latitude, double Longitude, int BatteryPercent);
 public record CreateCheckoutSessionDto(Guid TenantId, string CartItemsJson, decimal Subtotal);
 public record UpdateCheckoutDetailsDto(Guid TenantId, string SessionKey, string CustomerName, string CustomerPhone, string WilayaCode, string DelegationName, string StreetAddress);
 public record SendOtpDto(Guid TenantId, string SessionKey);

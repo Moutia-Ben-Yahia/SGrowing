@@ -9,7 +9,7 @@ public static class AdsSyncEndpoints
 {
     public static IServiceCollection AddAdsSyncServices(this IServiceCollection services)
     {
-        services.AddSingleton<IAdsSyncEngine, AdsSyncEngine>();
+        services.AddScoped<IAdsSyncEngine, AdsSyncEngine>();
         return services;
     }
 

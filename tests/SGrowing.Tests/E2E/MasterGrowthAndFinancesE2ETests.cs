@@ -18,29 +18,20 @@ public class MasterGrowthAndFinancesE2ETests
     }
 
     [Fact]
-    public async Task Master_EndToEnd_ConversationalCart_To_AdConversion_Sheets_And_CourierRemittance()
+    public async Task Master_EndToEnd_ConversationalCart_To_AdConversion_And_Sheets()
     {
         var db = CreateDbContext();
         var wms = new DefensiveWmsService(db);
         var cartEngine = new ConversationalCartEngine(db, wms);
         var storeService = new ExternalStoreAndSheetsService(db);
         var conversionMesh = new ServerConversionMeshService(db);
-        var clearing = new CourierRemittanceClearingService(db);
 
         var tenantId = Guid.NewGuid();
         var conversationId = Guid.NewGuid();
         var warehouseId = Guid.NewGuid();
         var sku = "OUD-ROYAL-PREMIUM";
 
-        // Step 0: Setup Courier & Inventory
-        var courier = new CourierProvider
-        {
-            TenantId = tenantId,
-            Name = "Express Courrier TN",
-            ApiCode = "EXP",
-            IsActive = true
-        };
-        db.CourierProviders.Add(courier);
+        // Step 0: Setup Inventory
         await wms.GetOrCreateInventoryAsync(tenantId, warehouseId, sku, initialPhysical: 30);
 
         // Step 1: Customer messages on WhatsApp
@@ -64,7 +55,7 @@ public class MasterGrowthAndFinancesE2ETests
         Assert.Equal("Yassine Trabelsi", sheetRow[2]);
 
         // Step 4: Dispatch order and push fulfillment to external store
-        var syncFulfillment = await storeService.PushFulfillmentUpdateAsync(tenantId, chatOrderResult.Order.Id, courier.Name, "EXP-ORD-991");
+        var syncFulfillment = await storeService.PushFulfillmentUpdateAsync(tenantId, chatOrderResult.Order.Id, "Express Courrier TN", "EXP-ORD-991");
         Assert.Equal("Success", syncFulfillment.Status);
 
         // Step 5: Order delivered -> Dispatch Meta CAPI conversion event with SHA-256 hashing
@@ -88,17 +79,5 @@ public class MasterGrowthAndFinancesE2ETests
         Assert.Equal(ConversionDispatchStatus.Dispatched, conversion.Status);
         var emqScore = conversionMesh.CalculateEventMatchQualityScore(conversion);
         Assert.True(emqScore >= 9.0);
-
-        // Step 6: Courier weekly settlement arrives -> Reconcile Cash
-        var reportedItem = new ReportedRemittanceItemDto("EXP-ORD-991", "Delivered", 187.0m, 8.0m);
-        var reconciliation = await clearing.ReconcileStatementAsync(tenantId, courier.Id, "BVR-OCT-W4", new List<ReportedRemittanceItemDto> { reportedItem });
-        Assert.Equal(1, reconciliation.Statement.TotalParcelsReported);
-        Assert.Equal(187.0m, reconciliation.Statement.TotalCashCollected);
-        Assert.Equal(179.0m, reconciliation.Statement.NetRemittedAmount); // 187 - 8
-
-        // Step 7: Merchant net profitability ledger calculation
-        var profit = await clearing.CalculateNetProfitabilityAsync(tenantId, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow.AddDays(1), estimatedCogsPercent: 30.0m);
-        Assert.Equal(187.0m, profit.GrossRevenueCollected);
-        Assert.True(profit.NetProfit > 0);
     }
 }

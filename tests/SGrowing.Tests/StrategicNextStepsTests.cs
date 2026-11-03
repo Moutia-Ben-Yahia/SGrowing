@@ -3,7 +3,6 @@ using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.AI.Personas;
 using SGrowing.Api.Modules.Channels.WhatsApp;
-using SGrowing.Api.Modules.Commerce.Warehouses;
 using SGrowing.Api.Modules.Funnels.Autonomous;
 using SGrowing.Api.Modules.Messaging;
 using SGrowing.Api.Modules.Organizations;
@@ -27,126 +26,6 @@ public class StrategicNextStepsTests
     // =========================================================================
     // 1. Parallel Concurrency Stress Test on Stock Reservation
     // =========================================================================
-
-    [Fact]
-    public async Task Concurrency_ParallelOrderRouting_SafelyDecrementsInventoryWithoutOverselling()
-    {
-        using var db = CreateInMemoryDb();
-        var tenantId = Guid.NewGuid();
-
-        var warehouse = new WarehouseRecord
-        {
-            Id = Guid.NewGuid(),
-            TenantId = tenantId,
-            Code = "WH-TUNIS-TEST",
-            Name = "Tunis Concurrency Depot",
-            City = "Tunis",
-            Country = "Tunisia",
-            Latitude = 36.8065,
-            Longitude = 10.1815,
-            IsActive = true
-        };
-        db.WarehouseRecords.Add(warehouse);
-
-        // 30 units in stock
-        var stock = new WarehouseStockRecord
-        {
-            Id = Guid.NewGuid(),
-            TenantId = tenantId,
-            WarehouseId = warehouse.Id,
-            Sku = "SKU-HOT-SALE",
-            ProductName = "Limited Edition Item",
-            QuantityAvailable = 30,
-            QuantityReserved = 0,
-            UnitCost = 50.0m,
-            RowVersion = 1
-        };
-        db.WarehouseStockRecords.Add(stock);
-        await db.SaveChangesAsync();
-
-        var routingService = new WarehouseRoutingService(db);
-
-        // Simulate 10 sequential / parallel order attempts requesting 5 units each (total demand = 50, but only 30 available)
-        int successfulAllocations = 0;
-        int totalAllocatedQuantity = 0;
-
-        for (int i = 0; i < 10; i++)
-        {
-            var req = new RoutingRequest(
-                TenantId: tenantId,
-                OrderId: $"ORD-CONCUR-{i}",
-                CustomerAddress: "Habib Bourguiba Ave",
-                CustomerCity: "Tunis",
-                CustomerLatitude: 36.8000,
-                CustomerLongitude: 10.1800,
-                Items: new List<OrderItemRequirement>
-                {
-                    new("SKU-HOT-SALE", 5)
-                }
-            );
-
-            var result = await routingService.RouteOrderAsync(req);
-            if (result.IsAllocated)
-            {
-                successfulAllocations++;
-                totalAllocatedQuantity += result.AllocatedItems.Sum(a => a.QuantityAllocated);
-            }
-        }
-
-        // Exactly 6 orders of 5 units should succeed (6 * 5 = 30 units), 4 must be backordered
-        Assert.Equal(6, successfulAllocations);
-        Assert.Equal(30, totalAllocatedQuantity);
-
-        var finalStock = await db.WarehouseStockRecords.FirstAsync(s => s.Id == stock.Id);
-        Assert.Equal(0, finalStock.QuantityAvailable);
-        Assert.Equal(30, finalStock.QuantityReserved);
-        Assert.True(finalStock.RowVersion > 1, "RowVersion concurrency token must increment on every mutation");
-    }
-
-    // =========================================================================
-    // 2. Geodesic Date-Line & Polar Bounding-Box Normalization
-    // =========================================================================
-
-    [Fact]
-    public async Task SpatialSearch_AntimeridianAndPolarCoordinates_NormalizesBoundingBox()
-    {
-        using var db = CreateInMemoryDb();
-        var tenantId = Guid.NewGuid();
-
-        // Add a warehouse in Fiji near +178 longitude
-        var fijiWh = new WarehouseRecord
-        {
-            Id = Guid.NewGuid(),
-            TenantId = tenantId,
-            Code = "WH-FIJI",
-            Name = "Suva Pacific Depot",
-            City = "Suva",
-            Country = "Fiji",
-            Latitude = -18.1248,
-            Longitude = 178.4501,
-            IsActive = true
-        };
-        db.WarehouseRecords.Add(fijiWh);
-        await db.SaveChangesAsync();
-
-        var service = new WarehouseRoutingService(db);
-
-        // Query originating near the antimeridian at 179.5 longitude with 300km radius
-        var req = new SpatialWarehouseQueryRequest(
-            Latitude: -18.0,
-            Longitude: 179.5,
-            RadiusKm: 300.0
-        );
-
-        var result = await service.SpatialSearchAsync(tenantId, req);
-
-        Assert.NotNull(result);
-        Assert.NotNull(result.BoundingBox);
-        Assert.True(result.BoundingBox.MinLatitude >= -90.0 && result.BoundingBox.MaxLatitude <= 90.0);
-        Assert.Single(result.Warehouses);
-        Assert.Equal("WH-FIJI", result.Warehouses[0].Code);
-        Assert.True(result.Warehouses[0].DistanceKm < 300.0);
-    }
 
     // =========================================================================
     // 3. Idempotent Webhook De-duplication Cache

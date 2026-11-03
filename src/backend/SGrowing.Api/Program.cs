@@ -23,7 +23,6 @@ using SGrowing.Api.Modules.Sales.TerritoryRouting;
 using SGrowing.Api.Modules.Security.ComplianceVault;
 using SGrowing.Api.Modules.Journeys.LifecycleOrchestrator;
 using SGrowing.Api.Modules.Funnels.CanvasBuilder;
-using SGrowing.Api.Modules.Commerce.FulfillmentMatrix;
 using SGrowing.Api.Modules.Analytics.BiReportBuilder;
 using SGrowing.Api.Modules.Dev.WebhookMesh;
 using SGrowing.Api.Modules.Ai.KnowledgeGraph;
@@ -58,7 +57,6 @@ using SGrowing.Api.Modules.Infrastructure.DisasterRecovery;
 using SGrowing.Api.Modules.Content.Repurposing;
 using SGrowing.Api.Modules.Analytics.ShapleyAttribution;
 using SGrowing.Api.Modules.Voice.AgentAssist;
-using SGrowing.Api.Modules.Commerce.Tariffs;
 using SGrowing.Api.Modules.Security.EphemeralVault;
 using SGrowing.Api.Modules.Intelligence.WinLoss;
 using SGrowing.Api.Modules.Advertising.RetargetingMatrix;
@@ -125,27 +123,21 @@ using SGrowing.Api.Modules.Sales.Proposals;
 using SGrowing.Api.Modules.Documents.Idp;
 using SGrowing.Api.Modules.FrontendArchitecture.MicroFrontends;
 using SGrowing.Api.Modules.Tenancy.MultiRegion;
-using SGrowing.Api.Modules.Commerce.Robotics;
 using SGrowing.Api.Modules.Marketing.Retention;
 using SGrowing.Api.Modules.Analytics.SessionReplay;
 using SGrowing.Api.Modules.Marketing.Copywriting;
 using SGrowing.Api.Modules.Resilience.Chaos;
 using SGrowing.Api.Modules.Commerce.VisualSearch;
 using SGrowing.Api.Modules.Voice.Synthesis;
-using SGrowing.Api.Modules.Commerce.QualityGate;
 using SGrowing.Api.Modules.CRM.SupportSwarm;
-using SGrowing.Api.Modules.Commerce.Shrinkage;
 using SGrowing.Api.Modules.Marketing.AdSpend;
 using SGrowing.Api.Modules.Tenancy.Governance;
-using SGrowing.Api.Modules.Commerce.Neuromorphic;
 using SGrowing.Api.Modules.Commerce.CoOp;
-using SGrowing.Api.Modules.Commerce.DigitalTwin;
 using SGrowing.Api.Modules.CRM.RetentionConcierge;
 using SGrowing.Api.Modules.Revenue.YieldManagement;
 using SGrowing.Api.Modules.Security.VoiceLiveness;
 
 
-using SGrowing.Api.Modules.Commerce.WarehouseSlotting;
 using SGrowing.Api.Modules.AI.SyntheticData;
 using SGrowing.Api.Modules.Tenancy.DataSovereignty;
 
@@ -187,9 +179,6 @@ using SGrowing.Api.Modules.Commerce.AntiFraud;
 using SGrowing.Api.Modules.Commerce.CallCenter;
 using SGrowing.Api.Modules.Commerce.CartReservations;
 using SGrowing.Api.Modules.Commerce.Connectors;
-using SGrowing.Api.Modules.Commerce.Logistics;
-using SGrowing.Api.Modules.Commerce.Shipping;
-using SGrowing.Api.Modules.Commerce.Warehouses;
 using SGrowing.Api.Modules.Contracts;
 using SGrowing.Api.Modules.Conversations;
 using SGrowing.Api.Modules.Conversations.Macros;
@@ -246,7 +235,6 @@ using SGrowing.Api.Modules.Voice.Streaming;
 using SGrowing.Api.Modules.Conversations.Incidents;
 using SGrowing.Api.Modules.Conversations.Hierarchy;
 using SGrowing.Api.Modules.Notifications;
-using SGrowing.Api.Modules.Commerce.Fulfillment;
 using SGrowing.Api.Modules.CRM.Pipeline;
 using SGrowing.Api.Modules.Documents.Security;
 using SGrowing.Api.Modules.Social.Listening;
@@ -348,8 +336,6 @@ app.MapWhatsAppCloudWebhookEndpoints();
 app.MapDeliveryWebhookEndpoints();
 app.MapProjectTaskEndpoints();
 app.MapDeepWebResearchEndpoints();
-app.MapWarehouseRoutingEndpoints();
-app.MapFleetDispatchEndpoints();
 app.MapOrganizationHierarchyEndpoints();
 app.MapWhatsAppGatewayEndpoints();
 app.MapAutonomousFunnelEndpoints();
@@ -411,7 +397,6 @@ app.MapSegmentTelemetryEndpoints();
 app.MapProposalPortalEndpoints();
 app.MapVideoMeetingEndpoints();
 app.MapMultiInboxRotationEndpoints();
-app.MapCarrierDispatchEndpoints();
 
 // Horizons 10-13 Endpoint Mappings
 SGrowing.Api.Modules.Marketing.SocialPublishing.SocialPublishingEndpoints.MapSocialPublishingEndpoints(app);
@@ -462,7 +447,6 @@ app.MapConversationHierarchyEndpoints();
 app.MapDocumentSecurityEndpoints();
 app.MapDealSlippageRadarEndpoints();
 app.MapSocialListeningEndpoints();
-app.MapSplitShipmentRoutingEndpoints();
 app.MapPredictiveLtvEndpoints();
 app.MapVoiceIvrEndpoints();
 app.MapSyntheticDataEndpoints();
@@ -482,7 +466,6 @@ app.MapMicroFrontendEndpoints();
 
 // Horizons 26-30 Endpoint Mappings
 app.MapMultiRegionEndpoints();
-app.MapRoboticsEndpoints();
 app.MapPredictiveRetentionEndpoints();
 
 // Horizons 31-35 Endpoint Mappings
@@ -495,20 +478,16 @@ app.MapVisualSearchEndpoints();
 app.MapVoiceSynthesisEndpoints();
 
 // Horizons 41-45 Endpoint Mappings
-app.MapQualityGateEndpoints();
 app.MapSupportSwarmEndpoints();
 
 // Horizons 46-50 Endpoint Mappings
-app.MapShrinkageEndpoints();
 app.MapAdSpendEndpoints();
 app.MapGovernanceEndpoints();
 
 // Horizons 51-55 Endpoint Mappings
-app.MapNeuromorphicVisionEndpoints();
 app.MapCollaborativeCommerceEndpoints();
 
 // Horizons 56-60 Endpoint Mappings
-app.MapDigitalTwinEndpoints();
 app.MapRetentionConciergeEndpoints();
 
 // Horizons 61-65 Endpoint Mappings
@@ -520,7 +499,6 @@ app.MapVoiceLivenessEndpoints();
 
 
 // Horizons 71-75 Endpoint Mappings
-app.MapWarehouseSlottingEndpoints();
 app.MapDifferentialPrivacySandboxEndpoints();
 
 // Horizons 76-80 Endpoint Mappings
@@ -673,7 +651,6 @@ app.MapTerritoryRoutingEndpoints();
 app.MapZeroTrustVaultEndpoints();
 app.MapLifecycleJourneyEndpoints();
 app.MapCanvasBuilderEndpoints();
-app.MapFulfillmentMatrixEndpoints();
 app.MapBiReportBuilderEndpoints();
 app.MapBiDirectionalWebhookMeshEndpoints();
 app.MapKnowledgeGraphEndpoints();
@@ -708,7 +685,6 @@ app.MapDisasterRecoveryEndpoints();
 app.MapContentRepurposingEndpoints();
 app.MapShapleyAttributionEndpoints();
 app.MapAgentAssistEndpoints();
-app.MapTariffCalculatorEndpoints();
 app.MapEphemeralVaultEndpoints();
 app.MapWinLossEndpoints();
 app.MapRetargetingMatrixEndpoints();
