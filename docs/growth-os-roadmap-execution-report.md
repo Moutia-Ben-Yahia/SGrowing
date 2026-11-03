@@ -883,7 +883,7 @@ graph TD
 - `0d11b95`: `feat(growth-os): deliver Horizons 146 to 150 (Contract Redline Auto-Negotiator, DOOH Real-Time Bidding, Voice Biometric Deepfake Defense, Sovereign R&D Tax Credit Ledger, Multi-Cloud SPIFFE/SPIRE Identity Federation Mesh)`
 - `b7b4eb5`: `feat(growth-os): deliver Horizons 151 to 155 (Customer Advisory Board Matrix, In-Car Infotainment Ad Bidding, Voice Intent Fast-Path, OECD Pillar 2 Tax Ledger, Cilium eBPF WireGuard Transit Mesh)`
 - `db2c7b3`: `feat(growth-os): deliver Horizons 156 to 160 (Customer Success QBR Deck Generator, Weather DPA Triggers, Telephony Disfluency Mesh, Sovereign Export Control Ledger, Multi-Cloud Wasm Micro-VM Arbiter)`
-- In-Progress: `feat(growth-os): deliver Horizons 161 to 165 (Customer Advocacy Reference Mesh, Micro-Geofence DSP Bidding, Neural Echo Cancellation, Sovereign Capital Allocation, WireGuard Peer Discovery & IPsec Fallback)`
+- `0d4d860`: `feat(growth-os): deliver Horizons 161 to 165 (Customer Advocacy Reference Mesh, Micro-Geofence DSP Bidding, Neural Echo Cancellation, Sovereign Capital Allocation, WireGuard Peer Discovery & IPsec Fallback)`
 
 ### Horizon 161 to 165 Implementation Details
 - **Horizon 161 (Sales / Customer Advocacy & Reference Call Matchmaking Mesh):** Automated reference champion identification, double-blind peer matchmaking, advocate fatigue prevention guardrails, tokenized rewards distribution, and deal win-rate attribution (`CustomerAdvocacyEngine.cs`, `customer-advocacy-cockpit.component.ts`).
