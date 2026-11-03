@@ -346,6 +346,11 @@ using SGrowing.Api.Modules.Advertising.CtvAdInsertion;
 using SGrowing.Api.Modules.Support.ScreenDiagnostic;
 using SGrowing.Api.Modules.Finance.TransferPricing;
 using SGrowing.Api.Modules.Infrastructure.BgpGeoSteering;
+using SGrowing.Api.Modules.Sales.IntentRollup;
+using SGrowing.Api.Modules.Advertising.Uid2Tokenizer;
+using SGrowing.Api.Modules.Voice.AgentWhisper;
+using SGrowing.Api.Modules.Finance.FxExposureRebalancing;
+using SGrowing.Api.Modules.Infrastructure.DbQueryRouter;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
 using SGrowing.Core.Diagnostics;
@@ -1178,6 +1183,11 @@ public static class ServiceCollectionExtensions
         services.AddScreenDiagnosticServices();
         services.AddTransferPricingServices();
         services.AddBgpGeoSteeringServices();
+        services.AddIntentRollupServices();
+        services.AddUid2TokenizerServices();
+        services.AddAgentWhisperServices();
+        services.AddFxExposureRebalancingServices();
+        services.AddDbQueryRouterServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {

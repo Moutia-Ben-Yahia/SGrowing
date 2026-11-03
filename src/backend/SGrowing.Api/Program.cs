@@ -96,6 +96,11 @@ using SGrowing.Api.Modules.Advertising.CtvAdInsertion;
 using SGrowing.Api.Modules.Support.ScreenDiagnostic;
 using SGrowing.Api.Modules.Finance.TransferPricing;
 using SGrowing.Api.Modules.Infrastructure.BgpGeoSteering;
+using SGrowing.Api.Modules.Sales.IntentRollup;
+using SGrowing.Api.Modules.Advertising.Uid2Tokenizer;
+using SGrowing.Api.Modules.Voice.AgentWhisper;
+using SGrowing.Api.Modules.Finance.FxExposureRebalancing;
+using SGrowing.Api.Modules.Infrastructure.DbQueryRouter;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -937,6 +942,11 @@ app.MapCtvAdInsertionEndpoints();
 app.MapScreenDiagnosticEndpoints();
 app.MapTransferPricingEndpoints();
 app.MapBgpGeoSteeringEndpoints();
+app.MapIntentRollupEndpoints();
+app.MapUid2TokenizerEndpoints();
+app.MapAgentWhisperEndpoints();
+app.MapFxExposureRebalancingEndpoints();
+app.MapDbQueryRouterEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");

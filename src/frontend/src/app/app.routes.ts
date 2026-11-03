@@ -305,5 +305,10 @@ export const routes: Routes = [
   { path: 'support/screen-diagnostic', loadComponent: () => import('./features/support/screen-diagnostic-cockpit.component').then(m => m.ScreenDiagnosticCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/transfer-pricing', loadComponent: () => import('./features/finance/transfer-pricing-cockpit.component').then(m => m.TransferPricingCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/bgp-geo-steering', loadComponent: () => import('./features/infrastructure/bgp-geo-steering-cockpit.component').then(m => m.BgpGeoSteeringCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/intent-rollup', loadComponent: () => import('./features/sales/intent-rollup-cockpit.component').then(m => m.IntentRollupCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/uid2-tokenizer', loadComponent: () => import('./features/advertising/uid2-tokenizer-cockpit.component').then(m => m.Uid2TokenizerCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/agent-whisper', loadComponent: () => import('./features/voice/agent-whisper-cockpit.component').then(m => m.AgentWhisperCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/fx-exposure-rebalancing', loadComponent: () => import('./features/finance/fx-exposure-rebalancing-cockpit.component').then(m => m.FxExposureRebalancingCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/db-query-router', loadComponent: () => import('./features/infrastructure/db-query-router-cockpit.component').then(m => m.DbQueryRouterCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];
