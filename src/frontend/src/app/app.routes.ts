@@ -295,5 +295,10 @@ export const routes: Routes = [
   { path: 'voice/pitch-tuning', loadComponent: () => import('./features/voice/pitch-tuning-cockpit.component').then(m => m.PitchTuningCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/treasury-yield', loadComponent: () => import('./features/finance/treasury-yield-cockpit.component').then(m => m.TreasuryYieldCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/edge-mesh', loadComponent: () => import('./features/infrastructure/edge-mesh-cockpit.component').then(m => m.EdgeMeshCockpitComponent), canActivate: [authGuard] },
+  { path: 'commerce/commission-settlement', loadComponent: () => import('./features/commerce/commission-settlement-cockpit.component').then(m => m.CommissionSettlementCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/retail-media-auction', loadComponent: () => import('./features/advertising/retail-media-auction-cockpit.component').then(m => m.RetailMediaAuctionCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/audio-noise-cancellation', loadComponent: () => import('./features/voice/audio-noise-cancellation-cockpit.component').then(m => m.AudioNoiseCancellationCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/vendor-bill-matching', loadComponent: () => import('./features/finance/vendor-bill-matching-cockpit.component').then(m => m.VendorBillMatchingCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/k8s-isolation-mesh', loadComponent: () => import('./features/infrastructure/k8s-isolation-mesh-cockpit.component').then(m => m.K8sIsolationMeshCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];
