@@ -335,5 +335,10 @@ export const routes: Routes = [
   { path: 'voice/voice-dialect', loadComponent: () => import('./features/voice/voice-dialect-cockpit.component').then(m => m.VoiceDialectCockpitComponent), canActivate: [authGuard] },
   { path: 'finance/cap-table-equity', loadComponent: () => import('./features/finance/cap-table-equity-cockpit.component').then(m => m.CapTableEquityCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/edge-wasm-mesh', loadComponent: () => import('./features/infrastructure/edge-wasm-mesh-cockpit.component').then(m => m.EdgeWasmMeshCockpitComponent), canActivate: [authGuard] },
+  { path: 'sales/buying-committee', loadComponent: () => import('./features/sales/buying-committee-cockpit.component').then(m => m.BuyingCommitteeCockpitComponent), canActivate: [authGuard] },
+  { path: 'advertising/audio-dai', loadComponent: () => import('./features/advertising/audio-dai-cockpit.component').then(m => m.AudioDaiCockpitComponent), canActivate: [authGuard] },
+  { path: 'voice/telephony-whisper', loadComponent: () => import('./features/voice/telephony-whisper-cockpit.component').then(m => m.TelephonyWhisperCockpitComponent), canActivate: [authGuard] },
+  { path: 'finance/tax-exemption', loadComponent: () => import('./features/finance/tax-exemption-cockpit.component').then(m => m.TaxExemptionCockpitComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/bgp-bfd', loadComponent: () => import('./features/infrastructure/bgp-bfd-cockpit.component').then(m => m.BgpBfdCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

@@ -126,6 +126,11 @@ using SGrowing.Api.Modules.Advertising.GeoIncrementality;
 using SGrowing.Api.Modules.Voice.VoiceDialect;
 using SGrowing.Api.Modules.Finance.CapTableEquity;
 using SGrowing.Api.Modules.Infrastructure.EdgeWasmMesh;
+using SGrowing.Api.Modules.Sales.BuyingCommittee;
+using SGrowing.Api.Modules.Advertising.AudioDai;
+using SGrowing.Api.Modules.Voice.TelephonyWhisper;
+using SGrowing.Api.Modules.Finance.TaxExemption;
+using SGrowing.Api.Modules.Infrastructure.BgpBfd;
 using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Extensions;
@@ -997,6 +1002,11 @@ app.MapGeoIncrementalityEndpoints();
 app.MapVoiceDialectEndpoints();
 app.MapCapTableEquityEndpoints();
 app.MapEdgeWasmMeshEndpoints();
+app.MapBuyingCommitteeGraphEndpoints();
+app.MapAudioDaiEndpoints();
+app.MapTelephonyWhisperEndpoints();
+app.MapTaxExemptionEndpoints();
+app.MapBgpBfdEndpoints();
 
 // Real-Time SignalR Hub
 app.MapHub<OmniHub>("/hubs/omni");
