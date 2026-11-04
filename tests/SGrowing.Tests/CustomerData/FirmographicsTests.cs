@@ -160,4 +160,67 @@ public class FirmographicsTests
         profile.TechStack.Should().Contain("Kubernetes");
         profile.TechStack.Should().Contain("AWS");
     }
+
+    [Fact]
+    public void DeanonymizeIp_WithUnknownIp_ReturnsNoMatchSafely()
+    {
+        var request = new DeanonymizeIpRequest(
+            TenantId: "tenant_growth_06",
+            IpAddress: "8.8.8.8",
+            VisitedPage: "/home"
+        );
+
+        var result = _engine.DeanonymizeIp(request);
+
+        result.Should().NotBeNull();
+        result.MatchFound.Should().BeFalse();
+        result.Company.Should().BeNull();
+        result.IcpFit.Should().BeNull();
+        result.TriggeredSalesAlert.Should().BeFalse();
+    }
+
+    [Fact]
+    public void GetCompany_NormalizesDomainFormatsAccurately()
+    {
+        var profile1 = _engine.GetCompany("tenant_growth_07", "https://acmecorp.com/");
+        var profile2 = _engine.GetCompany("tenant_growth_07", "www.acmecorp.com");
+        var profile3 = _engine.GetCompany("tenant_growth_07", "  ACMECORP.COM  ");
+
+        profile1.Should().NotBeNull();
+        profile2.Should().NotBeNull();
+        profile3.Should().NotBeNull();
+        profile1!.CompanyName.Should().Be("Acme Corp");
+        profile2!.CompanyName.Should().Be("Acme Corp");
+        profile3!.CompanyName.Should().Be("Acme Corp");
+    }
+
+    [Fact]
+    public void GetCompany_ReturnsNullForUnknownDomain()
+    {
+        var profile = _engine.GetCompany("tenant_growth_08", "non-existent-startup-99.org");
+        profile.Should().BeNull();
+    }
+
+    [Fact]
+    public void RegisterCompanyProfile_TenantOverride_PrioritizesTenantProfileOverGlobal()
+    {
+        var tenantId = "tenant_custom_override_01";
+        var customAcme = new FirmographicCompanyProfile(
+            Domain: "acmecorp.com",
+            CompanyName: "Acme Corp (Custom Enterprise Tier)",
+            Industry: "FinTech & Cloud",
+            EmployeeCount: 3000,
+            RevenueRange: "$300M+",
+            HeadquartersCity: "San Francisco",
+            HeadquartersCountry: "United States",
+            TechStack: new List<string> { "CustomMesh", "Kubernetes" }
+        );
+
+        _engine.RegisterCompanyProfile(tenantId, customAcme);
+
+        var retrieved = _engine.GetCompany(tenantId, "acmecorp.com");
+        retrieved.Should().NotBeNull();
+        retrieved!.CompanyName.Should().Be("Acme Corp (Custom Enterprise Tier)");
+        retrieved.EmployeeCount.Should().Be(3000);
+    }
 }

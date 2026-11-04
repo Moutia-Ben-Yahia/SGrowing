@@ -161,4 +161,78 @@ public class IdentityResolutionTests
         profile.Should().NotBeNull();
         profile!.CanonicalProfileId.Should().Be(result.CanonicalProfileId);
     }
+
+    [Theory]
+    [InlineData(null, "anon_1", "email@test.com")]
+    [InlineData("", "anon_1", "email@test.com")]
+    [InlineData("tenant_1", null, "email@test.com")]
+    [InlineData("tenant_1", "", "email@test.com")]
+    public void StitchIdentity_ValidatesRequiredFields(string? tenantId, string? anonId, string email)
+    {
+        var request = new StitchIdentityRequest(
+            TenantId: tenantId!,
+            AnonymousId: anonId!,
+            KnownIdentifier: new IdentityIdentifier(IdentityType.Email, email)
+        );
+
+        var action = () => _engine.StitchIdentity(request);
+        action.Should().Throw<System.ArgumentException>();
+    }
+
+    [Fact]
+    public void StitchIdentity_ThrowsWhenKnownIdentifierEmpty()
+    {
+        var request = new StitchIdentityRequest(
+            TenantId: "tenant_val",
+            AnonymousId: "anon_val",
+            KnownIdentifier: new IdentityIdentifier(IdentityType.Email, "")
+        );
+
+        var action = () => _engine.StitchIdentity(request);
+        action.Should().Throw<System.ArgumentException>();
+    }
+
+    [Fact]
+    public void GetProfileGraph_ReturnsNullForNonExistentProfile()
+    {
+        var profile = _engine.GetProfileGraph("tenant_unknown", "prof_non_existent_99");
+        profile.Should().BeNull();
+    }
+
+    [Fact]
+    public void ResolveIdentifier_ReturnsNullForUnregisteredIdentifier()
+    {
+        var profile = _engine.ResolveIdentifier("tenant_unknown", new IdentityIdentifier(IdentityType.Email, "never_seen@test.com"));
+        profile.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetSessionsForProfile_ReturnsIngestedSessions()
+    {
+        var tenantId = "tenant_sessions_test";
+        var anonId = "anon_visitor_session_test";
+        var sessId = "sess_rec_9988";
+
+        _engine.IngestSession(tenantId, new VisitorSessionRecord(
+            SessionId: sessId,
+            AnonymousId: anonId,
+            StartedAtUtc: System.DateTime.UtcNow.AddMinutes(-20),
+            EndedAtUtc: System.DateTime.UtcNow,
+            IpAddress: "127.0.0.1",
+            UserAgent: "Browser",
+            PageViews: new List<string> { "/cart", "/checkout" },
+            UtmParameters: new Dictionary<string, string>()
+        ));
+
+        var stitch = _engine.StitchIdentity(new StitchIdentityRequest(
+            TenantId: tenantId,
+            AnonymousId: anonId,
+            KnownIdentifier: new IdentityIdentifier(IdentityType.Email, "shopper@test.com"),
+            SessionId: sessId
+        ));
+
+        var sessions = _engine.GetSessionsForProfile(tenantId, stitch.CanonicalProfileId);
+        sessions.Should().NotBeNull();
+        sessions.Should().Contain(s => s.SessionId == sessId);
+    }
 }
