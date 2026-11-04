@@ -150,4 +150,116 @@ public class BotSimulatorTests
         Assert.Equal("HandedOver", session.Variables["bot_status"].ToString());
         Assert.Contains(session.Transcript, m => m.Content.Contains("live customer care agent"));
     }
+
+    [Fact]
+    public void BotSimulator_EmptyNodesJson_ReturnsCompletedSessionWithLog()
+    {
+        var workflow = WorkflowGraph.Create(Guid.NewGuid(), "EmptyBot", "BotCanvas", "[]");
+        var session = _simulator.StartSimulation(workflow);
+
+        Assert.True(session.IsCompleted);
+        Assert.False(session.IsWaitingForUserInput);
+        Assert.False(session.IsHandedOverToHuman);
+        Assert.Null(session.CurrentNodeId);
+    }
+
+    [Fact]
+    public void BotSimulator_ConditionNode_RoutesToTrueBranch_WhenConditionMet()
+    {
+        var nodesJson = """
+            [
+              {
+                "id": "node_cond",
+                "type": "Condition",
+                "name": "Check VIP Status",
+                "config": { "field": "tier", "operator": "==", "value": "vip" },
+                "trueNext": "node_vip_msg",
+                "falseNext": "node_std_msg"
+              },
+              {
+                "id": "node_vip_msg",
+                "type": "SendMessage",
+                "name": "VIP Welcome",
+                "config": { "message": "Welcome back honored VIP member!", "waitForReply": true }
+              },
+              {
+                "id": "node_std_msg",
+                "type": "SendMessage",
+                "name": "Standard Welcome",
+                "config": { "message": "Welcome standard member!", "waitForReply": true }
+              }
+            ]
+            """;
+
+        var workflow = WorkflowGraph.Create(Guid.NewGuid(), "VipBranchBot", "BotCanvas", nodesJson);
+        var initialVars = new Dictionary<string, object> { { "tier", "vip" } };
+
+        var session = _simulator.StartSimulation(workflow, initialVars);
+
+        Assert.Contains(session.Transcript, m => m.Content == "Welcome back honored VIP member!");
+        Assert.DoesNotContain(session.Transcript, m => m.Content == "Welcome standard member!");
+    }
+
+    [Fact]
+    public void BotSimulator_ConditionNode_RoutesToFalseBranch_WhenConditionNotMet()
+    {
+        var nodesJson = """
+            [
+              {
+                "id": "node_cond",
+                "type": "Condition",
+                "name": "Check VIP Status",
+                "config": { "field": "tier", "operator": "==", "value": "vip" },
+                "trueNext": "node_vip_msg",
+                "falseNext": "node_std_msg"
+              },
+              {
+                "id": "node_vip_msg",
+                "type": "SendMessage",
+                "name": "VIP Welcome",
+                "config": { "message": "Welcome back honored VIP member!", "waitForReply": true }
+              },
+              {
+                "id": "node_std_msg",
+                "type": "SendMessage",
+                "name": "Standard Welcome",
+                "config": { "message": "Welcome standard member!", "waitForReply": true }
+              }
+            ]
+            """;
+
+        var workflow = WorkflowGraph.Create(Guid.NewGuid(), "StdBranchBot", "BotCanvas", nodesJson);
+        var initialVars = new Dictionary<string, object> { { "tier", "basic" } };
+
+        var session = _simulator.StartSimulation(workflow, initialVars);
+
+        Assert.Contains(session.Transcript, m => m.Content == "Welcome standard member!");
+        Assert.DoesNotContain(session.Transcript, m => m.Content == "Welcome back honored VIP member!");
+    }
+
+    [Fact]
+    public void BotSimulator_TemplateRendering_SubstitutesInitialVariables()
+    {
+        var nodesJson = """
+            [
+              {
+                "id": "node_greeting",
+                "type": "SendMessage",
+                "name": "Personalized Hello",
+                "config": { "message": "Hello {{first_name}}! Your discount code is {{promo_code}}." }
+              }
+            ]
+            """;
+
+        var workflow = WorkflowGraph.Create(Guid.NewGuid(), "TemplateBot", "BotCanvas", nodesJson);
+        var vars = new Dictionary<string, object>
+        {
+            { "first_name", "Sarah" },
+            { "promo_code", "GROWTH2026" }
+        };
+
+        var session = _simulator.StartSimulation(workflow, vars);
+
+        Assert.Contains(session.Transcript, m => m.Content == "Hello Sarah! Your discount code is GROWTH2026.");
+    }
 }

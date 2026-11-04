@@ -61,4 +61,79 @@ public class CartRescueTests
         Assert.Contains("rescue_cart_8801", result.RescueId);
         Assert.Contains("FreeExpeditedShipping", result.OutboundMessageText);
     }
+
+    [Fact]
+    public void EvaluateCart_MidValueCart_RecommendsFreeExpeditedShipping()
+    {
+        var request = new EvaluateCartRescueRequest(
+            CartId: "cart_mid_val",
+            CustomerEmail: "shopper@domain.com",
+            CustomerPhone: "+21698000111",
+            Items: new List<CartItem>
+            {
+                new("SKU-LAMP-01", "Nordic Floor Lamp", 1, 260.00m, 45.0m)
+            },
+            MinutesSinceAbandonment: 15
+        );
+
+        var result = _engine.EvaluateCart(request);
+
+        Assert.NotNull(result);
+        Assert.Equal(260.00m, result.TotalCartValue);
+        Assert.Equal(IncentiveStrategy.FreeExpeditedShipping, result.RecommendedIncentive);
+        Assert.Equal("WhatsApp", result.PreferredChannel);
+        Assert.Contains("Guaranteed Priority Courier", result.IncentiveDescription);
+    }
+
+    [Fact]
+    public void EvaluateCart_RecentAbandonmentUnder30Min_RecommendsZeroDiscountValueNudge()
+    {
+        var request = new EvaluateCartRescueRequest(
+            CartId: "cart_low_recent",
+            CustomerEmail: "recent@domain.com",
+            CustomerPhone: null, // No phone -> Email
+            Items: new List<CartItem>
+            {
+                new("SKU-BOOK-01", "AI Strategy Book", 2, 45.00m, 60.0m)
+            },
+            MinutesSinceAbandonment: 12
+        );
+
+        var result = _engine.EvaluateCart(request);
+
+        Assert.NotNull(result);
+        Assert.Equal(90.00m, result.TotalCartValue);
+        Assert.Equal(IncentiveStrategy.ZeroDiscountValueNudge, result.RecommendedIncentive);
+        Assert.Equal("Email", result.PreferredChannel);
+        Assert.Contains("Low-Stock Reservation", result.IncentiveDescription);
+    }
+
+    [Fact]
+    public void EvaluateCart_LongerAbandonment_RecommendsTimeLockedCashbackEscrow()
+    {
+        var request = new EvaluateCartRescueRequest(
+            CartId: "cart_low_older",
+            CustomerEmail: "older@domain.com",
+            CustomerPhone: "+21650112233",
+            Items: new List<CartItem>
+            {
+                new("SKU-SHIRT-01", "Linen Shirt", 1, 80.00m, 50.0m)
+            },
+            MinutesSinceAbandonment: 90
+        );
+
+        var result = _engine.EvaluateCart(request);
+
+        Assert.NotNull(result);
+        Assert.Equal(80.00m, result.TotalCartValue);
+        Assert.Equal(IncentiveStrategy.TimeLockedCashbackEscrow, result.RecommendedIncentive);
+        Assert.Contains("Instant Wallet Credit", result.IncentiveDescription);
+    }
+
+    [Fact]
+    public void DispatchNudge_UnknownRescueId_ThrowsKeyNotFoundException()
+    {
+        var request = new DispatchCartNudgeRequest("non_existent_rescue_id", "Email");
+        Assert.Throws<KeyNotFoundException>(() => _engine.DispatchNudge(request));
+    }
 }

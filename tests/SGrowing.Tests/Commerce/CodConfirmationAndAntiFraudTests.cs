@@ -129,4 +129,72 @@ public class CodConfirmationAndAntiFraudTests
         Assert.Equal(CodOrderStatus.Confirmed, autoConfirmed.Status);
         Assert.Equal(ConfirmationChannel.WhatsAppInteractive, autoConfirmed.ConfirmationChannel);
     }
+
+    [Fact]
+    public async Task RecordCallOutcome_CancelledOutcome_TransitionsOrderToCancelled()
+    {
+        var db = CreateDbContext();
+        var service = new CodConfirmationService(db);
+        var tenantId = Guid.NewGuid();
+
+        var order = CodOrder.Create(tenantId, "ORD-301", "Amel Trabelsi", "+21623456789", "Avenue Taieb Mehiri", "La Marsa", "Marsa Plage", 210m);
+        db.CodOrders.Add(order);
+        await db.SaveChangesAsync();
+
+        var cancelledOrder = await service.RecordCallOutcomeAsync(
+            tenantId, order.Id, "agent_3", "Karim", CallOutcome.CancelledByCustomer, "Customer decided to cancel order", null);
+
+        Assert.Equal(CodOrderStatus.Cancelled, cancelledOrder.Status);
+        Assert.Contains("Customer decided to cancel order", cancelledOrder.Notes);
+    }
+
+    [Fact]
+    public async Task HandleCustomerInteractiveResponse_CancelPayload_CancelsOrder()
+    {
+        var db = CreateDbContext();
+        var service = new CodConfirmationService(db);
+        var tenantId = Guid.NewGuid();
+
+        var order = CodOrder.Create(tenantId, "ORD-302", "Zied Karray", "+21697112233", "Route de Tunis", "Ariana", "Ennasr", 140m);
+        db.CodOrders.Add(order);
+        await db.SaveChangesAsync();
+
+        var cancelledOrder = await service.HandleCustomerInteractiveResponseAsync(tenantId, order.Id, $"CANCEL_{order.Id}");
+
+        Assert.Equal(CodOrderStatus.Cancelled, cancelledOrder.Status);
+        Assert.Contains("Cancelled by customer via WhatsApp 1-Click", cancelledOrder.Notes);
+    }
+
+    [Theory]
+    [InlineData("TN", "12345")]                // Too short for Tunisia
+    [InlineData("EG", "+20199999999")]         // Invalid Egypt prefix (019 doesn't exist, only 010, 011, 012, 015)
+    [InlineData("MA", "+21212345678")]         // Invalid Morocco prefix (doesn't start with 5, 6, 7)
+    public async Task EvaluateRisk_InvalidCountryPhoneFormat_AddsInvalidFormatFlag(string country, string phone)
+    {
+        var db = CreateDbContext();
+        var service = new CodConfirmationService(db);
+        var tenantId = Guid.NewGuid();
+
+        var order = CodOrder.Create(tenantId, $"ORD-ERR-{country}", "Test Customer", phone, "Main St", "City", "District", 100m, countryCode: country);
+        db.CodOrders.Add(order);
+        await db.SaveChangesAsync();
+
+        var risk = await service.EvaluateRiskAsync(tenantId, order);
+
+        Assert.Contains("INVALID_PHONE_FORMAT", risk.Flags);
+        Assert.True(risk.Score >= 35);
+    }
+
+    [Fact]
+    public async Task ReleaseLock_WhenNoActiveLock_ReturnsFalse()
+    {
+        var db = CreateDbContext();
+        var service = new CodConfirmationService(db);
+        var tenantId = Guid.NewGuid();
+        var orderId = Guid.NewGuid();
+
+        var result = await service.ReleaseLockAsync(tenantId, orderId, "agent_ghost");
+
+        Assert.False(result);
+    }
 }

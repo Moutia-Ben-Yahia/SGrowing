@@ -187,4 +187,182 @@ public class DeliveryWebhookTests
         Assert.Single(events);
         Assert.Contains("read", events[0].Summary);
     }
+
+    [Fact]
+    public async Task HandleEmailDeliveryWebhook_EmptyPayload_ReturnsBadRequest()
+    {
+        using var db = CreateDbContext();
+        var c360 = new Customer360AttributionService(db);
+        var tenantId = Guid.NewGuid();
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(""));
+        httpContext.Request.ContentType = "application/json";
+
+        var result = await DeliveryWebhookEndpoints.HandleEmailDeliveryWebhook(
+            httpContext.Request,
+            tenantId,
+            null,
+            c360,
+            db,
+            CancellationToken.None
+        );
+
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public async Task HandleEmailDeliveryWebhook_BatchArrayPayload_ProcessesMultipleEvents()
+    {
+        using var db = CreateDbContext();
+        var c360 = new Customer360AttributionService(db);
+        var tenantId = Guid.NewGuid();
+
+        var contact = Contact.Create(tenantId, "Karim", "Zouari", email: "karim@medina.tn");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        var batchPayload = new[]
+        {
+            new
+            {
+                type = "email.opened",
+                data = new
+                {
+                    email_id = "re_batch_01",
+                    to = new[] { "karim@medina.tn" },
+                    subject = "Special Announcement 1"
+                }
+            },
+            new
+            {
+                type = "email.clicked",
+                data = new
+                {
+                    email_id = "re_batch_02",
+                    to = new[] { "karim@medina.tn" },
+                    subject = "Special Announcement 2"
+                }
+            }
+        };
+
+        var httpContext = new DefaultHttpContext();
+        var jsonBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(batchPayload));
+        httpContext.Request.Body = new MemoryStream(jsonBytes);
+        httpContext.Request.ContentType = "application/json";
+
+        var result = await DeliveryWebhookEndpoints.HandleEmailDeliveryWebhook(
+            httpContext.Request,
+            tenantId,
+            null,
+            c360,
+            db,
+            CancellationToken.None
+        );
+
+        Assert.NotNull(result);
+
+        var events = await db.CustomerTimelineEvents
+            .Where(e => e.TenantId == tenantId && e.EventType == "EmailDeliveryEvent")
+            .ToListAsync();
+
+        Assert.Equal(2, events.Count);
+        Assert.Contains(events, e => e.Summary.Contains("email.opened"));
+        Assert.Contains(events, e => e.Summary.Contains("email.clicked"));
+    }
+
+    [Fact]
+    public async Task HandleTwilioSmsStatusWebhook_FailedStatus_UpdatesMessageToFailed()
+    {
+        using var db = CreateDbContext();
+        var c360 = new Customer360AttributionService(db);
+        var tenantId = Guid.NewGuid();
+        var convId = Guid.NewGuid();
+
+        var msg = Message.Create(
+            tenantId: tenantId,
+            conversationId: convId,
+            senderType: MessageSenderType.Agent,
+            content: "URGENT: Delivery address check",
+            externalMessageId: "SM_FAIL_9911",
+            deliveryStatus: DeliveryStatus.Sent
+        );
+        db.Messages.Add(msg);
+        await db.SaveChangesAsync();
+
+        var twilioPayload = new
+        {
+            MessageSid = "SM_FAIL_9911",
+            MessageStatus = "undelivered",
+            To = "+21620999888",
+            From = "+18005550199"
+        };
+
+        var httpContext = new DefaultHttpContext();
+        var jsonBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(twilioPayload));
+        httpContext.Request.Body = new MemoryStream(jsonBytes);
+        httpContext.Request.ContentType = "application/json";
+
+        var result = await DeliveryWebhookEndpoints.HandleTwilioSmsStatusWebhook(
+            httpContext.Request,
+            tenantId,
+            null,
+            c360,
+            db,
+            CancellationToken.None
+        );
+
+        Assert.NotNull(result);
+
+        var updatedMsg = await db.Messages.FindAsync(msg.Id);
+        Assert.NotNull(updatedMsg);
+        Assert.Equal(DeliveryStatus.Failed, updatedMsg.DeliveryStatus);
+    }
+
+    [Fact]
+    public async Task HandleWhatsAppDeliveryWebhook_DeliveredStatus_UpdatesMessageToDelivered()
+    {
+        using var db = CreateDbContext();
+        var c360 = new Customer360AttributionService(db);
+        var tenantId = Guid.NewGuid();
+        var convId = Guid.NewGuid();
+
+        var msg = Message.Create(
+            tenantId: tenantId,
+            conversationId: convId,
+            senderType: MessageSenderType.Bot,
+            content: "Tracking link updated",
+            externalMessageId: "wamid.DELIV_123",
+            deliveryStatus: DeliveryStatus.Sent
+        );
+        db.Messages.Add(msg);
+        await db.SaveChangesAsync();
+
+        var waPayload = new
+        {
+            id = "wamid.DELIV_123",
+            status = "delivered",
+            recipient_id = "+21699112233"
+        };
+
+        var httpContext = new DefaultHttpContext();
+        var jsonBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(waPayload));
+        httpContext.Request.Body = new MemoryStream(jsonBytes);
+        httpContext.Request.ContentType = "application/json";
+
+        var result = await DeliveryWebhookEndpoints.HandleWhatsAppDeliveryWebhook(
+            httpContext.Request,
+            tenantId,
+            null,
+            c360,
+            db,
+            CancellationToken.None
+        );
+
+        Assert.NotNull(result);
+
+        var updatedMsg = await db.Messages.FindAsync(msg.Id);
+        Assert.NotNull(updatedMsg);
+        Assert.Equal(DeliveryStatus.Delivered, updatedMsg.DeliveryStatus);
+    }
 }
