@@ -75,4 +75,60 @@ public sealed class SponsoredBrandAdsTests
         Assert.Equal(2, camp.FeaturedSkus.Count);
         Assert.Equal(1, camp.FeaturedSkus.Count(s => s.StockUnitsAvailable > 0));
     }
+
+    [Fact]
+    public void AuctionBrandBanner_ZeroOrEmptyQuery_ExecutesSafely()
+    {
+        var bid = _engine.AuctionBrandBanner("", minFloorCpc: 1.00);
+
+        Assert.NotNull(bid);
+        Assert.StartsWith("AUC-BRAND-", bid.AuctionId);
+        Assert.True(bid.WinningCpcBidUsd >= 1.00);
+    }
+
+    [Fact]
+    public void CreateCampaign_NullOrEmptySkus_PermitsCampaignCreation()
+    {
+        var camp = _engine.CreateCampaign("Minimalist Brand", "Simple Aesthetics", BrandBannerSlotType.CategoryAisleHeader, 2.50, new List<FeaturedProductSku>());
+
+        Assert.NotNull(camp);
+        Assert.Empty(camp.FeaturedSkus);
+        Assert.True(camp.IsActive);
+    }
+
+    [Fact]
+    public void CreateCampaign_DifferentSlotTypes_StoresSpecifiedSlot()
+    {
+        var camp1 = _engine.CreateCampaign("Slot Brand 1", "Header Promo", BrandBannerSlotType.TopSearchHeaderBanner, 3.00, []);
+        var camp2 = _engine.CreateCampaign("Slot Brand 2", "Aisle Promo", BrandBannerSlotType.CategoryAisleHeader, 2.50, []);
+
+        Assert.Equal(BrandBannerSlotType.TopSearchHeaderBanner, camp1.SlotType);
+        Assert.Equal(BrandBannerSlotType.CategoryAisleHeader, camp2.SlotType);
+    }
+
+    [Fact]
+    public void GetOverview_ReflectsAuctionCountAndRecentBidOrdering()
+    {
+        _engine.AuctionBrandBanner("gaming monitor 4k", minFloorCpc: 2.00);
+        _engine.AuctionBrandBanner("mechanical keyboard", minFloorCpc: 1.50);
+
+        var overview = _engine.GetOverview();
+        Assert.NotNull(overview);
+        Assert.True(overview.RecentBids.Count >= 2);
+
+        // Recent bids ordered descending by timestamp
+        for (int i = 0; i < overview.RecentBids.Count - 1; i++)
+        {
+            Assert.True(overview.RecentBids[i].AuctionTimestampUtc >= overview.RecentBids[i + 1].AuctionTimestampUtc);
+        }
+    }
+
+    [Fact]
+    public void AuctionBrandBanner_HighFloorCpc_SetsWinningBidToFloor()
+    {
+        var floor = 8.50; // Much higher than max cpc
+        var bid = _engine.AuctionBrandBanner("ultra high-end luxury watch", minFloorCpc: floor);
+
+        Assert.Equal(floor, bid.WinningCpcBidUsd);
+    }
 }
