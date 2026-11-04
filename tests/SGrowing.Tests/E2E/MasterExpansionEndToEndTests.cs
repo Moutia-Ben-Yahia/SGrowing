@@ -176,4 +176,38 @@ public class MasterExpansionEndToEndTests
         Assert.Equal(2, invoices.Count);
         Assert.Contains(invoices, inv => inv.StripeInvoiceId == "in_stripe_enterprise_88231");
     }
+
+    [Fact]
+    public async Task Master_Expansion_FaultInjection_ValidatesSpamDetection_AndOverQuotaRejections()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+
+        // 1. Deliverability spam risk flags suspicious phishing / spam content
+        var deliverabilityService = new EmailDeliverabilityService(db);
+        var spamSubject = "CLAIM YOUR FREE UNLIMITED BITCOIN 100% GUARANTEED NO RISK NOW!!!";
+        var spamBody = "<p>Click here immediately to double your money. No verification needed.</p>";
+        var spamAnalysis = await deliverabilityService.AnalyzeEmailSpamRiskAsync(tenantId, spamSubject, spamBody);
+
+        Assert.True(spamAnalysis.SpamScore > 40);
+        Assert.NotEqual("Safe", spamAnalysis.Verdict);
+
+        // 2. SaaS Billing: Over-quota requests are denied
+        var billingService = new SaasBillingService(db);
+        var overQuotaCheck = await billingService.VerifyQuotaAsync(tenantId, UsageMetricType.AiTokens, requestedQuantity: 100_000_000);
+        Assert.False(overQuotaCheck.Allowed);
+
+        // 3. Calendar booking with non-existent event type ID throws InvalidOperationException
+        var calendarService = new CalendarSchedulingService(db);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            calendarService.BookAppointmentAsync(
+                tenantId,
+                Guid.NewGuid(),
+                "Ghost Prospect",
+                "ghost@enterprise.com",
+                "+12345678",
+                DateTime.UtcNow.AddDays(1),
+                "UTC"
+            ));
+    }
 }

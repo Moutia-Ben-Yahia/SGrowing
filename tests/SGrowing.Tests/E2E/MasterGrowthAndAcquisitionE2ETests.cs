@@ -234,4 +234,30 @@ public class MasterGrowthAndAcquisitionE2ETests
         var pausedJourney = await db.CustomerJourneys.FirstAsync(j => j.Id == journey.Id);
         pausedJourney.Status.Should().Be(JourneyStatus.Paused);
     }
+
+    [Fact]
+    public async Task Master_Growth_And_Acquisition_WhenBookingNonexistentTenantOrSlotConflict_EnforcesSafety()
+    {
+        using var db = CreateDbContext();
+        var calendarService = new CalendarSchedulingService(db);
+        var targetTime = DateTime.UtcNow.Date.AddDays(3).AddHours(14);
+
+        // 1. Booking public appointment with unknown tenant slug throws KeyNotFoundException
+        var nonExistentAct = async () => await calendarService.BookPublicAppointmentAsync(
+            "unknown-tenant-slug-999",
+            "unknown-slug",
+            "Test Prospect",
+            "test@prospect.com",
+            "+12345678",
+            targetTime,
+            "UTC"
+        );
+        await nonExistentAct.Should().ThrowAsync<KeyNotFoundException>();
+
+        // 2. SEO Citability with empty mentions returns baseline metrics
+        var seoService = new SeoAuditService(db);
+        var report = await seoService.ComputeGeoBrandCitabilityScoreAsync(Guid.NewGuid(), "Startup Brand", "https://startup.io");
+        report.CitabilityRatePercent.Should().BeGreaterThan(0);
+        report.ActionableRecommendations.Should().NotBeEmpty();
+    }
 }

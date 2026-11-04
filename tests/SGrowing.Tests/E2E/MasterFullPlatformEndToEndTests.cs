@@ -151,4 +151,28 @@ public class MasterFullPlatformEndToEndTests
         Assert.NotNull(retryLog);
         Assert.True(retryLog.IsSuccess);
     }
+
+    [Fact]
+    public async Task Master_Full_Platform_FaultInjection_ValidatesInvalidDownloadTokens_AndTamperedApiKeys()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+
+        // 1. Digital goods: Invalid download token returns failure
+        var digitalService = new DigitalGoodsService(db);
+        var (isValid, errorMessage, downloadedAsset) = await digitalService.ValidateAndConsumeDownloadAsync("INVALID_DOWNLOAD_TOKEN_999");
+        Assert.False(isValid);
+        Assert.Null(downloadedAsset);
+
+        // 2. Developer API Key validation with bogus key returns null
+        var devService = new DeveloperWebhookService(db);
+        var validatedBogusKey = await devService.ValidateApiKeyAsync("sg_live_totally_fabricated_key_123");
+        Assert.Null(validatedBogusKey);
+
+        // 3. Document verification on non-existent document ID returns false
+        var formService = new DynamicFormService(db);
+        var (isTamperFree, auditSummary) = await formService.VerifyDocumentAuditChainAsync(tenantId, Guid.NewGuid());
+        Assert.False(isTamperFree);
+        Assert.Equal("Document not found.", auditSummary);
+    }
 }

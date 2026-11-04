@@ -80,4 +80,48 @@ public class MasterGrowthAndFinancesE2ETests
         var emqScore = conversionMesh.CalculateEventMatchQualityScore(conversion);
         Assert.True(emqScore >= 9.0);
     }
+
+    [Fact]
+    public async Task Master_EndToEnd_ConversationalCart_WhenMissingOrderOrMinimalIdentifiers_CalculatesMatchScoreAccurately()
+    {
+        var db = CreateDbContext();
+        var storeService = new ExternalStoreAndSheetsService(db);
+        var conversionMesh = new ServerConversionMeshService(db);
+        var tenantId = Guid.NewGuid();
+
+        // 1. Generating Google Sheets row for non-existent order throws InvalidOperationException
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            storeService.GenerateGoogleSheetsRowAsync(tenantId, Guid.NewGuid()));
+
+        // 2. Conversion event without user identifiers yields low EMQ score
+        var anonymousConversion = await conversionMesh.TrackConversionAsync(
+            tenantId,
+            AdPlatform.GoogleAdsOffline,
+            ConversionEventType.Lead,
+            valueAmount: 0m,
+            currency: "TND",
+            email: null,
+            phone: null,
+            firstName: null,
+            lastName: null,
+            city: null
+        );
+
+        var lowScore = conversionMesh.CalculateEventMatchQualityScore(anonymousConversion);
+        Assert.Equal(0.0, lowScore);
+
+        // 3. Conversion event with phone only yields exactly 3.5 EMQ score
+        var phoneOnlyConversion = await conversionMesh.TrackConversionAsync(
+            tenantId,
+            AdPlatform.MetaCapi,
+            ConversionEventType.AddToCart,
+            valueAmount: 100m,
+            currency: "TND",
+            email: null,
+            phone: "+21698765432"
+        );
+
+        var phoneScore = conversionMesh.CalculateEventMatchQualityScore(phoneOnlyConversion);
+        Assert.Equal(3.5, phoneScore);
+    }
 }
