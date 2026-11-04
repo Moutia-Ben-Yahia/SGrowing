@@ -168,4 +168,16 @@ public class ClickstreamAndPartitioningTests
         var totalAttributed = results.Sum(r => r.AttributedRevenue);
         totalAttributed.Should().BeApproximately(10000m, 1m);
     }
+
+    [Fact]
+    public async Task MultiTouchAttribution_WhenDealNotFound_ThrowsKeyNotFoundException()
+    {
+        var tenantId = Guid.NewGuid();
+        var unknownDealId = Guid.NewGuid();
+
+        var act = () => _attributionService.CalculateAttributionAsync(tenantId, unknownDealId);
+
+        await act.Should().ThrowAsync<KeyNotFoundException>()
+            .WithMessage($"Deal {unknownDealId} not found for tenant {tenantId}.");
+    }
 }

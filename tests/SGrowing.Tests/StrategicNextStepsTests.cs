@@ -246,4 +246,19 @@ public class StrategicNextStepsTests
         Assert.Equal(1u, entity.RowVersion);
         Assert.True(entity.CreatedAtUtc <= DateTime.UtcNow);
     }
+
+    [Fact]
+    public async Task EventDeduplication_MultiTenantIsolation_AllowsSameEventIdAcrossDifferentTenants()
+    {
+        var deduplicationService = new EventDeduplicationService();
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+        var sharedEventId = "evt_webhook_shared_001";
+
+        bool acquiredA = await deduplicationService.TryAcquireAsync(tenantA, sharedEventId, "payloadA");
+        bool acquiredB = await deduplicationService.TryAcquireAsync(tenantB, sharedEventId, "payloadB");
+
+        Assert.True(acquiredA);
+        Assert.True(acquiredB);
+    }
 }

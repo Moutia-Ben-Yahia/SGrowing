@@ -98,4 +98,14 @@ public class SentimentDeescalationTests
         var resHigh = _engine.SubmitCsat(reqHigh);
         Assert.Equal(5, resHigh.RatingScore);
     }
+
+    [Fact]
+    public void SubmitCsat_RatingFourWithoutKeywordTrigger_ReturnsSatisfiedSentiment()
+    {
+        var request = new SubmitCsatRequest("cust_satisfied", "satisfied@user.com", 4, "Great platform and easy integration.");
+        var result = _engine.SubmitCsat(request);
+
+        Assert.Equal(SentimentLevel.Satisfied, result.EvaluatedSentiment);
+        Assert.False(result.RequiresUrgentTriage);
+    }
 }

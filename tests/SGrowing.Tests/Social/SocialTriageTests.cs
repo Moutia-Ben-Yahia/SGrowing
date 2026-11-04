@@ -102,4 +102,25 @@ public sealed class SocialTriageTests
         Assert.Contains("WhatsApp", analytics.ChannelBreakdown.Keys);
         Assert.Contains("LinkedIn", analytics.ChannelBreakdown.Keys);
     }
+
+    [Fact]
+    public async Task IngestAndTriageMessage_WhenGeneralInquiry_RoutesToSupportSpecialistWith120MinuteSla()
+    {
+        var request = new IngestSocialMessageRequest(
+            Channel: "Instagram",
+            SenderHandle: "@growth_user",
+            SenderName: "Amira Ben Salem",
+            MessageText: "Hello, where can I find instructions to update our team billing email address?"
+        );
+
+        var item = await _engine.IngestAndTriageMessageAsync(request);
+
+        Assert.NotNull(item);
+        Assert.Equal("Neutral", item.Assessment.Sentiment);
+        Assert.Equal("GeneralSupport", item.Assessment.IntentCategory);
+        Assert.False(item.Assessment.RequiresImmediateEscalation);
+        Assert.Equal("SupportSpecialist", item.AssignedAgentRole);
+        Assert.True(item.SlaDeadlineUtc <= DateTime.UtcNow.AddMinutes(125));
+        Assert.Contains("thank you for reaching out", item.DraftReply, StringComparison.OrdinalIgnoreCase);
+    }
 }
