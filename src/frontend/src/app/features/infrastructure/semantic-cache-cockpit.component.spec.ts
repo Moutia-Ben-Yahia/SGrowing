@@ -38,4 +38,14 @@ describe('SemanticCacheCockpitComponent (Horizon 65)', () => {
     component.testSemanticQuery();
     expect(component.dollarsSaved()).toBeCloseTo(initialSaved + 0.16, 2);
   });
+
+  it('should restore cache hit on testSemanticQuery after cache flush', () => {
+    component.flushCache();
+    expect(component.queryResult()?.source).toBe('UpstreamInferenceProvider');
+
+    component.testSemanticQuery();
+    expect(component.queryResult()?.isHit).toBe(true);
+    expect(component.queryResult()?.source).toBe('SemanticVectorCache');
+    expect(component.queryResult()?.similarity).toBe(0.974);
+  });
 });

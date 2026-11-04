@@ -38,4 +38,13 @@ describe('FeatureFlagsCockpitComponent (Horizon 60)', () => {
     expect(component.selectedFlag()?.flagKey).toBe('zk_differential_privacy_cleanroom');
     expect(component.selectedFlag()?.whitelistedTenants).toContain('org_enterprise_vip');
   });
+
+  it('should handle null selectedFlag on advanceCanary and compute counts on empty flags list', () => {
+    component.selectedFlag.set(null);
+    expect(() => component.advanceCanary()).not.toThrow();
+
+    component.flags.set([]);
+    expect(component.activeFlagsCount()).toBe(0);
+    expect(component.canaryActiveCount()).toBe(0);
+  });
 });

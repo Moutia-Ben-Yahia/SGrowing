@@ -38,4 +38,15 @@ describe('DisasterRecoveryCockpitComponent', () => {
     expect(comp.nodes().find(n => n.nodeId === 'node_aws_primary')?.replicationLagMs).toBe(15.1);
     expect(comp.nodes().find(n => n.nodeId === 'node_gcp_standby')?.replicationLagMs).toBe(0.0);
   });
+
+  it('should support updating quorumHealthy and map all multi-cloud providers correctly', () => {
+    const comp = new DisasterRecoveryCockpitComponent();
+    expect(comp.quorumHealthy()).toBe(true);
+
+    comp.quorumHealthy.set(false);
+    expect(comp.quorumHealthy()).toBe(false);
+
+    const providers = comp.nodes().map(n => n.provider);
+    expect(providers).toEqual(['AWS US-East', 'GCP Europe West', 'Azure US East', 'Sovereign VPC']);
+  });
 });

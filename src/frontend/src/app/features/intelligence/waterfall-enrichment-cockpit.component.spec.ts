@@ -39,4 +39,15 @@ describe('WaterfallEnrichmentCockpitComponent (Horizon 61)', () => {
     expect(component.avgLatency()).toBe(0);
     expect(component.verifiedCount()).toBe(0);
   });
+
+  it('should list all providers and compute avgLatency across provider latency entries', () => {
+    const providerNames = component.providers().map(p => p.name);
+    expect(providerNames).toContain('Clearbit Enterprise API');
+    expect(providerNames).toContain('Apollo.io B2B Graph');
+    expect(providerNames).toContain('ZoomInfo Enterprise Data');
+    expect(providerNames).toContain('People Data Labs (PDL)');
+
+    const expectedAvg = Math.round(component.providers().reduce((acc, p) => acc + p.latencyMs, 0) / component.providers().length);
+    expect(component.avgLatency()).toBe(expectedAvg);
+  });
 });

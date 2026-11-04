@@ -39,4 +39,15 @@ describe('PipelineVelocityCockpitComponent', () => {
     expect(comp.dailyVelocity()).toBe(0);
     expect(comp.bottleneckCount()).toBe(0);
   });
+
+  it('should update selectedStage when it matches the accelerated stageId', () => {
+    const comp = new PipelineVelocityCockpitComponent();
+    const security = comp.stages().find(s => s.stageId === 'stg_security')!;
+    comp.selectStage(security);
+    expect(comp.selectedStage()?.isBottleneck).toBe(true);
+
+    comp.accelerateStage('stg_security');
+    expect(comp.selectedStage()?.isBottleneck).toBe(false);
+    expect(comp.selectedStage()?.averageDwellDays).toBe(21.0);
+  });
 });

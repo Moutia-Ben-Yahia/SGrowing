@@ -40,4 +40,11 @@ describe('DeAnonymizationCockpitComponent (Horizon 56)', () => {
     expect(component.avgScore()).toBe(0);
     expect(component.readyToBuyCount()).toBe(0);
   });
+
+  it('should select an account and update selectedAccount signal', () => {
+    const second = component.accounts()[1];
+    component.selectAccount(second);
+    expect(component.selectedAccount()?.accountId).toBe(second.accountId);
+    expect(component.selectedAccount()?.companyName).toBe('Shopify Inc.');
+  });
 });

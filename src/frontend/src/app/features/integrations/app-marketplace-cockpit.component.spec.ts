@@ -41,4 +41,14 @@ describe('AppMarketplaceCockpitComponent', () => {
     expect(component.getAppName('app_hubspot_sync')).toBe('HubSpot Two-Way CRM Connector');
     expect(component.getAppName('unknown_app_id')).toBe('unknown_app_id');
   });
+
+  it('should return full catalog when category is All and ignore confirmInstall if configuringApp is null', () => {
+    component.selectedCategory.set('All');
+    expect(component.filteredCatalog().length).toBe(component.catalog().length);
+
+    component.configuringApp.set(null);
+    const countBefore = component.installedApps().length;
+    component.confirmInstall();
+    expect(component.installedApps().length).toBe(countBefore);
+  });
 });

@@ -44,4 +44,13 @@ describe('MutualActionPlanCockpitComponent', () => {
     expect(comp.completionPercentage()).toBe(100);
     expect(comp.plan().championHealthScore).toBe(100);
   });
+
+  it('should update plan metadata and verify critical path flags', () => {
+    const comp = new MutualActionPlanCockpitComponent();
+    const criticals = comp.plan().milestones.filter(m => m.isCriticalPath);
+    expect(criticals.length).toBe(3);
+
+    comp.plan.update(p => ({ ...p, contractValueUsd: 250000 }));
+    expect(comp.plan().contractValueUsd).toBe(250000);
+  });
 });

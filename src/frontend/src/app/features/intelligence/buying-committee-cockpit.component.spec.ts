@@ -37,4 +37,14 @@ describe('BuyingCommitteeCockpitComponent', () => {
     expect(comp.approvedCount()).toBe(0);
     expect(comp.dealReadiness()).toBe('High Risk Incomplete');
   });
+
+  it('should reach Consensus Ready To Close when gaps are cleared and all members approve', () => {
+    const comp = new BuyingCommitteeCockpitComponent();
+    comp.gaps.set([]);
+    comp.members.update(list => list.map(m => ({ ...m, hasApproved: true, engagementScore: 95 })));
+
+    expect(comp.approvedCount()).toBe(3);
+    expect(comp.consensusScore()).toBeGreaterThanOrEqual(80);
+    expect(comp.dealReadiness()).toBe('Consensus Ready To Close');
+  });
 });

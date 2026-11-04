@@ -37,4 +37,17 @@ describe('AccountExpansionCockpitComponent', () => {
     expect(comp.totalExpansionArr()).toBe(0);
     expect(comp.expansionReadyCount()).toBe(0);
   });
+
+  it('should generate proposal for non-selected account and maintain selectedAccount integrity', () => {
+    const comp = new AccountExpansionCockpitComponent();
+    expect(comp.selectedAccount()?.accountId).toBe('acc_ent_acme_corp');
+
+    comp.generateProposal('acc_fin_hyperpay');
+    expect(comp.proposalsCount()).toBe(1);
+    expect(comp.selectedAccount()?.accountId).toBe('acc_ent_acme_corp');
+    expect(comp.selectedAccount()?.proposalGenerated).toBe(false);
+
+    const hyperpay = comp.accounts().find(a => a.accountId === 'acc_fin_hyperpay');
+    expect(hyperpay?.proposalGenerated).toBe(true);
+  });
 });

@@ -40,4 +40,26 @@ describe('SelfHealingMeshCockpitComponent', () => {
     expect(result?.resilienceGrade).toBe('A+ Resilience');
     expect(result?.blastRadius).toContain('network partition');
   });
+
+  it('should restore degraded probes to Healthy during automated remediation and handle empty list', () => {
+    component.probes.set([
+      {
+        probeId: 'prb_degraded',
+        resourceName: 'Degraded Queue Worker',
+        resourceType: 'ExternalGateway',
+        latencyMs: 120,
+        saturationPercent: 95.0,
+        status: 'Degraded'
+      }
+    ]);
+
+    expect(component.healthyProbesCount()).toBe(0);
+
+    component.triggerAutomatedRemediation();
+    expect(component.healthyProbesCount()).toBe(1);
+    expect(component.probes()[0].status).toBe('Healthy');
+
+    component.probes.set([]);
+    expect(component.healthyProbesCount()).toBe(0);
+  });
 });

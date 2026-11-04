@@ -37,4 +37,13 @@ describe('DbQueryRouterCockpitComponent', () => {
     expect(gru?.replicationLagMs).toBe(125);
     expect(gru?.nodeStatus).toBe('Lagging_Degraded');
   });
+
+  it('should support dynamic traffic percentage updates and list all region names', () => {
+    const comp = new DbQueryRouterCockpitComponent();
+    comp.readTrafficPct.set(95.5);
+    expect(comp.readTrafficPct()).toBe(95.5);
+
+    const regions = comp.replicas().map(r => r.regionName);
+    expect(regions).toEqual(['us-east-1', 'eu-central-1', 'ap-southeast-1', 'sa-east-1']);
+  });
 });
