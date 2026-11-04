@@ -88,4 +88,63 @@ public class DatabaseSeederTests
         var envelopeCount = await db.DocumentEnvelopes.CountAsync(e => e.TenantId == targetTenant);
         Assert.Equal(1, envelopeCount);
     }
+
+    [Fact]
+    public async Task SeedEnterpriseDemoAsync_WithNullTargetTenantId_ResolvesDefaultDemoTenant()
+    {
+        var (db, seeder) = CreateContext();
+
+        var tenantId = await seeder.SeedEnterpriseDemoAsync(null);
+
+        Assert.NotEqual(Guid.Empty, tenantId);
+
+        var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == tenantId);
+        Assert.NotNull(tenant);
+        Assert.Equal("sgrowing-demo", tenant.Slug);
+        Assert.Equal("SGrowing Enterprise Labs", tenant.Name);
+    }
+
+    [Fact]
+    public async Task SeedEnterpriseDemoAsync_ProvisionsAllSixSystemRoles_WithCorrectPermissions()
+    {
+        var (db, seeder) = CreateContext();
+        var targetTenant = Guid.NewGuid();
+
+        await seeder.SeedEnterpriseDemoAsync(targetTenant);
+
+        var roles = await db.SystemRoles.Where(r => r.TenantId == targetTenant).ToListAsync();
+        Assert.Equal(6, roles.Count);
+
+        Assert.Contains(roles, r => r.RoleName == nameof(UserSystemRole.SuperAdmin));
+        Assert.Contains(roles, r => r.RoleName == nameof(UserSystemRole.OperationsManager));
+        Assert.Contains(roles, r => r.RoleName == nameof(UserSystemRole.CallCenterAgent));
+        Assert.Contains(roles, r => r.RoleName == nameof(UserSystemRole.WarehousePicker));
+        Assert.Contains(roles, r => r.RoleName == nameof(UserSystemRole.FinanceAuditor));
+        Assert.Contains(roles, r => r.RoleName == nameof(UserSystemRole.AffiliateCreator));
+    }
+
+    [Fact]
+    public async Task SeedEnterpriseDemoAsync_PreservesExistingTenant_WhenAlreadyCreatedInDatabase()
+    {
+        var (db, seeder) = CreateContext();
+        var customTenantId = Guid.NewGuid();
+
+        var existingTenant = new Tenant
+        {
+            Id = customTenantId,
+            Name = "Custom Pre-existing Tenant",
+            Slug = "custom-tenant",
+            IsActive = true,
+            CreatedAtUtc = DateTime.UtcNow.AddMonths(-1)
+        };
+        await db.Tenants.AddAsync(existingTenant);
+        await db.SaveChangesAsync();
+
+        var seededId = await seeder.SeedEnterpriseDemoAsync(customTenantId);
+
+        Assert.Equal(customTenantId, seededId);
+        var reloaded = await db.Tenants.FindAsync(customTenantId);
+        Assert.NotNull(reloaded);
+        Assert.Equal("Custom Pre-existing Tenant", reloaded.Name);
+    }
 }

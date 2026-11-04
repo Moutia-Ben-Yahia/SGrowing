@@ -136,4 +136,56 @@ public class DevGatewayTests
         var paths = Assert.IsAssignableFrom<Dictionary<string, object>>(publicSpec.Spec["paths"]);
         Assert.True(paths.ContainsKey("/api/v1/advertising/capi/events"));
     }
+
+    [Fact]
+    public void SimulateRequest_WhenWebhookEndpoint_ReturnsSandboxSinkDelivery()
+    {
+        var engine = new DevGatewayEngine();
+        var webhookReq = new SandboxSimulationRequest(
+            TenantId: "tenant_webhook_test",
+            Endpoint: "/api/v1/developer/webhooks/deliver",
+            HttpMethod: "POST",
+            PayloadJson: "{\"event\":\"order.created\"}"
+        );
+
+        var response = engine.SimulateRequest(webhookReq);
+
+        Assert.Equal(200, response.StatusCode);
+        Assert.True(response.IsSandbox);
+        Assert.Contains("delivered_to_sandbox_sink", response.ResponsePayload);
+        Assert.Contains("sandbox-receiver.local", response.ResponsePayload);
+    }
+
+    [Fact]
+    public void SimulateRequest_WhenUnknownEndpoint_ReturnsSandboxEchoPayload()
+    {
+        var engine = new DevGatewayEngine();
+        var unknownReq = new SandboxSimulationRequest(
+            TenantId: "tenant_custom_echo",
+            Endpoint: "/api/v1/custom/reporting/export",
+            HttpMethod: "GET",
+            PayloadJson: null
+        );
+
+        var response = engine.SimulateRequest(unknownReq);
+
+        Assert.Equal(200, response.StatusCode);
+        Assert.True(response.IsSandbox);
+        Assert.Contains("sandbox_echo", response.ResponsePayload);
+        Assert.Contains("/api/v1/custom/reporting/export", response.ResponsePayload);
+        Assert.Contains("tenant_custom_echo", response.ResponsePayload);
+    }
+
+    [Fact]
+    public void GetSandboxSession_ReturnsDefaultFallbackSession_WhenNotConfigured()
+    {
+        var engine = new DevGatewayEngine();
+
+        var fallback = engine.GetSandboxSession("unconfigured_tenant_999");
+
+        Assert.NotNull(fallback);
+        Assert.True(fallback.IsSandboxMode);
+        Assert.Equal(45, fallback.SimulatedLatencyMs);
+        Assert.False(fallback.SimulateFailures);
+    }
 }
