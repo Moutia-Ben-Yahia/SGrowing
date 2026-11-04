@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using SGrowing.Api.Modules.Advertising.SpendAutopilot;
 using Xunit;
 
@@ -115,5 +116,84 @@ public sealed class AdSpendAutopilotTests
         Assert.True(summary.BlendedRoas > 0);
         Assert.Equal(2, summary.TotalActiveCampaigns);
         Assert.Equal(1, summary.AnomalyPausedCount);
+    }
+
+    [Fact]
+    public async Task RebalanceBudget_NullRequest_ThrowsArgumentNullException()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(() => _engine.RebalanceBudgetAsync(null!));
+    }
+
+    [Fact]
+    public async Task ExecuteBidShading_MultipleInvocations_AccumulatesSavingsInSummary()
+    {
+        var initialSummary = await _engine.GetSummaryAsync();
+
+        // Perform multiple bid shadings on active campaigns
+        var t1 = await _engine.ExecuteBidShadingAsync("cmp_google_pmax", 10.00m);
+        var t2 = await _engine.ExecuteBidShadingAsync("cmp_meta_retargeting", 8.00m);
+
+        t1.SavingsAmount.Should().Be(1.60m); // 10.00 - 8.40
+        t2.SavingsAmount.Should().Be(1.28m); // 8.00 - 6.72
+
+        var updatedSummary = await _engine.GetSummaryAsync();
+        updatedSummary.TotalSavingsFromBidShading.Should().BeGreaterThan(initialSummary.TotalSavingsFromBidShading);
+    }
+
+    [Fact]
+    public async Task RebalanceBudget_ZeroAmount_MaintainsExistingBudgets()
+    {
+        var beforeCampaigns = await _engine.GetCampaignsAsync();
+        var initialSourceBudget = beforeCampaigns.First(c => c.CampaignId == "cmp_meta_retargeting").DailyBudget;
+        var initialTargetBudget = beforeCampaigns.First(c => c.CampaignId == "cmp_google_pmax").DailyBudget;
+
+        var request = new RebalanceBudgetRequest("cmp_meta_retargeting", "cmp_google_pmax", 0m);
+        var updatedTarget = await _engine.RebalanceBudgetAsync(request);
+
+        updatedTarget.DailyBudget.Should().Be(initialTargetBudget);
+        updatedTarget.Status.Should().Be("Optimized");
+
+        var afterCampaigns = await _engine.GetCampaignsAsync();
+        var afterSource = afterCampaigns.First(c => c.CampaignId == "cmp_meta_retargeting");
+        afterSource.DailyBudget.Should().Be(initialSourceBudget);
+    }
+
+    [Fact]
+    public async Task GetRebalanceRecommendations_ExcludesAnomalyPausedCampaignsFromSource()
+    {
+        var recommendations = await _engine.GetRebalanceRecommendationsAsync();
+
+        recommendations.Should().NotBeNull();
+        foreach (var rec in recommendations)
+        {
+            // Anomaly paused campaigns should not be selected as donor source
+            rec.SourceCampaignId.Should().NotBe("cmp_tiktok_topview");
+            rec.Reasoning.Should().NotBeNullOrWhiteSpace();
+            rec.ExpectedRoasLiftPercent.Should().BeGreaterThan(0.0);
+        }
+    }
+
+    [Fact]
+    public async Task ExecuteBidShading_Calculates16PercentDiscountWithExactRounding()
+    {
+        const decimal rawBid = 100.00m;
+        var telemetry = await _engine.ExecuteBidShadingAsync("cmp_google_pmax", rawBid);
+
+        telemetry.ShadedBidPrice.Should().Be(84.00m); // 100 * 0.84
+        telemetry.SavingsAmount.Should().Be(16.00m);
+        telemetry.AuctionWinRatePercent.Should().Be(84.5);
+        telemetry.TimestampUtc.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public async Task GetCampaigns_MaintainsStrictRoasDescendingOrder()
+    {
+        var campaigns = await _engine.GetCampaignsAsync();
+
+        campaigns.Count.Should().BeGreaterThanOrEqualTo(3);
+        for (var i = 0; i < campaigns.Count - 1; i++)
+        {
+            campaigns[i].Roas.Should().BeGreaterThanOrEqualTo(campaigns[i + 1].Roas);
+        }
     }
 }
