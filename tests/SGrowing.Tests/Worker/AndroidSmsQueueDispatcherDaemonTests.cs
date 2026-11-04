@@ -191,4 +191,64 @@ public class AndroidSmsQueueDispatcherDaemonTests
         var inDb = await db.AndroidSmsDispatchRecords.FindAsync(msgTenantA.Id);
         inDb!.DispatchStatus.Should().Be("Queued");
     }
+
+    [Fact]
+    public async Task DispatchQueuedMessagesAsync_WhenDeviceReachesQuota_SkipsMaxedOutDeviceAndSelectsAvailableDevice()
+    {
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+        var tenantId = Guid.NewGuid();
+
+        var exhaustedDevice = AndroidSmsGatewayDevice.Create(tenantId, "Exhausted Handset", "IMEI-MAXED", "fcm-max", dailyQuota: 500);
+        exhaustedDevice.DailySentCount = 500; // Quota reached
+
+        var availableDevice = AndroidSmsGatewayDevice.Create(tenantId, "Available Handset", "IMEI-AVAIL", "fcm-avail", dailyQuota: 500);
+        availableDevice.DailySentCount = 10;
+
+        db.AndroidSmsGatewayDevices.AddRange(exhaustedDevice, availableDevice);
+
+        var queuedMsg = new AndroidSmsDispatchRecord
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            RecipientPhone = "+21655001122",
+            MessageBody = "Quota overflow test SMS",
+            DispatchStatus = "Queued",
+            SentAtUtc = DateTime.UtcNow
+        };
+        db.AndroidSmsDispatchRecords.Add(queuedMsg);
+        await db.SaveChangesAsync();
+
+        var dispatched = await AndroidSmsQueueDispatcherDaemon.DispatchQueuedMessagesAsync(db);
+
+        dispatched.Should().Be(1);
+        var inDb = await db.AndroidSmsDispatchRecords.FindAsync(queuedMsg.Id);
+        inDb!.DeviceId.Should().Be(availableDevice.Id);
+
+        var updatedAvail = await db.AndroidSmsGatewayDevices.FindAsync(availableDevice.Id);
+        updatedAvail!.DailySentCount.Should().Be(11);
+    }
+
+    [Fact]
+    public async Task DispatchQueuedMessagesAsync_IgnoreNonQueuedStatuses_OnlyDispatchesQueuedMessages()
+    {
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+        var tenantId = Guid.NewGuid();
+
+        var device = AndroidSmsGatewayDevice.Create(tenantId, "Main Handset", "IMEI-MAIN", "fcm-main");
+        db.AndroidSmsGatewayDevices.Add(device);
+
+        var record1 = new AndroidSmsDispatchRecord { Id = Guid.NewGuid(), TenantId = tenantId, RecipientPhone = "+111", MessageBody = "M1", DispatchStatus = "Dispatched", SentAtUtc = DateTime.UtcNow };
+        var record2 = new AndroidSmsDispatchRecord { Id = Guid.NewGuid(), TenantId = tenantId, RecipientPhone = "+222", MessageBody = "M2", DispatchStatus = "Delivered", SentAtUtc = DateTime.UtcNow };
+        var record3 = new AndroidSmsDispatchRecord { Id = Guid.NewGuid(), TenantId = tenantId, RecipientPhone = "+333", MessageBody = "M3", DispatchStatus = "Failed", SentAtUtc = DateTime.UtcNow };
+
+        db.AndroidSmsDispatchRecords.AddRange(record1, record2, record3);
+        await db.SaveChangesAsync();
+
+        var dispatched = await AndroidSmsQueueDispatcherDaemon.DispatchQueuedMessagesAsync(db);
+
+        dispatched.Should().Be(0);
+        device.DailySentCount.Should().Be(0);
+    }
 }

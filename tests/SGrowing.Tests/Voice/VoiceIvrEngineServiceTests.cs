@@ -186,4 +186,36 @@ public class VoiceIvrEngineServiceTests
         update2.Status.Should().Be(IvrSessionStatus.Completed);
         update2.CurrentNodeName.Should().Be("HangupNode");
     }
+
+    [Fact]
+    public async Task ProcessInputAsync_ShouldTransitionToSupportQueue_WhenCallerPresses2()
+    {
+        var flow = CreateSampleFlow();
+        await _service.SaveFlowAsync(flow);
+
+        var monday = new DateTime(2026, 11, 2, 11, 0, 0, DateTimeKind.Utc);
+        var session = await _service.InitiateSessionAsync(_tenantId, flow.FlowId, "+15551234567", monday);
+
+        var inputReq = new SubmitSessionInputRequest(session.SessionId, DtmfInput: "2");
+        var updated = await _service.ProcessInputAsync(inputReq);
+
+        updated.Status.Should().Be(IvrSessionStatus.RoutingToAgent);
+        updated.CurrentNodeName.Should().Be("SupportQueue");
+        updated.RoutedQueue.Should().Be("Tier1Support");
+    }
+
+    [Fact]
+    public async Task GetFlowAsync_ReturnsFlowWhenFoundAndThrowsKeyNotFoundWhenMissing()
+    {
+        var act = async () => await _service.GetFlowAsync(_tenantId, Guid.NewGuid());
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+
+        var flow = CreateSampleFlow();
+        await _service.SaveFlowAsync(flow);
+
+        var found = await _service.GetFlowAsync(_tenantId, flow.FlowId);
+        found.Should().NotBeNull();
+        found.FlowId.Should().Be(flow.FlowId);
+        found.Name.Should().Be("Main Enterprise Inbound Flow");
+    }
 }

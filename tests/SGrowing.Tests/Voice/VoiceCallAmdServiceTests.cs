@@ -193,4 +193,53 @@ public class VoiceCallAmdServiceTests
         records.Should().HaveCount(2);
         records.Should().OnlyContain(r => r.TenantId == tenantId);
     }
+
+    [Fact]
+    public async Task ClassifyAudioStreamAmdAsync_ForcedAnsweringMachine_InjectsVoicemailEvenIfShortDuration()
+    {
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(databaseName: $"AmdDb_{Guid.NewGuid()}")
+            .Options;
+
+        var tenantId = Guid.NewGuid();
+        using var db = new SGrowingDbContext(options);
+        var service = new VoiceCallAmdService(db);
+
+        // 1000ms duration (normally HumanPickup), forced to AnsweringMachineBeep
+        var result = await service.ClassifyAudioStreamAmdAsync(
+            tenantId,
+            "+12025550222",
+            audioDurationMs: 1000,
+            forcedClassification: "AnsweringMachineBeep"
+        );
+
+        result.Should().NotBeNull();
+        result.Classification.Should().Be("AnsweringMachineBeep");
+        result.VoicemailDropped.Should().BeTrue();
+        result.AudioDropFileUrl.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task ClassifyAudioStreamAmdAsync_WithCallSessionId_PersistsCallSessionIdInRecord()
+    {
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(databaseName: $"AmdDb_{Guid.NewGuid()}")
+            .Options;
+
+        var tenantId = Guid.NewGuid();
+        var callSessionId = Guid.NewGuid();
+        using var db = new SGrowingDbContext(options);
+        var service = new VoiceCallAmdService(db);
+
+        var result = await service.ClassifyAudioStreamAmdAsync(
+            tenantId,
+            "+12025550333",
+            audioDurationMs: 1500,
+            callSessionId: callSessionId
+        );
+
+        var inDb = await db.VoiceCallAmdRecords.FindAsync(result.RecordId);
+        inDb.Should().NotBeNull();
+        inDb!.CallSessionId.Should().Be(callSessionId);
+    }
 }

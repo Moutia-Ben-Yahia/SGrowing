@@ -199,4 +199,29 @@ public class VoiceTelephonyTests
         session.FailCall();
         session.Status.Should().Be(CallStatus.Failed);
     }
+
+    [Fact]
+    public async Task HandleCallStatusCallbackAsync_UnknownCallSid_ReturnsNull()
+    {
+        var db = CreateDbContext();
+        var service = new VoiceTelephonyService(db);
+        var tenantId = Guid.NewGuid();
+
+        var result = await service.HandleCallStatusCallbackAsync(tenantId, "non_existent_call_sid", "completed", 50);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task RealtimeVoiceAgent_ProcessVoiceTurnAsync_UnknownSession_ThrowsInvalidOperationException()
+    {
+        var db = CreateDbContext();
+        var agent = new RealtimeVoiceAgentService(db);
+        var tenantId = Guid.NewGuid();
+
+        var act = async () => await agent.ProcessVoiceTurnAsync(tenantId, Guid.NewGuid(), "Hello there");
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*not found*");
+    }
 }
