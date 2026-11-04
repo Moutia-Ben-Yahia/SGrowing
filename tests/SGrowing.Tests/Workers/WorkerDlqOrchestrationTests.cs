@@ -58,4 +58,150 @@ public class WorkerDlqOrchestrationTests
         Assert.True(deadLog.IsResolved);
         Assert.NotNull(deadLog.ResolvedAtUtc);
     }
+
+    [Theory]
+    [InlineData(5)]
+    [InlineData(6)]
+    [InlineData(10)]
+    [InlineData(100)]
+    public void ResilientDlqDaemon_GetBackoffInterval_ForHighRetryCounts_CapsAtTwoHours(int retryCount)
+    {
+        var backoff = ResilientDlqDaemon.GetBackoffInterval(retryCount);
+        Assert.Equal(TimeSpan.FromHours(2), backoff);
+    }
+
+    [Fact]
+    public async Task ResilientDlqDaemon_ProcessEligibleRetriesAsync_IgnoresLogsAtMaxRetryCount()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+
+        var exhaustedLog = new WorkflowDeadLetterLog
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            WorkflowId = Guid.NewGuid(),
+            ExecutionId = Guid.NewGuid(),
+            FailedNodeId = "node-exhausted",
+            FailedNodeType = "HttpRequest",
+            InputPayload = "{}",
+            ErrorMessage = "Persistent failure",
+            RetryCount = 5, // Reached max retries
+            IsResolved = false,
+            FailedAtUtc = DateTime.UtcNow.AddDays(-1)
+        };
+
+        db.WorkflowDeadLetterLogs.Add(exhaustedLog);
+        await db.SaveChangesAsync();
+
+        int processed = await ResilientDlqDaemon.ProcessEligibleRetriesAsync(db);
+        Assert.Equal(0, processed);
+
+        var refreshed = await db.WorkflowDeadLetterLogs.FindAsync(exhaustedLog.Id);
+        Assert.Equal(5, refreshed!.RetryCount);
+    }
+
+    [Fact]
+    public async Task ResilientDlqDaemon_ProcessEligibleRetriesAsync_IgnoresLogsNotYetEligible()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+
+        var recentLog = new WorkflowDeadLetterLog
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            WorkflowId = Guid.NewGuid(),
+            ExecutionId = Guid.NewGuid(),
+            FailedNodeId = "node-recent",
+            FailedNodeType = "HttpRequest",
+            InputPayload = "{}",
+            ErrorMessage = "Temporary glitch",
+            RetryCount = 0,
+            IsResolved = false,
+            FailedAtUtc = DateTime.UtcNow.AddSeconds(-2) // Only 2s ago, backoff for retry 1 is 10s
+        };
+
+        db.WorkflowDeadLetterLogs.Add(recentLog);
+        await db.SaveChangesAsync();
+
+        int processed = await ResilientDlqDaemon.ProcessEligibleRetriesAsync(db);
+        Assert.Equal(0, processed);
+
+        var refreshed = await db.WorkflowDeadLetterLogs.FindAsync(recentLog.Id);
+        Assert.Equal(0, refreshed!.RetryCount);
+    }
+
+    [Fact]
+    public async Task ResilientDlqDaemon_ProcessEligibleRetriesAsync_IgnoresAlreadyResolvedLogs()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+
+        var resolvedLog = new WorkflowDeadLetterLog
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            WorkflowId = Guid.NewGuid(),
+            ExecutionId = Guid.NewGuid(),
+            FailedNodeId = "node-resolved",
+            FailedNodeType = "HttpRequest",
+            InputPayload = "{}",
+            ErrorMessage = "Fixed glitch",
+            RetryCount = 1,
+            IsResolved = true,
+            ResolvedAtUtc = DateTime.UtcNow.AddHours(-1),
+            FailedAtUtc = DateTime.UtcNow.AddHours(-2)
+        };
+
+        db.WorkflowDeadLetterLogs.Add(resolvedLog);
+        await db.SaveChangesAsync();
+
+        int processed = await ResilientDlqDaemon.ProcessEligibleRetriesAsync(db);
+        Assert.Equal(0, processed);
+
+        var refreshed = await db.WorkflowDeadLetterLogs.FindAsync(resolvedLog.Id);
+        Assert.Equal(1, refreshed!.RetryCount);
+    }
+
+    [Fact]
+    public async Task AdvancedWorkflowSchedulerService_EnqueueDeadLetterAsync_MultipleTenants_IsolatesCorrectly()
+    {
+        var db = CreateDbContext();
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        var scheduler = new AdvancedWorkflowSchedulerService(db);
+
+        var logA = await scheduler.EnqueueDeadLetterAsync(
+            tenantA,
+            workflowId: Guid.NewGuid(),
+            executionId: Guid.NewGuid(),
+            failedNodeId: "node-a",
+            failedNodeType: "HttpWebhookPost",
+            inputPayload: "{\"tenant\":\"A\"}",
+            errorMessage: "Error Tenant A"
+        );
+
+        var logB = await scheduler.EnqueueDeadLetterAsync(
+            tenantB,
+            workflowId: Guid.NewGuid(),
+            executionId: Guid.NewGuid(),
+            failedNodeId: "node-b",
+            failedNodeType: "HttpWebhookPost",
+            inputPayload: "{\"tenant\":\"B\"}",
+            errorMessage: "Error Tenant B"
+        );
+
+        Assert.Equal(tenantA, logA.TenantId);
+        Assert.Equal(tenantB, logB.TenantId);
+
+        var tenantALogs = await db.WorkflowDeadLetterLogs.Where(l => l.TenantId == tenantA).ToListAsync();
+        var tenantBLogs = await db.WorkflowDeadLetterLogs.Where(l => l.TenantId == tenantB).ToListAsync();
+
+        Assert.Single(tenantALogs);
+        Assert.Single(tenantBLogs);
+        Assert.Equal("Error Tenant A", tenantALogs[0].ErrorMessage);
+        Assert.Equal("Error Tenant B", tenantBLogs[0].ErrorMessage);
+    }
 }
