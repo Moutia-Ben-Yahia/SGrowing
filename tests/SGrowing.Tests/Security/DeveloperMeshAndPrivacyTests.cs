@@ -1,3 +1,6 @@
+using System;
+using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Security;
@@ -42,14 +45,52 @@ public class DeveloperMeshAndPrivacyTests
         var payload = "{\"dealId\":\"12345\",\"amount\":50000}";
         var dispatchedCount = await _dispatcher.DispatchOutboundWebhooksAsync(tenantId, "DealWonEvent", payload);
 
-        Assert.Equal(2, dispatchedCount); // sub1 and sub2
+        dispatchedCount.Should().Be(2); // sub1 and sub2
 
         var logs = await _db.WebhookDeliveryLogs.ToListAsync();
-        Assert.Equal(2, logs.Count);
-        Assert.All(logs, l => Assert.True(l.IsSuccess));
+        logs.Should().HaveCount(2);
+        logs.Should().AllSatisfy(l => l.IsSuccess.Should().BeTrue());
 
         var sig = OutboundWebhookDispatcherService.ComputeHmacSignature(payload, "secret_zapier_1");
-        Assert.StartsWith("sha256=", sig);
+        sig.Should().StartWith("sha256=");
+    }
+
+    [Fact]
+    public void OutboundWebhooks_ComputeHmacSignature_ProducesDeterministicSha256()
+    {
+        // Arrange
+        var payload = "{\"event\":\"order.created\",\"id\":\"ord_123\"}";
+        var secret = "super_secret_signing_key_42";
+
+        // Act
+        var sig1 = OutboundWebhookDispatcherService.ComputeHmacSignature(payload, secret);
+        var sig2 = OutboundWebhookDispatcherService.ComputeHmacSignature(payload, secret);
+
+        // Assert
+        sig1.Should().Be(sig2);
+        sig1.Should().StartWith("sha256=");
+    }
+
+    [Fact]
+    public async Task OutboundWebhooks_RespectsTenantIsolation_DoesNotDispatchToOtherTenantEndpoints()
+    {
+        // Arrange
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        var subA = WebhookSubscription.Create(tenantA, "https://tenant-a.com/webhook", "secret_a", "*");
+        var subB = WebhookSubscription.Create(tenantB, "https://tenant-b.com/webhook", "secret_b", "*");
+        await _db.WebhookSubscriptions.AddRangeAsync(subA, subB);
+        await _db.SaveChangesAsync();
+
+        // Act
+        var count = await _dispatcher.DispatchOutboundWebhooksAsync(tenantA, "OrderCreated", "{}");
+
+        // Assert
+        count.Should().Be(1);
+        var logs = await _db.WebhookDeliveryLogs.ToListAsync();
+        logs.Should().ContainSingle();
+        logs[0].SubscriptionId.Should().Be(subA.Id);
     }
 
     [Fact]
@@ -79,29 +120,78 @@ public class DeveloperMeshAndPrivacyTests
         // Execute Right to be Forgotten
         var result = await _privacyService.ExecuteRightToBeForgottenAsync(tenantId, targetEmail);
 
-        Assert.True(result.Success);
-        Assert.Equal(1, result.ErasedContactsCount);
-        Assert.Equal(1, result.RedactedMessagesCount);
-        Assert.Equal(1, result.RemovedRagChunksCount);
+        result.Success.Should().BeTrue();
+        result.ErasedContactsCount.Should().Be(1);
+        result.RedactedMessagesCount.Should().Be(1);
+        result.RemovedRagChunksCount.Should().Be(1);
 
         // Verify Contact is anonymized
         var refreshedContact = await _db.Contacts.FindAsync(contact.Id);
-        Assert.Equal("Anonymized", refreshedContact!.FirstName);
-        Assert.Null(refreshedContact.Phone);
-        Assert.Contains("anonymized_", refreshedContact.Email);
+        refreshedContact!.FirstName.Should().Be("Anonymized");
+        refreshedContact.Phone.Should().BeNull();
+        refreshedContact.Email.Should().Contain("anonymized_");
 
         // Verify Message text is redacted
         var refreshedMessage = await _db.Messages.FindAsync(message.Id);
-        Assert.Contains("Personal Data Anonymized", refreshedMessage!.Content);
+        refreshedMessage!.Content.Should().Contain("Personal Data Anonymized");
 
         // Verify RAG chunk was completely removed
         var refreshedChunk = await _db.DocumentChunks.FindAsync(chunk.Id);
-        Assert.Null(refreshedChunk);
+        refreshedChunk.Should().BeNull();
 
         // Verify Request record
         var request = await _db.PrivacyErasureRequests.FindAsync(result.RequestId);
-        Assert.Equal("Completed", request!.Status);
-        Assert.Equal(3, request.ErasedRecordsCount);
+        request!.Status.Should().Be("Completed");
+        request.ErasedRecordsCount.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task CustomerPrivacy_RightToBeForgotten_RemovesMultipleRagChunksReferencingEmail()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var targetEmail = "pii.customer@multichunk.com";
+
+        var c1 = DocumentChunk.Create(tenantId, Guid.NewGuid(), "Doc 1", 0, "Contains email pii.customer@multichunk.com in section 1");
+        var c2 = DocumentChunk.Create(tenantId, Guid.NewGuid(), "Doc 2", 0, "Also cites pii.customer@multichunk.com in section 2");
+        var c3 = DocumentChunk.Create(tenantId, Guid.NewGuid(), "Doc 3", 0, "Unrelated chunk with general information");
+
+        await _db.DocumentChunks.AddRangeAsync(c1, c2, c3);
+        await _db.SaveChangesAsync();
+
+        // Act
+        var result = await _privacyService.ExecuteRightToBeForgottenAsync(tenantId, targetEmail);
+
+        // Assert
+        result.RemovedRagChunksCount.Should().Be(2);
+        var remaining = await _db.DocumentChunks.Where(c => c.TenantId == tenantId).ToListAsync();
+        remaining.Should().ContainSingle();
+        remaining[0].Id.Should().Be(c3.Id);
+    }
+
+    [Fact]
+    public async Task CustomerPrivacy_RightToBeForgotten_PreservesNonMatchingContactsInSameTenant()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var targetEmail = "remove.me@domain.com";
+        var keepEmail = "keep.me@domain.com";
+
+        var cTarget = Contact.Create(tenantId, "Target", "Person", targetEmail, "+111");
+        var cKeep = Contact.Create(tenantId, "Keep", "Person", keepEmail, "+222");
+        await _db.Contacts.AddRangeAsync(cTarget, cKeep);
+        await _db.SaveChangesAsync();
+
+        // Act
+        var result = await _privacyService.ExecuteRightToBeForgottenAsync(tenantId, targetEmail);
+
+        // Assert
+        result.ErasedContactsCount.Should().Be(1);
+
+        var refreshedKeep = await _db.Contacts.FindAsync(cKeep.Id);
+        refreshedKeep!.FirstName.Should().Be("Keep");
+        refreshedKeep.Email.Should().Be(keepEmail);
+        refreshedKeep.Phone.Should().Be("+222");
     }
 
     [Fact]
@@ -109,7 +199,7 @@ public class DeveloperMeshAndPrivacyTests
     {
         var tenantId = Guid.NewGuid();
         var dispatched = await _dispatcher.DispatchOutboundWebhooksAsync(tenantId, "OrderCreated", "{}");
-        Assert.Equal(0, dispatched);
+        dispatched.Should().Be(0);
     }
 
     [Fact]
@@ -118,9 +208,9 @@ public class DeveloperMeshAndPrivacyTests
         var tenantId = Guid.NewGuid();
         var result = await _privacyService.ExecuteRightToBeForgottenAsync(tenantId, "unknown.user.99@test.com");
 
-        Assert.True(result.Success);
-        Assert.Equal(0, result.ErasedContactsCount);
-        Assert.Equal(0, result.RedactedMessagesCount);
-        Assert.Equal(0, result.RemovedRagChunksCount);
+        result.Success.Should().BeTrue();
+        result.ErasedContactsCount.Should().Be(0);
+        result.RedactedMessagesCount.Should().Be(0);
+        result.RemovedRagChunksCount.Should().Be(0);
     }
 }

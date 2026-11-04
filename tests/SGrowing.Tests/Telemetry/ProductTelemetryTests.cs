@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Telemetry;
@@ -40,17 +44,17 @@ public class ProductTelemetryTests
             city: "Tunis"
         );
 
-        Assert.NotNull(ev);
-        Assert.Equal("pageview", ev.EventName);
-        Assert.Equal("/checkout/cod-step", ev.Url);
-        Assert.Equal("TN", ev.CountryCode);
+        ev.Should().NotBeNull();
+        ev.EventName.Should().Be("pageview");
+        ev.Url.Should().Be("/checkout/cod-step");
+        ev.CountryCode.Should().Be("TN");
 
         // Check session upserted
         var session = await _db.VisitorSessions.FirstOrDefaultAsync(s => s.TenantId == tenantId && s.SessionId == sessionId);
-        Assert.NotNull(session);
-        Assert.Equal(visitorId, session.VisitorId);
-        Assert.Equal("Mobile", session.DeviceType);
-        Assert.Equal(1, session.PagesViewedCount);
+        session.Should().NotBeNull();
+        session!.VisitorId.Should().Be(visitorId);
+        session.DeviceType.Should().Be("Mobile");
+        session.PagesViewedCount.Should().Be(1);
 
         // Second event in same session should increment pageviews
         await _service.IngestTelemetryEventAsync(
@@ -65,8 +69,31 @@ public class ProductTelemetryTests
         );
 
         var updatedSession = await _db.VisitorSessions.FirstOrDefaultAsync(s => s.TenantId == tenantId && s.SessionId == sessionId);
-        Assert.NotNull(updatedSession);
-        Assert.Equal(2, updatedSession.PagesViewedCount);
+        updatedSession.Should().NotBeNull();
+        updatedSession!.PagesViewedCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task IngestTelemetryEvent_WithCustomEventDataJson_PreservesPayload()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var eventData = "{\"cartTotal\":250.0,\"items\":3}";
+
+        // Act
+        var ev = await _service.IngestTelemetryEventAsync(
+            tenantId,
+            "sess_custom_data",
+            "vis_custom",
+            "add_to_cart",
+            "/product/smart-watch",
+            propertiesJson: eventData
+        );
+
+        // Assert
+        ev.PropertiesJson.Should().Be(eventData);
+        var stored = await _db.TelemetryEvents.FindAsync(ev.Id);
+        stored!.PropertiesJson.Should().Be(eventData);
     }
 
     [Fact]
@@ -81,21 +108,39 @@ public class ProductTelemetryTests
 
         var summary = await _service.GetLiveSummaryAsync(tenantId, windowMinutes: 15);
 
-        Assert.NotNull(summary);
-        Assert.Equal(3, summary.ActiveVisitorsCount);
-        Assert.Equal(3, summary.ActiveSessionsCount);
+        summary.Should().NotBeNull();
+        summary.ActiveVisitorsCount.Should().Be(3);
+        summary.ActiveSessionsCount.Should().Be(3);
 
         // Top pages
-        Assert.Contains(summary.TopActivePages, p => p.Url == "/pricing" && p.ActiveVisitors == 2);
-        Assert.Contains(summary.TopActivePages, p => p.Url == "/features" && p.ActiveVisitors == 1);
+        summary.TopActivePages.Should().Contain(p => p.Url == "/pricing" && p.ActiveVisitors == 2);
+        summary.TopActivePages.Should().Contain(p => p.Url == "/features" && p.ActiveVisitors == 1);
 
         // Country breakdown
-        Assert.Contains(summary.TopCountries, c => c.CountryCode == "TN" && c.VisitorCount == 2);
-        Assert.Contains(summary.TopCountries, c => c.CountryCode == "FR" && c.VisitorCount == 1);
+        summary.TopCountries.Should().Contain(c => c.CountryCode == "TN" && c.VisitorCount == 2);
+        summary.TopCountries.Should().Contain(c => c.CountryCode == "FR" && c.VisitorCount == 1);
 
         // Device breakdown
-        Assert.Contains(summary.DeviceBreakdown, d => d.DeviceType == "Desktop" && d.SessionCount == 2);
-        Assert.Contains(summary.DeviceBreakdown, d => d.DeviceType == "Mobile" && d.SessionCount == 1);
+        summary.DeviceBreakdown.Should().Contain(d => d.DeviceType == "Desktop" && d.SessionCount == 2);
+        summary.DeviceBreakdown.Should().Contain(d => d.DeviceType == "Mobile" && d.SessionCount == 1);
+    }
+
+    [Fact]
+    public async Task GetLiveSummary_RespectsTenantIsolation()
+    {
+        // Arrange
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        await _service.IngestTelemetryEventAsync(tenantA, "sess_a", "vis_a", "pageview", "/app");
+        await _service.IngestTelemetryEventAsync(tenantB, "sess_b", "vis_b", "pageview", "/app");
+
+        // Act
+        var summaryA = await _service.GetLiveSummaryAsync(tenantA, windowMinutes: 15);
+
+        // Assert
+        summaryA.ActiveVisitorsCount.Should().Be(1);
+        summaryA.ActiveSessionsCount.Should().Be(1);
     }
 
     [Fact]
@@ -110,8 +155,8 @@ public class ProductTelemetryTests
 
         var recent = await _service.GetRecentEventsAsync(tenantId, limit: 10);
 
-        Assert.Equal(10, recent.Count);
-        Assert.All(recent, e => Assert.Equal(tenantId, e.TenantId));
+        recent.Count.Should().Be(10);
+        recent.Should().AllSatisfy(e => e.TenantId.Should().Be(tenantId));
     }
 
     [Fact]
@@ -145,30 +190,47 @@ public class ProductTelemetryTests
         var funnelSteps = new List<string> { "pageview", "add_to_cart", "begin_checkout", "purchase" };
         var dropoff = await _service.ComputeFunnelDropoffAsync(tenantId, funnelSteps);
 
-        Assert.NotNull(dropoff);
-        Assert.Equal(100, dropoff.TotalInitialVisitors);
-        Assert.Equal(10, dropoff.TotalCompletedVisitors);
-        Assert.Equal(10.0, dropoff.OverallConversionRatePercent);
-        Assert.Equal(4, dropoff.StepMetrics.Count);
+        dropoff.Should().NotBeNull();
+        dropoff.TotalInitialVisitors.Should().Be(100);
+        dropoff.TotalCompletedVisitors.Should().Be(10);
+        dropoff.OverallConversionRatePercent.Should().Be(10.0);
+        dropoff.StepMetrics.Should().HaveCount(4);
 
         // Step 1: pageview
-        Assert.Equal(100, dropoff.StepMetrics[0].ReachedCount);
-        Assert.Equal(0, dropoff.StepMetrics[0].DroppedCount);
-        Assert.Equal(100.0, dropoff.StepMetrics[0].ConversionRateFromPreviousPercent);
+        dropoff.StepMetrics[0].ReachedCount.Should().Be(100);
+        dropoff.StepMetrics[0].DroppedCount.Should().Be(0);
+        dropoff.StepMetrics[0].ConversionRateFromPreviousPercent.Should().Be(100.0);
 
         // Step 2: add_to_cart
-        Assert.Equal(50, dropoff.StepMetrics[1].ReachedCount);
-        Assert.Equal(50, dropoff.StepMetrics[1].DroppedCount);
-        Assert.Equal(50.0, dropoff.StepMetrics[1].ConversionRateFromPreviousPercent);
+        dropoff.StepMetrics[1].ReachedCount.Should().Be(50);
+        dropoff.StepMetrics[1].DroppedCount.Should().Be(50);
+        dropoff.StepMetrics[1].ConversionRateFromPreviousPercent.Should().Be(50.0);
 
         // Step 3: begin_checkout
-        Assert.Equal(25, dropoff.StepMetrics[2].ReachedCount);
-        Assert.Equal(25, dropoff.StepMetrics[2].DroppedCount);
-        Assert.Equal(50.0, dropoff.StepMetrics[2].ConversionRateFromPreviousPercent);
+        dropoff.StepMetrics[2].ReachedCount.Should().Be(25);
+        dropoff.StepMetrics[2].DroppedCount.Should().Be(25);
+        dropoff.StepMetrics[2].ConversionRateFromPreviousPercent.Should().Be(50.0);
 
         // Step 4: purchase
-        Assert.Equal(10, dropoff.StepMetrics[3].ReachedCount);
-        Assert.Equal(15, dropoff.StepMetrics[3].DroppedCount);
-        Assert.Equal(40.0, dropoff.StepMetrics[3].ConversionRateFromPreviousPercent);
+        dropoff.StepMetrics[3].ReachedCount.Should().Be(10);
+        dropoff.StepMetrics[3].DroppedCount.Should().Be(15);
+        dropoff.StepMetrics[3].ConversionRateFromPreviousPercent.Should().Be(40.0);
+    }
+
+    [Fact]
+    public async Task ComputeFunnelDropoff_EmptyStepsList_DefaultsToStandardEcommerceSteps()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+
+        // Act
+        var result = await _service.ComputeFunnelDropoffAsync(tenantId, new List<string>());
+
+        // Assert
+        result.TotalInitialVisitors.Should().Be(0);
+        result.TotalCompletedVisitors.Should().Be(0);
+        result.OverallConversionRatePercent.Should().Be(0.0);
+        result.StepMetrics.Should().HaveCount(4);
+        result.StepMetrics.Select(s => s.StepName).Should().ContainInOrder("pageview", "add_to_cart", "begin_checkout", "purchase");
     }
 }
