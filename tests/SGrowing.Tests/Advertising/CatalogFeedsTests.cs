@@ -87,4 +87,60 @@ public class CatalogFeedsTests
         action.Should().Throw<KeyNotFoundException>()
             .WithMessage("*not found*");
     }
+
+    [Fact]
+    public void ApplyDynamicBadge_NullRequest_ThrowsNullReferenceException()
+    {
+        var act = () => _engine.ApplyDynamicBadge(null!);
+        act.Should().Throw<NullReferenceException>();
+    }
+
+    [Fact]
+    public void GenerateFeed_UnknownFormat_DefaultsToXmlExtension()
+    {
+        var request = new GenerateFeedRequest(FeedChannel.GoogleMerchantCenter, (FeedFormat)99);
+        var feed = _engine.GenerateFeed(request);
+
+        feed.Should().NotBeNull();
+        feed.FeedEndpointUrl.Should().EndWith(".xml");
+    }
+
+    [Fact]
+    public void ApplyDynamicBadge_MultipleDistinctBadges_AccumulatesAllBadges()
+    {
+        var productId = "prod_saas_ent_01";
+        _engine.ApplyDynamicBadge(new ApplyDynamicBadgeRequest(productId, "GDPR Compliant"));
+        var updated = _engine.ApplyDynamicBadge(new ApplyDynamicBadgeRequest(productId, "High Availability"));
+
+        updated.Badges.Should().Contain("GDPR Compliant");
+        updated.Badges.Should().Contain("High Availability");
+    }
+
+    [Fact]
+    public void GetFeeds_OrderedAlphabeticallyByChannelName()
+    {
+        var feeds = _engine.GetFeeds();
+        feeds.Should().NotBeEmpty();
+
+        for (int i = 0; i < feeds.Count - 1; i++)
+        {
+            string.CompareOrdinal(feeds[i].Channel.ToString(), feeds[i + 1].Channel.ToString())
+                .Should().BeLessThanOrEqualTo(0);
+        }
+    }
+
+    [Fact]
+    public void GetProducts_ContainsPriceAndStockMetadata()
+    {
+        var products = _engine.GetProducts();
+
+        products.Should().NotBeEmpty();
+        products.Should().AllSatisfy(p =>
+        {
+            p.Price.Should().BeGreaterThan(0m);
+            p.Currency.Should().Be("USD");
+            p.Availability.Should().Be("in_stock");
+            p.Brand.Should().Be("SGrowing");
+        });
+    }
 }
