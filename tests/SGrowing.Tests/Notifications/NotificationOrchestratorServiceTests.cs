@@ -243,4 +243,147 @@ public class NotificationOrchestratorServiceTests
         metrics.DeliveredCount.Should().Be(2);
         metrics.ReadCount.Should().Be(1);
     }
+
+    [Fact]
+    public async Task SetFallbackPolicyAsync_ShouldConfigureCustomChannelOrderAndTimeout()
+    {
+        var customOrder = new List<NotificationChannel>
+        {
+            NotificationChannel.WhatsApp,
+            NotificationChannel.Email,
+            NotificationChannel.Webhook
+        };
+
+        var policyReq = new SetFallbackPolicyRequest(
+            _tenantId,
+            NotificationTopic.LeadAssigned,
+            customOrder,
+            TimeoutMinutesBetweenChannels: 5
+        );
+
+        var created = await _service.SetFallbackPolicyAsync(policyReq);
+        created.Should().NotBeNull();
+        created.Topic.Should().Be(NotificationTopic.LeadAssigned);
+        created.ChannelsInOrder.Should().BeEquivalentTo(customOrder, options => options.WithStrictOrdering());
+        created.TimeoutMinutesBetweenChannels.Should().Be(5);
+
+        var policies = await _service.GetFallbackPoliciesAsync(_tenantId);
+        policies.Should().Contain(p => p.PolicyId == created.PolicyId);
+    }
+
+    [Fact]
+    public async Task DispatchNotificationAsync_ShouldThrowArgumentException_WhenRequiredFieldsAreMissing()
+    {
+        // Missing TenantId
+        var missingTenant = new DispatchNotificationRequest(
+            Guid.Empty,
+            _recipientId,
+            null,
+            null,
+            NotificationTopic.SecurityAlert,
+            NotificationPriority.High,
+            "Valid Title",
+            "Body"
+        );
+        var actTenant = async () => await _service.DispatchNotificationAsync(missingTenant);
+        await actTenant.Should().ThrowAsync<ArgumentException>().WithParameterName("request");
+
+        // Missing RecipientId
+        var missingRecipient = new DispatchNotificationRequest(
+            _tenantId,
+            Guid.Empty,
+            null,
+            null,
+            NotificationTopic.SecurityAlert,
+            NotificationPriority.High,
+            "Valid Title",
+            "Body"
+        );
+        var actRecipient = async () => await _service.DispatchNotificationAsync(missingRecipient);
+        await actRecipient.Should().ThrowAsync<ArgumentException>().WithParameterName("request");
+
+        // Empty Title
+        var emptyTitle = new DispatchNotificationRequest(
+            _tenantId,
+            _recipientId,
+            null,
+            null,
+            NotificationTopic.SecurityAlert,
+            NotificationPriority.High,
+            "   ",
+            "Body"
+        );
+        var actTitle = async () => await _service.DispatchNotificationAsync(emptyTitle);
+        await actTitle.Should().ThrowAsync<ArgumentException>().WithParameterName("request");
+    }
+
+    [Fact]
+    public async Task RecordDeliveryReceiptAsync_ShouldThrowKeyNotFoundException_WhenNotificationDoesNotExist()
+    {
+        var nonExistentReceipt = new RecordDeliveryReceiptRequest(_tenantId, Guid.NewGuid(), NotificationChannel.InApp, IsRead: true);
+        var act = async () => await _service.RecordDeliveryReceiptAsync(nonExistentReceipt);
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
+    [Fact]
+    public async Task MarkFeedItemReadAsync_ShouldUpdateFeedAndNotificationRecord_WhenValidFeedItemProvided()
+    {
+        var req = new DispatchNotificationRequest(
+            _tenantId,
+            _recipientId,
+            null,
+            null,
+            NotificationTopic.LeadAssigned,
+            NotificationPriority.Normal,
+            "New Inbound Lead",
+            "Lead contact created: Alice Cooper"
+        );
+
+        var notif = await _service.DispatchNotificationAsync(req);
+        var initialFeed = await _service.GetInAppFeedAsync(_tenantId, _recipientId, unreadOnly: true);
+        initialFeed.Should().ContainSingle();
+
+        var feedItem = initialFeed.First();
+        feedItem.IsRead.Should().BeFalse();
+
+        var success = await _service.MarkFeedItemReadAsync(_tenantId, feedItem.FeedItemId);
+        success.Should().BeTrue();
+
+        var unreadFeed = await _service.GetInAppFeedAsync(_tenantId, _recipientId, unreadOnly: true);
+        unreadFeed.Should().BeEmpty();
+
+        var allFeed = await _service.GetInAppFeedAsync(_tenantId, _recipientId, unreadOnly: false);
+        allFeed.Should().ContainSingle(f => f.FeedItemId == feedItem.FeedItemId && f.IsRead);
+    }
+
+    [Fact]
+    public async Task DispatchNotificationAsync_ShouldRespectCustomSubscriberAllowedChannels()
+    {
+        var recipientId = Guid.NewGuid();
+        var prefReq = new SetSubscriberPreferencesRequest(
+            _tenantId,
+            recipientId,
+            new Dictionary<NotificationTopic, List<NotificationChannel>>
+            {
+                { NotificationTopic.TicketSla, new List<NotificationChannel> { NotificationChannel.Sms, NotificationChannel.Email } }
+            }
+        );
+        await _service.SetSubscriberPreferencesAsync(prefReq);
+
+        var req = new DispatchNotificationRequest(
+            _tenantId,
+            recipientId,
+            "+1234567890",
+            "sla@sgrowing.io",
+            NotificationTopic.TicketSla,
+            NotificationPriority.High,
+            "Escalation Alert",
+            "Priority breach warning"
+        );
+
+        var notif = await _service.DispatchNotificationAsync(req);
+        // Initial channel should be Sms (first among user's allowed channels for this topic)
+        notif.CurrentChannel.Should().Be(NotificationChannel.Sms);
+        notif.Status.Should().Be(DeliveryStatus.Delivered);
+    }
 }

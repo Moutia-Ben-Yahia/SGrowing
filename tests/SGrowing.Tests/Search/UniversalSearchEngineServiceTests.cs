@@ -228,4 +228,98 @@ public class UniversalSearchEngineServiceTests
         response.Facets[SearchableEntityType.CrmDeal].Should().Be(1);
         response.Facets[SearchableEntityType.TicketMessage].Should().Be(1);
     }
+
+    [Fact]
+    public async Task SearchAsync_TagsWeighting_ScoresHigherThanBodyOnlyMatch()
+    {
+        var tenantId = Guid.NewGuid();
+        var docWithTag = new SearchDocument(
+            Guid.NewGuid(),
+            tenantId,
+            SearchableEntityType.KnowledgeArticle,
+            "General Maintenance Overview",
+            "Routine server health checklist.",
+            new List<string> { "cybersecurity" }
+        );
+
+        var docWithBodyOnly = new SearchDocument(
+            Guid.NewGuid(),
+            tenantId,
+            SearchableEntityType.KnowledgeArticle,
+            "General Maintenance Overview",
+            "Routine cybersecurity server health checklist.",
+            new List<string> { "routine" }
+        );
+
+        await _service.IndexDocumentsBatchAsync(new List<SearchDocument> { docWithTag, docWithBodyOnly });
+
+        var query = new UniversalSearchQuery(tenantId, "cybersecurity");
+        var response = await _service.SearchAsync(query);
+
+        response.Results.Should().HaveCount(2);
+        // Tag weight (2.0) is higher than Body weight (1.0), so docWithTag should rank first
+        response.Results[0].DocumentId.Should().Be(docWithTag.DocumentId);
+        response.Results[0].RelevanceScore.Should().BeGreaterThan(response.Results[1].RelevanceScore);
+    }
+
+    [Fact]
+    public async Task IndexDocumentsBatchAsync_NullList_ThrowsArgumentNullException()
+    {
+        var act = async () => await _service.IndexDocumentsBatchAsync(null!);
+        await act.Should().ThrowAsync<ArgumentNullException>();
+    }
+
+    [Fact]
+    public async Task SearchAsync_UrlRouteAndAuthor_ArePreservedInResults()
+    {
+        var tenantId = Guid.NewGuid();
+        var createdAt = new DateTime(2026, 8, 15, 10, 0, 0, DateTimeKind.Utc);
+        var doc = new SearchDocument(
+            Guid.NewGuid(),
+            tenantId,
+            SearchableEntityType.ContractDocument,
+            "Master Services Agreement 2026",
+            "Executed agreement terms and conditions.",
+            new List<string> { "legal", "msa" },
+            UrlRoute: "/contracts/msa-2026",
+            AuthorOrOwner: "legal-counsel@sgrowing.io",
+            CreatedAtUtc: createdAt
+        );
+
+        await _service.IndexDocumentAsync(doc);
+
+        var query = new UniversalSearchQuery(tenantId, "Master Services Agreement");
+        var response = await _service.SearchAsync(query);
+
+        response.Results.Should().ContainSingle();
+        var item = response.Results.First();
+        item.DocumentId.Should().Be(doc.DocumentId);
+        item.UrlRoute.Should().Be("/contracts/msa-2026");
+        item.AuthorOrOwner.Should().Be("legal-counsel@sgrowing.io");
+        item.CreatedAtUtc.Should().Be(createdAt);
+    }
+
+    [Fact]
+    public async Task SearchAsync_SnippetHighlight_ContainsMarkTagsAroundMatchingTerm()
+    {
+        var tenantId = Guid.NewGuid();
+        var doc = new SearchDocument(
+            Guid.NewGuid(),
+            tenantId,
+            SearchableEntityType.KnowledgeArticle,
+            "Warehouse Protocol",
+            "The quick brown fox jumps over the lazy dog and reviews the warehouse distribution status."
+        );
+
+        await _service.IndexDocumentAsync(doc);
+
+        var query = new UniversalSearchQuery(tenantId, "distribution");
+        var response = await _service.SearchAsync(query);
+
+        response.Results.Should().ContainSingle();
+        var item = response.Results.First();
+        item.SnippetHighlight.Should().Contain("<mark>");
+        item.SnippetHighlight.Should().Contain("</mark>");
+        item.SnippetHighlight.Should().ContainEquivalentOf("distribution");
+    }
 }
