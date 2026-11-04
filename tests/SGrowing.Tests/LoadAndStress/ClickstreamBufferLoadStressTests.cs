@@ -18,7 +18,6 @@ public class ClickstreamBufferLoadStressTests
             .UseInMemoryDatabase(dbName)
             .Options;
         var tenantContext = new TenantContext();
-        // tenantContext.SetTenant(Guid.NewGuid());
         return new SGrowingDbContext(options, tenantContext);
     }
 
@@ -104,6 +103,82 @@ public class ClickstreamBufferLoadStressTests
 
         var flushed = await bufferService.FlushBufferBatchAsync(50);
         flushed.Should().Be(0);
+        bufferService.GetPendingBufferCount().Should().Be(0);
+    }
+
+    [Fact]
+    public async Task BufferEventAsync_WithNullEvent_ShouldReturnFalse()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        using var db = CreateDbContext(dbName);
+        var bufferService = new ClickstreamBufferService(db);
+
+        var result = await bufferService.BufferEventAsync(null!);
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ResetBuffer_ShouldEmptyAllQueuedEvents()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        using var db = CreateDbContext(dbName);
+        var bufferService = new ClickstreamBufferService(db);
+
+        var tenantId = Guid.NewGuid();
+        for (int i = 0; i < 5; i++)
+        {
+            await bufferService.BufferEventAsync(TelemetryEvent.Create(tenantId, "sess", "vis", "click", "/cart", "Desktop", "Chrome"));
+        }
+
+        bufferService.GetPendingBufferCount().Should().BeGreaterThanOrEqualTo(5);
+
+        ClickstreamBufferService.ResetBuffer();
+
+        bufferService.GetPendingBufferCount().Should().Be(0);
+    }
+
+    [Fact]
+    public async Task FlushBufferBatch_ClampsBatchSizeToMinimumOne()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        using var db = CreateDbContext(dbName);
+        var bufferService = new ClickstreamBufferService(db);
+
+        ClickstreamBufferService.ResetBuffer();
+
+        var tenantId = Guid.NewGuid();
+        var ev = TelemetryEvent.Create(tenantId, "sess", "vis", "view", "/checkout", "Tablet", "Firefox");
+        await bufferService.BufferEventAsync(ev);
+
+        // Pass 0 or negative batch size -> Math.Max(1, batchSize) clamps to 1
+        var flushed = await bufferService.FlushBufferBatchAsync(-10);
+        flushed.Should().Be(1);
+
+        var count = await db.TelemetryEvents.CountAsync(e => e.TenantId == tenantId);
+        count.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetPendingBufferCount_ShouldAccuratelyReflectEnqueuedEvents()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        using var db = CreateDbContext(dbName);
+        var bufferService = new ClickstreamBufferService(db);
+
+        ClickstreamBufferService.ResetBuffer();
+        bufferService.GetPendingBufferCount().Should().Be(0);
+
+        var tenantId = Guid.NewGuid();
+        await bufferService.BufferEventAsync(TelemetryEvent.Create(tenantId, "s1", "v1", "e1", "/", "Mobile", "Edge"));
+        bufferService.GetPendingBufferCount().Should().Be(1);
+
+        await bufferService.BufferEventAsync(TelemetryEvent.Create(tenantId, "s2", "v2", "e2", "/", "Mobile", "Edge"));
+        bufferService.GetPendingBufferCount().Should().Be(2);
+
+        await bufferService.FlushBufferBatchAsync(1);
+        bufferService.GetPendingBufferCount().Should().Be(1);
+
+        await bufferService.FlushBufferBatchAsync(1);
         bufferService.GetPendingBufferCount().Should().Be(0);
     }
 }
