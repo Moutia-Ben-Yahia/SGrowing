@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using SGrowing.Api.Modules.Voice.ObjectionScoring;
 using Xunit;
@@ -59,5 +60,73 @@ public class ObjectionScoringTests
         Assert.Equal("SalesQualifiedLead", result.OutcomeQualification);
         Assert.NotEmpty(result.StrengthPoints);
         Assert.NotEmpty(result.ImprovementCoachingNotes);
+    }
+
+    [Fact]
+    public void ClassifyAndRebut_WithGeneralSkepticism_ClassifiesCorrectly()
+    {
+        var request = new ObjectionRebuttalRequest("I don't believe any AI tool can handle our nuanced sales conversations.");
+
+        var result = _engine.ClassifyAndRebut(request);
+
+        Assert.NotNull(result);
+        Assert.Equal(ObjectionCategory.GeneralSkepticism, result.DetectedCategory);
+        Assert.Contains("Social Proof Validation", result.PsychologicalFraming);
+        Assert.Contains("skepticism is healthy", result.RecommendedRebuttal);
+        Assert.NotEmpty(result.SuggestedFollowUpQuestions);
+    }
+
+    [Fact]
+    public void ClassifyAndRebut_WithNullRequest_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => _engine.ClassifyAndRebut(null!));
+    }
+
+    [Fact]
+    public void ScoreCall_WithNullRequest_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => _engine.ScoreCall(null!));
+    }
+
+    [Fact]
+    public void ScoreCall_WithShortTranscript_CalculatesBaselineRubricScores()
+    {
+        var request = new ScoreCallRequest(
+            CallId: "call_short_01",
+            LeadName: "John Smith",
+            CompanyName: "Acme Corp",
+            TranscriptTurns: new List<CallTurn>
+            {
+                new("Agent", "Hello John", 1.5),
+                new("Lead", "Not interested thanks", 1.0)
+            }
+        );
+
+        var result = _engine.ScoreCall(request);
+
+        Assert.NotNull(result);
+        Assert.Equal("call_short_01", result.CallId);
+        Assert.Equal(85.0, result.OverallScorePercent);
+        Assert.Equal("SalesQualifiedLead", result.OutcomeQualification);
+        Assert.Equal(20, result.DiscoveryDepthScore);
+        Assert.Equal(21, result.ObjectionHandlingScore);
+        Assert.Equal(21, result.RapportScore);
+        Assert.Equal(23, result.ClosingEffectivenessScore);
+    }
+
+    [Fact]
+    public void GetRecentScoredCalls_ShouldReturnCallsOrderedByScoredAtUtcDescending()
+    {
+        var callA = new ScoreCallRequest("call_order_a", "Alice", "Company A", new List<CallTurn>());
+        var callB = new ScoreCallRequest("call_order_b", "Bob", "Company B", new List<CallTurn>());
+
+        _engine.ScoreCall(callA);
+        _engine.ScoreCall(callB);
+
+        var recent = _engine.GetRecentScoredCalls();
+
+        Assert.NotEmpty(recent);
+        Assert.Contains(recent, c => c.CallId == "call_order_a");
+        Assert.Contains(recent, c => c.CallId == "call_order_b");
     }
 }
