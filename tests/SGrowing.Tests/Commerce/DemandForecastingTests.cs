@@ -86,4 +86,147 @@ public class DemandForecastingTests
         Assert.NotNull(approvedOrder.PlacedAtUtc);
         Assert.NotNull(approvedOrder.ExpectedDeliveryDateUtc);
     }
+
+    [Fact]
+    public async Task CalculateProductVelocityAsync_WithZeroSales_ShouldReturnZeroDailyRunRate()
+    {
+        var db = CreateDbContext();
+        var service = new DemandForecastingService(db);
+        var tenantId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+        string sku = "SKU-COLD-START";
+
+        var velocity = await service.CalculateProductVelocityAsync(
+            tenantId,
+            productId,
+            sku,
+            "Cold Start Item",
+            trailing7dUnits: 0m,
+            trailing30dUnits: 0m,
+            adSpendMultiplier: 1.0m);
+
+        Assert.NotNull(velocity);
+        Assert.Equal(0m, velocity.DailyRunRateUnits);
+        Assert.Equal(0m, velocity.WeightedProjectedDailyDemand);
+    }
+
+    [Fact]
+    public async Task EvaluateStockoutAlertAsync_WhenStockAbundant_ShouldAssignNormalPriority()
+    {
+        var db = CreateDbContext();
+        var service = new DemandForecastingService(db);
+        var tenantId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+        string sku = "SKU-ABUNDANT-STOCK";
+
+        // Seed velocity: 2 units per day
+        await service.CalculateProductVelocityAsync(
+            tenantId, productId, sku, "Abundant Item",
+            trailing7dUnits: 14m, trailing30dUnits: 60m, adSpendMultiplier: 1.0m);
+
+        // Warehouse has 200 units physical (0 reserved) -> 100 days of supply
+        // Supplier lead time is 5 days, safety 3 days, target 14 days
+        var alert = await service.EvaluateStockoutAlertAsync(
+            tenantId,
+            productId,
+            sku,
+            currentPhysicalStock: 200,
+            currentReservedStock: 0,
+            supplierLeadTimeDays: 5,
+            safetyStockDays: 3,
+            targetCycleDays: 14);
+
+        Assert.Equal(100.0m, alert.EstimatedDaysOfSupplyRemaining);
+        Assert.Equal(RestockPriority.Normal, alert.Priority);
+        Assert.Equal(0, alert.RecommendedReorderQuantity); // Target coverage 22 days * 2 = 44 units < 200 available
+    }
+
+    [Fact]
+    public async Task EvaluateStockoutAlertAsync_WhenDaysOfSupplyUnderLeadPlusSafety_ShouldAssignHighPriority()
+    {
+        var db = CreateDbContext();
+        var service = new DemandForecastingService(db);
+        var tenantId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+        string sku = "SKU-HIGH-PRIORITY";
+
+        // Velocity: 10 units per day
+        await service.CalculateProductVelocityAsync(
+            tenantId, productId, sku, "Fast Item",
+            trailing7dUnits: 70m, trailing30dUnits: 300m, adSpendMultiplier: 1.0m);
+
+        // 70 units physical (0 reserved) = exactly 7.0 days of supply
+        // Lead time 5 days + Safety 3 days = 8 days cutoff. 7 days <= 8 days -> High priority!
+        var alert = await service.EvaluateStockoutAlertAsync(
+            tenantId,
+            productId,
+            sku,
+            currentPhysicalStock: 70,
+            currentReservedStock: 0,
+            supplierLeadTimeDays: 5,
+            safetyStockDays: 3,
+            targetCycleDays: 14);
+
+        Assert.Equal(7.0m, alert.EstimatedDaysOfSupplyRemaining);
+        Assert.Equal(RestockPriority.High, alert.Priority);
+        Assert.True(alert.RecommendedReorderQuantity > 0);
+    }
+
+    [Fact]
+    public async Task GenerateAutomatedRestockOrderAsync_WithUnknownAlert_ShouldThrowInvalidOperationException()
+    {
+        var db = CreateDbContext();
+        var service = new DemandForecastingService(db);
+        var tenantId = Guid.NewGuid();
+
+        var nonExistentAlertId = Guid.NewGuid();
+        var supplierId = Guid.NewGuid();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.GenerateAutomatedRestockOrderAsync(tenantId, nonExistentAlertId, supplierId, 25m));
+
+        Assert.Contains("not found", exception.Message);
+    }
+
+    [Fact]
+    public async Task ApproveRestockOrderAsync_WithUnknownOrder_ShouldThrowInvalidOperationException()
+    {
+        var db = CreateDbContext();
+        var service = new DemandForecastingService(db);
+        var tenantId = Guid.NewGuid();
+
+        var nonExistentOrderId = Guid.NewGuid();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.ApproveRestockOrderAsync(tenantId, nonExistentOrderId));
+
+        Assert.Contains("not found", exception.Message);
+    }
+
+    [Fact]
+    public async Task ListStockoutAlertsAndRestockOrders_ShouldFilterByTenantAndMinPriority()
+    {
+        var db = CreateDbContext();
+        var service = new DemandForecastingService(db);
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        // Tenant A: 1 Normal, 1 Critical
+        await service.CalculateProductVelocityAsync(tenantA, Guid.NewGuid(), "SKU-A-NORM", "Normal Item", 7m, 30m, 1.0m);
+        await service.EvaluateStockoutAlertAsync(tenantA, Guid.NewGuid(), "SKU-A-NORM", 100, 0, 5, 3, 14); // Normal
+
+        await service.CalculateProductVelocityAsync(tenantA, Guid.NewGuid(), "SKU-A-CRIT", "Critical Item", 70m, 300m, 1.0m);
+        await service.EvaluateStockoutAlertAsync(tenantA, Guid.NewGuid(), "SKU-A-CRIT", 20, 0, 5, 3, 14); // Critical (2 days supply <= 5)
+
+        // Tenant B: 1 Critical
+        await service.CalculateProductVelocityAsync(tenantB, Guid.NewGuid(), "SKU-B-CRIT", "B Critical", 70m, 300m, 1.0m);
+        await service.EvaluateStockoutAlertAsync(tenantB, Guid.NewGuid(), "SKU-B-CRIT", 10, 0, 5, 3, 14);
+
+        var allAlertsA = await service.ListStockoutAlertsAsync(tenantA);
+        var criticalAlertsA = await service.ListStockoutAlertsAsync(tenantA, RestockPriority.CriticalStockoutImminent);
+
+        Assert.Equal(2, allAlertsA.Count);
+        Assert.Single(criticalAlertsA);
+        Assert.Equal("SKU-A-CRIT", criticalAlertsA[0].Sku);
+    }
 }

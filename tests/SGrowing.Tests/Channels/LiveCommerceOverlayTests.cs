@@ -83,4 +83,201 @@ public class LiveCommerceOverlayTests
         Assert.Equal(9, overlayFeed[0].RemainingUnits);
         Assert.Equal("ACHETER", overlayFeed[0].TriggerKeyword);
     }
+
+    [Fact]
+    public async Task ProcessLiveCommentAsync_WithUnknownSession_ShouldThrowInvalidOperationException()
+    {
+        var db = CreateDbContext();
+        var service = new LiveCommerceOverlayService(db);
+        var tenantId = Guid.NewGuid();
+        var unknownSessionId = Guid.NewGuid();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.ProcessLiveCommentAsync(tenantId, unknownSessionId, "viewer1", "ACHETER"));
+
+        Assert.Contains("not found", exception.Message);
+    }
+
+    [Fact]
+    public async Task ProcessLiveCommentAsync_WhenNoTriggerKeywordMatches_ShouldReturnFailure()
+    {
+        var db = CreateDbContext();
+        var service = new LiveCommerceOverlayService(db);
+        var tenantId = Guid.NewGuid();
+
+        var session = LiveStreamSession.Create(tenantId, "Instagram Live", LiveStreamPlatform.InstagramLive, "IG-STREAM-01");
+        db.LiveStreamSessions.Add(session);
+
+        var deal = new LiveFlashDeal
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            SessionId = session.Id,
+            Sku = "SKU-PARFUM-GOLD",
+            ProductName = "Gold Musk",
+            TriggerKeyword = "PROMO",
+            FlashPrice = 80m,
+            OriginalPrice = 120m,
+            MaxQuantity = 5,
+            SoldQuantity = 0,
+            IsActive = true
+        };
+        db.LiveFlashDeals.Add(deal);
+        await db.SaveChangesAsync();
+
+        var result = await service.ProcessLiveCommentAsync(
+            tenantId,
+            session.Id,
+            commenterUsername: "user_random",
+            commentText: "Hello quelle belle couleur !");
+
+        Assert.False(result.Success);
+        Assert.Null(result.OrderId);
+        Assert.Contains("did not match any active flash deal", result.Message);
+        Assert.Equal(1, session.TotalCommentsProcessed);
+        Assert.Equal(0, session.TotalOrdersGenerated);
+    }
+
+    [Fact]
+    public async Task ProcessLiveCommentAsync_WhenDealSoldOut_ShouldReturnSoldOutFailure()
+    {
+        var db = CreateDbContext();
+        var service = new LiveCommerceOverlayService(db);
+        var tenantId = Guid.NewGuid();
+
+        var session = LiveStreamSession.Create(tenantId, "Flash Sale", LiveStreamPlatform.TikTokLive, "TT-02");
+        db.LiveStreamSessions.Add(session);
+
+        // Flash deal already at max capacity (SoldQuantity == MaxQuantity)
+        var deal = new LiveFlashDeal
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            SessionId = session.Id,
+            Sku = "SKU-LIMITED-EDITION",
+            ProductName = "Limited Edition Watch",
+            TriggerKeyword = "BUYNOW",
+            FlashPrice = 150m,
+            OriginalPrice = 300m,
+            MaxQuantity = 5,
+            SoldQuantity = 5,
+            IsActive = true
+        };
+        db.LiveFlashDeals.Add(deal);
+        await db.SaveChangesAsync();
+
+        var result = await service.ProcessLiveCommentAsync(
+            tenantId,
+            session.Id,
+            commenterUsername: "late_buyer",
+            commentText: "I want this BUYNOW");
+
+        Assert.False(result.Success);
+        Assert.Null(result.OrderId);
+        Assert.Contains("SOLD OUT", result.Message);
+        Assert.Equal(0, deal.RemainingQuantity);
+    }
+
+    [Fact]
+    public async Task ProcessLiveCommentAsync_WhenWarehouseInventoryMissing_ShouldStillGenerateOrderGracefully()
+    {
+        var db = CreateDbContext();
+        var service = new LiveCommerceOverlayService(db);
+        var tenantId = Guid.NewGuid();
+
+        var session = LiveStreamSession.Create(tenantId, "Facebook Live", LiveStreamPlatform.FacebookLive, "FB-01");
+        db.LiveStreamSessions.Add(session);
+
+        var deal = new LiveFlashDeal
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            SessionId = session.Id,
+            Sku = "SKU-NO-WMS",
+            ProductName = "Virtual Masterclass",
+            TriggerKeyword = "JOIN",
+            FlashPrice = 40m,
+            OriginalPrice = 80m,
+            MaxQuantity = 20,
+            SoldQuantity = 0,
+            IsActive = true
+        };
+        db.LiveFlashDeals.Add(deal);
+        await db.SaveChangesAsync();
+
+        // Process comment without any warehouse inventory seeded
+        var result = await service.ProcessLiveCommentAsync(
+            tenantId,
+            session.Id,
+            commenterUsername: "direct_learner",
+            commentText: "JOIN now please",
+            customerPhone: "+21655123456",
+            governorate: "Sousse");
+
+        Assert.True(result.Success);
+        Assert.NotNull(result.OrderId);
+        Assert.Equal(1, deal.SoldQuantity);
+        Assert.Equal(1, session.TotalOrdersGenerated);
+
+        var order = await db.CodOrders.FindAsync(result.OrderId);
+        Assert.NotNull(order);
+        Assert.Equal(47m, order.TotalAmount); // 40 flash + 7 shipping
+        Assert.Equal("Sousse", order.GovernorateOrWilaya);
+    }
+
+    [Fact]
+    public async Task GetLiveOverlayStockFeedAsync_WhenRemainingUnitsLow_ShouldFlagUrgentAlert()
+    {
+        var db = CreateDbContext();
+        var service = new LiveCommerceOverlayService(db);
+        var tenantId = Guid.NewGuid();
+
+        var session = LiveStreamSession.Create(tenantId, "Urgent Live Stream", LiveStreamPlatform.TikTokLive, "TT-03");
+        db.LiveStreamSessions.Add(session);
+
+        // Deal 1: 3 units remaining (<= 5 -> UrgentAlert should be true)
+        db.LiveFlashDeals.Add(new LiveFlashDeal
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            SessionId = session.Id,
+            Sku = "SKU-SCARCE",
+            ProductName = "Scarce Item",
+            TriggerKeyword = "GRAB",
+            FlashPrice = 25m,
+            OriginalPrice = 50m,
+            MaxQuantity = 10,
+            SoldQuantity = 7,
+            IsActive = true
+        });
+
+        // Deal 2: 15 units remaining (> 5 -> UrgentAlert should be false)
+        db.LiveFlashDeals.Add(new LiveFlashDeal
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            SessionId = session.Id,
+            Sku = "SKU-PLENTIFUL",
+            ProductName = "Plentiful Item",
+            TriggerKeyword = "WANT",
+            FlashPrice = 30m,
+            OriginalPrice = 60m,
+            MaxQuantity = 20,
+            SoldQuantity = 5,
+            IsActive = true
+        });
+
+        await db.SaveChangesAsync();
+
+        var feed = await service.GetLiveOverlayStockFeedAsync(tenantId, session.Id);
+
+        Assert.Equal(2, feed.Count);
+        var scarce = feed.Single(f => f.Sku == "SKU-SCARCE");
+        Assert.True(scarce.IsUrgentAlert);
+        Assert.Equal(3, scarce.RemainingUnits);
+
+        var plentiful = feed.Single(f => f.Sku == "SKU-PLENTIFUL");
+        Assert.False(plentiful.IsUrgentAlert);
+        Assert.Equal(15, plentiful.RemainingUnits);
+    }
 }

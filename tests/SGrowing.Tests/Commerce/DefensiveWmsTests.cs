@@ -71,4 +71,140 @@ public class DefensiveWmsTests
         Assert.Equal(1, finalSummary.Damaged);
         Assert.Equal(49, finalSummary.Available);
     }
+
+    [Fact]
+    public async Task ReleaseStockOnCancellationAsync_ShouldDecrementReservedStockAndRecordCancellationMovement()
+    {
+        var db = CreateDbContext();
+        var wms = new DefensiveWmsService(db);
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+        var orderId = Guid.NewGuid();
+        var sku = "SKU-CANCELLATION-TEST";
+
+        // Initial 20 physical units, reserve 5
+        await wms.GetOrCreateInventoryAsync(tenantId, warehouseId, sku, initialPhysical: 20);
+        await wms.ReserveStockOnCheckoutAsync(tenantId, warehouseId, sku, 5, orderId);
+
+        var beforeCancel = await wms.GetStockSummaryAsync(tenantId, warehouseId, sku);
+        Assert.Equal(5, beforeCancel.Reserved);
+        Assert.Equal(15, beforeCancel.Available);
+
+        // Customer cancels order before confirmation
+        await wms.ReleaseStockOnCancellationAsync(tenantId, warehouseId, sku, 5, orderId, "CustomerSupport");
+
+        var afterCancel = await wms.GetStockSummaryAsync(tenantId, warehouseId, sku);
+        Assert.Equal(0, afterCancel.Reserved);
+        Assert.Equal(20, afterCancel.Available);
+        Assert.Equal(20, afterCancel.Physical);
+
+        // Verify stock movement logged
+        var movement = await db.StockMovements.FirstOrDefaultAsync(m => m.OrderId == orderId && m.MovementType == StockMovementType.CancellationRestock);
+        Assert.NotNull(movement);
+        Assert.Equal(-5, movement.QuantityChange);
+        Assert.Equal("CustomerSupport", movement.PerformedBy);
+    }
+
+    [Fact]
+    public async Task CommitStockOnConfirmationAsync_WithPartialCancellation_ShouldClampReservedStock()
+    {
+        var db = CreateDbContext();
+        var wms = new DefensiveWmsService(db);
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+        var orderId = Guid.NewGuid();
+        var sku = "SKU-CLAMP-TEST";
+
+        await wms.GetOrCreateInventoryAsync(tenantId, warehouseId, sku, initialPhysical: 10);
+        await wms.ReserveStockOnCheckoutAsync(tenantId, warehouseId, sku, 3, orderId);
+
+        // Commit 5 (more than reserved 3) -> should clamp reserved to 0, committed becomes 5
+        await wms.CommitStockOnConfirmationAsync(tenantId, warehouseId, sku, 5, orderId);
+
+        var summary = await wms.GetStockSummaryAsync(tenantId, warehouseId, sku);
+        Assert.Equal(0, summary.Reserved);
+        Assert.Equal(5, summary.Committed);
+        Assert.Equal(10, summary.Physical);
+    }
+
+    [Fact]
+    public async Task ScanAndRestockQuarantineItemAsync_WhenMultipleItemsRestocked_ShouldAccuratelyReflectPhysical()
+    {
+        var db = CreateDbContext();
+        var wms = new DefensiveWmsService(db);
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+        var orderId = Guid.NewGuid();
+        var sku = "SKU-RETURN-BATCH";
+
+        await wms.GetOrCreateInventoryAsync(tenantId, warehouseId, sku, initialPhysical: 100);
+        await wms.ReserveStockOnCheckoutAsync(tenantId, warehouseId, sku, 10, orderId);
+        await wms.CommitStockOnConfirmationAsync(tenantId, warehouseId, sku, 10, orderId);
+        await wms.DispatchStockAsync(tenantId, warehouseId, sku, 10, orderId);
+
+        // 10 units in transit returned to quarantine
+        await wms.ReceiveCourierReturnToQuarantineAsync(tenantId, warehouseId, sku, 10, orderId);
+
+        var quarantineSummary = await wms.GetStockSummaryAsync(tenantId, warehouseId, sku);
+        Assert.Equal(90, quarantineSummary.Physical);
+        Assert.Equal(10, quarantineSummary.QuarantineReturned);
+
+        // Inspect 8 undamaged items -> restock
+        await wms.ScanAndRestockQuarantineItemAsync(tenantId, warehouseId, sku, 8, isDamaged: false, inspectorId: "Agent_Sarah");
+
+        // Inspect 2 damaged items -> write off
+        await wms.ScanAndRestockQuarantineItemAsync(tenantId, warehouseId, sku, 2, isDamaged: true, inspectorId: "Agent_Sarah");
+
+        var finalSummary = await wms.GetStockSummaryAsync(tenantId, warehouseId, sku);
+        Assert.Equal(98, finalSummary.Physical); // 90 + 8
+        Assert.Equal(0, finalSummary.QuarantineReturned);
+        Assert.Equal(2, finalSummary.Damaged);
+        Assert.Equal(98, finalSummary.Available);
+    }
+
+    [Fact]
+    public async Task GetStockSummaryAsync_WithNonExistentInventory_ShouldCreateDefaultZeroPhysical()
+    {
+        var db = CreateDbContext();
+        var wms = new DefensiveWmsService(db);
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+        var sku = "SKU-BRAND-NEW";
+
+        var summary = await wms.GetStockSummaryAsync(tenantId, warehouseId, sku);
+
+        Assert.NotNull(summary);
+        Assert.Equal("SKU-BRAND-NEW", summary.Sku);
+        Assert.Equal(0, summary.Physical);
+        Assert.Equal(0, summary.Reserved);
+        Assert.Equal(0, summary.Committed);
+        Assert.Equal(0, summary.InTransit);
+        Assert.Equal(0, summary.QuarantineReturned);
+        Assert.Equal(0, summary.Damaged);
+        Assert.Equal(0, summary.Available);
+    }
+
+    [Fact]
+    public async Task GetOrCreateInventoryAsync_AcrossMultipleWarehouses_ShouldIsolateStock()
+    {
+        var db = CreateDbContext();
+        var wms = new DefensiveWmsService(db);
+        var tenantId = Guid.NewGuid();
+        var warehouseTunis = Guid.NewGuid();
+        var warehouseSfax = Guid.NewGuid();
+        var sku = "SKU-SHARED-CATALOG";
+
+        var invTunis = await wms.GetOrCreateInventoryAsync(tenantId, warehouseTunis, sku, initialPhysical: 100);
+        var invSfax = await wms.GetOrCreateInventoryAsync(tenantId, warehouseSfax, sku, initialPhysical: 40);
+
+        Assert.NotEqual(invTunis.WarehouseId, invSfax.WarehouseId);
+        Assert.Equal(100, invTunis.PhysicalStock);
+        Assert.Equal(40, invSfax.PhysicalStock);
+
+        var summaryTunis = await wms.GetStockSummaryAsync(tenantId, warehouseTunis, sku);
+        var summarySfax = await wms.GetStockSummaryAsync(tenantId, warehouseSfax, sku);
+
+        Assert.Equal(100, summaryTunis.Physical);
+        Assert.Equal(40, summarySfax.Physical);
+    }
 }
