@@ -31,6 +31,43 @@ public class ContractAndEnrichmentTests
         Assert.Equal("github.com", LeadEnrichmentService.ExtractDomainFromEmailOrWeb("www.github.com"));
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public void ExtractDomain_EmptyOrWhitespace_ReturnsEmptyString(string? input)
+    {
+        Assert.Equal(string.Empty, LeadEnrichmentService.ExtractDomainFromEmailOrWeb(input!));
+    }
+
+    [Fact]
+    public async Task EnrichLead_InvalidDomainOrEmail_ThrowsArgumentException()
+    {
+        var tenantId = Guid.NewGuid();
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _enrichmentService.EnrichLeadAsync(tenantId, "   "));
+    }
+
+    [Fact]
+    public async Task EnrichLead_CachedProfile_ReturnsExistingProfileWithoutCreatingDuplicate()
+    {
+        var tenantId = Guid.NewGuid();
+        var domain = "acmecorp.com";
+
+        // First enrichment creates the profile
+        var profile1 = await _enrichmentService.EnrichLeadAsync(tenantId, $"founder@{domain}");
+        Assert.NotNull(profile1);
+
+        // Second enrichment should reuse cached profile
+        var profile2 = await _enrichmentService.EnrichLeadAsync(tenantId, $"cto@{domain}");
+        Assert.NotNull(profile2);
+        Assert.Equal(profile1.Id, profile2.Id);
+
+        var totalProfiles = await _db.LeadEnrichmentProfiles
+            .CountAsync(p => p.TenantId == tenantId && p.Domain == domain);
+        Assert.Equal(1, totalProfiles);
+    }
+
     [Fact]
     public async Task EnrichLead_GeneratesFirmographicProfileAndUpdatesCompany()
     {
@@ -115,5 +152,29 @@ public class ContractAndEnrichmentTests
         Assert.NotNull(outboxEvent);
         Assert.Contains("Elena Rostova", outboxEvent.Payload);
         Assert.Contains("48000", outboxEvent.Payload);
+    }
+
+    [Fact]
+    public async Task InChatContracts_DispatchNonexistentContract_ThrowsKeyNotFoundException()
+    {
+        var tenantId = Guid.NewGuid();
+        var nonExistentContractId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _contractService.DispatchInChatContractAsync(tenantId, nonExistentContractId));
+    }
+
+    [Fact]
+    public async Task InChatContracts_CompleteSigningNonexistentToken_ThrowsKeyNotFoundException()
+    {
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _contractService.CompleteSigningAsync("non_existent_token_123", "Any Name"));
+    }
+
+    [Fact]
+    public async Task InChatContracts_GetAndMarkViewed_ReturnsNullWhenNotFound()
+    {
+        var result = await _contractService.GetAndMarkViewedAsync("unknown_token_xyz");
+        Assert.Null(result);
     }
 }

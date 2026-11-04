@@ -129,4 +129,86 @@ public class CrmMetadataTests
         var allRecords = _engine.ListRecords("tenant_crm_03", schema.SchemaId);
         allRecords.Should().HaveCount(1);
     }
+
+    [Fact]
+    public void GetSchema_ReturnsNull_WhenSchemaNotFound()
+    {
+        var schema = _engine.GetSchema("tenant_crm_missing", "schema_unknown");
+        schema.Should().BeNull();
+    }
+
+    [Fact]
+    public void ListSchemas_ReturnsOnlyTenantSchemasSortedByName()
+    {
+        var tenantId = "tenant_crm_multi";
+        _engine.CreateSchema(new CreateSchemaRequest(
+            TenantId: tenantId,
+            EntityName: "Zebra Resource",
+            PluralName: "Zebra Resources",
+            Icon: "zebra",
+            Description: "Zebra asset catalog",
+            Fields: new List<CustomFieldDefinition>()
+        ));
+        _engine.CreateSchema(new CreateSchemaRequest(
+            TenantId: tenantId,
+            EntityName: "Alpha Resource",
+            PluralName: "Alpha Resources",
+            Icon: "alpha",
+            Description: "Alpha asset catalog",
+            Fields: new List<CustomFieldDefinition>()
+        ));
+        _engine.CreateSchema(new CreateSchemaRequest(
+            TenantId: "other_tenant",
+            EntityName: "Beta Resource",
+            PluralName: "Beta Resources",
+            Icon: "beta",
+            Description: "Beta asset catalog",
+            Fields: new List<CustomFieldDefinition>()
+        ));
+
+        var schemas = _engine.ListSchemas(tenantId);
+        schemas.Should().HaveCount(2);
+        schemas[0].EntityName.Should().Be("Alpha Resource");
+        schemas[1].EntityName.Should().Be("Zebra Resource");
+    }
+
+    [Fact]
+    public void CreateRecord_ThrowsKeyNotFoundException_WhenSchemaDoesNotExist()
+    {
+        var req = new CreateRecordRequest("tenant_crm_04", "nonexistent_schema", new Dictionary<string, object>());
+        var act = () => _engine.CreateRecord(req);
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*nonexistent_schema*");
+    }
+
+    [Fact]
+    public void DetectDuplicates_ReturnsEmptyList_WhenNoRecordsOrNoFieldMatch()
+    {
+        var schema = _engine.CreateSchema(new CreateSchemaRequest(
+            TenantId: "tenant_crm_05",
+            EntityName: "Inventory Item",
+            PluralName: "Inventory Items",
+            Icon: "box",
+            Description: "Warehouse items",
+            Fields: new List<CustomFieldDefinition>
+            {
+                new("f1", "sku", "SKU", FieldDataType.Text, true)
+            }
+        ));
+
+        var duplicates = _engine.DetectDuplicates("tenant_crm_05", schema.SchemaId, "sku");
+        duplicates.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void MergeRecords_ThrowsKeyNotFoundException_WhenMasterOrDuplicateMissing()
+    {
+        var actMasterMissing = () => _engine.MergeRecords(new MergeRecordsRequest(
+            TenantId: "tenant_crm_06",
+            SchemaId: "schema_inventory",
+            MasterRecordId: "rec_missing_master",
+            DuplicateRecordId: "rec_missing_dup",
+            ResolvedAttributes: new Dictionary<string, object>()
+        ));
+        actMasterMissing.Should().Throw<KeyNotFoundException>().WithMessage("*rec_missing_master*");
+    }
 }

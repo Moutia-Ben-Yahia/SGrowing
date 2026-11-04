@@ -114,4 +114,89 @@ public class SalesForecastingAndCommissionTests
             It.IsAny<object>(),
             It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task GetForecastSummary_ThrowsKeyNotFoundException_WhenPeriodDoesNotExist()
+    {
+        var tenantId = Guid.NewGuid();
+        var nonExistentPeriodId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _service.GetForecastSummaryAsync(tenantId, nonExistentPeriodId));
+    }
+
+    [Fact]
+    public async Task GetForecastSummary_ZeroQuota_ReturnsZeroPercentAttainment()
+    {
+        var tenantId = Guid.NewGuid();
+        var period = await _service.CreateForecastPeriodAsync(tenantId, "Zero Quota Test", DateTime.UtcNow, DateTime.UtcNow.AddDays(30), 0m);
+
+        var summary = await _service.GetForecastSummaryAsync(tenantId, period.Id);
+
+        Assert.Equal(0.0, summary.QuotaAttainmentPercentage);
+        Assert.Equal(0m, summary.ClosedWonRevenue);
+    }
+
+    [Fact]
+    public async Task CalculateRepCommissions_WhenNotExceedingQuota_AppliesBaseRateWithoutAccelerator()
+    {
+        var tenantId = Guid.NewGuid();
+        var repId = Guid.NewGuid();
+        var contactId = Guid.NewGuid();
+        var startDate = new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc);
+        var endDate = new DateTime(2026, 9, 30, 23, 59, 59, DateTimeKind.Utc);
+        var closeDate = new DateTime(2026, 8, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        var period = await _service.CreateForecastPeriodAsync(tenantId, "Q3 2026", startDate, endDate, targetQuota: 50000m);
+        var plan = await _service.CreateCommissionPlanAsync(tenantId, "Plan", baseRate: 10.0m, threshold: 100.0m, acceleratedRate: 20.0m);
+
+        // Rep won $30,000 in deals (under the $50,000 quota)
+        var deal = Deal.Create(tenantId, contactId, "Mid Deal", 30000m, DealStage.Won, ownerId: repId, expectedCloseDate: closeDate);
+        await _db.Deals.AddAsync(deal);
+        await _db.SaveChangesAsync();
+
+        var statement = await _service.CalculateRepCommissionsAsync(tenantId, period.Id, plan.Id, repId, "Sammy Sosa");
+
+        Assert.NotNull(statement);
+        Assert.Equal(30000m, statement.TotalDealsValue);
+        // Base rate: 30,000 * 10% = 3,000
+        Assert.Equal(3000m, statement.CalculatedCommission);
+    }
+
+    [Fact]
+    public async Task CalculateRepCommissions_ThrowsKeyNotFoundException_WhenPeriodOrPlanMissing()
+    {
+        var tenantId = Guid.NewGuid();
+        var validPeriod = await _service.CreateForecastPeriodAsync(tenantId, "Period", DateTime.UtcNow, DateTime.UtcNow.AddDays(30), 1000m);
+
+        // Missing plan
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _service.CalculateRepCommissionsAsync(tenantId, validPeriod.Id, Guid.NewGuid(), Guid.NewGuid(), "Rep"));
+
+        // Missing period
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _service.CalculateRepCommissionsAsync(tenantId, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "Rep"));
+    }
+
+    [Fact]
+    public async Task ApproveCommissionStatement_ThrowsKeyNotFoundException_WhenStatementMissing()
+    {
+        var tenantId = Guid.NewGuid();
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _service.ApproveCommissionStatementAsync(tenantId, Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task GetForecastPeriods_ReturnsPeriodsOrderedByStartDateDescending()
+    {
+        var tenantId = Guid.NewGuid();
+        var p1 = await _service.CreateForecastPeriodAsync(tenantId, "P1", new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2026, 3, 31, 0, 0, 0, DateTimeKind.Utc), 10000m);
+        var p2 = await _service.CreateForecastPeriodAsync(tenantId, "P2", new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2026, 6, 30, 0, 0, 0, DateTimeKind.Utc), 15000m);
+
+        var list = await _service.GetForecastPeriodsAsync(tenantId);
+
+        Assert.Equal(2, list.Count);
+        Assert.Equal("P2", list[0].Name);
+        Assert.Equal("P1", list[1].Name);
+    }
 }

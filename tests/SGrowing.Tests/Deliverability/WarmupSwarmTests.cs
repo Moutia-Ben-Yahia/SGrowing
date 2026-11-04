@@ -86,4 +86,63 @@ public class WarmupSwarmTests
         audited.Status.Should().Be(WarmupStatus.Healthy);
         audited.ReputationScore.Should().BeGreaterThanOrEqualTo(85.0);
     }
+
+    [Fact]
+    public void EnrollAccount_ClampsTargetDailyVolumeToMinimum10()
+    {
+        var account = _engine.EnrollAccount(new EnrollWarmupAccountRequest(
+            TenantId: "tenant_warmup_clamp",
+            Email: "lowvol@startup.io",
+            SmtpHost: "smtp.mailgun.org",
+            TargetDailyVolume: 3 // less than 10
+        ));
+
+        account.TargetDailyVolume.Should().Be(10);
+    }
+
+    [Fact]
+    public void GetAccount_ReturnsNullWhenNotFound()
+    {
+        var account = _engine.GetAccount("tenant_warmup_none", "mbx_nonexistent");
+        account.Should().BeNull();
+    }
+
+    [Fact]
+    public void ListAccounts_ReturnsOnlyAccountsForSpecifiedTenant()
+    {
+        var tenantA = "tenant_warmup_multi_a";
+        var tenantB = "tenant_warmup_multi_b";
+
+        _engine.EnrollAccount(new EnrollWarmupAccountRequest(tenantA, "u1@company.com", "smtp.test.com", 20));
+        _engine.EnrollAccount(new EnrollWarmupAccountRequest(tenantA, "u2@company.com", "smtp.test.com", 20));
+        _engine.EnrollAccount(new EnrollWarmupAccountRequest(tenantB, "u3@company.com", "smtp.test.com", 20));
+
+        var listA = _engine.ListAccounts(tenantA);
+        listA.Should().HaveCount(2);
+        listA.All(a => a.TenantId == tenantA).Should().BeTrue();
+    }
+
+    [Fact]
+    public void SimulateP2PExchange_ThrowsKeyNotFoundException_WhenAccountDoesNotExist()
+    {
+        var act = () => _engine.SimulateP2PExchange(new SimulateP2PExchangeRequest(
+            TenantId: "tenant_warmup_missing",
+            AccountId: "mbx_unknown",
+            ExchangeBatchSize: 10
+        ));
+
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*mbx_unknown*");
+    }
+
+    [Fact]
+    public void AuditDns_ThrowsKeyNotFoundException_WhenAccountDoesNotExist()
+    {
+        var act = () => _engine.AuditDns(new AuditDnsRequest(
+            TenantId: "tenant_warmup_missing",
+            AccountId: "mbx_unknown",
+            Domain: "company.com"
+        ));
+
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*mbx_unknown*");
+    }
 }
