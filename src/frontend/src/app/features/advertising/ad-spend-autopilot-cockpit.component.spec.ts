@@ -47,4 +47,12 @@ describe('AdSpendAutopilotCockpitComponent', () => {
     expect(component.getStatusBadgeClass('Optimized')).toContain('emerald');
     expect(component.getStatusBadgeClass('AnomalyPaused')).toContain('rose');
   });
+
+  it('should compute 0.00 blendedRoas when campaigns list is empty and test default status badge class', () => {
+    component.campaigns.set([]);
+    expect(component.blendedRoas()).toBe('0.00');
+    expect(component.totalDailyBudget()).toBe(0);
+    expect(component.anomalyCount()).toBe(0);
+    expect(component.getStatusBadgeClass('UnknownStatus')).toContain('slate');
+  });
 });

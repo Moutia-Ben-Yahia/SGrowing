@@ -41,4 +41,11 @@ describe('AudienceSyncCockpitComponent (Horizon 57)', () => {
     expect(metaConn?.isConnected).toBe(true);
     expect(metaConn?.syncedAudiences).toBeGreaterThan(0);
   });
+
+  it('should compute 0 avgLatency, 0 hashed records, and 0 connected DSPs when connectors list is empty', () => {
+    component.connectors.set([]);
+    expect(component.avgLatency()).toBe(0);
+    expect(component.totalHashedRecords()).toBe(0);
+    expect(component.connectedDspsCount()).toBe(0);
+  });
 });

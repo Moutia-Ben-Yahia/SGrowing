@@ -45,4 +45,14 @@ describe('GrowthTelemetrySignalrService (Horizon 6 Real-Time Telemetry Relay)', 
     expect(evt!.status).toBe('FilterPassed');
     expect(evt!.latencyMs).toBe(15);
   });
+
+  it('should emit roas optimized event and update reactive signal', () => {
+    service.emitRoasOptimized(4.65, 8);
+
+    const evt = service.lastRoasOptimized();
+    expect(evt).not.toBeNull();
+    expect(evt!.blendedRoas).toBe(4.65);
+    expect(evt!.scaledCampaignsCount).toBe(8);
+    expect(evt!.tenantId).toBe('00000000-0000-0000-0000-000000000001');
+  });
 });

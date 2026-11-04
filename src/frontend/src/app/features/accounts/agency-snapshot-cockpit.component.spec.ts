@@ -49,4 +49,15 @@ describe('AgencySnapshotCockpitComponent', () => {
     expect(component.enrichedOutput()?.confidence).toBe(96);
     expect(component.toastMessage()).toContain('Waterfall cascade completed');
   });
+
+  it('should toggle openCreateSnapshotModal and allow dismissing toastMessage', () => {
+    expect(component.openCreateSnapshotModal()).toBe(false);
+    component.openCreateSnapshotModal.set(true);
+    expect(component.openCreateSnapshotModal()).toBe(true);
+
+    component.toastMessage.set('Test Notification');
+    expect(component.toastMessage()).toBe('Test Notification');
+    component.toastMessage.set('');
+    expect(component.toastMessage()).toBe('');
+  });
 });

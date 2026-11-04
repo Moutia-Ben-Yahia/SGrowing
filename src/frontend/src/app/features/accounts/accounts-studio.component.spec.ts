@@ -54,4 +54,12 @@ describe('AccountsStudioComponent', () => {
     expect(newDomain?.status).toBe('Active');
     expect(newDomain?.ssl).toContain("Let's Encrypt");
   });
+
+  it('should ignore simulateRegisterDomain when user prompt input is cancelled or empty', () => {
+    vi.spyOn(window, 'prompt').mockReturnValueOnce(null);
+    const initialLen = component.storefrontDomains().length;
+
+    component.simulateRegisterDomain();
+    expect(component.storefrontDomains().length).toBe(initialLen);
+  });
 });

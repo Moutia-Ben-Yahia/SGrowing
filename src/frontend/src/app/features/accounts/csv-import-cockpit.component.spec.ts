@@ -90,4 +90,12 @@ describe('CsvImportCockpitComponent', () => {
     expect(component.delimiter).toBe(';');
     expect(component.mergeStrategy).toBe(1);
   });
+
+  it('should fallback to default tenant ID when auth currentUser is null', () => {
+    authServiceMock.currentUser.set(null);
+    component.previewData.set(mockPreview as any);
+    component.executeImport();
+
+    expect(apiServiceMock.executeCsvImport).toHaveBeenCalledWith('00000000-0000-0000-0000-000000000000', expect.any(Object));
+  });
 });

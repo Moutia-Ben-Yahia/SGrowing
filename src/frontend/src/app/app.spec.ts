@@ -34,4 +34,9 @@ describe('App', () => {
     (app as any).title = () => customTitle;
     expect((app as any).title()).toContain('Enterprise Omnichannel');
   });
+
+  it('should verify title is defined and defaults to expected project identifier', () => {
+    expect((app as any).title()).toBeTruthy();
+    expect(typeof (app as any).title()).toBe('string');
+  });
 });

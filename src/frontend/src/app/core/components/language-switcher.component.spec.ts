@@ -49,4 +49,11 @@ describe('LanguageSwitcherComponent', () => {
     expect(document.documentElement.getAttribute('lang')).toBe('fr-FR');
     expect(translationService.t('nav.inbox')).toBe('Conversations');
   });
+
+  it('should switch to German and verify translations and document attributes', () => {
+    translationService.setLocale('de-DE');
+    expect(translationService.currentLocale()).toBe('de-DE');
+    expect(document.documentElement.getAttribute('lang')).toBe('de-DE');
+    expect(translationService.t('nav.inbox')).toBe('Konversationen');
+  });
 });

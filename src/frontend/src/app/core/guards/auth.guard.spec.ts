@@ -72,4 +72,14 @@ describe('authGuard', () => {
     expect(result).toBe(false);
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
   });
+
+  it('should return true when both isAuthenticated and local storage token are valid', () => {
+    mockAuthService.isAuthenticated.mockReturnValue(true);
+    localStorage.setItem('sgrowing_access_token', 'dual-valid-token');
+
+    const result = runInInjectionContext(injector, () => (authGuard as any)({}, {}));
+
+    expect(result).toBe(true);
+    expect(mockRouter.navigate).not.toHaveBeenCalled();
+  });
 });

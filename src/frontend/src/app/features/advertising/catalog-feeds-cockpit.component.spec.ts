@@ -40,4 +40,10 @@ describe('CatalogFeedsCockpitComponent', () => {
     comp.addPromoBadge(p1);
     expect(comp.totalBadges()).toBe(5);
   });
+
+  it('should compute 0 totalBadges when products list is empty', () => {
+    const comp = new CatalogFeedsCockpitComponent();
+    comp.products.set([]);
+    expect(comp.totalBadges()).toBe(0);
+  });
 });

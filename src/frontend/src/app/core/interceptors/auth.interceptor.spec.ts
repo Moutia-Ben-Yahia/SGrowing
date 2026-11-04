@@ -1,7 +1,7 @@
 import '@angular/compiler';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Injector, runInInjectionContext, signal } from '@angular/core';
-import { HttpRequest } from '@angular/common/http';
+import { HttpRequest, HttpHeaders } from '@angular/common/http';
 import { of } from 'rxjs';
 import { authInterceptor } from './auth.interceptor';
 import { AuthService } from '../services/auth.service';
@@ -89,5 +89,24 @@ describe('authInterceptor', () => {
     expect(next).toHaveBeenCalledTimes(1);
     expect(forwardedReq?.headers.get('Authorization')).toBe('Bearer jwt-token-789');
     expect(forwardedReq?.headers.get('X-Tenant-Id')).toBe('tenant-999');
+  });
+
+  it('should preserve existing request custom headers while injecting authorization', () => {
+    mockAuthService.accessToken.set('token-abc');
+
+    const req = new HttpRequest('GET', '/api/data', null, {
+      headers: new HttpHeaders().set('X-Correlation-Id', 'corr-123')
+    });
+    let forwardedReq: HttpRequest<any> | undefined;
+    const next = vi.fn().mockImplementation((r: HttpRequest<any>) => {
+      forwardedReq = r;
+      return of({ status: 200 });
+    });
+
+    runInInjectionContext(injector, () => authInterceptor(req, next));
+
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(forwardedReq?.headers.get('Authorization')).toBe('Bearer token-abc');
+    expect(forwardedReq?.headers.get('X-Correlation-Id')).toBe('corr-123');
   });
 });

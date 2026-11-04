@@ -39,4 +39,13 @@ describe('BidPacingCockpitComponent', () => {
     expect(comp.selectedCampaign()?.mode).toBe('AcceleratedHighIntent');
     expect(comp.selectedCampaign()?.currentBidMultiplier).toBe(1.35);
   });
+
+  it('should return 0 for totalDailyBudget, totalSpendToDate, and throttledCount when campaigns list is empty', () => {
+    const comp = new BidPacingCockpitComponent();
+    comp.campaigns.set([]);
+
+    expect(comp.totalDailyBudget()).toBe(0);
+    expect(comp.totalSpendToDate()).toBe(0);
+    expect(comp.throttledCount()).toBe(0);
+  });
 });
