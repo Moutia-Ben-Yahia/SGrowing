@@ -174,4 +174,49 @@ public class MasterEnterpriseCommerceTests
         Assert.True(erasure.Success);
         Assert.Equal(0, erasure.ErasedContactsCount);
     }
+
+    [Fact]
+    public async Task MasterEnterpriseCommerceE2E_CatalogRetrieval_And_GDPRRedaction_Verifications()
+    {
+        var tenantId = Guid.NewGuid();
+
+        // 1. Product Catalog Creation & Retrieval
+        var catalog = new ProductCatalogService(_db);
+        var activeProd = await catalog.CreateProductAsync(
+            tenantId, "Active Enterprise Suite", "active-suite", "Active plan", ProductType.Subscription, 999m);
+        var inactiveProd = await catalog.CreateProductAsync(
+            tenantId, "Archived Plan", "archived-plan", "Archived plan", ProductType.Physical, 100m);
+        inactiveProd.IsActive = false;
+        await _db.SaveChangesAsync();
+
+        var products = await catalog.GetProductsAsync(tenantId);
+        Assert.Single(products);
+        Assert.Equal(activeProd.Id, products[0].Id);
+
+        // 2. GDPR Erasure redacts messages belonging to erased contact
+        var contact = Contact.Create(tenantId, "Jean", "Valjean", "jean.valjean@france.org");
+        contact.Phone = "+33123456789";
+        _db.Contacts.Add(contact);
+
+        var conv = Conversation.Create(tenantId, Guid.NewGuid(), contact.Id);
+        _db.Conversations.Add(conv);
+
+        var message = Message.Create(tenantId, conv.Id, MessageSenderType.Contact, "My passport number is AB123456.");
+        _db.Messages.Add(message);
+        await _db.SaveChangesAsync();
+
+        var privacyService = new CustomerPrivacyService(_db, NullLogger<CustomerPrivacyService>.Instance);
+        var erasureResult = await privacyService.ExecuteRightToBeForgottenAsync(tenantId, "jean.valjean@france.org");
+
+        Assert.True(erasureResult.Success);
+        Assert.Equal(1, erasureResult.ErasedContactsCount);
+        Assert.Equal(1, erasureResult.RedactedMessagesCount);
+
+        var freshContact = await _db.Contacts.FindAsync(contact.Id);
+        Assert.Equal("Anonymized", freshContact!.FirstName);
+        Assert.Null(freshContact.Phone);
+
+        var freshMessage = await _db.Messages.FindAsync(message.Id);
+        Assert.Equal("[Personal Data Anonymized via GDPR Right to be Forgotten Request]", freshMessage!.Content);
+    }
 }

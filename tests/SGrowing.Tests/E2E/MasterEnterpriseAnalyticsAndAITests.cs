@@ -119,4 +119,29 @@ public class MasterEnterpriseAnalyticsAndAITests
         var unknownReplay = await _scheduler.ReplayDeadLetterStepAsync(tenantA, Guid.NewGuid());
         Assert.False(unknownReplay.Success);
     }
+
+    [Fact]
+    public async Task MasterLeadershipE2E_AttributionEmpty_And_QuietHoursGuards_ExecuteSafely()
+    {
+        var tenantId = Guid.NewGuid();
+
+        // 1. Attribution calculation for deal with 0 touchpoints returns empty list
+        var deal = Deal.Create(tenantId, Guid.NewGuid(), "Enterprise Clean Deal", 50000m, DealStage.Won);
+        _db.Deals.Add(deal);
+        await _db.SaveChangesAsync();
+
+        var attributionResults = await _attribution.CalculateAttributionAsync(tenantId, deal.Id, AttributionModelType.WShaped);
+        Assert.Empty(attributionResults);
+
+        // 2. Quiet hours evaluation when disabled allows immediate sending
+        var quietCheck = await _quietHours.EvaluateDispatchTimeAsync(tenantId, DateTime.UtcNow);
+        Assert.True(quietCheck.CanSendNow);
+        Assert.False(quietCheck.InQuietHours);
+        Assert.Equal("Quiet hours disabled.", quietCheck.Reason);
+
+        // 3. Dynamic Tool Registry rejects tool execution for unregistered tool
+        var unregTool = await _tools.ExecuteToolAsync(tenantId, "nonexistent_custom_action", "{}");
+        Assert.False(unregTool.Success);
+        Assert.Contains("is not registered or active", unregTool.Error);
+    }
 }

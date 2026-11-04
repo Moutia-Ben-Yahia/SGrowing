@@ -197,4 +197,39 @@ public class MasterEnterpriseScaleE2ETests
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             demandForecastingService.ApproveRestockOrderAsync(tenantId, Guid.NewGuid()));
     }
+
+    [Fact]
+    public async Task Master_Enterprise_Scale_PiiMasking_And_SettlementBatch_EdgeCases()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+
+        var affiliateService = new CreatorAffiliateService(db);
+        var securityService = new SecurityAuditAndRbacService(db);
+
+        // 1. PII Masking: SuperAdmin sees raw PII, CallCenterAgent sees masked PII
+        var order = CodOrder.Create(
+            tenantId,
+            "ORD-PII-TEST",
+            "Kais Saidi",
+            "+21698112233",
+            "12 Rue Ibn Khaldoun",
+            "Ariana",
+            "Ariana Ville",
+            120m);
+        db.CodOrders.Add(order);
+        await db.SaveChangesAsync();
+
+        var adminView = await securityService.GetMaskedCustomerOrderAsync(tenantId, order.Id, UserSystemRole.SuperAdmin);
+        Assert.Equal("+21698112233", adminView.DisplayPhoneNumber);
+        Assert.Contains("12 Rue Ibn Khaldoun", adminView.DisplayAddress);
+
+        var agentView = await securityService.GetMaskedCustomerOrderAsync(tenantId, order.Id, UserSystemRole.CallCenterAgent);
+        Assert.Contains("*", agentView.DisplayPhoneNumber);
+        Assert.Contains("*", agentView.DisplayAddress);
+
+        // 2. Voiding escrow on non-existent order safely returns null
+        var voidNonExistent = await affiliateService.VoidEscrowOnReturnOrCancelAsync(tenantId, Guid.NewGuid(), "Cancelled");
+        Assert.Null(voidNonExistent);
+    }
 }

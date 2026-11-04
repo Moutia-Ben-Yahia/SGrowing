@@ -180,4 +180,50 @@ public class MasterEnterpriseOperationsE2ETests
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             retentionService.RecordSurveyResponseAsync(tenantId, Guid.NewGuid(), 5, "Great"));
     }
+
+    [Fact]
+    public async Task Master_E2E_Operations_SoldOutFlashDeal_And_SessionMissingFailures()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var liveService = new LiveCommerceOverlayService(db);
+
+        // 1. Missing live session throws InvalidOperationException
+        var missingSessionId = Guid.NewGuid();
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            liveService.ProcessLiveCommentAsync(tenantId, missingSessionId, "user1", "ACHETER"));
+
+        // 2. Sold out flash deal returns clean failure with sold out message
+        var session = LiveStreamSession.Create(tenantId, "TikTok Live Rush", LiveStreamPlatform.TikTokLive, "TT-999");
+        db.LiveStreamSessions.Add(session);
+
+        var soldOutDeal = new LiveFlashDeal
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            SessionId = session.Id,
+            Sku = "SOLDOUT-LIPSTICK",
+            ProductName = "Matte Velvet Lipstick",
+            TriggerKeyword = "ACHETER",
+            FlashPrice = 25m,
+            OriginalPrice = 40m,
+            MaxQuantity = 5,
+            SoldQuantity = 5, // Fully sold out!
+            IsActive = true
+        };
+        db.LiveFlashDeals.Add(soldOutDeal);
+        await db.SaveChangesAsync();
+
+        var soldOutResult = await liveService.ProcessLiveCommentAsync(
+            tenantId,
+            session.Id,
+            "late_shopper",
+            "ACHETER svp",
+            "+21622114477",
+            "Sousse");
+
+        Assert.False(soldOutResult.Success);
+        Assert.Contains("SOLD OUT", soldOutResult.Message);
+        Assert.Null(soldOutResult.OrderId);
+    }
 }
