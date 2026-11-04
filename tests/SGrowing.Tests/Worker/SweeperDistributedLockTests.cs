@@ -216,4 +216,34 @@ public class SweeperDistributedLockTests
         var swept = await CallCenterLockSweeperDaemon.SweepExpiredLocksAsync(db);
         swept.Should().Be(0);
     }
+
+    [Fact]
+    public async Task SweepExpiredCartReservationsAsync_WhenNoReservations_ReturnsZero()
+    {
+        var (sp, db, lockService) = CreateContext();
+        var returned = await CartReservationSweeperDaemon.SweepExpiredCartReservationsAsync(db);
+        returned.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task CallCenterLockSweeperDaemon_WhenReleasedLockExists_IgnoresAlreadyReleasedLocks()
+    {
+        var (sp, db, lockService) = CreateContext();
+        var tenantId = Guid.NewGuid();
+
+        var released = CallCenterOrderLockRecord.Create(
+            tenantId,
+            Guid.NewGuid(),
+            "ORD-RELEASED-01",
+            Guid.NewGuid(),
+            "Agent Amina",
+            TimeSpan.FromMinutes(-15)
+        );
+        released.Release(); // Already released
+        db.CallCenterOrderLocks.Add(released);
+        await db.SaveChangesAsync();
+
+        var swept = await CallCenterLockSweeperDaemon.SweepExpiredLocksAsync(db);
+        swept.Should().Be(0);
+    }
 }

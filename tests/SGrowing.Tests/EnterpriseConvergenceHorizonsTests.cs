@@ -315,4 +315,59 @@ public class EnterpriseConvergenceHorizonsTests
         Assert.NotNull(updatedMargin);
         Assert.True(updatedMargin.GrossMarginPercentage > 18.0m);
     }
+
+    [Fact]
+    public void DocumentPdfGeneratorService_GenerateCertificatePdf_ProducesValidPdfBytesWithAuditTrail()
+    {
+        var pdfService = new DocumentPdfGeneratorService();
+        var audit = new List<AuditTrailEventDto>
+        {
+            new("DocumentCreated", DateTime.UtcNow.AddHours(-1), "system", "127.0.0.1"),
+            new("SignerViewed", DateTime.UtcNow.AddMinutes(-30), "karim@maghrebretail.tn", "196.229.10.45"),
+            new("DocumentSigned", DateTime.UtcNow, "karim@maghrebretail.tn", "196.229.10.45")
+        };
+
+        var certBytes = pdfService.GenerateCertificatePdf(
+            documentId: Guid.NewGuid(),
+            documentTitle: "Enterprise MSA Contract",
+            signerName: "Karim Trabelsi",
+            signerEmail: "karim@maghrebretail.tn",
+            signerIp: "196.229.10.45",
+            signedAtUtc: DateTime.UtcNow,
+            documentHashSha256: "sha256-e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            signatureHashSha256: "sha256-ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+            auditTrail: audit
+        );
+
+        Assert.NotNull(certBytes);
+        Assert.True(certBytes.Length > 100);
+        string header = Encoding.ASCII.GetString(certBytes[..4]);
+        Assert.Equal("%PDF", header);
+    }
+
+    [Fact]
+    public async Task WorkflowDefinitions_GetWorkflowDefinitionByIdAsync_WhenNotFoundOrCrossTenant_ReturnsNull()
+    {
+        using var db = CreateInMemoryDb();
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+        var invoiceService = new InvoiceService(db);
+        var workflowService = new WorkflowGraphExecutorService(db, invoiceService);
+
+        var missing = await workflowService.GetWorkflowDefinitionByIdAsync(tenantA, Guid.NewGuid());
+        Assert.Null(missing);
+
+        var saveReq = new SaveWorkflowDefinitionRequest(
+            Name: "Tenant A Workflow",
+            Description: "Internal flow",
+            TriggerType: "generic_trigger",
+            Nodes: new List<WorkflowNodeConfig>(),
+            Edges: new List<WorkflowEdgeConfig>(),
+            IsActive: true
+        );
+        var saved = await workflowService.SaveWorkflowDefinitionAsync(tenantA, saveReq);
+
+        var crossTenantResult = await workflowService.GetWorkflowDefinitionByIdAsync(tenantB, saved.Id);
+        Assert.Null(crossTenantResult);
+    }
 }

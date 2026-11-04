@@ -204,4 +204,47 @@ public class WorkerDlqOrchestrationTests
         Assert.Equal("Error Tenant A", tenantALogs[0].ErrorMessage);
         Assert.Equal("Error Tenant B", tenantBLogs[0].ErrorMessage);
     }
+
+    [Fact]
+    public async Task ReplayDeadLetterStepAsync_WhenNotFound_ReturnsFailure()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var scheduler = new AdvancedWorkflowSchedulerService(db);
+
+        var result = await scheduler.ReplayDeadLetterStepAsync(tenantId, Guid.NewGuid());
+
+        Assert.False(result.Success);
+        Assert.Equal("Dead letter item not found.", result.Message);
+    }
+
+    [Fact]
+    public async Task ReplayDeadLetterStepAsync_WhenCrossTenantAccess_ReturnsFailureAndPreservesState()
+    {
+        var db = CreateDbContext();
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+        var scheduler = new AdvancedWorkflowSchedulerService(db);
+
+        var logA = await scheduler.EnqueueDeadLetterAsync(
+            tenantA,
+            workflowId: Guid.NewGuid(),
+            executionId: Guid.NewGuid(),
+            failedNodeId: "node-cross-tenant",
+            failedNodeType: "HttpWebhookPost",
+            inputPayload: "{}",
+            errorMessage: "Cross tenant isolation test"
+        );
+
+        // Tenant B attempts to replay Tenant A's dead letter
+        var result = await scheduler.ReplayDeadLetterStepAsync(tenantB, logA.Id);
+
+        Assert.False(result.Success);
+        Assert.Equal("Dead letter item not found.", result.Message);
+
+        var refreshed = await db.WorkflowDeadLetterLogs.FindAsync(logA.Id);
+        Assert.NotNull(refreshed);
+        Assert.False(refreshed!.IsResolved);
+        Assert.Equal(0, refreshed.RetryCount);
+    }
 }

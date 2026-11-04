@@ -387,4 +387,56 @@ public class EndToEndEnterpriseJourneyTests
         Assert.Equal(InvoiceStatus.Paid, updatedInvoice.Status);
         Assert.NotNull(updatedInvoice.PaidAtUtc);
     }
+
+    [Fact]
+    public async Task MilestoneSprints_CompleteMilestoneWithoutBilling_MarksDoneAndDoesNotTriggerInvoice()
+    {
+        using var db = CreateInMemoryDb();
+        var tenantId = Guid.NewGuid();
+
+        var invoiceService = new InvoiceService(db);
+        var projectService = new ProjectTaskService(db, invoiceService);
+
+        var deal = Deal.Create(tenantId, Guid.NewGuid(), "Non-Billing Milestone Deal", 15000m, DealStage.Won);
+        db.Deals.Add(deal);
+        await db.SaveChangesAsync();
+
+        var project = await projectService.ConvertFromDealAsync(tenantId, deal.Id);
+        var tasks = (await projectService.GetProjectTasksAsync(tenantId, project.Id)).ToList();
+        var task = tasks.First();
+
+        var completionReq = new CompleteMilestoneRequest(
+            TriggerInvoice: false,
+            MilestoneAmount: 0m,
+            Currency: "USD"
+        );
+
+        var result = await projectService.CompleteMilestoneWithBillingAsync(tenantId, task.Id, completionReq);
+
+        Assert.NotNull(result);
+        Assert.Equal("Done", result.Task.Status);
+        Assert.Null(result.Invoice);
+
+        var invoicesInDb = await db.Invoices.Where(i => i.TenantId == tenantId).ToListAsync();
+        Assert.Empty(invoicesInDb);
+    }
+
+    [Fact]
+    public async Task CustomFields_GetDefinitionsAsync_ReturnsDefinitionsAlphabeticallyByFieldName()
+    {
+        using var db = CreateInMemoryDb();
+        var tenantId = Guid.NewGuid();
+        var customFieldService = new CustomFieldService(db);
+
+        await customFieldService.CreateDefinitionAsync(tenantId, new CreateCustomFieldDefinitionRequest("Deal", "tier_level", "Tier Level", CustomFieldType.Text));
+        await customFieldService.CreateDefinitionAsync(tenantId, new CreateCustomFieldDefinitionRequest("Deal", "account_manager", "Account Manager", CustomFieldType.Text));
+        await customFieldService.CreateDefinitionAsync(tenantId, new CreateCustomFieldDefinitionRequest("Deal", "deal_priority", "Deal Priority", CustomFieldType.Number));
+
+        var definitions = (await customFieldService.GetDefinitionsAsync(tenantId, "Deal")).ToList();
+
+        Assert.Equal(3, definitions.Count);
+        Assert.Equal("account_manager", definitions[0].FieldName);
+        Assert.Equal("deal_priority", definitions[1].FieldName);
+        Assert.Equal("tier_level", definitions[2].FieldName);
+    }
 }
