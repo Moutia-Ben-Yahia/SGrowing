@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using SGrowing.Api.Modules.Security.SyntheticData;
 using Xunit;
@@ -62,5 +66,28 @@ public class SyntheticDataGeneratorServiceTests
         var act = () => _service.GenerateSyntheticDatasetAsync(req);
 
         await act.Should().ThrowAsync<ArgumentOutOfRangeException>();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-10)]
+    public async Task GenerateSyntheticDatasetAsync_ShouldThrow_WhenRowCountIsZeroOrNegative(int invalidCount)
+    {
+        var rules = new List<ColumnSchemaRule>
+        {
+            new("Email", DataClassification.DirectIdentifier, SynthesisStrategy.RealisticFake)
+        };
+
+        var req = new GenerateSyntheticDatasetRequest(_tenantId, "InvalidCountTable", invalidCount, rules);
+        var act = () => _service.GenerateSyntheticDatasetAsync(req);
+
+        await act.Should().ThrowAsync<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public async Task InspectAndRecommendRulesAsync_HandlesEmptyColumnList()
+    {
+        var rules = await _service.InspectAndRecommendRulesAsync(new List<string>());
+        rules.Should().BeEmpty();
     }
 }

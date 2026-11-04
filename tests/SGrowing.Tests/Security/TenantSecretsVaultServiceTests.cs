@@ -103,4 +103,47 @@ public class TenantSecretsVaultServiceTests
         rawEntity!.EncryptedAccessToken.Should().NotBe(token);
         rawEntity.EncryptedAppSecret.Should().NotBe(secret);
     }
+
+    [Fact]
+    public async Task DeleteSecretAsync_ShouldReturnFalse_WhenSecretDoesNotExist()
+    {
+        var tenant = Guid.NewGuid();
+        var result = await _vault.DeleteSecretAsync(tenant, "NonExistentKey123");
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task StoreSecretAsync_ShouldOverwriteExistingValueCleanly()
+    {
+        var tenant = Guid.NewGuid();
+        await _vault.StoreSecretAsync(tenant, "RotatingApiKey", "initial_key_111");
+        var val1 = await _vault.GetSecretAsync(tenant, "RotatingApiKey");
+
+        await _vault.StoreSecretAsync(tenant, "RotatingApiKey", "rotated_key_222");
+        var val2 = await _vault.GetSecretAsync(tenant, "RotatingApiKey");
+
+        val1.Should().Be("initial_key_111");
+        val2.Should().Be("rotated_key_222");
+    }
+
+    [Fact]
+    public async Task GetCredentialAsync_ReturnsNull_WhenChannelNotFound()
+    {
+        var tenant = Guid.NewGuid();
+        var cred = await _vault.GetCredentialAsync(tenant, "NonExistentChannel");
+        cred.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task StoreCredentialAsync_SupportsNullSigningKey()
+    {
+        var tenant = Guid.NewGuid();
+        await _vault.StoreCredentialAsync(tenant, "TelegramBot", "bot_token_abc", "bot_secret_xyz", null);
+
+        var cred = await _vault.GetCredentialAsync(tenant, "TelegramBot");
+        cred.Should().NotBeNull();
+        cred!.Value.AccessToken.Should().Be("bot_token_abc");
+        cred.Value.AppSecret.Should().Be("bot_secret_xyz");
+        cred.Value.SigningKey.Should().BeNull();
+    }
 }

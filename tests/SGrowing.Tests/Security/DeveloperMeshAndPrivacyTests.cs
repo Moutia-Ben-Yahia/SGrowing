@@ -103,4 +103,24 @@ public class DeveloperMeshAndPrivacyTests
         Assert.Equal("Completed", request!.Status);
         Assert.Equal(3, request.ErasedRecordsCount);
     }
+
+    [Fact]
+    public async Task OutboundWebhooks_ReturnsZero_WhenNoSubscriptionsExist()
+    {
+        var tenantId = Guid.NewGuid();
+        var dispatched = await _dispatcher.DispatchOutboundWebhooksAsync(tenantId, "OrderCreated", "{}");
+        Assert.Equal(0, dispatched);
+    }
+
+    [Fact]
+    public async Task CustomerPrivacy_ExecutesCleanlyWhenNoMatchingContactFound()
+    {
+        var tenantId = Guid.NewGuid();
+        var result = await _privacyService.ExecuteRightToBeForgottenAsync(tenantId, "unknown.user.99@test.com");
+
+        Assert.True(result.Success);
+        Assert.Equal(0, result.ErasedContactsCount);
+        Assert.Equal(0, result.RedactedMessagesCount);
+        Assert.Equal(0, result.RemovedRagChunksCount);
+    }
 }
