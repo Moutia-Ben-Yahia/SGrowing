@@ -61,4 +61,130 @@ public class StorefrontDomainTests
         Assert.Equal("Playfair Display, serif", publicConfig.FontFamily);
         Assert.Equal("CARTHAGE", theme.SmsSenderId);
     }
+
+    [Fact]
+    public async Task RegisterCustomDomainAsync_ExistingHostname_ReturnsExistingWithoutDuplicate()
+    {
+        var db = CreateDbContext();
+        var service = new StorefrontDomainService(db);
+        var tenantId = Guid.NewGuid();
+
+        var first = await service.RegisterCustomDomainAsync(tenantId, "shop.brand.tn");
+        var second = await service.RegisterCustomDomainAsync(tenantId, "shop.brand.tn");
+
+        Assert.Equal(first.Id, second.Id);
+        Assert.Equal(1, await db.StorefrontDomains.CountAsync());
+    }
+
+    [Fact]
+    public async Task RegisterCustomDomainAsync_NormalizesWhitespaceAndCase()
+    {
+        var db = CreateDbContext();
+        var service = new StorefrontDomainService(db);
+        var tenantId = Guid.NewGuid();
+
+        var domain = await service.RegisterCustomDomainAsync(tenantId, "   BOUTIQUE.Luxury-Store.COM   ");
+
+        Assert.Equal("boutique.luxury-store.com", domain.Hostname);
+    }
+
+    [Fact]
+    public async Task VerifyDomainDnsAsync_InvalidDomainId_ThrowsInvalidOperationException()
+    {
+        var db = CreateDbContext();
+        var service = new StorefrontDomainService(db);
+        var tenantId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => service.VerifyDomainDnsAsync(tenantId, Guid.NewGuid())
+        );
+    }
+
+    [Fact]
+    public async Task VerifyDomainDnsAsync_FailedDns_SetsFailedAndProvisioning()
+    {
+        var db = CreateDbContext();
+        var service = new StorefrontDomainService(db);
+        var tenantId = Guid.NewGuid();
+
+        var domain = await service.RegisterCustomDomainAsync(tenantId, "dns-fail.store.com");
+        var verified = await service.VerifyDomainDnsAsync(tenantId, domain.Id, simulateValidDns: false);
+
+        Assert.Equal(DomainValidationStatus.Failed, verified.ValidationStatus);
+        Assert.Equal(SslCertificateStatus.Provisioning, verified.SslStatus);
+        Assert.Null(verified.VerifiedAtUtc);
+    }
+
+    [Fact]
+    public async Task UpsertBrandThemeTokensAsync_UpdatesExistingThemeTokens()
+    {
+        var db = CreateDbContext();
+        var service = new StorefrontDomainService(db);
+        var tenantId = Guid.NewGuid();
+
+        var initial = new BrandThemeTokens
+        {
+            StorefrontSlug = "myshop",
+            BrandName = "My Shop V1",
+            PrimaryColorHex = "#111111",
+            SecondaryColorHex = "#222222",
+            FontFamily = "Arial"
+        };
+        await service.UpsertBrandThemeTokensAsync(tenantId, initial);
+
+        var updated = new BrandThemeTokens
+        {
+            StorefrontSlug = "myshop",
+            BrandName = "My Shop V2 Rebranded",
+            PrimaryColorHex = "#FF5500",
+            SecondaryColorHex = "#FFAA00",
+            FontFamily = "Roboto"
+        };
+        var result = await service.UpsertBrandThemeTokensAsync(tenantId, updated);
+
+        Assert.Equal("My Shop V2 Rebranded", result.BrandName);
+        Assert.Equal("#FF5500", result.PrimaryColorHex);
+        Assert.Equal(1, await db.BrandThemeTokens.CountAsync());
+    }
+
+    [Fact]
+    public async Task GetPublicStorefrontConfigAsync_UnknownSlugOrDomain_ReturnsDefaultOfficialStoreConfig()
+    {
+        var db = CreateDbContext();
+        var service = new StorefrontDomainService(db);
+
+        var fallbackConfig = await service.GetPublicStorefrontConfigAsync("completely-unknown-store-1234");
+
+        Assert.NotNull(fallbackConfig);
+        Assert.Equal("default", fallbackConfig.StorefrontSlug);
+        Assert.Equal("SGrowing Official Store", fallbackConfig.BrandName);
+        Assert.Equal("#4F46E5", fallbackConfig.PrimaryColorHex);
+        Assert.Equal("TND", fallbackConfig.Currency);
+        Assert.True(fallbackConfig.CodEnabled);
+    }
+
+    [Fact]
+    public async Task GetPublicStorefrontConfigAsync_ResolvesDirectlyBySlug()
+    {
+        var db = CreateDbContext();
+        var service = new StorefrontDomainService(db);
+        var tenantId = Guid.NewGuid();
+
+        var theme = new BrandThemeTokens
+        {
+            StorefrontSlug = "direct-slug-store",
+            BrandName = "Direct Slug Brand",
+            PrimaryColorHex = "#00AA55",
+            SecondaryColorHex = "#005522",
+            FontFamily = "Geist"
+        };
+        await service.UpsertBrandThemeTokensAsync(tenantId, theme);
+
+        var config = await service.GetPublicStorefrontConfigAsync("direct-slug-store");
+
+        Assert.NotNull(config);
+        Assert.Equal("direct-slug-store", config.StorefrontSlug);
+        Assert.Equal("Direct Slug Brand", config.BrandName);
+        Assert.Equal("#00AA55", config.PrimaryColorHex);
+    }
 }

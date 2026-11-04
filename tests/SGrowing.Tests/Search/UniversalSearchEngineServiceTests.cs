@@ -116,4 +116,116 @@ public class UniversalSearchEngineServiceTests
         response.Results.Should().ContainSingle();
         response.Results[0].DocumentId.Should().Be(doc1.DocumentId);
     }
+
+    [Fact]
+    public async Task GetDocumentCountAsync_ReturnsAccurateCountForTenant()
+    {
+        var tenantId = Guid.NewGuid();
+        var emptyCount = await _service.GetDocumentCountAsync(tenantId);
+        emptyCount.Should().Be(0);
+
+        var doc1 = new SearchDocument(Guid.NewGuid(), tenantId, SearchableEntityType.KnowledgeArticle, "Doc One", "Content one");
+        var doc2 = new SearchDocument(Guid.NewGuid(), tenantId, SearchableEntityType.CrmDeal, "Doc Two", "Content two");
+        await _service.IndexDocumentsBatchAsync(new List<SearchDocument> { doc1, doc2 });
+
+        var afterCount = await _service.GetDocumentCountAsync(tenantId);
+        afterCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task SearchAsync_EmptyOrWhitespaceQuery_ReturnsZeroMatches()
+    {
+        var doc = new SearchDocument(Guid.NewGuid(), _tenantId, SearchableEntityType.Customer, "Alpha Customer", "Active user");
+        await _service.IndexDocumentAsync(doc);
+
+        var emptyResponse = await _service.SearchAsync(new UniversalSearchQuery(_tenantId, ""));
+        var wsResponse = await _service.SearchAsync(new UniversalSearchQuery(_tenantId, "   "));
+
+        emptyResponse.TotalMatches.Should().Be(0);
+        emptyResponse.Results.Should().BeEmpty();
+        wsResponse.TotalMatches.Should().Be(0);
+        wsResponse.Results.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SearchAsync_UnknownTenant_ReturnsZeroMatches()
+    {
+        var unknownTenantId = Guid.NewGuid();
+        var response = await _service.SearchAsync(new UniversalSearchQuery(unknownTenantId, "anything"));
+
+        response.TotalMatches.Should().Be(0);
+        response.Results.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SearchAsync_NullQuery_ThrowsArgumentNullException()
+    {
+        var act = async () => await _service.SearchAsync(null!);
+        await act.Should().ThrowAsync<ArgumentNullException>();
+    }
+
+    [Fact]
+    public async Task IndexDocumentAsync_NullDocument_ThrowsArgumentNullException()
+    {
+        var act = async () => await _service.IndexDocumentAsync(null!);
+        await act.Should().ThrowAsync<ArgumentNullException>();
+    }
+
+    [Fact]
+    public async Task SearchAsync_NonFuzzyMatching_RequiresExactMatch()
+    {
+        var tenantId = Guid.NewGuid();
+        var doc = new SearchDocument(Guid.NewGuid(), tenantId, SearchableEntityType.OrderFulfillment, "Expedited Shipping Container", "Tracking container number 4581");
+        await _service.IndexDocumentAsync(doc);
+
+        // Typo search with fuzzy disabled -> 0 matches
+        var noFuzzyResponse = await _service.SearchAsync(new UniversalSearchQuery(tenantId, "shippng", EnableFuzzyMatching: false));
+        noFuzzyResponse.TotalMatches.Should().Be(0);
+
+        // Exact match with fuzzy disabled -> 1 match
+        var exactResponse = await _service.SearchAsync(new UniversalSearchQuery(tenantId, "shipping", EnableFuzzyMatching: false));
+        exactResponse.TotalMatches.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task SearchAsync_LimitEnforcement_ReturnsAtMostLimitResults()
+    {
+        var tenantId = Guid.NewGuid();
+        var docs = Enumerable.Range(1, 10).Select(i => new SearchDocument(
+            Guid.NewGuid(),
+            tenantId,
+            SearchableEntityType.KnowledgeArticle,
+            $"Knowledge Base Article #{i}",
+            $"Standard operating procedure article #{i} for customer support"
+        )).ToList();
+
+        await _service.IndexDocumentsBatchAsync(docs);
+
+        var query = new UniversalSearchQuery(tenantId, "standard operating", Limit: 3);
+        var response = await _service.SearchAsync(query);
+
+        response.TotalMatches.Should().Be(10);
+        response.Results.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task SearchAsync_Facets_AggregatesCountsAcrossMultipleEntityTypes()
+    {
+        var tenantId = Guid.NewGuid();
+        var doc1 = new SearchDocument(Guid.NewGuid(), tenantId, SearchableEntityType.Customer, "Acme Corp Customer Profile", "Leading enterprise client");
+        var doc2 = new SearchDocument(Guid.NewGuid(), tenantId, SearchableEntityType.CrmDeal, "Acme Corp Annual Renewal", "High priority deal");
+        var doc3 = new SearchDocument(Guid.NewGuid(), tenantId, SearchableEntityType.TicketMessage, "Acme Corp Urgent Ticket", "Billing question from Acme");
+
+        await _service.IndexDocumentsBatchAsync(new List<SearchDocument> { doc1, doc2, doc3 });
+
+        var query = new UniversalSearchQuery(tenantId, "Acme Corp");
+        var response = await _service.SearchAsync(query);
+
+        response.Facets.Should().ContainKey(SearchableEntityType.Customer);
+        response.Facets.Should().ContainKey(SearchableEntityType.CrmDeal);
+        response.Facets.Should().ContainKey(SearchableEntityType.TicketMessage);
+        response.Facets[SearchableEntityType.Customer].Should().Be(1);
+        response.Facets[SearchableEntityType.CrmDeal].Should().Be(1);
+        response.Facets[SearchableEntityType.TicketMessage].Should().Be(1);
+    }
 }

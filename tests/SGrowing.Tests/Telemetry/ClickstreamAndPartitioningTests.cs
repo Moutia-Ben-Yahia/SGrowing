@@ -61,6 +61,49 @@ public class ClickstreamAndPartitioningTests
     }
 
     [Fact]
+    public async Task ClickstreamBuffer_NullEvent_ReturnsFalseWithoutBuffering()
+    {
+        ClickstreamBufferService.ResetBuffer();
+        var result = await _bufferService.BufferEventAsync(null!);
+
+        result.Should().BeFalse();
+        _bufferService.GetPendingBufferCount().Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ClickstreamBuffer_FlushBatchWithBatchSizeZeroOrNegative_ClampsToOne()
+    {
+        ClickstreamBufferService.ResetBuffer();
+        var ev = TelemetryEvent.Create(Guid.NewGuid(), "scroll", "/landing", "10.0.0.1", "Firefox");
+        await _bufferService.BufferEventAsync(ev);
+
+        // Batch size -5 should clamp to 1 and flush the single event
+        var count = await _bufferService.FlushBufferBatchAsync(-5);
+        count.Should().Be(1);
+        _bufferService.GetPendingBufferCount().Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ClickstreamBuffer_FlushEmptyBuffer_ReturnsZero()
+    {
+        ClickstreamBufferService.ResetBuffer();
+        var count = await _bufferService.FlushBufferBatchAsync(50);
+        count.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ClickstreamBuffer_ResetBuffer_ClearsAllPendingEvents()
+    {
+        ClickstreamBufferService.ResetBuffer();
+        var ev = TelemetryEvent.Create(Guid.NewGuid(), "tab_switch", "/analytics", "10.0.0.2", "Safari");
+        await _bufferService.BufferEventAsync(ev);
+        _bufferService.GetPendingBufferCount().Should().Be(1);
+
+        ClickstreamBufferService.ResetBuffer();
+        _bufferService.GetPendingBufferCount().Should().Be(0);
+    }
+
+    [Fact]
     public void DatabasePartitioning_GeneratesValidMonthlyPostgreSqlDdl()
     {
         var month = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc);
