@@ -38,6 +38,34 @@ public class AgentWhisperTests
     }
 
     [Fact]
+    public void AnalyzeSpeechTurn_DetectsFeatureInquiry_WhenNoPriceKeywordsPresent()
+    {
+        // Arrange
+        var command = new AnalyzeSpeechTurnCommand("CALL-8842", "Buyer", "How does your platform integrate with HubSpot and Salesforce?", 2100);
+
+        // Act
+        var result = _engine.AnalyzeSpeechTurn(command);
+
+        // Assert
+        result.DetectedIntent.Should().Be("FeatureInquiry");
+        result.RecommendedWhisperText.Should().Contain("native bi-directional CRM syncing");
+        result.MaxConcessionAllowedPct.Should().Be(0.0m);
+    }
+
+    [Fact]
+    public void AnalyzeSpeechTurn_GeneratesUniqueTurnIds()
+    {
+        // Arrange & Act
+        var r1 = _engine.AnalyzeSpeechTurn(new AnalyzeSpeechTurnCommand("CALL-8841", "Buyer", "Price too high", 1000));
+        var r2 = _engine.AnalyzeSpeechTurn(new AnalyzeSpeechTurnCommand("CALL-8841", "Buyer", "Price too high", 1000));
+
+        // Assert
+        r1.TurnAnalysisId.Should().StartWith("TURN-");
+        r2.TurnAnalysisId.Should().StartWith("TURN-");
+        r1.TurnAnalysisId.Should().NotBe(r2.TurnAnalysisId);
+    }
+
+    [Fact]
     public void CalculateConcession_ApprovesConcessionWithinThreshold()
     {
         var command = new CalculateConcessionCommand("CALL-8841", 10.0m, 45);
@@ -50,6 +78,21 @@ public class AgentWhisperTests
     }
 
     [Fact]
+    public void CalculateConcession_DefaultsTo45Days_WhenZeroOrNegativeDaysProvided()
+    {
+        // Arrange
+        var command = new CalculateConcessionCommand("CALL-8841", 8.0m, 0);
+
+        // Act
+        var result = _engine.CalculateConcession(command);
+
+        // Assert
+        result.Status.Should().Be("Approved_Autonomous");
+        result.ApprovedDiscountPct.Should().Be(8.0m);
+        result.ApprovedPaymentDays.Should().Be(45, "zero or negative days should fallback to standard 45-day default");
+    }
+
+    [Fact]
     public void CalculateConcession_CountersExcessiveDiscount()
     {
         var command = new CalculateConcessionCommand("CALL-8841", 22.0m, 60);
@@ -58,6 +101,22 @@ public class AgentWhisperTests
         result.Should().NotBeNull();
         result.Status.Should().Be("CounterOffer_Recommended");
         result.ApprovedDiscountPct.Should().Be(12.0m);
+        result.ApprovedPaymentDays.Should().Be(60);
         result.RationaleNarrative.Should().Contain("exceeds AE limits");
+    }
+
+    [Fact]
+    public void CalculateConcession_UnknownCallSessionId_FallsBackToDefaultSession()
+    {
+        // Arrange: Unknown CallSessionId
+        var command = new CalculateConcessionCommand("CALL-UNKNOWN-9999", 5.0m, 30);
+
+        // Act
+        var result = _engine.CalculateConcession(command);
+
+        // Assert
+        result.Status.Should().Be("Approved_Autonomous");
+        result.ApprovedDiscountPct.Should().Be(5.0m);
+        result.ApprovedPaymentDays.Should().Be(30);
     }
 }
