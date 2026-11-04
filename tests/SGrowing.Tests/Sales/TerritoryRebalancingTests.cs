@@ -48,4 +48,39 @@ public class TerritoryRebalancingTests
         result.EffectiveDate.Should().BeAfter(DateTime.UtcNow);
         result.AuditReceipt.Should().Contain("AUDIT-HASH");
     }
+
+    [Fact]
+    public void SimulateRebalance_GeoProximityStrategy_CalculatesProperGiniIndex()
+    {
+        var command = new SimulateRebalanceCommand("GeoProximity", 20);
+        var result = _engine.SimulateRebalance(command);
+
+        result.Should().NotBeNull();
+        result.Strategy.Should().Be("GeoProximity");
+        result.SimulatedGiniIndex.Should().Be(0.18);
+        result.ExpectedQuotaImprovementPct.Should().Be(19.0); // (0.38 - 0.18) * 100 * 0.95 = 19.0
+    }
+
+    [Fact]
+    public void SimulateRebalance_DefaultStrategy_CalculatesProperGiniIndex()
+    {
+        var command = new SimulateRebalanceCommand("CustomHybrid", 10);
+        var result = _engine.SimulateRebalance(command);
+
+        result.Should().NotBeNull();
+        result.Strategy.Should().Be("CustomHybrid");
+        result.SimulatedGiniIndex.Should().Be(0.15);
+        result.ExpectedQuotaImprovementPct.Should().Be(21.8);
+    }
+
+    [Fact]
+    public void ApplyRebalance_ZeroGracePeriod_DefaultsToFourteenDays()
+    {
+        var command = new ApplyRebalanceCommand("SIM-ZERO-001", 0, "OPS-ADMIN");
+        var result = _engine.ApplyRebalance(command);
+
+        result.Should().NotBeNull();
+        result.EffectiveDate.Should().BeAfter(DateTime.UtcNow.AddDays(13));
+        result.EffectiveDate.Should().BeBefore(DateTime.UtcNow.AddDays(15));
+    }
 }

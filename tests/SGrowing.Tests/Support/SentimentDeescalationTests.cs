@@ -49,4 +49,53 @@ public class SentimentDeescalationTests
         Assert.Equal(500m, updated.AppliedGoodwill.AccountCreditDollars);
         Assert.False(updated.RequiresUrgentTriage);
     }
+
+    [Fact]
+    public void SubmitCsat_PassiveNeutralRating_ClassifiesCorrectly()
+    {
+        var request = new SubmitCsatRequest(
+            "cust_neutral",
+            "neutral@user.com",
+            3,
+            "Service was average, nothing special."
+        );
+
+        var result = _engine.SubmitCsat(request);
+
+        Assert.Equal(SentimentLevel.PassiveNeutral, result.EvaluatedSentiment);
+        Assert.False(result.RequiresUrgentTriage);
+    }
+
+    [Theory]
+    [InlineData("This is unacceptable service")]
+    [InlineData("I am canceling my account")]
+    [InlineData("Terrible experience overall")]
+    [InlineData("Please escalate to manager")]
+    public void SubmitCsat_KeywordTrigger_TriggersUrgentTriageEvenForHighRating(string feedback)
+    {
+        var request = new SubmitCsatRequest("cust_keyword", "user@test.com", 4, feedback);
+        var result = _engine.SubmitCsat(request);
+
+        Assert.Equal(SentimentLevel.FrustratedAtRisk, result.EvaluatedSentiment);
+        Assert.True(result.RequiresUrgentTriage);
+    }
+
+    [Fact]
+    public void IssueGoodwill_WhenSubmissionNotFound_ReturnsNull()
+    {
+        var result = _engine.IssueGoodwill(new IssueGoodwillRequest("nonexistent_sub_123", 100m, "Credit"));
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void SubmitCsat_ClampsRatingScoreBetweenOneAndFive()
+    {
+        var reqLow = new SubmitCsatRequest("c1", "a@b.com", -5, "Text");
+        var resLow = _engine.SubmitCsat(reqLow);
+        Assert.Equal(1, resLow.RatingScore);
+
+        var reqHigh = new SubmitCsatRequest("c2", "a@b.com", 15, "Text");
+        var resHigh = _engine.SubmitCsat(reqHigh);
+        Assert.Equal(5, resHigh.RatingScore);
+    }
 }
