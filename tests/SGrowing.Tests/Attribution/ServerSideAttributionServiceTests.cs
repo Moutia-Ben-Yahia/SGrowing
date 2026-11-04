@@ -706,4 +706,53 @@ public class ServerSideAttributionServiceTests
         var events = await _service.GetRecentEventsAsync(limit: 100);
         Assert.True(events.Count >= concurrentTasks);
     }
+
+    [Fact]
+    public void NormalizeCity_StripsPunctuationAndExtraSpaces()
+    {
+        var raw = "  San-Francisco!   CA.  ";
+        var normalized = _service.NormalizeCity(raw);
+        Assert.Equal("sanfrancisco ca", normalized);
+        Assert.False(normalized.Contains('!'));
+        Assert.False(normalized.Contains('.'));
+    }
+
+    [Fact]
+    public void NormalizeZip_WithZipPlusFour_TruncatesToFiveDigits()
+    {
+        var raw = "94105-1234";
+        var normalized = _service.NormalizeZip(raw);
+        Assert.Equal("94105", normalized);
+    }
+
+    [Fact]
+    public void NormalizeCountry_ConvertsUsaAndUkAliasesToIsoCodes()
+    {
+        Assert.Equal("us", _service.NormalizeCountry("USA"));
+        Assert.Equal("us", _service.NormalizeCountry("United States"));
+        Assert.Equal("gb", _service.NormalizeCountry("UK"));
+        Assert.Equal("gb", _service.NormalizeCountry("United Kingdom"));
+        Assert.Equal("fr", _service.NormalizeCountry("FRANCE"));
+    }
+
+    [Fact]
+    public void BuildFbc_FormatsWithVersionAndTimestamp()
+    {
+        const long customTimestamp = 1700000000000L;
+        const string fbclid = "IwARtestFbclid123456";
+
+        var fbc = _service.BuildFbc(fbclid, customTimestamp);
+        Assert.Equal($"fb.1.{customTimestamp}.{fbclid}", fbc);
+
+        // Pre-formatted fbc should be returned unchanged
+        var existingFbc = "fb.1.123456789.ExistingToken";
+        Assert.Equal(existingFbc, _service.BuildFbc(existingFbc));
+    }
+
+    [Fact]
+    public async Task RetryPostbackAsync_NonExistentPostback_ReturnsFalse()
+    {
+        var success = await _service.RetryPostbackAsync("non_existent_postback_id_9999");
+        Assert.False(success);
+    }
 }

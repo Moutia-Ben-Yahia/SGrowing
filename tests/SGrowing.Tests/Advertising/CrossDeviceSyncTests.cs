@@ -148,4 +148,103 @@ public class CrossDeviceSyncTests
         Assert.True(metrics.MatchRatePercentage >= 50m);
         Assert.True(metrics.TotalAttributedGrossRevenue > 0m);
     }
+
+    [Fact]
+    public void ResolveIdentityCluster_MapsEmailsAndHashesToHashedEmailType()
+    {
+        var emailStr = "user.buyer@enterprise.com";
+        var hashStr = new string('a', 64);
+        var uidStr = "uid2_token_custom_value";
+
+        var request = new ResolveIdentityRequest(
+            PrimaryIdentifier: "primary-gaid-device",
+            PrimaryType: IdentifierType.MobileAdIdGaid,
+            AssociatedIdentifiers: new List<string> { emailStr, hashStr, uidStr },
+            HouseholdHint: null
+        );
+
+        var cluster = _engine.ResolveIdentityCluster(request);
+
+        Assert.Equal(4, cluster.Nodes.Count);
+        Assert.Contains(cluster.Nodes, n => n.IdentifierValue == emailStr && n.Type == IdentifierType.HashedEmailSha256);
+        Assert.Contains(cluster.Nodes, n => n.IdentifierValue == hashStr && n.Type == IdentifierType.HashedEmailSha256);
+        Assert.Contains(cluster.Nodes, n => n.IdentifierValue == uidStr && n.Type == IdentifierType.Uid2Token);
+    }
+
+    [Fact]
+    public void MatchOfflineConversion_RepeatedCallsWithSameEmail_LinksToSameCluster()
+    {
+        const string customerEmailHash = "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069";
+
+        var receipt1 = new OfflineConversionReceipt(
+            TransactionId: $"TX-REPEAT-1-{Guid.NewGuid():N}",
+            StoreOrPosId: "STORE-PARIS-01",
+            CustomerHashedEmail: customerEmailHash,
+            CustomerHashedPhone: null,
+            PurchaseAmount: 100m,
+            Currency: "EUR",
+            PurchasedSkuCodes: new List<string> { "SKU-FR-1" },
+            TransactionTimestampUtc: DateTime.UtcNow
+        );
+
+        var receipt2 = new OfflineConversionReceipt(
+            TransactionId: $"TX-REPEAT-2-{Guid.NewGuid():N}",
+            StoreOrPosId: "STORE-PARIS-01",
+            CustomerHashedEmail: customerEmailHash,
+            CustomerHashedPhone: null,
+            PurchaseAmount: 150m,
+            Currency: "EUR",
+            PurchasedSkuCodes: new List<string> { "SKU-FR-2" },
+            TransactionTimestampUtc: DateTime.UtcNow
+        );
+
+        var match1 = _engine.MatchOfflineConversion(receipt1);
+        var match2 = _engine.MatchOfflineConversion(receipt2);
+
+        Assert.Equal(match1.ClusterId, match2.ClusterId);
+    }
+
+    [Fact]
+    public void MatchOfflineConversion_BoundaryAmount50_DoesNotForwardToTikTok()
+    {
+        var receipt = new OfflineConversionReceipt(
+            TransactionId: $"TX-EXACT-50-{Guid.NewGuid():N}",
+            StoreOrPosId: "STORE-BORDER-01",
+            CustomerHashedEmail: "border-amount-email-hash",
+            CustomerHashedPhone: null,
+            PurchaseAmount: 50.00m, // Exact 50 boundary -> not > 50
+            Currency: "USD",
+            PurchasedSkuCodes: new List<string> { "SKU-50" },
+            TransactionTimestampUtc: DateTime.UtcNow
+        );
+
+        var match = _engine.MatchOfflineConversion(receipt);
+
+        Assert.False(match.ForwardedToTikTokEventsApi);
+        Assert.True(match.ForwardedToMetaCapi);
+        Assert.True(match.ForwardedToGoogleOci);
+    }
+
+    [Fact]
+    public void GetClusters_ReturnsClustersOrderedByUpdatedAtDescending()
+    {
+        var clusters = _engine.GetClusters();
+
+        Assert.NotEmpty(clusters);
+        for (var i = 0; i < clusters.Count - 1; i++)
+        {
+            Assert.True(clusters[i].UpdatedAtUtc >= clusters[i + 1].UpdatedAtUtc);
+        }
+    }
+
+    [Fact]
+    public void GetMetrics_IncludesActiveIdentityClustersCount()
+    {
+        var initialClustersCount = _engine.GetClusters().Count;
+        var metrics = _engine.GetMetrics();
+
+        Assert.Equal(initialClustersCount, metrics.ActiveIdentityClusters);
+        Assert.True(metrics.TotalReceiptsIngested >= 240);
+        Assert.True(metrics.TotalMatchedConversions >= 210);
+    }
 }

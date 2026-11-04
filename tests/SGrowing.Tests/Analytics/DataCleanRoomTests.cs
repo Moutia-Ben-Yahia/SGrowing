@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using FluentAssertions;
 using SGrowing.Api.Modules.Analytics.DataCleanRoom;
 using Xunit;
 
@@ -53,5 +57,67 @@ public sealed class DataCleanRoomTests
         Assert.True(summary.TotalHashedIdentities > 0);
         Assert.True(summary.TotalQueriesExecuted >= 1);
         Assert.True(summary.TotalEpsilonConsumed >= 0.5);
+    }
+
+    [Fact]
+    public async Task ExecuteOverlapMeasurement_NullRequest_ThrowsArgumentNullException()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            _engine.ExecuteOverlapMeasurementAsync(null!));
+    }
+
+    [Fact]
+    public async Task ExecuteOverlapMeasurement_MissingAdvertiserDataset_ThrowsKeyNotFoundException()
+    {
+        var request = new RunOverlapQueryRequest(
+            AdvertiserDatasetId: "non_existent_adv_ds",
+            PublisherDatasetId: "ds_pub_tech_readers",
+            DifferentialPrivacyEpsilon: 0.5
+        );
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _engine.ExecuteOverlapMeasurementAsync(request));
+    }
+
+    [Fact]
+    public async Task ExecuteOverlapMeasurement_MissingPublisherDataset_ThrowsKeyNotFoundException()
+    {
+        var request = new RunOverlapQueryRequest(
+            AdvertiserDatasetId: "ds_acme_high_ltv",
+            PublisherDatasetId: "non_existent_pub_ds",
+            DifferentialPrivacyEpsilon: 0.5
+        );
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _engine.ExecuteOverlapMeasurementAsync(request));
+    }
+
+    [Fact]
+    public async Task ExecuteOverlapMeasurement_LowerEpsilon_InjectsHigherDifferentialPrivacyNoise()
+    {
+        // Low epsilon (0.1) -> higher privacy -> higher noise
+        var lowEpsRequest = new RunOverlapQueryRequest("ds_acme_high_ltv", "ds_pub_tech_readers", 0.1);
+        var lowEpsResult = await _engine.ExecuteOverlapMeasurementAsync(lowEpsRequest);
+
+        // High epsilon (1.0) -> lower privacy -> lower noise
+        var highEpsRequest = new RunOverlapQueryRequest("ds_acme_high_ltv", "ds_pub_tech_readers", 1.0);
+        var highEpsResult = await _engine.ExecuteOverlapMeasurementAsync(highEpsRequest);
+
+        var lowEpsNoise = lowEpsResult.PrivacyNoisedOverlapCount - lowEpsResult.RawOverlapMatchCount;
+        var highEpsNoise = highEpsResult.PrivacyNoisedOverlapCount - highEpsResult.RawOverlapMatchCount;
+
+        lowEpsNoise.Should().BeGreaterThan(highEpsNoise);
+    }
+
+    [Fact]
+    public async Task GetDatasets_ReturnsDatasetsSortedByHashedIdentityCountDescending()
+    {
+        var datasets = await _engine.GetDatasetsAsync();
+
+        datasets.Count.Should().BeGreaterThanOrEqualTo(2);
+        for (var i = 0; i < datasets.Count - 1; i++)
+        {
+            datasets[i].HashedIdentityCount.Should().BeGreaterThanOrEqualTo(datasets[i + 1].HashedIdentityCount);
+        }
     }
 }
