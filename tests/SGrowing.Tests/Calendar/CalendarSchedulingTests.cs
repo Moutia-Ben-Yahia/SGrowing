@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Calendar;
@@ -38,17 +42,17 @@ public class CalendarSchedulingTests
             hosts: new List<Guid> { hostId }
         );
 
-        Assert.NotNull(eventType);
-        Assert.Equal("strategy-demo-call", eventType.Slug);
-        Assert.Equal(30, eventType.DurationMinutes);
-        Assert.True(eventType.IsRoundRobin);
+        eventType.Should().NotBeNull();
+        eventType.Slug.Should().Be("strategy-demo-call");
+        eventType.DurationMinutes.Should().Be(30);
+        eventType.IsRoundRobin.Should().BeTrue();
 
         var list = await _service.GetEventTypesAsync(tenantId);
-        Assert.Single(list);
+        list.Should().ContainSingle();
 
         var retrieved = await _service.GetEventTypeBySlugAsync(tenantId, "strategy-demo-call");
-        Assert.NotNull(retrieved);
-        Assert.Equal(eventType.Id, retrieved.Id);
+        retrieved.Should().NotBeNull();
+        retrieved!.Id.Should().Be(eventType.Id);
     }
 
     [Fact]
@@ -79,9 +83,12 @@ public class CalendarSchedulingTests
         var targetTuesday = new DateTime(2026, 11, 3, 0, 0, 0, DateTimeKind.Utc); // Nov 3 2026 is a Tuesday
         var slots = await _service.ComputeAvailableSlotsAsync(tenantId, eventType.Id, targetTuesday);
 
-        Assert.NotEmpty(slots);
-        Assert.All(slots, s => Assert.Equal(hostId, s.HostUserId));
-        Assert.All(slots, s => Assert.Equal(DayOfWeek.Tuesday, s.StartTimeUtc.DayOfWeek));
+        slots.Should().NotBeEmpty();
+        slots.Should().AllSatisfy(s =>
+        {
+            s.HostUserId.Should().Be(hostId);
+            s.StartTimeUtc.DayOfWeek.Should().Be(DayOfWeek.Tuesday);
+        });
     }
 
     [Fact]
@@ -120,15 +127,15 @@ public class CalendarSchedulingTests
             "Need enterprise COD integration"
         );
 
-        Assert.NotNull(booking);
-        Assert.Equal("John Doe", booking.AttendeeName);
-        Assert.Equal("john@enterprise.com", booking.AttendeeEmail);
-        Assert.Equal(CalendarBookingStatus.Scheduled, booking.Status);
-        Assert.False(string.IsNullOrEmpty(booking.MeetingUrl));
+        booking.Should().NotBeNull();
+        booking.AttendeeName.Should().Be("John Doe");
+        booking.AttendeeEmail.Should().Be("john@enterprise.com");
+        booking.Status.Should().Be(CalendarBookingStatus.Scheduled);
+        booking.MeetingUrl.Should().NotBeNullOrWhiteSpace();
 
         // Available slots should no longer include 14:00
         var remainingSlots = await _service.ComputeAvailableSlotsAsync(tenantId, eventType.Id, bookingTime.Date);
-        Assert.DoesNotContain(remainingSlots, s => s.StartTimeUtc == bookingTime);
+        remainingSlots.Should().NotContain(s => s.StartTimeUtc == bookingTime);
     }
 
     [Fact]
@@ -161,12 +168,110 @@ public class CalendarSchedulingTests
 
         var ics = await _service.GenerateIcsContentAsync(tenantId, booking.Id);
 
-        Assert.Contains("BEGIN:VCALENDAR", ics);
-        Assert.Contains("VERSION:2.0", ics);
-        Assert.Contains("BEGIN:VEVENT", ics);
-        Assert.Contains("SUMMARY:Product Walkthrough", ics);
-        Assert.Contains("jane@logistics.tn", ics);
-        Assert.Contains("END:VEVENT", ics);
-        Assert.Contains("END:VCALENDAR", ics);
+        ics.Should().Contain("BEGIN:VCALENDAR");
+        ics.Should().Contain("VERSION:2.0");
+        ics.Should().Contain("BEGIN:VEVENT");
+        ics.Should().Contain("SUMMARY:Product Walkthrough");
+        ics.Should().Contain("jane@logistics.tn");
+        ics.Should().Contain("END:VEVENT");
+        ics.Should().Contain("END:VCALENDAR");
+    }
+
+    [Fact]
+    public async Task CancelBooking_ShouldUpdateStatusToCancelledAndRecordReason()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var hostId = Guid.NewGuid();
+
+        var eventType = await _service.CreateEventTypeAsync(
+            tenantId, "Quarterly QBR", "quarterly-qbr", "Review", 60, false, "#10b981", new List<Guid> { hostId });
+
+        var bookingTime = DateTime.UtcNow.AddDays(2);
+        var booking = await _service.BookAppointmentAsync(
+            tenantId, eventType.Id, "Taylor Swift", "taylor@music.com", "+1234567890", bookingTime, "UTC", "QBR Review");
+
+        // Act
+        var cancelled = await _service.CancelBookingAsync(tenantId, booking.Id, "Scheduling conflict with board meeting");
+
+        // Assert
+        cancelled.Status.Should().Be(CalendarBookingStatus.Cancelled);
+        cancelled.Notes.Should().Contain("Cancelled: Scheduling conflict with board meeting");
+    }
+
+    [Fact]
+    public async Task RescheduleBooking_ShouldUpdateBookingTimeslot()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var hostId = Guid.NewGuid();
+
+        var eventType = await _service.CreateEventTypeAsync(
+            tenantId, "Architecture Sync", "arch-sync", "Tech", 45, false, "#f59e0b", new List<Guid> { hostId });
+
+        var originalTime = DateTime.UtcNow.AddDays(3);
+        var newTime = DateTime.UtcNow.AddDays(4);
+
+        var booking = await _service.BookAppointmentAsync(
+            tenantId, eventType.Id, "Bob Engineer", "bob@infra.com", "+1234567891", originalTime, "UTC", "Initial time");
+
+        // Act
+        var rescheduled = await _service.RescheduleBookingAsync(tenantId, booking.Id, newTime);
+
+        // Assert
+        rescheduled.StartTimeUtc.Should().Be(newTime);
+        rescheduled.EndTimeUtc.Should().Be(newTime.AddMinutes(45));
+        rescheduled.Status.Should().Be(CalendarBookingStatus.Scheduled);
+    }
+
+    [Fact]
+    public async Task SetHostWeights_And_GetEventHostsWithStats_ShouldPersistAndReturnWeights()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var host1 = Guid.NewGuid();
+        var host2 = Guid.NewGuid();
+
+        var eventType = await _service.CreateEventTypeAsync(
+            tenantId, "Lead Routing", "lead-routing", "Routing", 30, true, "#ef4444", new List<Guid> { host1, host2 });
+
+        await _service.SetHostAvailabilityAsync(tenantId, host1, "Host One", "UTC", new List<DayAvailability>(), 1.0);
+        await _service.SetHostAvailabilityAsync(tenantId, host2, "Host Two", "UTC", new List<DayAvailability>(), 1.0);
+
+        // Act
+        var customWeights = new Dictionary<Guid, double>
+        {
+            [host1] = 0.75,
+            [host2] = 0.25
+        };
+        await _service.SetHostWeightsAsync(tenantId, eventType.Id, customWeights);
+
+        var stats = await _service.GetEventHostsWithStatsAsync(tenantId, eventType.Id);
+
+        // Assert
+        stats.Should().HaveCount(2);
+        var s1 = stats.Find(s => s.HostUserId == host1);
+        var s2 = stats.Find(s => s.HostUserId == host2);
+
+        s1.Should().NotBeNull();
+        s1!.Weight.Should().Be(0.75);
+
+        s2.Should().NotBeNull();
+        s2!.Weight.Should().Be(0.25);
+    }
+
+    [Fact]
+    public async Task ComputeAvailableSlots_WhenEventTypeNotFound_ReturnsEmptySlots()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var nonExistentEventTypeId = Guid.NewGuid();
+        var targetDate = new DateTime(2026, 11, 4, 0, 0, 0, DateTimeKind.Utc);
+
+        // Act
+        var slots = await _service.ComputeAvailableSlotsAsync(tenantId, nonExistentEventTypeId, targetDate);
+
+        // Assert
+        slots.Should().BeEmpty();
     }
 }

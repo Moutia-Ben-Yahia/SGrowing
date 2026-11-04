@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Generic;
+using FluentAssertions;
 using SGrowing.Api.Modules.SEO.Programmatic;
+using Xunit;
 
 namespace SGrowing.Tests.SEO;
 
@@ -11,9 +15,9 @@ public class ProgrammaticSeoTests
     {
         var pages = _engine.ListPages();
 
-        Assert.NotEmpty(pages);
-        Assert.Contains(pages, p => p.Industry == "FinTech");
-        Assert.Contains(pages, p => p.Industry == "E-Commerce");
+        pages.Should().NotBeEmpty();
+        pages.Should().Contain(p => p.Industry == "FinTech");
+        pages.Should().Contain(p => p.Industry == "E-Commerce");
     }
 
     [Fact]
@@ -27,14 +31,53 @@ public class ProgrammaticSeoTests
 
         var generated = _engine.GeneratePages(req);
 
-        Assert.Equal(3, generated.Count);
-        Assert.All(generated, p =>
+        generated.Should().HaveCount(3);
+        generated.Should().AllSatisfy(p =>
         {
-            Assert.StartsWith("/growth-platform-for-", p.Slug);
-            Assert.Contains("schema.org", p.SchemaJsonLd);
-            Assert.True(p.WordCount > 1000);
-            Assert.NotEmpty(p.InternalLinks);
+            p.Slug.Should().StartWith("/growth-platform-for-");
+            p.SchemaJsonLd.Should().Contain("schema.org");
+            p.WordCount.Should().BeGreaterThan(1000);
+            p.InternalLinks.Should().NotBeEmpty();
         });
+    }
+
+    [Fact]
+    public void GeneratePages_AppendsCreatedPagesToListPages()
+    {
+        // Arrange
+        var initialCount = _engine.ListPages().Count;
+        var req = new BatchGeneratePagesRequest(
+            BaseSlugPattern: "solutions/{industry}",
+            Industries: new List<string> { "EdTech", "InsurTech" },
+            TargetAudience: "Startups"
+        );
+
+        // Act
+        var generated = _engine.GeneratePages(req);
+        var updatedPages = _engine.ListPages();
+
+        // Assert
+        generated.Should().HaveCount(2);
+        updatedPages.Count.Should().Be(initialCount + 2);
+        updatedPages.Should().Contain(p => p.Industry == "EdTech");
+        updatedPages.Should().Contain(p => p.Industry == "InsurTech");
+    }
+
+    [Fact]
+    public void GeneratePages_NormalizesSlugPrefixWithLeadingSlash()
+    {
+        // Arrange: slug pattern without leading slash
+        var req = new BatchGeneratePagesRequest(
+            BaseSlugPattern: "no-leading-slash/{industry}",
+            Industries: new List<string> { "GovTech" },
+            TargetAudience: "Public Sector"
+        );
+
+        // Act
+        var generated = _engine.GeneratePages(req);
+
+        // Assert
+        generated[0].Slug.Should().StartWith("/no-leading-slash/govtech");
     }
 
     [Fact]
@@ -42,9 +85,19 @@ public class ProgrammaticSeoTests
     {
         var backlinks = _engine.ListBacklinkOpportunities();
 
-        Assert.NotEmpty(backlinks);
-        Assert.True(backlinks[0].DomainAuthority >= backlinks[1].DomainAuthority);
-        Assert.Contains(backlinks, b => b.TargetDomain == "techcrunch.com");
+        backlinks.Should().NotBeEmpty();
+        backlinks[0].DomainAuthority.Should().BeGreaterThanOrEqualTo(backlinks[1].DomainAuthority);
+        backlinks.Should().Contain(b => b.TargetDomain == "techcrunch.com");
+    }
+
+    [Fact]
+    public void ListBacklinkOpportunities_OrdersStrictlyDescendingByDomainAuthority()
+    {
+        // Act
+        var backlinks = _engine.ListBacklinkOpportunities();
+
+        // Assert
+        backlinks.Should().BeInDescendingOrder(b => b.DomainAuthority);
     }
 
     [Fact]
@@ -53,8 +106,20 @@ public class ProgrammaticSeoTests
         var urls = new List<string> { "https://sgrowing.io/solutions/crm-for-fintech" };
         var receipt = _engine.SubmitToIndexNow(urls);
 
-        Assert.NotNull(receipt);
-        Assert.Equal(1, receipt.UrlsSubmitted);
-        Assert.Equal("202 Accepted", receipt.ResponseCode);
+        receipt.Should().NotBeNull();
+        receipt.UrlsSubmitted.Should().Be(1);
+        receipt.ResponseCode.Should().Be("202 Accepted");
+        receipt.Engine.Should().Contain("IndexNow");
+    }
+
+    [Fact]
+    public void SubmitToIndexNow_HandlesEmptyUrlList_ReturnsZeroSubmitted()
+    {
+        // Arrange & Act
+        var receipt = _engine.SubmitToIndexNow(new List<string>());
+
+        // Assert
+        receipt.UrlsSubmitted.Should().Be(0);
+        receipt.ResponseCode.Should().Be("202 Accepted");
     }
 }
