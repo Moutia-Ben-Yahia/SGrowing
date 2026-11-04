@@ -97,4 +97,51 @@ public sealed class RfpResponseTests
         Assert.Equal(96.0, q.ConfidenceScoreAvgPct);
         Assert.Equal("IN_PROGRESS", q.Status);
     }
+
+    [Fact]
+    public void GenerateAnswer_AddsAnswerToRecentAnswersCollection()
+    {
+        var engine = new RfpResponseEngine();
+        var initialOverview = engine.GetOverview();
+        var initialCount = initialOverview.RecentAnswers.Count;
+
+        var request = new GenerateRfpAnswerRequest(
+            "RFP-SEC-901",
+            "What data residency guarantees do you offer for EU clients?",
+            "COMPLIANCE_EU_GDPR"
+        );
+
+        var answer = engine.GenerateAnswer(request);
+
+        var updatedOverview = engine.GetOverview();
+        Assert.Equal(initialCount + 1, updatedOverview.RecentAnswers.Count);
+        Assert.Contains(updatedOverview.RecentAnswers, a => a.AnswerId == answer.AnswerId);
+    }
+
+    [Fact]
+    public void ImportQuestionnaire_MultipleQuestionnaires_IncrementsTotalActiveCount()
+    {
+        var engine = new RfpResponseEngine();
+        var initialCount = engine.GetOverview().TotalActiveQuestionnairesCount;
+
+        var q1 = engine.ImportQuestionnaire(new ImportQuestionnaireRequest("FinTech Corp", "SOC2", 40));
+        var q2 = engine.ImportQuestionnaire(new ImportQuestionnaireRequest("BioHealth Inc", "HIPAA", 60));
+
+        var updatedOverview = engine.GetOverview();
+        Assert.Equal(initialCount + 2, updatedOverview.TotalActiveQuestionnairesCount);
+        Assert.Contains(updatedOverview.Questionnaires, q => q.QuestionnaireId == q1.QuestionnaireId);
+        Assert.Contains(updatedOverview.Questionnaires, q => q.QuestionnaireId == q2.QuestionnaireId);
+    }
+
+    [Fact]
+    public void GetOverview_RecalculatesTotalQuestionsAcrossImportedWorkspaces()
+    {
+        var engine = new RfpResponseEngine();
+        var initialTotalQuestions = engine.GetOverview().TotalQuestionsSynthesized;
+
+        engine.ImportQuestionnaire(new ImportQuestionnaireRequest("Retail Giant", "SECURITY", 150));
+
+        var updatedOverview = engine.GetOverview();
+        Assert.Equal(initialTotalQuestions + 150, updatedOverview.TotalQuestionsSynthesized);
+    }
 }

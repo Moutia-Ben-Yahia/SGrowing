@@ -183,4 +183,77 @@ public class CompanyAccountTests
         children.Should().ContainSingle();
         children[0].Name.Should().Be("Google DeepMind");
     }
+
+    [Fact]
+    public async Task SetParentCompanyAsync_UpdatesParentCompanyId_AndPersists()
+    {
+        var db = CreateDbContext();
+        var service = new CompanyAccountService(db);
+        var tenantId = Guid.NewGuid();
+
+        var parent = await service.CreateCompanyAsync(tenantId, "Meta Platforms", "meta.com");
+        var child = await service.CreateCompanyAsync(tenantId, "Instagram", "instagram.com");
+
+        child.ParentCompanyId.Should().BeNull();
+
+        var updated = await service.SetParentCompanyAsync(tenantId, child.Id, parent.Id);
+        updated.Should().NotBeNull();
+        updated!.ParentCompanyId.Should().Be(parent.Id);
+
+        var persisted = await service.GetCompanyByIdAsync(tenantId, child.Id);
+        persisted!.ParentCompanyId.Should().Be(parent.Id);
+    }
+
+    [Fact]
+    public async Task GetContactsForCompanyAsync_ReturnsOrderedContacts_ForAssignedCompany()
+    {
+        var db = CreateDbContext();
+        var service = new CompanyAccountService(db);
+        var tenantId = Guid.NewGuid();
+
+        var company = await service.CreateCompanyAsync(tenantId, "Microsoft Corp", "microsoft.com");
+
+        var c1 = Contact.Create(tenantId, "Satya", "Nadella", "satya@microsoft.com");
+        var c2 = Contact.Create(tenantId, "Bill", "Gates", "bill@microsoft.com");
+        c1.CompanyId = company.Id;
+        c2.CompanyId = company.Id;
+
+        // Unassociated contact
+        var c3 = Contact.Create(tenantId, "Elon", "Musk", "elon@tesla.com");
+
+        db.Contacts.AddRange(c1, c2, c3);
+        await db.SaveChangesAsync();
+
+        var contacts = await service.GetContactsForCompanyAsync(tenantId, company.Id);
+
+        contacts.Should().HaveCount(2);
+        // Ordered by LastName, then FirstName: Gates, then Nadella
+        contacts[0].LastName.Should().Be("Gates");
+        contacts[1].LastName.Should().Be("Nadella");
+    }
+
+    [Fact]
+    public async Task AssociateContactByDomainAsync_HandlesWwwPrefixEquivalence()
+    {
+        var db = CreateDbContext();
+        var service = new CompanyAccountService(db);
+        var tenantId = Guid.NewGuid();
+
+        // Company registered with www.apple.com
+        var company = await service.CreateCompanyAsync(tenantId, "Apple Inc", "www.apple.com");
+
+        // Contact email without www: tim.cook@apple.com
+        var contact = Contact.Create(tenantId, "Tim", "Cook", "tim.cook@apple.com");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        var matched = await service.AssociateContactByDomainAsync(tenantId, contact.Id, contact.Email!);
+
+        matched.Should().NotBeNull();
+        matched!.Id.Should().Be(company.Id);
+        matched.Name.Should().Be("Apple Inc");
+
+        var updatedContact = await db.Contacts.FindAsync(contact.Id);
+        updatedContact!.CompanyId.Should().Be(company.Id);
+    }
 }

@@ -105,4 +105,51 @@ public class ValueRealizationTests
         Assert.Equal(100_000m, metric.AnnualizedRoiDollars);
         Assert.Equal(1.0, metric.RealizationMultiplier);
     }
+
+    [Fact]
+    public void GenerateQbrDeck_SlideTemplatesContainStructuredContent()
+    {
+        var engine = new ValueRealizationEngine();
+        var request = new GenerateQbrDeckRequest(
+            "Omega Aerospace Systems",
+            "2026-Q4",
+            5_200_000m,
+            98.5,
+            850_000m
+        );
+
+        var deck = engine.GenerateQbrDeck(request);
+
+        Assert.NotNull(deck);
+        Assert.Contains(deck.GeneratedSlides, s => s.SlideVisualType == "KPI_SCORECARD");
+        Assert.Contains(deck.GeneratedSlides, s => s.SlideVisualType == "PEER_BENCHMARK");
+        Assert.Contains(deck.GeneratedSlides, s => s.SlideVisualType == "EXPANSION_PROPOSAL");
+    }
+
+    [Fact]
+    public void AttestRoi_MultipleMetricsForSameAccount_CalculatesMonitoredAccountsUniquely()
+    {
+        var engine = new ValueRealizationEngine();
+        var initialAccounts = engine.GetOverview().MonitoredEnterpriseAccountsCount;
+
+        engine.AttestRoi(new AttestRoiRequest("New Enterprise Co", "AUTOMATION", 200_000m, 50_000m, "AUDIT_1"));
+        engine.AttestRoi(new AttestRoiRequest("New Enterprise Co", "CYCLE_TIME", 300_000m, 100_000m, "AUDIT_2"));
+
+        var updatedOverview = engine.GetOverview();
+        Assert.Equal(initialAccounts + 1, updatedOverview.MonitoredEnterpriseAccountsCount);
+    }
+
+    [Fact]
+    public void GetOverview_RecalculatesAverageHealthAcrossMultipleDecks()
+    {
+        var engine = new ValueRealizationEngine();
+
+        // Add 2 decks with 100.0 and 90.0 health
+        engine.GenerateQbrDeck(new GenerateQbrDeckRequest("Account A", "2026-Q1", 1_000_000m, 100.0, 100_000m));
+        engine.GenerateQbrDeck(new GenerateQbrDeckRequest("Account B", "2026-Q1", 1_000_000m, 90.0, 100_000m));
+
+        var overview = engine.GetOverview();
+        Assert.True(overview.AverageAccountNpsHealthScore >= 90.0);
+        Assert.True(overview.ScheduledQbrPresentationsCount >= 3);
+    }
 }
