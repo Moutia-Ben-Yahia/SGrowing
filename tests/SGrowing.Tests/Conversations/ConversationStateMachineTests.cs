@@ -81,4 +81,74 @@ public class ConversationStateMachineTests
         var messages = await db.Messages.Where(m => m.ConversationId == conv.Id).ToListAsync();
         messages.Should().HaveCount(1);
     }
+
+    [Fact]
+    public async Task ChangeStatusSlice_NonExistentConversation_ReturnsFailureResult()
+    {
+        var db = CreateDbContext();
+        var handler = new ChangeStatusHandler(db);
+
+        var result = await handler.HandleAsync(new ChangeStatusRequest(
+            Guid.NewGuid(), Guid.NewGuid(), ConversationStatus.Resolved));
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Be("Conversation not found.");
+    }
+
+    [Fact]
+    public async Task SendMessageSlice_NonExistentConversation_ReturnsFailureResult()
+    {
+        var db = CreateDbContext();
+        var handler = new SendMessageHandler(db);
+
+        var result = await handler.HandleAsync(new SendMessageRequest(
+            TenantId: Guid.NewGuid(),
+            ConversationId: Guid.NewGuid(),
+            SenderType: MessageSenderType.Agent,
+            SenderId: Guid.NewGuid(),
+            ContentType: MessageContentType.Text,
+            Content: "Orphaned message"
+        ));
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Be("Conversation not found.");
+    }
+
+    [Fact]
+    public async Task AssignToAgent_ShouldUpdateAssigneeId()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var agentId = Guid.NewGuid();
+        var conv = Conversation.Create(tenantId, Guid.NewGuid(), Guid.NewGuid());
+        db.Conversations.Add(conv);
+        await db.SaveChangesAsync();
+
+        conv.AssignTo(agentId);
+        await db.SaveChangesAsync();
+
+        var refreshed = await db.Conversations.FindAsync(conv.Id);
+        refreshed!.AssigneeId.Should().Be(agentId);
+    }
+
+    [Fact]
+    public async Task Conversation_PriorityAndAiModeTransitions_PersistCorrectly()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var conv = Conversation.Create(tenantId, Guid.NewGuid(), Guid.NewGuid());
+        db.Conversations.Add(conv);
+        await db.SaveChangesAsync();
+
+        conv.Priority = ConversationPriority.Urgent;
+        conv.AiMode = AiMode.Autonomous;
+        conv.ChangeStatus(ConversationStatus.WaitingOnCustomer);
+        await db.SaveChangesAsync();
+
+        var refreshed = await db.Conversations.FindAsync(conv.Id);
+        refreshed!.Priority.Should().Be(ConversationPriority.Urgent);
+        refreshed.AiMode.Should().Be(AiMode.Autonomous);
+        refreshed.Status.Should().Be(ConversationStatus.WaitingOnCustomer);
+        refreshed.PausedAtUtc.Should().NotBeNull();
+    }
 }

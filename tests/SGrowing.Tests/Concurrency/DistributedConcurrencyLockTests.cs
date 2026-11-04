@@ -77,4 +77,46 @@ public class DistributedConcurrencyLockTests
         secondHandle.Should().NotBeNull();
         secondHandle!.IsAcquired.Should().BeTrue();
     }
+
+    [Fact]
+    public async Task IsLockedAsync_WhenResourceNotLocked_ReturnsFalse()
+    {
+        var lockService = new RedisConcurrencyLockService();
+        var resourceKey = $"unlocked:resource:{Guid.NewGuid():N}";
+
+        var isLocked = await lockService.IsLockedAsync(resourceKey);
+        isLocked.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task TryAcquireLockAsync_MultipleDistinctKeys_CanBeHeldConcurrently()
+    {
+        var lockService = new RedisConcurrencyLockService();
+        var key1 = $"resource:alpha:{Guid.NewGuid():N}";
+        var key2 = $"resource:beta:{Guid.NewGuid():N}";
+
+        await using var handle1 = await lockService.TryAcquireLockAsync(key1, TimeSpan.FromSeconds(5), TimeSpan.FromMilliseconds(50));
+        await using var handle2 = await lockService.TryAcquireLockAsync(key2, TimeSpan.FromSeconds(5), TimeSpan.FromMilliseconds(50));
+
+        handle1.Should().NotBeNull();
+        handle1!.IsAcquired.Should().BeTrue();
+        handle2.Should().NotBeNull();
+        handle2!.IsAcquired.Should().BeTrue();
+
+        (await lockService.IsLockedAsync(key1)).Should().BeTrue();
+        (await lockService.IsLockedAsync(key2)).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task TryAcquireLockAsync_ZeroWaitTimeout_WhenLocked_FailsImmediately()
+    {
+        var lockService = new RedisConcurrencyLockService();
+        var resourceKey = $"fast:lock:{Guid.NewGuid():N}";
+
+        await using var primary = await lockService.TryAcquireLockAsync(resourceKey, TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(50));
+        primary.Should().NotBeNull();
+
+        await using var contender = await lockService.TryAcquireLockAsync(resourceKey, TimeSpan.FromSeconds(10), TimeSpan.Zero);
+        contender.Should().BeNull();
+    }
 }

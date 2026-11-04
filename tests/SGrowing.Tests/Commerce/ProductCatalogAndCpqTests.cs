@@ -143,4 +143,41 @@ public class ProductCatalogAndCpqTests
         Assert.NotNull(outbox);
         Assert.Contains("500", outbox.Payload);
     }
+
+    [Fact]
+    public async Task InChatCpq_GenerateQuoteMessage_NonExistentQuote_ThrowsKeyNotFoundException()
+    {
+        var tenantId = Guid.NewGuid();
+        var nonExistentQuoteId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _cpq.GenerateInChatQuoteMessageAsync(tenantId, nonExistentQuoteId));
+    }
+
+    [Fact]
+    public async Task InChatCpq_AcceptQuote_NonExistentQuote_ThrowsKeyNotFoundException()
+    {
+        var tenantId = Guid.NewGuid();
+        var nonExistentQuoteId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _cpq.AcceptQuoteAsync(tenantId, nonExistentQuoteId));
+    }
+
+    [Fact]
+    public async Task ProductCatalog_MultipleProducts_RetrievedInAlphabeticalOrder()
+    {
+        var tenantId = Guid.NewGuid();
+
+        await _catalog.CreateProductAsync(tenantId, "Zeta Analytics", "zeta-analytics", "Desc", ProductType.Subscription, 200m);
+        await _catalog.CreateProductAsync(tenantId, "Alpha Messaging", "alpha-messaging", "Desc", ProductType.Subscription, 100m);
+        await _catalog.CreateProductAsync(tenantId, "Beta Softphone", "beta-softphone", "Desc", ProductType.Subscription, 150m);
+
+        var products = await _catalog.GetProductsAsync(tenantId);
+
+        Assert.Equal(3, products.Count);
+        Assert.Equal("Alpha Messaging", products[0].Name);
+        Assert.Equal("Beta Softphone", products[1].Name);
+        Assert.Equal("Zeta Analytics", products[2].Name);
+    }
 }

@@ -51,4 +51,66 @@ public sealed class FraudFirewallTests
         Assert.NotNull(tempRule);
         Assert.False(tempRule.IsActive);
     }
+
+    [Fact]
+    public void EvaluateTransaction_LowRiskTransaction_ReturnsAllowDecision()
+    {
+        var request = new EvaluateTransactionRequest(
+            TransactionId: "txn_safe_101",
+            AmountUsd: 150m,
+            Currency: "USD",
+            CustomerEmail: "trusted.buyer@company.com",
+            IpAddress: "10.0.0.1",
+            CardCountry: "US",
+            BillingCountry: "US",
+            DeviceFingerprint: "fp_safe_device"
+        );
+
+        var eval = _engine.EvaluateTransaction(request);
+
+        Assert.NotNull(eval);
+        Assert.Equal(0, eval.RiskScore);
+        Assert.Equal("Allow", eval.Decision);
+        Assert.Empty(eval.TriggeredRules);
+    }
+
+    [Fact]
+    public void ToggleRule_NonExistentRule_ReturnsFalse()
+    {
+        var toggled = _engine.ToggleRule("rule_ghost_unknown", false);
+        Assert.False(toggled);
+    }
+
+    [Fact]
+    public void ListRecentEvaluations_ContainsNewlyEvaluatedTransactions()
+    {
+        var request = new EvaluateTransactionRequest(
+            TransactionId: "txn_audit_tracked",
+            AmountUsd: 6500m, // triggers high value rule
+            Currency: "USD",
+            CustomerEmail: "regular@gmail.com",
+            IpAddress: "12.34.56.78",
+            CardCountry: "GB",
+            BillingCountry: "GB",
+            DeviceFingerprint: "fp_gb_device"
+        );
+
+        var eval = _engine.EvaluateTransaction(request);
+        var recent = _engine.ListRecentEvaluations();
+
+        Assert.Contains(recent, e => e.TransactionId == "txn_audit_tracked");
+        Assert.True(eval.RiskScore > 0);
+    }
+
+    [Fact]
+    public void ListRules_ReturnsAllConfiguredFraudRules()
+    {
+        var rules = _engine.ListRules();
+
+        Assert.NotNull(rules);
+        Assert.True(rules.Count >= 4);
+        Assert.Contains(rules, r => r.Id == "rule_geo_mismatch");
+        Assert.Contains(rules, r => r.Id == "rule_high_value");
+        Assert.Contains(rules, r => r.Id == "rule_ip_velocity");
+    }
 }
