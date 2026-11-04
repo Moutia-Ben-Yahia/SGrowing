@@ -141,4 +141,25 @@ public class AiGatewayAndFirewallTests
         Assert.False(exec.Success);
         Assert.Contains("not registered", exec.Error, StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public async Task DynamicToolRegistry_MultiTenantIsolation_EnforcesTenantBoundaries()
+    {
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        await _toolRegistry.RegisterToolAsync(
+            tenantA,
+            "tenant_a_tool",
+            "Queries private tenant A data",
+            "{}",
+            "https://api.tenanta.com",
+            "GET");
+
+        var toolsForB = await _toolRegistry.GetActiveToolsAsync(tenantB);
+        Assert.Empty(toolsForB);
+
+        var exec = await _toolRegistry.ExecuteToolAsync(tenantB, "tenant_a_tool", "{}");
+        Assert.False(exec.Success);
+    }
 }

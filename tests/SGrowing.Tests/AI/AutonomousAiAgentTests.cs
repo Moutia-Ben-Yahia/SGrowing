@@ -249,4 +249,29 @@ public class AutonomousAiAgentTests
         dbMessages.Should().ContainSingle();
         dbMessages[0].SenderType.Should().Be(MessageSenderType.Bot);
     }
+
+    [Fact]
+    public async Task HandleIncomingMessage_WhenOrderQueryWithoutOrderLookupTool_ReturnsFallbackRecordMessage()
+    {
+        var db = CreateDbContext();
+        var notifier = new Mock<IRealtimeNotifier>();
+        var tenantId = Guid.NewGuid();
+
+        var contact = Contact.Create(tenantId, "Marcus", "Aurelius", "marcus@rome.gov");
+        db.Contacts.Add(contact);
+
+        var conv = Conversation.Create(tenantId, Guid.NewGuid(), contact.Id);
+        conv.AiMode = AiMode.Autonomous;
+        db.Conversations.Add(conv);
+        await db.SaveChangesAsync();
+
+        var service = new AutonomousAiAgentService(db, new List<IAgentTool>(), notifier.Object);
+
+        var res = await service.HandleIncomingMessageAsync(tenantId, conv.Id, contact.Id, "Can you review my recent purchase invoice?");
+
+        res.IsSuccess.Should().BeTrue();
+        res.Value.Processed.Should().BeTrue();
+        res.Value.ReplySent.Should().Be("I'm checking our records for your account details.");
+        res.Value.EscalatedToHuman.Should().BeFalse();
+    }
 }

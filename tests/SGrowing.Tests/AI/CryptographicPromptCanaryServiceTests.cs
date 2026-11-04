@@ -143,4 +143,16 @@ public class CryptographicPromptCanaryServiceTests
         _canaryService.ClearIncidents();
         _canaryService.GetIncidents().Should().BeEmpty();
     }
+
+    [Fact]
+    public void ScanResponse_NullOrEmptyInputs_ReturnsSafeWithoutLockout()
+    {
+        var emptySessionResult = _canaryService.ScanResponse("", "Hello world");
+        emptySessionResult.IsExfiltrationDetected.Should().BeFalse();
+        emptySessionResult.Message.Should().Be("SessionId required.");
+
+        var emptyResponseResult = _canaryService.ScanResponse("sess_valid_808", "");
+        emptyResponseResult.IsExfiltrationDetected.Should().BeFalse();
+        emptyResponseResult.Message.Should().Be("Safe - empty response.");
+    }
 }

@@ -171,4 +171,28 @@ public class AiCopilotTests
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.GenerateDraftAsync(tenantId, nonExistentConvId, "Hello"));
     }
+
+    [Fact]
+    public async Task AcceptDraft_WhenDraftNotFoundOrAlreadyAccepted_ReturnsNull()
+    {
+        var db = CreateDbContext();
+        var notifier = new Mock<IRealtimeNotifier>();
+        var tenantId = Guid.NewGuid();
+        var service = new AiCopilotService(db, notifier.Object);
+
+        // Non-existent draft
+        var missingResult = await service.AcceptDraftAsync(tenantId, Guid.NewGuid());
+        missingResult.Should().BeNull();
+
+        // Already accepted draft
+        var conv = Conversation.Create(tenantId, Guid.NewGuid(), Guid.NewGuid(), AiMode.Copilot);
+        db.Conversations.Add(conv);
+        var draft = AiDraft.Create(tenantId, conv.Id, "Already accepted reply", 0.9f);
+        draft.Status = AiDraftStatus.Accepted;
+        db.AiDrafts.Add(draft);
+        await db.SaveChangesAsync();
+
+        var acceptedResult = await service.AcceptDraftAsync(tenantId, draft.Id);
+        acceptedResult.Should().BeNull();
+    }
 }
