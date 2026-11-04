@@ -49,4 +49,38 @@ public class ContentRepurposingTests
         Assert.Equal(ContentChannel.LinkedInPost, derivative.Channel);
         Assert.NotEmpty(derivative.RecommendedHashtags);
     }
+
+    [Fact]
+    public void DecomposeContent_NullOrEmptyChannels_GeneratesFourDefaultChannels()
+    {
+        var request = new DecomposeContentRequest(
+            "asset_default_test",
+            "Autonomous Revenue",
+            "Overview of autonomous pipeline execution",
+            null!
+        );
+
+        var manifest = _engine.DecomposeContent(request);
+
+        Assert.NotNull(manifest);
+        Assert.Equal(4, manifest.Derivatives.Count);
+        Assert.Contains(manifest.Derivatives, d => d.Channel == ContentChannel.LinkedInPost);
+        Assert.Contains(manifest.Derivatives, d => d.Channel == ContentChannel.XTwitterThread);
+        Assert.Contains(manifest.Derivatives, d => d.Channel == ContentChannel.ExecutiveNewsletter);
+        Assert.Contains(manifest.Derivatives, d => d.Channel == ContentChannel.SlideCarousel);
+    }
+
+    [Fact]
+    public void GetManifestByAssetId_NonExistent_ReturnsNull()
+    {
+        var manifest = _engine.GetManifestByAssetId("asset_does_not_exist_999");
+        Assert.Null(manifest);
+    }
+
+    [Fact]
+    public void GetDerivativeById_NonExistent_ReturnsNull()
+    {
+        var derivative = _engine.GetDerivativeById("deriv_non_existent_123");
+        Assert.Null(derivative);
+    }
 }

@@ -66,4 +66,41 @@ public sealed class FlowInteractiveTests
         Assert.Equal("CONFIRMED_BOOKED", response.DataPayload["status"]);
         Assert.True(response.DataPayload.ContainsKey("calendar_event_id"));
     }
+
+    [Fact]
+    public async Task GetFlowById_ExistingAndMissing_ReturnsFlowOrThrows()
+    {
+        var flow = await _engine.GetFlowByIdAsync("flow_vip_booking_v3");
+        Assert.NotNull(flow);
+        Assert.Equal("flow_vip_booking_v3", flow.FlowId);
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _engine.GetFlowByIdAsync("non_existent_flow_id"));
+    }
+
+    [Fact]
+    public async Task ProcessDataExchange_NullOrMissingFlow_ThrowsExpectedExceptions()
+    {
+        // 1. Null request
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            _engine.ProcessDataExchangeAsync(null!));
+
+        // 2. Non-existent FlowId
+        var invalidReq = new FlowDataExchangeRequest("flow_missing", "SCREEN_1", "action", new Dictionary<string, string>());
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _engine.ProcessDataExchangeAsync(invalidReq));
+    }
+
+    [Fact]
+    public async Task GetAnalytics_CalculatesFunnelCompletionRateAndScreenDropOff()
+    {
+        var analytics = await _engine.GetAnalyticsAsync();
+
+        Assert.NotNull(analytics);
+        Assert.True(analytics.TotalPublishedFlows >= 1);
+        Assert.True(analytics.TotalSessionsStarted >= 3);
+        Assert.True(analytics.TotalCompletedSessions >= 2);
+        Assert.True(analytics.FunnelCompletionRatePercent > 0);
+        Assert.Equal("SCREEN_USE_CASE", analytics.HighestDropOffScreen);
+    }
 }

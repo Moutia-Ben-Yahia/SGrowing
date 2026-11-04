@@ -64,4 +64,35 @@ public class SocialProofTests
         Assert.Contains("sgrowing-wall-of-love", result.EmbedWidgetHtml);
         Assert.Contains("\"@type\": \"Product\"", result.SchemaJsonLdSnippet);
     }
+
+    [Fact]
+    public void ApproveTestimonial_ExistingAndMissing_ApprovesOrThrows()
+    {
+        var approved = _engine.ApproveTestimonial("tst_text_02");
+        Assert.NotNull(approved);
+        Assert.True(approved.IsApprovedForWallOfLove);
+
+        Assert.Throws<KeyNotFoundException>(() =>
+            _engine.ApproveTestimonial("tst_missing_999"));
+    }
+
+    [Fact]
+    public void RequestAndPublish_NullRequests_ThrowArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() =>
+            _engine.RequestTestimonial(null!));
+
+        Assert.Throws<ArgumentNullException>(() =>
+            _engine.PublishWallOfLove(null!));
+    }
+
+    [Fact]
+    public void PublishWallOfLove_NullApprovedIds_DefaultsToAllApprovedCount()
+    {
+        var result = _engine.PublishWallOfLove(new PublishWallOfLoveRequest(null!, "LightMinimal"));
+
+        Assert.NotNull(result);
+        Assert.True(result.IncludedTestimonialsCount >= 2);
+        Assert.Contains("data-theme=\"LightMinimal\"", result.EmbedWidgetHtml);
+    }
 }
