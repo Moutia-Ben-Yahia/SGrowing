@@ -53,4 +53,15 @@ describe('CabMatrixCockpitComponent', () => {
     expect(comp.themes()[2].themeId).toBe('THEME-003');
     expect(comp.alignmentScore()).toBe(96.8);
   });
+
+  it('should support resetting pairings and active members count', () => {
+    const comp = new CabMatrixCockpitComponent();
+    comp.pairings.set([]);
+    comp.activePairingsCount.set(0);
+    comp.activeMembersCount.set(0);
+
+    expect(comp.pairings().length).toBe(0);
+    expect(comp.activePairingsCount()).toBe(0);
+    expect(comp.activeMembersCount()).toBe(0);
+  });
 });

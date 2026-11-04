@@ -45,4 +45,15 @@ describe('CustomerAdvocacyCockpitComponent', () => {
     expect(comp.rewardPointsTotal()).toBe(22500);
     expect(comp.activeAdvocatesCount()).toBe(52);
   });
+
+  it('should support resetting advocates and matches to empty lists', () => {
+    const comp = new CustomerAdvocacyCockpitComponent();
+    comp.advocates.set([]);
+    comp.matches.set([]);
+    comp.activeAdvocatesCount.set(0);
+
+    expect(comp.advocates().length).toBe(0);
+    expect(comp.matches().length).toBe(0);
+    expect(comp.activeAdvocatesCount()).toBe(0);
+  });
 });

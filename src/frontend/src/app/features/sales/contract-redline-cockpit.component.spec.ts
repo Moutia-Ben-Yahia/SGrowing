@@ -43,4 +43,11 @@ describe('ContractRedlineCockpitComponent', () => {
     expect(comp.avgRiskScore()).toBe(28.5);
     expect(comp.compromisesCount()).toBe(3);
   });
+
+  it('should not allow pendingCount to decrease below 0 when approving multiple clauses', () => {
+    const comp = new ContractRedlineCockpitComponent();
+    comp.pendingCount.set(0);
+    comp.approveClause(comp.redlines()[0]);
+    expect(comp.pendingCount()).toBe(0);
+  });
 });

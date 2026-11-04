@@ -41,4 +41,15 @@ describe('AbmTerritoryCockpitComponent', () => {
     expect(component.averageSurge()).toBe(0);
     expect(component.accounts().length).toBe(0);
   });
+
+  it('should ignore autoRouteAccount when accountId does not match and toggle showSurgeModal', () => {
+    const before = component.accounts().map(a => a.assignedRep);
+    component.autoRouteAccount('non_existent_acc');
+    const after = component.accounts().map(a => a.assignedRep);
+    expect(after).toEqual(before);
+
+    expect(component.showSurgeModal()).toBe(false);
+    component.showSurgeModal.set(true);
+    expect(component.showSurgeModal()).toBe(true);
+  });
 });

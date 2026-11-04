@@ -46,4 +46,11 @@ describe('RagStudioComponent', () => {
     expect(component.retrievedChunks()).toBe(initialChunks);
     expect(component.retrievedChunks().length).toBe(1);
   });
+
+  it('should calculate estimated token count based on character length on executeSearch', () => {
+    component.documentContent = '1234567890123456'; // 16 chars -> 16 / 4 = 4 tokens
+    component.executeSearch();
+    expect(component.retrievedChunks()[0].tokens).toBe(4);
+    expect(component.retrievedChunks()[0].rrfScore).toBe(0.0312);
+  });
 });

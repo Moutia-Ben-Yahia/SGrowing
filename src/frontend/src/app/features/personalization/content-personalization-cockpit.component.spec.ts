@@ -49,4 +49,15 @@ describe('ContentPersonalizationCockpitComponent', () => {
     expect(comp.activeRulesCount()).toBe(4);
     expect(comp.segments()[3].segmentId).toBe('SEG-GOV-04');
   });
+
+  it('should support clearing segments and resetting conversion lift percentage', () => {
+    const comp = new ContentPersonalizationCockpitComponent();
+    comp.segments.set([]);
+    comp.activeRulesCount.set(0);
+    comp.averageConversionLiftPct.set(0);
+
+    expect(comp.segments().length).toBe(0);
+    expect(comp.activeRulesCount()).toBe(0);
+    expect(comp.averageConversionLiftPct()).toBe(0);
+  });
 });

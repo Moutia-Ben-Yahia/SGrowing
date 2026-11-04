@@ -36,4 +36,15 @@ describe('DealCoachingCockpitComponent', () => {
     expect(comp.totalObjectionsQuarter()).toBe(168);
     expect(comp.winRateLiftPct()).toBe(36.2);
   });
+
+  it('should support resetting sessions and objections lists to empty', () => {
+    const comp = new DealCoachingCockpitComponent();
+    comp.sessions.set([]);
+    comp.objections.set([]);
+    comp.activeSessionsCount.set(0);
+
+    expect(comp.sessions().length).toBe(0);
+    expect(comp.objections().length).toBe(0);
+    expect(comp.activeSessionsCount()).toBe(0);
+  });
 });

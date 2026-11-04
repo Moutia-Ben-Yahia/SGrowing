@@ -45,4 +45,15 @@ describe('BuyingCommitteeCockpitComponent', () => {
     expect(comp.alignedChampions()).toBe(4);
     expect(comp.activeBlockers()).toBe(0);
   });
+
+  it('should support clearing interventions and setting custom stakeholders list', () => {
+    const comp = new BuyingCommitteeCockpitComponent();
+    comp.interventions.set([]);
+    comp.stakeholders.set([]);
+    comp.totalStakeholders.set(0);
+
+    expect(comp.interventions().length).toBe(0);
+    expect(comp.stakeholders().length).toBe(0);
+    expect(comp.totalStakeholders()).toBe(0);
+  });
 });

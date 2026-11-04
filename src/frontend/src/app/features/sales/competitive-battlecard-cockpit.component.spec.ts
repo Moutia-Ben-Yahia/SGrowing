@@ -49,4 +49,12 @@ describe('CompetitiveBattlecardCockpitComponent', () => {
     expect(comp.competitors()[2].competitorId).toBe('COMP-SOLAR-03');
     expect(comp.aggregateWinRatePct()).toBe(78.5);
   });
+
+  it('should support resetting competitors and battlecards lists to empty', () => {
+    const comp = new CompetitiveBattlecardCockpitComponent();
+    comp.competitors.set([]);
+    comp.battlecards.set([]);
+    expect(comp.competitors().length).toBe(0);
+    expect(comp.battlecards().length).toBe(0);
+  });
 });

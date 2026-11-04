@@ -127,4 +127,14 @@ describe('CpqQuotationStudioComponent', () => {
     component.onDiscountChanged(0, 25);
     expect(component.discountExceedsPolicy()).toBe(true);
   });
+
+  it('should remove line item and update draft lines and computed totals', () => {
+    component.draftLines.set([]);
+    component.addLineItem();
+    expect(component.draftLines().length).toBe(1);
+
+    component.removeLineItem(0);
+    expect(component.draftLines().length).toBe(0);
+    expect(component.computedGrandTotal()).toBe(0);
+  });
 });

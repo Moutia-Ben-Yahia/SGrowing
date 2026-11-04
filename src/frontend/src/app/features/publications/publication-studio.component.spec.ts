@@ -68,4 +68,16 @@ describe('PublicationStudioComponent', () => {
     expect(draft.status).toBe('Published');
     expect(component.publishedCount()).toBe(4);
   });
+
+  it('should ignore saveArticle when newTitle is empty and toggle broadcast modal', () => {
+    const countBefore = component.articles().length;
+    component.newTitle = '';
+    component.saveArticle();
+    expect(component.articles().length).toBe(countBefore);
+
+    component.showBroadcastModal.set(true);
+    expect(component.showBroadcastModal()).toBe(true);
+    component.sendBroadcast();
+    expect(component.showBroadcastModal()).toBe(false);
+  });
 });

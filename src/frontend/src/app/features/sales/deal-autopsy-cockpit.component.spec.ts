@@ -37,4 +37,15 @@ describe('DealAutopsyCockpitComponent', () => {
     expect(comp.lostPipelineUsd()).toBe(8500000);
     expect(comp.activePlaybooksCount()).toBe(3);
   });
+
+  it('should support resetting autopsies and playbooks lists to empty', () => {
+    const comp = new DealAutopsyCockpitComponent();
+    comp.autopsies.set([]);
+    comp.playbooks.set([]);
+    comp.autopsiesCount.set(0);
+
+    expect(comp.autopsies().length).toBe(0);
+    expect(comp.playbooks().length).toBe(0);
+    expect(comp.autopsiesCount()).toBe(0);
+  });
 });
