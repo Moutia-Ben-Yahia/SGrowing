@@ -207,4 +207,74 @@ public class OutboundSdrEndToEndTests
         delayedEnrollment!.Status.Should().Be(EnrollmentStatus.Active);
         delayedEnrollment.NextRunAtUtc.Should().BeAfter(DateTime.UtcNow.AddDays(4));
     }
+
+    [Fact]
+    public async Task OutboundSdr_PausedCampaign_And_NeutralReply_Handling()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var outbox = new OutboxService(db);
+        var notifier = new Mock<IRealtimeNotifier>();
+
+        var mailboxService = new MailboxService(db);
+        var aiSdrService = new AiSdrService();
+        var sentimentClassifier = new ReplySentimentClassifier();
+        var handoffService = new ProspectReplyHandoffService(db, sentimentClassifier, notifier.Object);
+        var dispatcher = new CadenceDispatcherService(db, mailboxService, aiSdrService, outbox);
+
+        // 1. Paused Campaign: Dispatcher skips enrollments in paused campaigns
+        var sender = SenderAccount.Create(
+            tenantId: tenantId,
+            email: "campaign-lead@trySGrowing.com",
+            displayName: "Lead SDR",
+            provider: MailboxProvider.GoogleWorkspace,
+            targetDailyQuota: 50,
+            rampDailyIncrement: 10
+        );
+        db.SenderAccounts.Add(sender);
+
+        var pausedCampaign = OutboundCampaign.Create(tenantId, "Halted Summer Sequence", new List<Guid> { sender.Id });
+        pausedCampaign.Status = CampaignStatus.Paused;
+        db.OutboundCampaigns.Add(pausedCampaign);
+
+        var contact = Contact.Create(tenantId, "Diana", "Prince", "diana@themyscira.gov");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        var step1 = CadenceStep.Create(tenantId, pausedCampaign.Id, 1, 0, OutboundChannel.Email, "Introduction", "Hello Diana");
+        db.CadenceSteps.Add(step1);
+
+        var enrollment = ProspectEnrollment.Create(tenantId, pausedCampaign.Id, contact.Id);
+        enrollment.PersonalizedHook = "Admire your global advocacy.";
+        db.ProspectEnrollments.Add(enrollment);
+        await db.SaveChangesAsync();
+
+        // Dispatcher executes: since campaign is paused, 0 cadences processed
+        var processedCount = await dispatcher.ProcessDueCadencesAsync(tenantId);
+        processedCount.Should().Be(0);
+
+        var untouchedEnrollment = await db.ProspectEnrollments.FindAsync(enrollment.Id);
+        untouchedEnrollment!.CurrentStepNumber.Should().Be(1);
+        untouchedEnrollment.Status.Should().Be(EnrollmentStatus.Active);
+
+        // 2. Neutral Reply: no deal created, no opt-out tags added, enrollment unaffected
+        var conversation = Conversation.Create(tenantId, Guid.NewGuid(), contact.Id);
+        db.Conversations.Add(conversation);
+        await db.SaveChangesAsync();
+
+        var neutralReply = "Thank you for the note. We will keep your information on file.";
+        var handoffResult = await handoffService.HandleReplyAsync(tenantId, contact.Id, conversation.Id, neutralReply);
+
+        handoffResult.IsSuccess.Should().BeTrue();
+        handoffResult.Value.Sentiment.Should().Be(ReplySentiment.Neutral);
+        handoffResult.Value.DealCreated.Should().BeFalse();
+        handoffResult.Value.DealId.Should().BeNull();
+
+        var refreshedContact = await db.Contacts.FindAsync(contact.Id);
+        refreshedContact!.Tags.Should().NotContain("hot-lead");
+        refreshedContact.Tags.Should().NotContain("opted_out");
+
+        var refreshedEnrollment = await db.ProspectEnrollments.FindAsync(enrollment.Id);
+        refreshedEnrollment!.Status.Should().Be(EnrollmentStatus.Active);
+    }
 }

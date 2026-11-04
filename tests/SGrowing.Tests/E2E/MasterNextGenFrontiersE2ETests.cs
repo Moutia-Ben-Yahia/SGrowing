@@ -194,4 +194,64 @@ public class MasterNextGenFrontiersE2ETests
         Assert.Equal(0, retried);
         Assert.Equal(0, recentDeadLog.RetryCount);
     }
+
+    [Fact]
+    public async Task Master_NextGen_Frontiers_DeadStockTier_And_AdRuleNoAction_Evaluations()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+
+        // 1. Inventory Liquidation: stock aging > 90 days enters DeadStock tier with 45% markdown
+        var liquidationService = new InventoryLiquidationService(db);
+        var deadStockItem = await liquidationService.RecordStockIntakeAgingAsync(
+            tenantId,
+            Guid.NewGuid(),
+            "OBSOLETE-SERUM",
+            "Aging Vitamin E Serum",
+            warehouseId,
+            quantity: 30,
+            costPrice: 10m,
+            retailPrice: 50m,
+            daysInWarehouse: 110);
+
+        Assert.Equal(StockAgeTier.DeadStock, deadStockItem.Tier);
+        Assert.Equal(45m, deadStockItem.CurrentMarkdownPercentage);
+
+        // 2. Ad Optimizer: spend below rule minimum threshold results in NoAction
+        var adOptimizer = new AdSpendOptimizerService(db);
+        await adOptimizer.ConfigureRuleAsync(tenantId, new AdOptimizationRule
+        {
+            TenantId = tenantId,
+            Platform = AdPlatformType.Meta,
+            RuleName = "Conservative Scale",
+            MinSpendThreshold = 100m, // High spend requirement
+            MinDeliveryRateCutoff = 50.0m,
+            MinDeliveredRoasToScale = 3.0m,
+            DailyBudgetScaleStepPercentage = 10m,
+            IsAutoExecuteEnabled = true
+        });
+
+        var metric = AdSetDeliveredRoasMetric.Calculate(
+            tenantId,
+            AdPlatformType.Meta,
+            "ADSET-LOW-SPEND",
+            "Test Low Spend",
+            DateTime.UtcNow.Date,
+            adSpend: 25m, // Below 100m threshold
+            totalOrders: 2,
+            deliveredOrders: 2,
+            returnedOrders: 0,
+            grossGmv: 150m,
+            deliveredNetCash: 150m,
+            cogs: 45m,
+            courierFees: 15m
+        );
+        db.AdSetDeliveredRoasMetrics.Add(metric);
+        await db.SaveChangesAsync();
+
+        var executionLog = await adOptimizer.EvaluateAndApplyRulesAsync(tenantId, metric.Id, currentDailyBudget: 50m);
+        Assert.Equal(AdOptimizationAction.NoAction, executionLog.Action);
+        Assert.Equal("Performance within acceptable thresholds.", executionLog.Reason);
+    }
 }

@@ -148,4 +148,35 @@ public class MasterHorizonsOneToFourE2ETests
         Assert.False(unknownKeyResult.IsValid);
         Assert.Equal("Key not found or revoked", unknownKeyResult.ErrorMessage);
     }
+
+    [Fact]
+    public async Task Horizons_One_To_Four_B2BSettlement_Factoring_And_EmptyWebhookAttempts()
+    {
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+
+        var db = new SGrowingDbContext(options);
+        var tenantId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+
+        // 1. Establish Credit Account, Drawdown, and Record Payment Settlement
+        var b2bService = new B2BCreditAndFactoringService(db);
+        await b2bService.EstablishCreditAccountAsync(tenantId, companyId, "Atlas Distribution", 10000m, 30);
+        await b2bService.RecordInvoiceDrawdownAsync(tenantId, companyId, 4000m);
+
+        var settledAccount = await b2bService.RecordPaymentSettlementAsync(tenantId, companyId, 2500m);
+        Assert.Equal(1500m, settledAccount.OutstandingBalance);
+        Assert.Equal(8500m, settledAccount.AvailableCredit);
+
+        // 2. Settlement on non-existent company throws InvalidOperationException
+        var missingCompanyId = Guid.NewGuid();
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            b2bService.RecordPaymentSettlementAsync(tenantId, missingCompanyId, 500m));
+
+        // 3. Dispatching webhook without subscriptions returns empty list
+        var devService = new DeveloperGatewayService(db);
+        var attempts = await devService.DispatchWebhookEventAsync(tenantId, "invoice.paid", new { amount = 2500 });
+        Assert.Empty(attempts);
+    }
 }

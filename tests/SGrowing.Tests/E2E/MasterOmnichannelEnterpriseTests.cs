@@ -452,4 +452,60 @@ public class MasterOmnichannelEnterpriseTests
         lowScoreExec.Status.Should().Be("Completed");
         lowScoreExec.ExecutionLog.Should().Contain("FALSE");
     }
+
+    [Fact]
+    public async Task MasterOmnichannel_VoiceTelephony_And_ExactDomainLinking()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+
+        // 1. Voice Telephony: Inbound call creates contact and session, returning TwiML
+        var voiceService = new VoiceTelephonyService(db);
+        var callSid = "CA" + Guid.NewGuid().ToString("N");
+        var twiml = await voiceService.HandleInboundCallWebhookAsync(
+            tenantId,
+            callSid,
+            fromNumber: "+15551234567",
+            toNumber: "+18005550199");
+
+        twiml.Should().NotBeNullOrWhiteSpace();
+        twiml.Should().Contain("<Response>");
+        twiml.Should().Contain("Thank you for calling SGrowing");
+
+        var session = await db.VoiceCallSessions.FirstOrDefaultAsync(s => s.CallSid == callSid);
+        session.Should().NotBeNull();
+        session!.Status.Should().Be(CallStatus.InProgress);
+
+        // 2. Voice Telephony: Call status callback completes session with duration
+        var completedSession = await voiceService.HandleCallStatusCallbackAsync(
+            tenantId,
+            callSid,
+            "completed",
+            durationSeconds: 142);
+
+        completedSession.Should().NotBeNull();
+        completedSession!.Status.Should().Be(CallStatus.Completed);
+        completedSession.DurationSeconds.Should().Be(142);
+
+        // 3. Exact Domain Association: contact linked to registered company
+        var companyService = new CompanyAccountService(db);
+        var company = await companyService.CreateCompanyAsync(
+            tenantId,
+            "Acme Global Holdings",
+            "acme.corp",
+            industry: "Logistics",
+            revenue: 5000000m);
+
+        var contact = Contact.Create(tenantId, "Bruce", "Wayne", "bruce@acme.corp");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        var associatedCompany = await companyService.AssociateContactByDomainAsync(tenantId, contact.Id, contact.Email!);
+        associatedCompany.Should().NotBeNull();
+        associatedCompany!.Id.Should().Be(company.Id);
+        associatedCompany.Domain.Should().Be("acme.corp");
+
+        var updatedContact = await db.Contacts.FindAsync(contact.Id);
+        updatedContact!.CompanyId.Should().Be(company.Id);
+    }
 }

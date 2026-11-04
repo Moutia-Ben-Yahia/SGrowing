@@ -224,4 +224,86 @@ public class MasterPlatformEndToEndTests
         var updatedEnrollment = await db.ProspectEnrollments.FindAsync(enrollment.Id);
         updatedEnrollment!.Status.Should().Be(EnrollmentStatus.Unsubscribed);
     }
+
+    [Fact]
+    public async Task PlatformLifecycle_PositiveCsat_And_DelayedJourneySteps()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var notifier = new Mock<IRealtimeNotifier>();
+        var outbox = new OutboxService(db);
+
+        // 1. Feedback Service: Positive 5-star CSAT does not flag customer as at-risk
+        var feedbackService = new FeedbackService(db, notifier.Object);
+        var surveyForm = SurveyForm.Create(
+            tenantId,
+            "Quarterly Customer Delight",
+            SurveyType.Csat,
+            "How satisfied are you with our service?");
+        db.SurveyForms.Add(surveyForm);
+
+        var customer = Contact.Create(tenantId, "Thomas", "Jefferson", "thomas@monticello.org");
+        db.Contacts.Add(customer);
+        await db.SaveChangesAsync();
+
+        var feedbackRes = await feedbackService.SubmitFeedbackAsync(
+            tenantId,
+            surveyForm.Id,
+            customer.Id,
+            score: 5,
+            feedbackText: "Outstanding support and fast omnichannel responses!");
+
+        feedbackRes.IsSuccess.Should().BeTrue();
+        feedbackRes.Value.Sentiment.Should().Be(FeedbackSentiment.Positive);
+        feedbackRes.Value.Score.Should().Be(5);
+
+        var refreshedCustomer = await db.Contacts.FindAsync(customer.Id);
+        refreshedCustomer!.Tags.Should().NotContain("at-risk");
+
+        // 2. Journey Execution Service: Steps with delay do not process before elapsed time
+        var journeyService = new JourneyExecutionService(db, outbox);
+        var nurtureJourney = CustomerJourney.Create(tenantId, "Post-Purchase Nurture", "order.completed");
+        db.CustomerJourneys.Add(nurtureJourney);
+        await db.SaveChangesAsync();
+
+        var step1 = JourneyStep.Create(
+            tenantId,
+            nurtureJourney.Id,
+            stepOrder: 1,
+            stepType: JourneyStepType.SendEmail,
+            bodyTemplate: "Thanks for your order {{first_name}}!",
+            subjectTemplate: "Order Confirmation",
+            delaySeconds: 7200); // 2 hours delay before next step
+
+        var step2 = JourneyStep.Create(
+            tenantId,
+            nurtureJourney.Id,
+            stepOrder: 2,
+            stepType: JourneyStepType.SendEmail,
+            bodyTemplate: "How is your product working out {{first_name}}?",
+            subjectTemplate: "Checking In",
+            delaySeconds: 0);
+
+        db.JourneySteps.AddRange(step1, step2);
+        await db.SaveChangesAsync();
+
+        // Trigger journey
+        var evtRes = await journeyService.IngestEventAsync(tenantId, customer.Id, "order.completed");
+        evtRes.IsSuccess.Should().BeTrue();
+
+        // Process step 1 (immediate execution)
+        var firstRunCount = await journeyService.ProcessDueStepsAsync(tenantId);
+        firstRunCount.Should().Be(1);
+
+        // Verification: Step advanced to step 2 with NextExecutionAtUtc 2 hours in future
+        var enrollment = await db.JourneyEnrollments.FirstOrDefaultAsync(e => e.JourneyId == nurtureJourney.Id);
+        enrollment.Should().NotBeNull();
+        enrollment!.CurrentStepOrder.Should().Be(2);
+        enrollment.Status.Should().Be(JourneyEnrollmentStatus.Active);
+        enrollment.NextExecutionAtUtc.Should().BeAfter(DateTime.UtcNow.AddMinutes(90));
+
+        // Attempting to process due steps immediately processes 0 because delay hasn't elapsed
+        var secondRunCount = await journeyService.ProcessDueStepsAsync(tenantId);
+        secondRunCount.Should().Be(0);
+    }
 }
