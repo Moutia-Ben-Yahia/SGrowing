@@ -309,4 +309,50 @@ public class EnterpriseOmniEndToEndTests
         var breachedB = await slaService.EvaluateSlaBreachesAsync(tenantB);
         breachedB.Should().Be(0);
     }
+
+    [Fact]
+    public async Task EnterpriseOmni_BroadcastFailures_And_CheckoutLinkMissingValidation()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var outbox = new OutboxService(db);
+        var notifier = new Mock<IRealtimeNotifier>();
+
+        var broadcastDispatcher = new BroadcastDispatcherService(db, outbox);
+        var checkoutService = new CheckoutLinkService(db, notifier.Object);
+
+        // 1. Dispatching non-existent broadcast campaign returns clean failure
+        var missingCampaignRes = await broadcastDispatcher.DispatchBroadcastAsync(tenantId, Guid.NewGuid());
+        missingCampaignRes.IsSuccess.Should().BeFalse();
+        missingCampaignRes.Error.Should().Be("Broadcast campaign not found.");
+
+        // 2. Broadcast with template in Pending status fails validation
+        var pendingTemplate = WhatsAppTemplate.Create(
+            tenantId,
+            "unapproved_alert",
+            WhatsAppTemplateCategory.Utility,
+            bodyText: "Your appointment is scheduled for {{1}}.",
+            language: "en_US"
+        );
+        pendingTemplate.Status = WhatsAppTemplateStatus.Pending;
+        db.WhatsAppTemplates.Add(pendingTemplate);
+
+        var campaign = BroadcastCampaign.Create(
+            tenantId,
+            "Unapproved Blast",
+            pendingTemplate.Id,
+            targetTag: "general"
+        );
+        db.BroadcastCampaigns.Add(campaign);
+        await db.SaveChangesAsync();
+
+        var unapprovedRes = await broadcastDispatcher.DispatchBroadcastAsync(tenantId, campaign.Id);
+        unapprovedRes.IsSuccess.Should().BeFalse();
+        unapprovedRes.Error.Should().Contain("Template is not approved");
+
+        // 3. Marking non-existent checkout link as paid returns clean failure
+        var missingLinkRes = await checkoutService.MarkPaidAsync(tenantId, Guid.NewGuid());
+        missingLinkRes.IsSuccess.Should().BeFalse();
+        missingLinkRes.Error.Should().Be("Checkout link not found.");
+    }
 }

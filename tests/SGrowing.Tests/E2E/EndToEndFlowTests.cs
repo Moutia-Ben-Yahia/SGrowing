@@ -207,4 +207,43 @@ public class EndToEndFlowTests
         allConversations[1].Status.Should().Be(ConversationStatus.Open);
         allConversations[1].ContactId.Should().Be(allConversations[0].ContactId);
     }
+
+    [Fact]
+    public async Task CompleteCustomerLifecycle_AiDraftRejection_And_StatusValidationFailures()
+    {
+        var db = CreateDbContext();
+        var notifier = new Mock<IRealtimeNotifier>();
+        var aiCopilot = new AiCopilotService(db, notifier.Object);
+        var approveHandler = new ApproveAiDraftHandler(db, notifier.Object);
+        var statusHandler = new ChangeStatusHandler(db);
+
+        var tenantId = Guid.NewGuid();
+        var contact = Contact.Create(tenantId, "Titus", "Livius", "titus@history.rome");
+        db.Contacts.Add(contact);
+
+        var conv = Conversation.Create(tenantId, Guid.NewGuid(), contact.Id);
+        db.Conversations.Add(conv);
+        await db.SaveChangesAsync();
+
+        // 1. Approving non-existent draft fails cleanly
+        var missingDraftRes = await approveHandler.HandleAsync(new ApproveAiDraftRequest(tenantId, Guid.NewGuid()));
+        missingDraftRes.IsSuccess.Should().BeFalse();
+        missingDraftRes.Error.Should().Be("AI Draft not found.");
+
+        // 2. Changing status of non-existent conversation fails cleanly
+        var missingConvRes = await statusHandler.HandleAsync(new ChangeStatusRequest(tenantId, Guid.NewGuid(), ConversationStatus.Snoozed));
+        missingConvRes.IsSuccess.Should().BeFalse();
+        missingConvRes.Error.Should().Be("Conversation not found.");
+
+        // 3. Draft generation and idempotent single-approval check
+        var draft = await aiCopilot.GenerateDraftAsync(tenantId, conv.Id, "Can you provide documentation on your enterprise security model?");
+        draft.Should().NotBeNull();
+
+        var firstApprove = await approveHandler.HandleAsync(new ApproveAiDraftRequest(tenantId, draft.Id));
+        firstApprove.IsSuccess.Should().BeTrue();
+
+        var secondApprove = await approveHandler.HandleAsync(new ApproveAiDraftRequest(tenantId, draft.Id));
+        secondApprove.IsSuccess.Should().BeFalse();
+        secondApprove.Error.Should().Be("Draft has already been processed.");
+    }
 }

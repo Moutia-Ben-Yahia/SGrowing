@@ -153,4 +153,38 @@ public class MasterAllDomainsEndToEndTests
         Assert.Equal(0, summaryAfterRelease.Reserved);
         Assert.Equal(50, summaryAfterRelease.Available);
     }
+
+    [Fact]
+    public async Task MasterAllDomains_FunnelPerformance_And_SeoTrackingFailures()
+    {
+        using var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+
+        // 1. Funnel Performance queries fail-fast on non-existent funnel
+        var funnelService = new SalesFunnelService(db);
+        var missingFunnelId = Guid.NewGuid();
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            funnelService.GetFunnelPerformanceAsync(tenantId, missingFunnelId));
+
+        // 2. SEO Keyword rank update fails on missing keyword
+        var seoService = new SeoAuditService(db);
+        var missingKeywordId = Guid.NewGuid();
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            seoService.UpdateKeywordRankAsync(tenantId, missingKeywordId, 1));
+
+        // 3. JWT validation safety on empty or bogus tokens
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Jwt:SecretKey"] = "SGrowing_SuperSecretEnterpriseMasterKey_998877665544332211!!",
+            ["Jwt:Issuer"] = "SGrowing.Api",
+            ["Jwt:Audience"] = "SGrowing.Clients"
+        }).Build();
+
+        var jwtService = new JwtTokenService(config);
+        var nullResult = jwtService.ValidateToken("");
+        Assert.Null(nullResult);
+
+        var bogusResult = jwtService.ValidateToken("header.payload.signature_bogus");
+        Assert.Null(bogusResult);
+    }
 }

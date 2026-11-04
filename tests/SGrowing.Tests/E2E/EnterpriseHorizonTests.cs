@@ -190,4 +190,32 @@ public class EnterpriseHorizonTests
         await Assert.ThrowsAsync<KeyNotFoundException>(() =>
             contractService.CompleteSigningAsync("nonexistent_tampered_token_999", "Intruder"));
     }
+
+    [Fact]
+    public async Task MasterEnterpriseE2E_AudioSilence_RagEmpty_And_AesDecryptionFailures()
+    {
+        var tenantId = Guid.NewGuid();
+
+        // 1. Silent Audio Frame: Does not trigger barge-in interruption
+        var bargeInService = new BargeInInterruptionService(NullLogger<BargeInInterruptionService>.Instance);
+        var voiceHandler = new StreamingVoiceWebSocketHandler(bargeInService, NullLogger<StreamingVoiceWebSocketHandler>.Instance);
+        var voiceSession = StreamingVoiceCallSession.Create(tenantId, "CA_LIVE_SILENCE", "MZ_STREAM_SILENCE");
+
+        var silentChunk = voiceHandler.ProcessInboundAudioChunk(voiceSession, "", 1);
+        Assert.False(silentChunk.IsSpeech);
+        Assert.NotEqual(VadStatus.BargeInInterrupted, silentChunk.Status);
+        Assert.Null(silentChunk.ClearBufferCommand);
+
+        // 2. AES Encryption Tamper Verification
+        var aes = new AesEncryptionService();
+        var encrypted = aes.Encrypt("Confidential Customer Record");
+        var tamperedCiphertext = Convert.ToBase64String(Encoding.UTF8.GetBytes("BadCiphertextBytes99"));
+        Assert.ThrowsAny<CryptographicException>(() =>
+            aes.Decrypt(tamperedCiphertext, encrypted.NonceBase64, encrypted.TagBase64));
+
+        // 3. Contract Dispatch Failure on Nonexistent ID
+        var contractService = new ContractSigningService(_db, NullLogger<ContractSigningService>.Instance);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            contractService.DispatchInChatContractAsync(tenantId, Guid.NewGuid()));
+    }
 }
