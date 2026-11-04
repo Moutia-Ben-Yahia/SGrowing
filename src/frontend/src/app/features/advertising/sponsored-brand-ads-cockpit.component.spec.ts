@@ -18,4 +18,20 @@ describe('SponsoredBrandAdsCockpitComponent', () => {
     expect(comp.campaigns().length).toBe(initialCount + 1);
     expect(comp.campaigns()[comp.campaigns().length - 1].brandName).toBe('LuxeGlow Skincare Organics');
   });
+
+  it('should verify auction bids align with campaign budget constraints and update counts', () => {
+    const comp = new SponsoredBrandAdsCockpitComponent();
+    const activeCampaign = comp.campaigns()[0];
+    const liveBid = comp.bids()[0];
+
+    expect(liveBid.campaignId).toBe(activeCampaign.campaignId);
+    expect(liveBid.winningCpcUsd).toBeLessThanOrEqual(activeCampaign.maxCpcBidUsd);
+    expect(liveBid.effectiveRoas).toBeGreaterThan(4.0);
+
+    comp.createBrandCampaign();
+    comp.createBrandCampaign();
+
+    expect(comp.activeCampaignsCount()).toBe(3);
+    expect(comp.campaigns().length).toBe(3);
+  });
 });

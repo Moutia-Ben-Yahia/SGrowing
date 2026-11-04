@@ -18,4 +18,17 @@ describe('AttributionShapleyCockpitComponent', () => {
     expect(comp.budgetRebalanced()).toBe(true);
     expect(comp.channelScores().some(c => c.action.includes('Trimmed'))).toBe(true);
   });
+
+  it('verifies game theory fairness axioms: revenue allocation sums to exact deal value', () => {
+    const comp = new AttributionShapleyCockpitComponent();
+    const totalAttributedRevenue = comp.channelScores().reduce((acc, c) => acc + c.revenue, 0);
+    expect(totalAttributedRevenue).toBe(comp.dealValue());
+
+    const totalShapleyPct = comp.channelScores().reduce((acc, c) => acc + c.shapleyPct, 0);
+    expect(Math.round(totalShapleyPct)).toBe(100);
+
+    const nonAttributed = comp.channelScores().find(c => c.channel === 'RetargetingSocialAd');
+    expect(nonAttributed?.shapleyPct).toBe(0.0);
+    expect(nonAttributed?.revenue).toBe(0);
+  });
 });

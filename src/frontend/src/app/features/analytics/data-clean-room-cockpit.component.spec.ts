@@ -27,4 +27,20 @@ describe('DataCleanRoomCockpitComponent', () => {
     expect(result?.matchRatePercent).toBeGreaterThan(20);
     expect(result?.epsilonCost).toBe(0.50);
   });
+
+  it('should verify participant cryptographic salts, cohort schemes, and total identities sum', () => {
+    expect(component.totalIdentities()).toBe(404000); // 84000 + 320000
+
+    const advertiser = component.participants().find(p => p.role === 'Advertiser');
+    const publisher = component.participants().find(p => p.role === 'Publisher');
+
+    expect(advertiser).toBeDefined();
+    expect(advertiser?.cryptographicSaltId).toBe('salt_acme_sha256_v4');
+
+    expect(publisher).toBeDefined();
+    expect(publisher?.cryptographicSaltId).toBe('salt_pub_sha256_v4');
+
+    component.datasets.set([]);
+    expect(component.totalIdentities()).toBe(0);
+  });
 });

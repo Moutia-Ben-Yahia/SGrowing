@@ -18,4 +18,21 @@ describe('GeoIncrementalityCockpitComponent', () => {
     expect(comp.experiments()[0].campaignName).toBe('Midwest Metro Omni-Channel Holdout');
     expect(comp.experiments()[0].totalAdSpendUsd).toBe(95000);
   });
+
+  it('should validate treatment and synthetic control roles across calibrated cells', () => {
+    const comp = new GeoIncrementalityCockpitComponent();
+    const treatmentCell = comp.cells().find(c => c.marketRole === 'TEST_TREATMENT');
+    const controlCell = comp.cells().find(c => c.marketRole === 'SYNTHETIC_CONTROL');
+
+    expect(treatmentCell).toBeDefined();
+    expect(treatmentCell?.dmaRegionName).toContain('Dallas-Fort Worth');
+    expect(treatmentCell?.syntheticWeightCoefficient).toBe(1.0);
+
+    expect(controlCell).toBeDefined();
+    expect(controlCell?.dmaRegionName).toContain('Chicago Metro');
+    expect(controlCell?.syntheticWeightCoefficient).toBe(0.642);
+
+    const totalBaselineRev = comp.cells().reduce((acc, c) => acc + c.baselineWeeklyRevenueUsd, 0);
+    expect(totalBaselineRev).toBe(838000);
+  });
 });

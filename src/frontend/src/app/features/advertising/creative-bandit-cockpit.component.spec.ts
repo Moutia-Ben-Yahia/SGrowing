@@ -19,4 +19,18 @@ describe('CreativeBanditCockpitComponent', () => {
     expect(comp.variants()[0].headline).toContain('[AI-Evolved]');
     expect(comp.variants()[0].isFatigued).toBe(false);
   });
+
+  it('computes blended conversion rate accurately and handles empty state', () => {
+    const comp = new CreativeBanditCockpitComponent();
+    expect(comp.blendedCvr()).toBe('2.38');
+
+    comp.mutateWinningCreative();
+    expect(comp.blendedCvr()).toBe('2.42');
+
+    comp.variants.set([]);
+    expect(comp.totalConversions()).toBe(0);
+    expect(comp.fatiguedCount()).toBe(0);
+    expect(comp.topAllocatedShare()).toBe(0);
+    expect(comp.blendedCvr()).toBe('0.00');
+  });
 });

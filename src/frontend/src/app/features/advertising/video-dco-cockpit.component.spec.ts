@@ -17,4 +17,19 @@ describe('VideoDcoCockpitComponent', () => {
     expect(comp.variants().length).toBe(3);
     expect(comp.variants()[0].localizedCurrency).toBe('SGD');
   });
+
+  it('should verify composition templates and multi-aspect ratio specs', () => {
+    const comp = new VideoDcoCockpitComponent();
+    const aspectRatios = comp.templates().map(t => t.aspectRatio);
+    expect(aspectRatios).toContain('16:9');
+    expect(aspectRatios).toContain('9:16');
+    expect(aspectRatios).toContain('1:1');
+
+    const landscapeTpl = comp.templates().find(t => t.aspectRatio === '16:9');
+    expect(landscapeTpl?.dynamicLayers).toContain('DynamicPriceBadge');
+    expect(landscapeTpl?.durationSeconds).toBe(30);
+
+    const warmedVariants = comp.variants().filter(v => v.cdnStatus === 'WARMED_EDGE');
+    expect(warmedVariants.length).toBe(2);
+  });
 });

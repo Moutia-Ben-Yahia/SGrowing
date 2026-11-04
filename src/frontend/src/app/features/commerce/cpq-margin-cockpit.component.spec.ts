@@ -20,4 +20,14 @@ describe('CpqMarginCockpitComponent', () => {
     expect(comp.blendedMargin()).toBeGreaterThanOrEqual(75.0);
     expect(comp.auditHash()).toBe('9F3A1D7E4C8B2A6F');
   });
+
+  it('computes blended margin and contract value with zero-ramp fallback resilience', () => {
+    const comp = new CpqMarginCockpitComponent();
+    expect(comp.totalContractValue()).toBe(335891);
+    expect(comp.blendedMargin()).toBe(79.5);
+
+    comp.ramps.set([]);
+    expect(comp.totalContractValue()).toBe(0);
+    expect(comp.blendedMargin()).toBe(0);
+  });
 });

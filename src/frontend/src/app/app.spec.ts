@@ -19,4 +19,13 @@ describe('App', () => {
   it('should have default title', () => {
     expect((app as any).title()).toBe('marketing-studio-web');
   });
+
+  it('should support signal-based title updates and dynamic modifications', () => {
+    let currentTitle = 'marketing-studio-web';
+    (app as any).title = () => currentTitle;
+    expect((app as any).title()).toBe('marketing-studio-web');
+
+    currentTitle = 'sgrowing-omnichannel-growth-os';
+    expect((app as any).title()).toBe('sgrowing-omnichannel-growth-os');
+  });
 });

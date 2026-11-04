@@ -21,4 +21,16 @@ describe('CommissionSettlementCockpitComponent', () => {
     expect(comp.totalInEscrow()).toBe(5400);
     expect(comp.lastReleaseNotice()).toContain('Disbursed $14,000 escrow');
   });
+
+  it('handles unknown commission ids gracefully and completes total settlement flow', () => {
+    const comp = new CommissionSettlementCockpitComponent();
+    comp.releaseEscrow('NON-EXISTENT-COMMISSION');
+    expect(comp.lastReleaseNotice()).toBeNull();
+    expect(comp.totalInEscrow()).toBe(19400);
+
+    // Release all remaining escrow records
+    comp.releaseEscrow('COMM-2026-101');
+    comp.releaseEscrow('COMM-2026-102');
+    expect(comp.totalInEscrow()).toBe(0);
+  });
 });
