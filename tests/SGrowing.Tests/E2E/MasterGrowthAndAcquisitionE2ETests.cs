@@ -321,4 +321,36 @@ public class MasterGrowthAndAcquisitionE2ETests
         callbackOutcome.Outcome.Should().Be("MeetingBooked");
         callbackOutcome.NextActionDescription.Should().Contain("Meeting booked");
     }
+
+    [Fact]
+    public async Task Master_Growth_And_Acquisition_PowerDialer_FallbackQueue_And_LeftVoicemailOutcome()
+    {
+        using var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var powerDialer = new PowerDialerService(db, _outboxMock.Object);
+
+        // 1. Seed fallback contacts for dialer queue
+        var contact = Contact.Create(tenantId, "Farah", "Kacem", "farah.kacem@startup.tn", "+21699887766");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        // 2. Queue populates fallback contact
+        var queue = await powerDialer.GetDialerQueueAsync(tenantId);
+        queue.Should().ContainSingle();
+        queue[0].FullName.Should().Be("Farah Kacem");
+        queue[0].PhoneNumber.Should().Be("+21699887766");
+
+        // 3. Log LeftVoicemail outcome
+        var outcome = await powerDialer.LogCallOutcomeAsync(
+            tenantId,
+            contact.Id,
+            outcome: "LeftVoicemail",
+            durationSeconds: 30,
+            notes: "Delivered drop voicemail script version 3"
+        );
+
+        outcome.Should().NotBeNull();
+        outcome.Outcome.Should().Be("LeftVoicemail");
+        outcome.NextActionDescription.Should().Contain("Voicemail left");
+    }
 }

@@ -255,4 +255,47 @@ public class MasterFullPlatformEndToEndTests
         var roadmap = await feedbackService.GetRoadmapAsync(tenantId);
         Assert.Contains(roadmap.Completed, p => p.Id == post.Id);
     }
+
+    [Fact]
+    public async Task Master_Full_Platform_DigitalAssetTokenIssuance_And_DownloadConsumption()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var digitalService = new DigitalGoodsService(db);
+
+        // 1. Create a digital asset with max 2 downloads
+        var asset = await digitalService.CreateDigitalAssetAsync(
+            tenantId,
+            title: "Autonomous SDR Architecture Whitepaper",
+            fileName: "sdr-architecture.pdf",
+            storagePath: "s3://sgrowing-assets/whitepapers/sdr-arch.pdf",
+            mimeType: "application/pdf",
+            sizeBytes: 2048576,
+            maxDownloads: 2,
+            expiryHours: 24
+        );
+        Assert.NotNull(asset);
+        Assert.Equal(2, asset.MaxAllowedDownloads);
+
+        // 2. Issue a secure download token
+        var token = await digitalService.IssueDownloadTokenAsync(tenantId, asset.Id);
+        Assert.NotNull(token);
+        Assert.NotEmpty(token.Token);
+
+        // 3. First download attempt succeeds
+        var firstDownload = await digitalService.ValidateAndConsumeDownloadAsync(token.Token);
+        Assert.True(firstDownload.IsValid);
+        Assert.Equal("Download authorized.", firstDownload.Message);
+        Assert.Equal(asset.Id, firstDownload.Asset!.Id);
+
+        // 4. Second download attempt succeeds (2nd of 2)
+        var secondDownload = await digitalService.ValidateAndConsumeDownloadAsync(token.Token);
+        Assert.True(secondDownload.IsValid);
+
+        // 5. Third download attempt exceeds quota
+        var thirdDownload = await digitalService.ValidateAndConsumeDownloadAsync(token.Token);
+        Assert.False(thirdDownload.IsValid);
+        Assert.Contains("Download limit of 2 attempts exceeded", thirdDownload.Message);
+        Assert.Null(thirdDownload.Asset);
+    }
 }

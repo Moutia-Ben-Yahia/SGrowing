@@ -270,4 +270,60 @@ public class MasterEnterpriseOperationsE2ETests
             Assert.NotNull(f.Confidence);
         });
     }
+
+    [Fact]
+    public async Task Master_E2E_Operations_PostPurchaseDetractorFeedback_And_ReplenishmentScheduleGuards()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var retentionService = new PostPurchaseRetentionService(db);
+
+        // 1. Create Delivered COD Order with Royal Elixir
+        var order = CodOrder.Create(
+            tenantId,
+            "ORD-RETENTION-01",
+            "Nourchene Said",
+            "+21622998877",
+            "Avenue Habib Thameur",
+            "Nabeul",
+            "Hammamet",
+            120m
+        );
+        order.Status = CodOrderStatus.Delivered;
+        order.ItemsJson = "[{\"sku\":\"ROSE-WATER-100ML\",\"title\":\"Eau de Rose Pure 100ml\",\"price\":120}]";
+        db.CodOrders.Add(order);
+
+        db.ProductBurnRateConfigs.Add(new ProductBurnRateConfig
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            Sku = "ROSE-WATER-100ML",
+            ProductName = "Eau de Rose Pure 100ml",
+            EstimatedDaysOfUse = 30,
+            ReminderLeadDays = 7,
+            IncentiveDiscountPercent = 10.0m,
+            IsActive = true
+        });
+        await db.SaveChangesAsync();
+
+        // 2. Schedule Retention
+        var schedule = await retentionService.SchedulePostPurchaseRetentionAsync(tenantId, order.Id);
+        Assert.NotNull(schedule);
+        Assert.Equal("ROSE-WATER-100ML", schedule.Sku);
+
+        // 3. Customer submits Detractor score (1/5)
+        var survey = await db.PostPurchaseSurveys.FirstOrDefaultAsync(s => s.OrderId == order.Id);
+        Assert.NotNull(survey);
+
+        var detractorFeedback = await retentionService.RecordSurveyResponseAsync(
+            tenantId,
+            survey!.Id,
+            rating: 1,
+            notes: "Le flacon etait endommage pendant le transport par le livreur."
+        );
+
+        Assert.False(detractorFeedback.IsPromoter);
+        Assert.Equal(1, detractorFeedback.Rating);
+        Assert.Null(detractorFeedback.DiscountCodeIssued);
+    }
 }

@@ -273,4 +273,46 @@ public class MasterEnterpriseScaleE2ETests
         Assert.Equal("DeveloperWebhookCredentials", logs[0].Resource);
         Assert.Equal("10.0.0.42", logs[0].IpAddress);
     }
+
+    [Fact]
+    public async Task Master_Enterprise_Scale_RoleBasedAccess_And_PiiAddressMasking_Matrix()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var securityService = new SecurityAuditAndRbacService(db);
+
+        await securityService.InitializeDefaultRolesAsync(tenantId);
+
+        // 1. Evaluate granular RBAC cross-role matrix
+        var agentCanReadOrders = await securityService.EvaluatePermissionAsync(tenantId, UserSystemRole.CallCenterAgent, "Orders", "Read");
+        Assert.True(agentCanReadOrders);
+
+        var agentCanTouchTreasury = await securityService.EvaluatePermissionAsync(tenantId, UserSystemRole.CallCenterAgent, "Treasury", "Read");
+        Assert.False(agentCanTouchTreasury);
+
+        var financeCanAccessPayouts = await securityService.EvaluatePermissionAsync(tenantId, UserSystemRole.FinanceAuditor, "Payouts", "Read");
+        Assert.True(financeCanAccessPayouts);
+
+        var pickerCanTouchLedger = await securityService.EvaluatePermissionAsync(tenantId, UserSystemRole.WarehousePicker, "Ledger", "Read");
+        Assert.False(pickerCanTouchLedger);
+
+        // 2. Validate Phone Number Masking
+        var shortMask = securityService.MaskPhoneNumber("123", canViewRawPii: false);
+        Assert.Equal("****", shortMask);
+
+        var fullPhoneMask = securityService.MaskPhoneNumber("+21698765432", canViewRawPii: false);
+        Assert.Contains("*", fullPhoneMask);
+        Assert.StartsWith("+21698", fullPhoneMask);
+        Assert.EndsWith("32", fullPhoneMask);
+
+        var rawPhoneView = securityService.MaskPhoneNumber("+21698765432", canViewRawPii: true);
+        Assert.Equal("+21698765432", rawPhoneView);
+
+        // 3. Validate Address Masking
+        var maskedAddress = securityService.MaskAddress("15 Rue des Orangers, Tunis", canViewRawPii: false);
+        Assert.Equal("***, Tunis", maskedAddress);
+
+        var rawAddress = securityService.MaskAddress("15 Rue des Orangers, Tunis", canViewRawPii: true);
+        Assert.Equal("15 Rue des Orangers, Tunis", rawAddress);
+    }
 }

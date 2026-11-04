@@ -288,4 +288,37 @@ public class MasterExpansionEndToEndTests
         Assert.Equal(CalendarBookingStatus.Cancelled, cancelled.Status);
         Assert.Contains("Client requested cancellation due to scheduling conflict", cancelled.Notes);
     }
+
+    [Fact]
+    public async Task Master_Expansion_TelemetryEventIngestion_And_FunnelDropoffCalculation()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var telemetryService = new ProductTelemetryService(db);
+
+        // 1. Ingest events for visitor 1 (Complete conversion)
+        await telemetryService.IngestTelemetryEventAsync(tenantId, "sess-1", "vis-1", "pageview", "https://app.sgrowing.com");
+        await telemetryService.IngestTelemetryEventAsync(tenantId, "sess-1", "vis-1", "add_to_cart", "https://app.sgrowing.com/cart");
+        await telemetryService.IngestTelemetryEventAsync(tenantId, "sess-1", "vis-1", "purchase", "https://app.sgrowing.com/thank-you");
+
+        // 2. Ingest events for visitor 2 (Drop off at cart)
+        await telemetryService.IngestTelemetryEventAsync(tenantId, "sess-2", "vis-2", "pageview", "https://app.sgrowing.com");
+        await telemetryService.IngestTelemetryEventAsync(tenantId, "sess-2", "vis-2", "add_to_cart", "https://app.sgrowing.com/cart");
+
+        // 3. Ingest events for visitor 3 (Bounce on landing page)
+        await telemetryService.IngestTelemetryEventAsync(tenantId, "sess-3", "vis-3", "pageview", "https://app.sgrowing.com");
+
+        // 4. Compute 3-step Funnel Dropoff
+        var funnelSteps = new List<string> { "pageview", "add_to_cart", "purchase" };
+        var dropoff = await telemetryService.ComputeFunnelDropoffAsync(tenantId, funnelSteps);
+
+        Assert.Equal(3, dropoff.TotalInitialVisitors);
+        Assert.Equal(1, dropoff.TotalCompletedVisitors);
+        Assert.Equal(33.3, dropoff.OverallConversionRatePercent);
+        Assert.Equal(3, dropoff.StepMetrics.Count);
+
+        Assert.Equal(3, dropoff.StepMetrics[0].ReachedCount);
+        Assert.Equal(2, dropoff.StepMetrics[1].ReachedCount);
+        Assert.Equal(1, dropoff.StepMetrics[2].ReachedCount);
+    }
 }

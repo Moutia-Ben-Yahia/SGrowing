@@ -218,4 +218,47 @@ public class MasterGrowthAndFinancesE2ETests
         Assert.Equal(7, deficitSummary.Reserved); // 3 + 4 = 7
         Assert.Equal(0, deficitSummary.Available); // Math.Max(0, 5 - 7) = 0
     }
+
+    [Fact]
+    public async Task Master_EndToEnd_ServerConversionMesh_MetaEmqScoring_And_HashingAccuracy()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var conversionMesh = new ServerConversionMeshService(db);
+
+        // 1. Track Purchase Server Conversion Event with full PII signals
+        var conversion = await conversionMesh.TrackConversionAsync(
+            tenantId,
+            AdPlatform.MetaCapi,
+            ConversionEventType.Purchase,
+            valueAmount: 340.00m,
+            currency: "TND",
+            email: "Director.Sales@Enterprise.TN",
+            phone: "+21698112233",
+            firstName: "Sami",
+            lastName: "Gharbi",
+            city: "Tunis",
+            country: "TN",
+            fbc: "fb.1.1729881000.IwAR2345",
+            fbp: "fb.1.1729881000.987654321",
+            userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)",
+            ipAddress: "197.0.12.34"
+        );
+
+        Assert.NotNull(conversion);
+        Assert.Equal(AdPlatform.MetaCapi, conversion.Platform);
+        Assert.Equal(ConversionEventType.Purchase, conversion.EventType);
+        Assert.Equal(340.00m, conversion.ValueAmount);
+
+        // 2. Verify SHA256 lowercased hashing accuracy
+        var expectedEmailHash = ServerConversionMeshService.HashSha256("director.sales@enterprise.tn");
+        var expectedPhoneHash = ServerConversionMeshService.HashSha256("+21698112233");
+
+        Assert.Equal(expectedEmailHash, conversion.HashedEmail);
+        Assert.Equal(expectedPhoneHash, conversion.HashedPhone);
+
+        // 3. Verify High Event Match Quality (EMQ) Score
+        var emqScore = conversionMesh.CalculateEventMatchQualityScore(conversion);
+        Assert.True(emqScore >= 8.5, $"EMQ Score {emqScore} should be at least 8.5 out of 10.0");
+    }
 }
