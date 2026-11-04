@@ -215,4 +215,110 @@ public class PlanQuotaAndWebhooksTests
         var sub = await _db.TenantSubscriptions.FirstAsync(s => s.TenantId == tenantId);
         sub.Status.Should().Be("Canceled");
     }
+
+    [Fact]
+    public async Task ConsumeQuotaAsync_PersistsUsageMeterRecordWithMetadata()
+    {
+        var tenantId = Guid.NewGuid();
+        const string metadata = "{\"file\":\"backup_archive.zip\",\"sizeMb\":512}";
+
+        var record = await _quotaService.ConsumeQuotaAsync(
+            tenantId,
+            UsageMetricType.StorageMb,
+            512,
+            metadata
+        );
+
+        record.Should().NotBeNull();
+        record.TenantId.Should().Be(tenantId);
+        record.Metric.Should().Be(UsageMetricType.StorageMb);
+        record.Quantity.Should().Be(512);
+        record.Metadata.Should().Be(metadata);
+
+        var dbRecord = await _db.UsageMeterRecords.FirstOrDefaultAsync(r => r.TenantId == tenantId && r.Metric == UsageMetricType.StorageMb);
+        dbRecord.Should().NotBeNull();
+        dbRecord!.Quantity.Should().Be(512);
+        dbRecord.Metadata.Should().Be(metadata);
+    }
+
+    [Fact]
+    public async Task GetTenantQuotaStatusAsync_ReturnsStatusAcrossAllMetricsWithDefaultEntitlement()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var status = await _quotaService.GetTenantQuotaStatusAsync(tenantId);
+
+        status.Should().NotBeNull();
+        status.TenantId.Should().Be(tenantId);
+        status.PlanTier.Should().Be(PlanTier.Growth); // Default plan tier
+        status.Metrics.Should().HaveCount(6);
+
+        var expectedMetrics = new[]
+        {
+            UsageMetricType.ConnectedWarmupMailboxes,
+            UsageMetricType.MonthlyColdEmails,
+            UsageMetricType.CarrierWaybills,
+            UsageMetricType.StorageMb,
+            UsageMetricType.AiTokens,
+            UsageMetricType.VoiceMinutes
+        };
+
+        foreach (var m in expectedMetrics)
+        {
+            status.Metrics.Should().Contain(metricStatus => metricStatus.Metric == m && metricStatus.Limit > 0);
+        }
+    }
+
+    [Fact]
+    public async Task CheckQuota_StorageMb_OnStarterPlan_BlocksWhenExceedingStorageLimit()
+    {
+        var tenantId = Guid.NewGuid();
+        await _billingService.GetSubscriptionDetailsAsync(tenantId);
+        await _billingService.UpgradePlanAsync(tenantId, PlanTier.Starter);
+
+        // Starter storage limit is 1,024 MB (1GB). Simulate existing usage of 1,000 MB.
+        _db.UsageMeterRecords.Add(UsageMeterRecord.Create(tenantId, UsageMetricType.StorageMb, 1000));
+        await _db.SaveChangesAsync();
+
+        // Check for 50 MB additional storage -> 1050 MB exceeds 1024 MB
+        var result = await _quotaService.CheckQuotaAsync(tenantId, UsageMetricType.StorageMb, 50);
+
+        result.Allowed.Should().BeFalse();
+        result.IsHardBlocked.Should().BeTrue();
+        result.QuotaLimit.Should().Be(1024);
+        result.CurrentUsage.Should().Be(1000);
+        result.Message.Should().Contain("Starter plan hard quota");
+    }
+
+    [Fact]
+    public async Task CheckQuota_WithinLimits_ReturnsAllowedNormalMessage()
+    {
+        var tenantId = Guid.NewGuid();
+        await _billingService.GetSubscriptionDetailsAsync(tenantId);
+
+        var result = await _quotaService.CheckQuotaAsync(tenantId, UsageMetricType.MonthlyColdEmails, 100);
+
+        result.Allowed.Should().BeTrue();
+        result.IsHardBlocked.Should().BeFalse();
+        result.RequiresOverageWarning.Should().BeFalse();
+        result.Message.Should().Be("Within plan entitlement quota limits.");
+    }
+
+    [Fact]
+    public async Task ProcessWebhookEvent_UnknownEventType_ReturnsSuccessTrueWithNoOp()
+    {
+        var tenantId = Guid.NewGuid();
+        await _billingService.GetSubscriptionDetailsAsync(tenantId);
+
+        var payload = new BillingWebhookPayloadDto(
+            Provider: "Stripe",
+            EventType: "unhandled.event.type.test",
+            TenantId: tenantId
+        );
+
+        var result = await _billingService.ProcessWebhookEventAsync(payload);
+
+        result.Success.Should().BeTrue();
+        result.Provider.Should().Be("Stripe");
+    }
 }
