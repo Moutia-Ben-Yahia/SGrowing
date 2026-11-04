@@ -165,4 +165,57 @@ public class MasterGrowthAndFinancesE2ETests
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             storeService.PushFulfillmentUpdateAsync(tenantId, Guid.NewGuid(), "Yalidine", "TRK-999"));
     }
+
+    [Fact]
+    public async Task Master_EndToEnd_ConversationalCart_SouthernSurcharge_And_StockDepletion()
+    {
+        var db = CreateDbContext();
+        var wms = new DefensiveWmsService(db);
+        var cartEngine = new ConversationalCartEngine(db, wms);
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+        var conversationId = Guid.NewGuid();
+        var sku = "SAHARA-AMBER-100ML";
+
+        // 1. Setup Physical Stock in WMS
+        await wms.GetOrCreateInventoryAsync(tenantId, warehouseId, sku, initialPhysical: 5);
+
+        // 2. Customer orders 3 bottles to Tataouine (Southern tier governorate with 8 TND shipping)
+        var message = "Bonjour je veux commander 3 flacons pour Tataouine mon numero est +21699887766";
+        var intent = cartEngine.ParseCartIntent(message, defaultUnitPrice: 60.0m);
+        intent.VariantSku = sku;
+
+        Assert.Equal("Tataouine", intent.Governorate);
+        Assert.Equal(8.0m, intent.EstimatedShippingFee);
+        Assert.Equal(3, intent.Quantity);
+        Assert.Equal(188.0m, intent.TotalAmount); // (3 * 60) + 8 = 188.0m
+
+        // 3. Create In-Chat Order and reserve stock
+        var orderRes = await cartEngine.CreateInChatOrderAsync(tenantId, conversationId, intent, warehouseId);
+        Assert.NotNull(orderRes.Order);
+
+        var stockSummary = await wms.GetStockSummaryAsync(tenantId, warehouseId, sku);
+        Assert.Equal(3, stockSummary.Reserved);
+        Assert.Equal(2, stockSummary.Available);
+
+        // 4. Second customer orders 4 units -> WMS defensively records reservation and available stock becomes negative (-2)
+        var greedyOrderIntent = new InChatCartIntent
+        {
+            VariantSku = sku,
+            Quantity = 4,
+            UnitPrice = 60.0m,
+            EstimatedShippingFee = 8.0m,
+            CustomerName = "Farid",
+            PhoneNumber = "+21622334455",
+            Governorate = "Tataouine"
+        };
+
+        var secondOrderRes = await cartEngine.CreateInChatOrderAsync(tenantId, Guid.NewGuid(), greedyOrderIntent, warehouseId);
+        Assert.NotNull(secondOrderRes.Order);
+
+        var deficitSummary = await wms.GetStockSummaryAsync(tenantId, warehouseId, sku);
+        Assert.Equal(5, deficitSummary.Physical);
+        Assert.Equal(7, deficitSummary.Reserved); // 3 + 4 = 7
+        Assert.Equal(0, deficitSummary.Available); // Math.Max(0, 5 - 7) = 0
+    }
 }

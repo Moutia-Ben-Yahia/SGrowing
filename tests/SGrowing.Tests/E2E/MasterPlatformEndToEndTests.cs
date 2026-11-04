@@ -306,4 +306,42 @@ public class MasterPlatformEndToEndTests
         var secondRunCount = await journeyService.ProcessDueStepsAsync(tenantId);
         secondRunCount.Should().Be(0);
     }
+
+    [Fact]
+    public async Task MasterPlatform_HelpCenterRag_DeflectionMatching_And_ZeroKeywordFallback()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var ragService = new HelpCenterRagService(db);
+
+        // 1. Seed Published Help Center Article
+        var article = HelpArticle.Create(
+            tenantId,
+            Guid.NewGuid(),
+            "Drop-and-Swap Courier Exchange Policy",
+            "drop-and-swap-exchange-policy",
+            "Customers can inspect footwear size at doorstep and execute immediate size swap via our courier network without return fees.",
+            isPublished: true
+        );
+        db.HelpArticles.Add(article);
+        await db.SaveChangesAsync();
+
+        // 2. High-intent customer query deflects successfully with matched article and high confidence
+        var deflection = await ragService.GenerateAiDeflectionReplyAsync(tenantId, "How does doorstep drop-and-swap size exchange work?");
+        deflection.Deflected.Should().BeTrue();
+        deflection.ArticleTitle.Should().Be("Drop-and-Swap Courier Exchange Policy");
+        deflection.ArticleSlug.Should().Be("drop-and-swap-exchange-policy");
+        deflection.ConfidenceScore.Should().BeGreaterThan(40);
+
+        // 3. Query with only stop-words falls back to human escalation with low confidence
+        var fallbackDeflection = await ragService.GenerateAiDeflectionReplyAsync(tenantId, "can i please help you with what is");
+        fallbackDeflection.Deflected.Should().BeFalse();
+        fallbackDeflection.Answer.Should().Contain("human support specialist");
+        fallbackDeflection.ConfidenceScore.Should().Be(20);
+
+        // 4. Empty query returns safe early message
+        var emptyDeflection = await ragService.GenerateAiDeflectionReplyAsync(tenantId, "   ");
+        emptyDeflection.Deflected.Should().BeFalse();
+        emptyDeflection.ConfidenceScore.Should().Be(0);
+    }
 }

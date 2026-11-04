@@ -277,4 +277,54 @@ public class OutboundSdrEndToEndTests
         var refreshedEnrollment = await db.ProspectEnrollments.FindAsync(enrollment.Id);
         refreshedEnrollment!.Status.Should().Be(EnrollmentStatus.Active);
     }
+
+    [Fact]
+    public async Task OutboundSdr_MailboxQuotaExhaustion_And_MultiChannelSequencing()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var outbox = new OutboxService(db);
+        var mailboxService = new MailboxService(db);
+        var aiSdrService = new AiSdrService();
+        var dispatcher = new CadenceDispatcherService(db, mailboxService, aiSdrService, outbox);
+
+        // 1. Create Sender Account with target quota of 1 email/day
+        var sender = SenderAccount.Create(
+            tenantId: tenantId,
+            email: "quota-test@trySGrowing.com",
+            displayName: "Test SDR",
+            provider: MailboxProvider.GoogleWorkspace,
+            targetDailyQuota: 1,
+            rampDailyIncrement: 1
+        );
+        db.SenderAccounts.Add(sender);
+
+        var campaign = OutboundCampaign.Create(tenantId, "Strict Quota Campaign", new List<Guid> { sender.Id });
+        db.OutboundCampaigns.Add(campaign);
+
+        var contact = Contact.Create(tenantId, "Arthur", "Curry", "arthur@atlantis.gov");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        var step1 = CadenceStep.Create(tenantId, campaign.Id, 1, 0, OutboundChannel.Email, "Hello", "Content");
+        db.CadenceSteps.Add(step1);
+
+        var enrollment = ProspectEnrollment.Create(tenantId, campaign.Id, contact.Id);
+        enrollment.PersonalizedHook = "Deep sea logistics.";
+        db.ProspectEnrollments.Add(enrollment);
+        await db.SaveChangesAsync();
+
+        // 2. Consume sender's entire daily quota
+        await mailboxService.RecordSendAsync(sender.Id);
+        var reloadedSender = await db.SenderAccounts.FindAsync(sender.Id);
+        reloadedSender!.SentTodayCount.Should().Be(1);
+        reloadedSender.CanSendToday().Should().BeFalse();
+
+        // 3. Sender pool is now exhausted -> Dispatcher processes 0 cadences
+        var nextSender = await mailboxService.GetNextAvailableSenderAsync(tenantId, new[] { sender.Id });
+        nextSender.Should().BeNull();
+
+        var processedCount = await dispatcher.ProcessDueCadencesAsync(tenantId);
+        processedCount.Should().Be(0);
+    }
 }

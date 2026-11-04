@@ -179,4 +179,34 @@ public class MasterHorizonsOneToFourE2ETests
         var attempts = await devService.DispatchWebhookEventAsync(tenantId, "invoice.paid", new { amount = 2500 });
         Assert.Empty(attempts);
     }
+
+    [Fact]
+    public async Task Horizons_One_To_Four_CodCheckout_InvalidOtp_And_WilayaZoneLookup()
+    {
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+
+        var db = new SGrowingDbContext(options);
+        var tenantId = Guid.NewGuid();
+        var checkoutService = new CodCheckoutService(db);
+
+        // 1. Wilaya zones auto-seed correctly
+        var zones = await checkoutService.GetWilayasAsync("TN");
+        Assert.NotEmpty(zones);
+        Assert.Contains(zones, z => z.Code == "TN-11");
+        Assert.Contains(zones, z => z.Code == "TN-41");
+
+        // 2. Create session and test invalid OTP
+        var cartJson = "[{\"sku\":\"CREAM-ALOE-50ML\",\"qty\":1,\"price\":45.0}]";
+        var session = await checkoutService.CreateSessionAsync(tenantId, cartJson, 45.0m);
+        await checkoutService.SendPhoneOtpAsync(tenantId, session.SessionKey);
+
+        var badVerification = await checkoutService.VerifyPhoneOtpAsync(tenantId, session.SessionKey, "999999");
+        Assert.False(badVerification);
+
+        // 3. Applying upsell offer on invalid session throws InvalidOperationException
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            checkoutService.ApplyUpsellOfferAsync(tenantId, "nonexistent-session-key", "UPSELL-SKU", 15m));
+    }
 }

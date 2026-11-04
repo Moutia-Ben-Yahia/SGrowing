@@ -508,4 +508,54 @@ public class MasterOmnichannelEnterpriseTests
         var updatedContact = await db.Contacts.FindAsync(contact.Id);
         updatedContact!.CompanyId.Should().Be(company.Id);
     }
+
+    [Fact]
+    public async Task MasterOmnichannel_SocialCommentDeflection_IntentMatching_And_DirectMessageOutbox()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var outbox = new OutboxService(db);
+        var deflector = new SocialCommentDeflectionService(db, outbox);
+
+        // 1. Comment with commercial intent triggers automatic deflection and enqueues Outbox DM
+        var commercialComment = "Can someone send me the pricing and a demo link for this?";
+        var resultIntent = await deflector.HandlePublicCommentAsync(
+            tenantId,
+            SocialPlatform.Instagram,
+            "post_insta_9988",
+            "prospect_sarah",
+            commercialComment
+        );
+
+        resultIntent.Deflected.Should().BeTrue();
+        resultIntent.ReplyText.Should().Contain("Sent you a DM");
+
+        var outboxMessages = await db.OutboxMessages.Where(o => o.TenantId == tenantId && o.EventType == "Social.DirectMessage.Send").ToListAsync();
+        outboxMessages.Should().ContainSingle();
+        outboxMessages[0].Payload.Should().Contain("prospect_sarah");
+        outboxMessages[0].Payload.Should().Contain("pricing");
+
+        // 2. Casual comment without commercial intent is not deflected
+        var casualComment = "Love the aesthetic and colors in this shot!";
+        var resultCasual = await deflector.HandlePublicCommentAsync(
+            tenantId,
+            SocialPlatform.Instagram,
+            "post_insta_9988",
+            "art_fan",
+            casualComment
+        );
+
+        resultCasual.Deflected.Should().BeFalse();
+        resultCasual.ReplyText.Should().BeNull();
+
+        // 3. Empty comment returns false cleanly
+        var emptyResult = await deflector.HandlePublicCommentAsync(
+            tenantId,
+            SocialPlatform.X,
+            "post_x_101",
+            "silent_user",
+            "   "
+        );
+        emptyResult.Deflected.Should().BeFalse();
+    }
 }

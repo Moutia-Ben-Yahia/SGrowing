@@ -254,4 +254,51 @@ public class MasterNextGenFrontiersE2ETests
         Assert.Equal(AdOptimizationAction.NoAction, executionLog.Action);
         Assert.Equal("Performance within acceptable thresholds.", executionLog.Reason);
     }
+
+    [Fact]
+    public async Task Master_NextGen_Frontiers_MatureAndStagnant_WarehouseAgingEvaluation()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+        var liquidationService = new InventoryLiquidationService(db);
+
+        // 1. Record stock for Mature tier (45 days)
+        var matureItem = await liquidationService.RecordStockIntakeAgingAsync(
+            tenantId,
+            Guid.NewGuid(),
+            "MATURE-LOTION",
+            "Hydrating Body Lotion",
+            warehouseId,
+            quantity: 50,
+            costPrice: 8m,
+            retailPrice: 40m,
+            daysInWarehouse: 45);
+
+        // 2. Record stock for Stagnant tier (75 days)
+        var stagnantItem = await liquidationService.RecordStockIntakeAgingAsync(
+            tenantId,
+            Guid.NewGuid(),
+            "STAGNANT-CREAM",
+            "Revitalizing Night Cream",
+            warehouseId,
+            quantity: 25,
+            costPrice: 12m,
+            retailPrice: 60m,
+            daysInWarehouse: 75);
+
+        // 3. Evaluate aging across warehouse
+        var evaluated = await liquidationService.EvaluateWarehouseAgingAsync(tenantId, warehouseId);
+        Assert.Equal(2, evaluated.Count);
+
+        var matureEval = evaluated.First(e => e.Sku == "MATURE-LOTION");
+        Assert.Equal(StockAgeTier.Mature, matureEval.Tier);
+        Assert.Equal(10m, matureEval.CurrentMarkdownPercentage);
+        Assert.Equal(36m, matureEval.CurrentEffectivePrice); // 40 - 10% = 36m
+
+        var stagnantEval = evaluated.First(e => e.Sku == "STAGNANT-CREAM");
+        Assert.Equal(StockAgeTier.Stagnant, stagnantEval.Tier);
+        Assert.Equal(25m, stagnantEval.CurrentMarkdownPercentage);
+        Assert.Equal(45m, stagnantEval.CurrentEffectivePrice); // 60 - 25% = 45m
+    }
 }
