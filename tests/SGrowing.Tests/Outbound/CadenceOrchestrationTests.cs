@@ -72,4 +72,106 @@ public class CadenceOrchestrationTests
         enrollment.Status.Should().Be(EnrollmentStatus.Active);
         enrollment.NextRunAtUtc.Should().NotBeNull();
     }
+
+    [Fact]
+    public async Task CreateCampaign_WithoutTenantId_ReturnsFailure()
+    {
+        var db = CreateDbContext();
+        var handler = new CreateCampaignHandler(db);
+
+        var request = new CreateCampaignRequest(
+            TenantId: Guid.Empty,
+            Name: "No Tenant",
+            SenderPoolIds: new List<Guid>(),
+            Steps: new List<CreateCadenceStepDto>
+            {
+                new(1, 0, OutboundChannel.Email, "Subject", "Body")
+            }
+        );
+
+        var result = await handler.HandleAsync(request);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("TenantId is required");
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public async Task CreateCampaign_WithEmptyName_ReturnsFailure(string? name)
+    {
+        var db = CreateDbContext();
+        var handler = new CreateCampaignHandler(db);
+
+        var request = new CreateCampaignRequest(
+            TenantId: Guid.NewGuid(),
+            Name: name!,
+            SenderPoolIds: new List<Guid>(),
+            Steps: new List<CreateCadenceStepDto>
+            {
+                new(1, 0, OutboundChannel.Email, "Subject", "Body")
+            }
+        );
+
+        var result = await handler.HandleAsync(request);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("Campaign name is required");
+    }
+
+    [Fact]
+    public async Task CreateCampaign_WithNoSteps_ReturnsFailure()
+    {
+        var db = CreateDbContext();
+        var handler = new CreateCampaignHandler(db);
+
+        var request = new CreateCampaignRequest(
+            TenantId: Guid.NewGuid(),
+            Name: "Empty Steps Campaign",
+            SenderPoolIds: new List<Guid>(),
+            Steps: new List<CreateCadenceStepDto>()
+        );
+
+        var result = await handler.HandleAsync(request);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("Campaign must contain at least one step");
+    }
+
+    [Fact]
+    public async Task EnrollProspects_WhenCampaignNotFound_ReturnsFailure()
+    {
+        var db = CreateDbContext();
+        var handler = new EnrollProspectsHandler(db);
+
+        var result = await handler.HandleAsync(new EnrollProspectsRequest(
+            Guid.NewGuid(), Guid.NewGuid(), new List<Guid> { Guid.NewGuid() }));
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("Campaign not found");
+    }
+
+    [Fact]
+    public async Task EnrollProspects_DoesNotDuplicateExistingEnrollments()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var campaign = OutboundCampaign.Create(tenantId, "Retention Campaign", new List<Guid>());
+        db.OutboundCampaigns.Add(campaign);
+        var contact = Contact.Create(tenantId, "Clark", "Kent", "clark@planet.com");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        var handler = new EnrollProspectsHandler(db);
+        var res1 = await handler.HandleAsync(new EnrollProspectsRequest(tenantId, campaign.Id, new List<Guid> { contact.Id }));
+        res1.Value.EnrolledCount.Should().Be(1);
+
+        // Re-enrolling same contact
+        var res2 = await handler.HandleAsync(new EnrollProspectsRequest(tenantId, campaign.Id, new List<Guid> { contact.Id }));
+        res2.Value.EnrolledCount.Should().Be(0);
+
+        var total = await db.ProspectEnrollments.CountAsync(e => e.CampaignId == campaign.Id && e.ContactId == contact.Id);
+        total.Should().Be(1);
+    }
 }

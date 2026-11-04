@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Integrations;
+using SGrowing.Core.Entities;
 using Xunit;
 
 namespace SGrowing.Tests.Integrations;
@@ -92,5 +93,84 @@ public class DeveloperWebhooksTests
         var retry = await _service.RetryDeliveryAsync(tenantId, log.Id);
         Assert.NotNull(retry);
         Assert.True(retry.IsSuccess);
+    }
+
+    [Fact]
+    public async Task GetApiKeys_ReturnsKeysForTenantInDescendingOrder()
+    {
+        var tenantId = Guid.NewGuid();
+        var (k1, _) = await _service.GenerateApiKeyAsync(tenantId, "Key 1", new List<string> { "read" });
+        var (k2, _) = await _service.GenerateApiKeyAsync(tenantId, "Key 2", new List<string> { "write" });
+
+        var keys = await _service.GetApiKeysAsync(tenantId);
+        Assert.Equal(2, keys.Count);
+        Assert.Equal(k2.Id, keys[0].Id);
+        Assert.Equal(k1.Id, keys[1].Id);
+    }
+
+    [Fact]
+    public async Task RevokeApiKey_WhenKeyDoesNotExist_ReturnsFalse()
+    {
+        var tenantId = Guid.NewGuid();
+        var result = await _service.RevokeApiKeyAsync(tenantId, Guid.NewGuid());
+        Assert.False(result);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    [InlineData("invalid_prefix_key_12345")]
+    public async Task ValidateApiKey_WithMalformedOrEmptyKey_ReturnsNull(string? key)
+    {
+        var result = await _service.ValidateApiKeyAsync(key!);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task ToggleWebhookSubscription_EnablesAndDisablesSubscription()
+    {
+        var tenantId = Guid.NewGuid();
+        var sub = await _service.RegisterWebhookSubscriptionAsync(
+            tenantId, "https://example.com/hook", new List<string> { "order.*" });
+
+        Assert.True(sub.IsActive);
+
+        var toggledOff = await _service.ToggleWebhookSubscriptionAsync(tenantId, sub.Id, false);
+        Assert.True(toggledOff);
+
+        var subs = await _service.GetWebhookSubscriptionsAsync(tenantId);
+        Assert.False(subs[0].IsActive);
+
+        var toggledMissing = await _service.ToggleWebhookSubscriptionAsync(tenantId, Guid.NewGuid(), true);
+        Assert.False(toggledMissing);
+    }
+
+    [Fact]
+    public async Task GetDeadLetterLogs_ReturnsOnlyLogsMarkedAsDeadLetter()
+    {
+        var tenantId = Guid.NewGuid();
+        var sub = await _service.RegisterWebhookSubscriptionAsync(
+            tenantId, "https://example.com/dlq", new List<string> { "*" });
+
+        var log1 = WebhookDeliveryAttemptLog.Create(tenantId, sub.Id, "user.created", "{}", 500, false, 100, 5, 5, "sig", 12345);
+        log1.IsDeadLetter = true;
+        log1.DeadLetterReason = "Exceeded max retries (5)";
+
+        var log2 = WebhookDeliveryAttemptLog.Create(tenantId, sub.Id, "user.updated", "{}", 200, true, 50, 1, 5, "sig", 12346);
+
+        _db.WebhookDeliveryAttemptLogs.AddRange(log1, log2);
+        await _db.SaveChangesAsync();
+
+        var dlq = await _service.GetDeadLetterLogsAsync(tenantId);
+        Assert.Single(dlq);
+        Assert.Equal(log1.Id, dlq[0].Id);
+    }
+
+    [Fact]
+    public async Task RetryDelivery_WhenLogNotFound_ReturnsNull()
+    {
+        var result = await _service.RetryDeliveryAsync(Guid.NewGuid(), Guid.NewGuid());
+        Assert.Null(result);
     }
 }
