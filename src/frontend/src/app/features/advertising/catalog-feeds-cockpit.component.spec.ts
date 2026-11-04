@@ -29,4 +29,15 @@ describe('CatalogFeedsCockpitComponent', () => {
 
     expect(comp.feeds()[0].lastGeneratedAt).not.toBe(oldTimestamp);
   });
+
+  it('should ignore duplicate promo badge additions idempotently', () => {
+    const comp = new CatalogFeedsCockpitComponent();
+    const p1 = comp.products()[0];
+    comp.addPromoBadge(p1);
+    expect(comp.totalBadges()).toBe(5);
+
+    // Call second time
+    comp.addPromoBadge(p1);
+    expect(comp.totalBadges()).toBe(5);
+  });
 });

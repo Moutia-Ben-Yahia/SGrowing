@@ -42,4 +42,11 @@ describe('LanguageSwitcherComponent', () => {
     expect(translationService.t('nav.inbox')).toBe('المحادثات');
     expect(translationService.t('common.resolve')).toBe('حل وإنهاء');
   });
+
+  it('should switch to French and update document attributes accordingly', () => {
+    translationService.setLocale('fr-FR');
+    expect(translationService.currentLocale()).toBe('fr-FR');
+    expect(document.documentElement.getAttribute('lang')).toBe('fr-FR');
+    expect(translationService.t('nav.inbox')).toBe('Conversations');
+  });
 });

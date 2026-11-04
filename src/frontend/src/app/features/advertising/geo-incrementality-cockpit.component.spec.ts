@@ -35,4 +35,14 @@ describe('GeoIncrementalityCockpitComponent', () => {
     const totalBaselineRev = comp.cells().reduce((acc, c) => acc + c.baselineWeeklyRevenueUsd, 0);
     expect(totalBaselineRev).toBe(838000);
   });
+
+  it('should compute combined incremental revenue across initial and launched experiments', () => {
+    const comp = new GeoIncrementalityCockpitComponent();
+    expect(comp.experiments()[0].measuredIncrementalRevenueUsd).toBe(580000);
+
+    comp.launchNewGeoExperiment();
+    const totalIncrementalRev = comp.experiments().reduce((sum, e) => sum + e.measuredIncrementalRevenueUsd, 0);
+    expect(totalIncrementalRev).toBe(941000); // 580000 + 361000
+    expect(comp.experiments()[0].status).toBe('RUNNING_HOLD_OUT');
+  });
 });

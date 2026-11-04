@@ -28,4 +28,15 @@ describe('BidPacingCockpitComponent', () => {
     expect(updated?.mode).toBe('AcceleratedHighIntent');
     expect(comp.throttledCount()).toBe(0);
   });
+
+  it('should update selectedCampaign when boosting high intent on active selection', () => {
+    const comp = new BidPacingCockpitComponent();
+    const second = comp.campaigns()[1];
+    comp.selectCampaign(second);
+    expect(comp.selectedCampaign()?.mode).toBe('ThrottledOverSpend');
+
+    comp.boostHighIntent('camp_google_high_cpc_02');
+    expect(comp.selectedCampaign()?.mode).toBe('AcceleratedHighIntent');
+    expect(comp.selectedCampaign()?.currentBidMultiplier).toBe(1.35);
+  });
 });

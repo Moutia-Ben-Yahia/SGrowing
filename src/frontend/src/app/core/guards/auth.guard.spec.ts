@@ -61,4 +61,15 @@ describe('authGuard', () => {
     expect(result).toBe(false);
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
   });
+
+  it('should navigate to login and return false after token removal', () => {
+    localStorage.setItem('sgrowing_access_token', 'temp-token');
+    localStorage.removeItem('sgrowing_access_token');
+    mockAuthService.isAuthenticated.mockReturnValue(false);
+
+    const result = runInInjectionContext(injector, () => (authGuard as any)({}, {}));
+
+    expect(result).toBe(false);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
+  });
 });

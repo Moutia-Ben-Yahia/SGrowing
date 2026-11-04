@@ -33,4 +33,13 @@ describe('CreativeBanditCockpitComponent', () => {
     expect(comp.topAllocatedShare()).toBe(0);
     expect(comp.blendedCvr()).toBe('0.00');
   });
+
+  it('should identify the top-performing creative variant and verify theme mapping', () => {
+    const comp = new CreativeBanditCockpitComponent();
+    const topVariant = comp.variants().find(v => v.allocatedShare === comp.topAllocatedShare());
+    expect(topVariant).toBeTruthy();
+    expect(topVariant?.variantId).toBe('var_101');
+    expect(topVariant?.angle).toBe('PainPointAgitation');
+    expect(topVariant?.isFatigued).toBe(false);
+  });
 });

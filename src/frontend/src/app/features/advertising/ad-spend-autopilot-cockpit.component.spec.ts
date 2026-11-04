@@ -39,4 +39,12 @@ describe('AdSpendAutopilotCockpitComponent', () => {
     expect(component.bidShadingSavings()).toBeGreaterThan(initialSavings);
     expect(component.simulatedShadedBid).toBeLessThan(component.simulatedRawBid);
   });
+
+  it('should allow campaign selection and return correct status badge classes', () => {
+    const metaCamp = component.campaigns()[1];
+    component.selectCampaign(metaCamp);
+    expect(component.selectedCampaign()?.campaignId).toBe('cmp_meta_retargeting');
+    expect(component.getStatusBadgeClass('Optimized')).toContain('emerald');
+    expect(component.getStatusBadgeClass('AnomalyPaused')).toContain('rose');
+  });
 });

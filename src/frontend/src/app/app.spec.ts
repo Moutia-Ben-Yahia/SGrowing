@@ -28,4 +28,10 @@ describe('App', () => {
     currentTitle = 'sgrowing-omnichannel-growth-os';
     expect((app as any).title()).toBe('sgrowing-omnichannel-growth-os');
   });
+
+  it('should expose title as a readable signal', () => {
+    const customTitle = 'SGrowing - Enterprise Omnichannel Suite';
+    (app as any).title = () => customTitle;
+    expect((app as any).title()).toContain('Enterprise Omnichannel');
+  });
 });

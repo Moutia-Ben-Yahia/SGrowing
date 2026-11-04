@@ -36,4 +36,15 @@ describe('CrossDeviceSyncCockpitComponent', () => {
     expect(comp.lastMatch()?.clusterId).toBe('CLUSTER-CD-902');
     expect(comp.lastMatch()?.amount).toBe(750.50);
   });
+
+  it('should fallback to default cluster when selectedCluster is null during matching', () => {
+    const comp = new CrossDeviceSyncCockpitComponent();
+    comp.selectedCluster.set(null);
+    comp.posAmount = 199.99;
+    comp.matchOfflineConversion();
+
+    expect(comp.lastMatch()?.clusterId).toBe('CLUSTER-CD-901');
+    expect(comp.lastMatch()?.amount).toBe(199.99);
+    expect(comp.lastMatch()?.transactionId).toBe('POS-TX-99881');
+  });
 });

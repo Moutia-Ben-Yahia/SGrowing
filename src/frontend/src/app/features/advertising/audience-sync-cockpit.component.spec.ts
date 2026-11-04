@@ -31,4 +31,14 @@ describe('AudienceSyncCockpitComponent (Horizon 57)', () => {
     expect(component.syncJobs().length).toBe(initialJobs + 1);
     expect(component.syncJobs()[0].status).toBe('RecoveredAndStreamed');
   });
+
+  it('should compute average latency across all connected DSP platforms', () => {
+    const latency = component.avgLatency();
+    expect(latency).toBeGreaterThan(100);
+    expect(latency).toBeLessThan(500);
+
+    const metaConn = component.connectors().find(c => c.platform === 'MetaCustomAudience');
+    expect(metaConn?.isConnected).toBe(true);
+    expect(metaConn?.syncedAudiences).toBeGreaterThan(0);
+  });
 });

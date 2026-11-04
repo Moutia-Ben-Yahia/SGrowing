@@ -32,4 +32,18 @@ describe('VideoDcoCockpitComponent', () => {
     const warmedVariants = comp.variants().filter(v => v.cdnStatus === 'WARMED_EDGE');
     expect(warmedVariants.length).toBe(2);
   });
+
+  it('should verify initial rendered variants target audiences and currencies', () => {
+    const comp = new VideoDcoCockpitComponent();
+    const euVariant = comp.variants().find(v => v.variantId === 'VAR-EU-DE-01');
+    const usVariant = comp.variants().find(v => v.variantId === 'VAR-US-NY-02');
+
+    expect(euVariant).toBeDefined();
+    expect(euVariant?.localizedCurrency).toBe('EUR');
+    expect(euVariant?.displayedPrice).toBe(4990);
+
+    expect(usVariant).toBeDefined();
+    expect(usVariant?.localizedCurrency).toBe('USD');
+    expect(usVariant?.displayedPrice).toBe(299);
+  });
 });

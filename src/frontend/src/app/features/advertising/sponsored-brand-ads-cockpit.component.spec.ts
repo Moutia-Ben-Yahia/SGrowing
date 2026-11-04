@@ -34,4 +34,15 @@ describe('SponsoredBrandAdsCockpitComponent', () => {
     expect(comp.activeCampaignsCount()).toBe(3);
     expect(comp.campaigns().length).toBe(3);
   });
+
+  it('should verify initial brand campaign configuration and headline attributes', () => {
+    const comp = new SponsoredBrandAdsCockpitComponent();
+    const camp = comp.campaigns()[0];
+    expect(camp.campaignId).toBe('CAMP-BRAND-001');
+    expect(camp.brandName).toBe('AuraSound Acoustic Labs');
+    expect(camp.headline).toContain('Pure Studio Master Audio');
+    expect(camp.isActive).toBe(true);
+    expect(camp.featuredSkusCount).toBe(3);
+    expect(camp.slotType).toBe('TopSearchHeaderBanner');
+  });
 });
