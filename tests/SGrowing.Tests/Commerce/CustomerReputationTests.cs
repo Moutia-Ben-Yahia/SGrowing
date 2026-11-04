@@ -191,4 +191,23 @@ public class CustomerReputationTests
 
         Assert.Contains("not found", ex.Message);
     }
+
+    [Fact]
+    public async Task RecordMicroDepositSettlementAsync_WhenDepositExceedsTotal_ClampsRemainingAmountToZero()
+    {
+        var db = CreateDbContext();
+        var service = new CustomerReputationService(db);
+        var tenantId = Guid.NewGuid();
+
+        var order = CodOrder.Create(tenantId, "ORD-EXCESS-01", "Hedi Trabelsi", "+21622114477", "Tunis", "Tunis", "Tunis", 15.0m);
+        order.Status = CodOrderStatus.PendingConfirmation;
+        db.CodOrders.Add(order);
+        await db.SaveChangesAsync();
+
+        var link = await service.GenerateMicroDepositLinkAsync(tenantId, order.Id, "+21622114477", depositAmount: 20.0m);
+        var settled = await service.RecordMicroDepositSettlementAsync(tenantId, link.Id);
+
+        Assert.Equal(0.0m, settled.TotalAmount);
+        Assert.Equal(CodOrderStatus.Confirmed, settled.Status);
+    }
 }

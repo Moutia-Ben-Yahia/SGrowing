@@ -229,4 +229,31 @@ public class DemandForecastingTests
         Assert.Single(criticalAlertsA);
         Assert.Equal("SKU-A-CRIT", criticalAlertsA[0].Sku);
     }
+
+    [Fact]
+    public async Task GenerateAutomatedRestockOrderAsync_EnforcesMinimumBatchQuantityOfTwenty()
+    {
+        var db = CreateDbContext();
+        var service = new DemandForecastingService(db);
+        var tenantId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+        string sku = "SKU-MIN-BATCH";
+
+        // Velocity: 1 unit per day
+        await service.CalculateProductVelocityAsync(
+            tenantId, productId, sku, "Min Batch Item",
+            trailing7dUnits: 7m, trailing30dUnits: 30m, adSpendMultiplier: 1.0m);
+
+        // Abundant stock -> RecommendedReorderQuantity = 0
+        var alert = await service.EvaluateStockoutAlertAsync(
+            tenantId, productId, sku,
+            currentPhysicalStock: 100, currentReservedStock: 0,
+            supplierLeadTimeDays: 5, safetyStockDays: 3, targetCycleDays: 14);
+
+        var restockOrder = await service.GenerateAutomatedRestockOrderAsync(
+            tenantId, alert.Id, Guid.NewGuid(), unitCost: 10m);
+
+        Assert.Equal(20, restockOrder.QuantityToOrder);
+        Assert.Equal("Primary Factory Supplier", restockOrder.SupplierName);
+    }
 }

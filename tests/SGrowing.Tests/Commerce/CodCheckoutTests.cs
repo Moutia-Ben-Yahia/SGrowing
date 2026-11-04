@@ -145,4 +145,13 @@ public class CodCheckoutTests
 
         Assert.Contains("not found", ex.Message);
     }
+
+    [Fact]
+    public async Task GetWilayasAsync_UnknownCountryCode_ReturnsEmptyList()
+    {
+        var wilayas = await _service.GetWilayasAsync("XX");
+
+        Assert.NotNull(wilayas);
+        Assert.Empty(wilayas);
+    }
 }

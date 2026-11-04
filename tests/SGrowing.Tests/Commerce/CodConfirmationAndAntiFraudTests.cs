@@ -197,4 +197,18 @@ public class CodConfirmationAndAntiFraudTests
 
         Assert.False(result);
     }
+
+    [Fact]
+    public async Task GenerateInteractiveWhatsAppPayloadAsync_OrderNotFound_ThrowsInvalidOperationException()
+    {
+        var db = CreateDbContext();
+        var service = new CodConfirmationService(db);
+        var tenantId = Guid.NewGuid();
+        var nonExistentOrderId = Guid.NewGuid();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.GenerateInteractiveWhatsAppPayloadAsync(tenantId, nonExistentOrderId));
+
+        Assert.Equal($"Order {nonExistentOrderId} not found.", ex.Message);
+    }
 }
