@@ -189,4 +189,20 @@ public class SecurityAuditAndRbacTests
         Assert.Single(logsB);
         Assert.Equal(tenantB, logsB[0].TenantId);
     }
+
+    [Fact]
+    public void GenerateClickToDialToken_ProducesDeterministicPrefixedTokens()
+    {
+        var db = CreateDbContext();
+        var service = new SecurityAuditAndRbacService(db);
+        var tenantId = Guid.NewGuid();
+        var orderId = Guid.NewGuid();
+        var phone = "+21698765432";
+
+        var token = service.GenerateClickToDialToken(tenantId, orderId, phone);
+
+        Assert.NotNull(token);
+        Assert.StartsWith("DIAL-", token);
+        Assert.Equal(17, token.Length); // "DIAL-" (5) + 12 hex chars = 17
+    }
 }

@@ -155,4 +155,85 @@ public class WorkerDaemonTests
         var breached = await watchdog.CheckSlaBreachesAsync();
         Assert.Equal(0, breached);
     }
+
+    [Fact]
+    public async Task OutboxProcessorDaemon_WhenBatchHasMultipleTenants_ProcessesAllInSingleBatch()
+    {
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        var msgA = OutboxMessage.Create(tenantA, "TenantAEvent", "{\"tenant\":\"A\"}");
+        var msgB = OutboxMessage.Create(tenantB, "TenantBEvent", "{\"tenant\":\"B\"}");
+
+        await _db.OutboxMessages.AddRangeAsync(msgA, msgB);
+        await _db.SaveChangesAsync();
+
+        var daemon = new OutboxProcessorDaemon(
+            _serviceProvider,
+            NullLogger<OutboxProcessorDaemon>.Instance,
+            TimeSpan.FromSeconds(1));
+
+        var processed = await daemon.ProcessBatchAsync();
+        Assert.Equal(2, processed);
+
+        using var scope = _serviceProvider.CreateScope();
+        var verifyDb = scope.ServiceProvider.GetRequiredService<SGrowingDbContext>();
+
+        var list = await verifyDb.OutboxMessages.Where(m => m.Id == msgA.Id || m.Id == msgB.Id).ToListAsync();
+        Assert.All(list, m => Assert.NotNull(m.ProcessedOnUtc));
+    }
+
+    [Fact]
+    public async Task SlaWatchdogDaemon_WhenResolvedConversation_IgnoresBreach()
+    {
+        var tenantId = Guid.NewGuid();
+        var policy = SlaPolicy.Create(tenantId, "Strict SLA", ConversationPriority.Normal, targetFirstResponseMinutes: 5, targetResolutionMinutes: 30);
+        await _db.SlaPolicies.AddAsync(policy);
+
+        var conv = Conversation.Create(tenantId, Guid.NewGuid(), Guid.NewGuid());
+        conv.Status = ConversationStatus.Resolved;
+        typeof(Conversation).GetProperty("CreatedAtUtc")!.SetValue(conv, DateTime.UtcNow.AddMinutes(-60));
+
+        await _db.Conversations.AddAsync(conv);
+        await _db.SaveChangesAsync();
+
+        var watchdog = new SlaWatchdogDaemon(
+            _serviceProvider,
+            NullLogger<SlaWatchdogDaemon>.Instance,
+            TimeSpan.FromSeconds(1));
+
+        var breached = await watchdog.CheckSlaBreachesAsync();
+        Assert.Equal(0, breached);
+    }
+
+    [Fact]
+    public async Task SlaWatchdogDaemon_EscalatesLowPriorityConversationDirectlyToUrgentOnBreach()
+    {
+        var tenantId = Guid.NewGuid();
+        var policy = SlaPolicy.Create(tenantId, "Default SLA", ConversationPriority.Low, targetFirstResponseMinutes: 10, targetResolutionMinutes: 60);
+        await _db.SlaPolicies.AddAsync(policy);
+
+        var conv = Conversation.Create(tenantId, Guid.NewGuid(), Guid.NewGuid());
+        conv.Priority = ConversationPriority.Low;
+        typeof(Conversation).GetProperty("CreatedAtUtc")!.SetValue(conv, DateTime.UtcNow.AddMinutes(-20));
+
+        await _db.Conversations.AddAsync(conv);
+        await _db.SaveChangesAsync();
+
+        var watchdog = new SlaWatchdogDaemon(
+            _serviceProvider,
+            NullLogger<SlaWatchdogDaemon>.Instance,
+            TimeSpan.FromSeconds(1));
+
+        var breached = await watchdog.CheckSlaBreachesAsync();
+        Assert.Equal(1, breached);
+
+        using var scope = _serviceProvider.CreateScope();
+        var verifyDb = scope.ServiceProvider.GetRequiredService<SGrowingDbContext>();
+        var refreshed = await verifyDb.Conversations.FindAsync(conv.Id);
+
+        Assert.NotNull(refreshed);
+        Assert.True(refreshed.IsSlaBreached);
+        Assert.Equal(ConversationPriority.Urgent, refreshed.Priority);
+    }
 }

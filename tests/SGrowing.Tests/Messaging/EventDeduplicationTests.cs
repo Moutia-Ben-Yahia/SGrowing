@@ -129,4 +129,22 @@ public class EventDeduplicationTests
         // Assert
         reacquired.Should().BeTrue("expired deduplication locks must be cleared to allow retries");
     }
+
+    [Fact]
+    public async Task TryAcquireAsync_WhitespacePaddedEventId_TreatsAsIdenticalEventKey()
+    {
+        // Arrange
+        var service = new EventDeduplicationService();
+        var tenantId = Guid.NewGuid();
+        string rawEventId = $"evt-whitespace-{Guid.NewGuid():N}";
+        string paddedEventId = $"   {rawEventId}   \t";
+
+        // Act
+        bool first = await service.TryAcquireAsync(tenantId, rawEventId, "payload-a", TimeSpan.FromMinutes(10));
+        bool secondWithPadding = await service.TryAcquireAsync(tenantId, paddedEventId, "payload-b", TimeSpan.FromMinutes(10));
+
+        // Assert
+        first.Should().BeTrue();
+        secondWithPadding.Should().BeFalse("whitespace around event ID must be trimmed so keys deduplicate properly");
+    }
 }

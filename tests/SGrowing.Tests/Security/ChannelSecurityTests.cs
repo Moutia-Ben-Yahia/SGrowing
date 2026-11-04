@@ -146,4 +146,13 @@ public class ChannelSecurityTests
         Assert.False(credentialValid.IsExpired());
         Assert.True(credentialExpired.IsExpired());
     }
+
+    [Fact]
+    public void VerifyMetaSignature_InvalidPrefixOrEmpty_ReturnsFalse()
+    {
+        Assert.False(WebhookSignatureValidator.VerifyMetaSignature("payload", "secret", "invalid_prefix_12345"));
+        Assert.False(WebhookSignatureValidator.VerifyMetaSignature(null!, "secret", "sha256=12345"));
+        Assert.False(WebhookSignatureValidator.VerifyMetaSignature("payload", null!, "sha256=12345"));
+        Assert.False(WebhookSignatureValidator.VerifyMetaSignature("payload", "secret", null!));
+    }
 }
