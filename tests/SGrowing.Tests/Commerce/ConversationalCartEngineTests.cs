@@ -96,4 +96,56 @@ public class ConversationalCartEngineTests
         Assert.Contains("SCENT-CARTHAGE-50ML", result.InteractiveReplyPayload);
         Assert.Contains("CONFIRM_", result.InteractiveReplyPayload);
     }
+
+    [Fact]
+    public void ParseCartIntent_IncompleteMessage_LacksPhoneOrGov_NotCompleteForCheckout()
+    {
+        var db = CreateDbContext();
+        var wms = new DefensiveWmsService(db);
+        var engine = new ConversationalCartEngine(db, wms);
+
+        var message = "Combien coûte votre produit s'il vous plaît ?";
+        var intent = engine.ParseCartIntent(message, defaultUnitPrice: 95.0m);
+
+        Assert.False(intent.IsCompleteForCheckout);
+        Assert.Null(intent.PhoneNumber);
+        Assert.Null(intent.Governorate);
+        Assert.Equal(1, intent.Quantity);
+        Assert.Equal(95.0m, intent.UnitPrice);
+    }
+
+    [Fact]
+    public void ParseCartIntent_EgyptianCity_SetsGovernorateWithoutSouthernSurcharge()
+    {
+        var db = CreateDbContext();
+        var wms = new DefensiveWmsService(db);
+        var engine = new ConversationalCartEngine(db, wms);
+
+        var message = "Order 3 units for Alexandria, phone +201012345678, name is Tarek Nabil";
+        var intent = engine.ParseCartIntent(message, defaultUnitPrice: 120.0m, currency: "EGP");
+
+        Assert.Equal("Alexandria", intent.Governorate);
+        Assert.Equal("Tarek Nabil", intent.CustomerName);
+        Assert.Equal("+201012345678", intent.PhoneNumber);
+        Assert.Equal(3, intent.Quantity);
+        Assert.Equal(7.0m, intent.EstimatedShippingFee); // Not southern surcharge
+        Assert.Equal(367.0m, intent.TotalAmount); // (3 * 120) + 7
+        Assert.True(intent.IsCompleteForCheckout);
+    }
+
+    [Fact]
+    public void ParseCartIntent_MonNomEstPrefix_ExtractsNameAccurately()
+    {
+        var db = CreateDbContext();
+        var wms = new DefensiveWmsService(db);
+        var engine = new ConversationalCartEngine(db, wms);
+
+        var message = "Bonjour, mon nom est Mehdi Alouini, pour Bizerte tél +21698112233";
+        var intent = engine.ParseCartIntent(message, defaultUnitPrice: 40.0m);
+
+        Assert.Equal("Mehdi Alouini", intent.CustomerName);
+        Assert.Equal("Bizerte", intent.Governorate);
+        Assert.Equal("+21698112233", intent.PhoneNumber);
+        Assert.True(intent.IsCompleteForCheckout);
+    }
 }

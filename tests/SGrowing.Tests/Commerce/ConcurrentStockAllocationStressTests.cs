@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using SGrowing.Api.Data;
+using SGrowing.Api.Modules.Commerce.CartReservations;
 using SGrowing.Core.Common;
 using SGrowing.Core.Entities;
 using Xunit;
@@ -106,5 +107,127 @@ public class ConcurrentStockAllocationStressTests
         var finalStock = await verifyDb.WarehouseStockRecords.FirstAsync(s => s.Sku == sku);
         finalStock.QuantityAvailable.Should().Be(0);
         finalStock.QuantityReserved.Should().Be(initialStock);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-5)]
+    public async Task AcquireReservation_ZeroOrNegativeQuantity_ReturnsRejectedResult(int invalidQuantity)
+    {
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(databaseName: $"InvalidQtyDb_{Guid.NewGuid()}")
+            .Options;
+
+        using var db = new SGrowingDbContext(options);
+        var cartService = new CartReservationService(db);
+        var tenantId = Guid.NewGuid();
+
+        var req = new AcquireCartReservationRequest(
+            WarehouseId: Guid.NewGuid(),
+            Sku: "TEST-SKU",
+            Quantity: invalidQuantity,
+            CartId: Guid.NewGuid()
+        );
+
+        var result = await cartService.AcquireReservationAsync(tenantId, req);
+
+        result.Success.Should().BeFalse();
+        result.Status.Should().Be("Rejected");
+        result.Message.Should().Contain("greater than zero");
+    }
+
+    [Fact]
+    public async Task ReleaseReservation_ActiveReservation_RestoresAvailableStock()
+    {
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(databaseName: $"ReleaseResDb_{Guid.NewGuid()}")
+            .Options;
+
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+        var cartId = Guid.NewGuid();
+        const string sku = "RELEASE-TEST-SKU";
+
+        using (var dbInit = new SGrowingDbContext(options))
+        {
+            dbInit.WarehouseStockRecords.Add(new WarehouseStockRecord
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                WarehouseId = warehouseId,
+                Sku = sku,
+                QuantityAvailable = 5,
+                QuantityReserved = 0
+            });
+            await dbInit.SaveChangesAsync();
+        }
+
+        using var db = new SGrowingDbContext(options);
+        var cartService = new CartReservationService(db);
+
+        // 1. Acquire reservation of 2 units
+        var acqReq = new AcquireCartReservationRequest(
+            WarehouseId: warehouseId,
+            Sku: sku,
+            Quantity: 2,
+            CartId: cartId
+        );
+        var acqResult = await cartService.AcquireReservationAsync(tenantId, acqReq);
+        acqResult.Success.Should().BeTrue();
+
+        // 2. Release reservation
+        var relReq = new ReleaseCartReservationRequest(CartId: cartId);
+        var released = await cartService.ReleaseReservationAsync(tenantId, relReq);
+        released.Should().BeTrue();
+
+        // 3. Verify stock restored
+        var stock = await db.WarehouseStockRecords.FirstAsync(s => s.Sku == sku);
+        stock.QuantityAvailable.Should().Be(5);
+        stock.QuantityReserved.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task CommitReservation_MarksReservationStatusCommitted()
+    {
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(databaseName: $"CommitResDb_{Guid.NewGuid()}")
+            .Options;
+
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+        var cartId = Guid.NewGuid();
+        var orderId = Guid.NewGuid();
+        const string sku = "COMMIT-TEST-SKU";
+
+        using (var dbInit = new SGrowingDbContext(options))
+        {
+            dbInit.WarehouseStockRecords.Add(new WarehouseStockRecord
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                WarehouseId = warehouseId,
+                Sku = sku,
+                QuantityAvailable = 10,
+                QuantityReserved = 0
+            });
+            await dbInit.SaveChangesAsync();
+        }
+
+        using var db = new SGrowingDbContext(options);
+        var cartService = new CartReservationService(db);
+
+        var acqReq = new AcquireCartReservationRequest(
+            WarehouseId: warehouseId,
+            Sku: sku,
+            Quantity: 3,
+            CartId: cartId
+        );
+        await cartService.AcquireReservationAsync(tenantId, acqReq);
+
+        var committed = await cartService.CommitReservationAsync(tenantId, cartId, orderId);
+        committed.Should().BeTrue();
+
+        var lockRec = await db.CartReservationLocks.FirstAsync(l => l.CartId == cartId);
+        lockRec.Status.Should().Be("Committed");
     }
 }

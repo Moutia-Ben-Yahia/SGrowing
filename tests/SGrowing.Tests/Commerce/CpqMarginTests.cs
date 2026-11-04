@@ -57,4 +57,51 @@ public class CpqMarginTests
         Assert.Equal(DiscountApprovalTier.VpSalesApproved, result.ApprovalTier);
         Assert.True(result.BlendedGrossMarginPercentage >= 75.0);
     }
+
+    [Fact]
+    public void HighDiscountOver25Percent_WithHealthyMargin_RequiresCfoBoardApproval()
+    {
+        var request = new QuotePricingRequest(
+            "quote_cfo_tier",
+            "MegaEnterprise Systems",
+            4,
+            500000m,
+            28.0m, // 28% discount > 25% -> CFO/Board
+            30000m, // COGS = 38k -> Healthy margin > 75%
+            8000m
+        );
+
+        var result = _engine.CalculateQuotePricing(request);
+
+        Assert.Equal(DiscountApprovalTier.CfoBoardApproved, result.ApprovalTier);
+        Assert.True(result.BlendedGrossMarginPercentage >= 75.0);
+        Assert.Contains("CFO/Board", result.GuardrailRecommendation);
+    }
+
+    [Fact]
+    public void StandardDiscountUnder15Percent_AutoApprovedForRep()
+    {
+        var request = new QuotePricingRequest(
+            "quote_rep_tier",
+            "MidMarket Logistics",
+            2,
+            80000m,
+            10.0m, // 10% discount <= 15% -> Standard rep
+            8000m,
+            2000m
+        );
+
+        var result = _engine.CalculateQuotePricing(request);
+
+        Assert.Equal(DiscountApprovalTier.StandardRepApproved, result.ApprovalTier);
+        Assert.True(result.BlendedGrossMarginPercentage >= 75.0);
+        Assert.Contains("Auto-Approved", result.GuardrailRecommendation);
+    }
+
+    [Fact]
+    public void GetQuoteById_NonExistentQuote_ReturnsNull()
+    {
+        var quote = _engine.GetQuoteById("quote_non_existent_9999");
+        Assert.Null(quote);
+    }
 }

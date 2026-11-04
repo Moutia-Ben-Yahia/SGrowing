@@ -114,4 +114,54 @@ public class DigitalGoodsTests
         Assert.Contains("HOODIE-EXP-M-BLACK", csvFeed);
         Assert.Contains("in stock", csvFeed);
     }
+
+    [Fact]
+    public async Task ValidateAndConsumeDownload_InvalidOrRevokedToken_ReturnsFailure()
+    {
+        // 1. Completely invalid token
+        var (valid1, msg1, _) = await _service.ValidateAndConsumeDownloadAsync("invalid_token_xyz");
+        Assert.False(valid1);
+        Assert.Contains("invalid or expired", msg1);
+
+        // 2. Revoked token
+        var tenantId = Guid.NewGuid();
+        var asset = await _service.CreateDigitalAssetAsync(
+            tenantId, "Template Pack", "template.zip", "assets/template.zip", "application/zip", 1024);
+
+        var token = await _service.IssueDownloadTokenAsync(tenantId, asset.Id);
+
+        // Revoke token directly in DB
+        var tokenRec = await _db.DigitalDownloadTokens.FirstAsync(t => t.Token == token.Token);
+        tokenRec.IsRevoked = true;
+        await _db.SaveChangesAsync();
+
+        var (valid2, msg2, _) = await _service.ValidateAndConsumeDownloadAsync(token.Token);
+        Assert.False(valid2);
+        Assert.Contains("revoked", msg2);
+    }
+
+    [Fact]
+    public async Task IssueDownloadToken_NonExistentAsset_ThrowsInvalidOperationException()
+    {
+        var tenantId = Guid.NewGuid();
+        var nonExistentAssetId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _service.IssueDownloadTokenAsync(tenantId, nonExistentAssetId));
+    }
+
+    [Fact]
+    public async Task GetDigitalAssets_ReturnsTenantAssetsInDescendingOrder()
+    {
+        var tenantId = Guid.NewGuid();
+
+        await _service.CreateDigitalAssetAsync(tenantId, "Doc 1", "doc1.pdf", "p1", "application/pdf", 100);
+        await _service.CreateDigitalAssetAsync(tenantId, "Doc 2", "doc2.pdf", "p2", "application/pdf", 200);
+
+        var assets = await _service.GetDigitalAssetsAsync(tenantId);
+
+        Assert.Equal(2, assets.Count);
+        Assert.Contains(assets, a => a.Title == "Doc 1");
+        Assert.Contains(assets, a => a.Title == "Doc 2");
+    }
 }
