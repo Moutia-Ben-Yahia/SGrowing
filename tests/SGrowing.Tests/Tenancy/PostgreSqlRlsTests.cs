@@ -55,4 +55,52 @@ public class PostgreSqlRlsTests
 
         Assert.Equal(expectedAccess, result);
     }
+
+    [Fact]
+    public void GenerateRlsMigrationDdl_OrdersCustomTablesAlphabetically()
+    {
+        var custom = new[] { "ZetaTable", "AlphaTable", "MiddleTable" };
+        var ddl = _rlsService.GenerateRlsMigrationDdl(custom);
+
+        var indexAlpha = ddl.IndexOf("ALTER TABLE \"AlphaTable\"");
+        var indexMiddle = ddl.IndexOf("ALTER TABLE \"MiddleTable\"");
+        var indexZeta = ddl.IndexOf("ALTER TABLE \"ZetaTable\"");
+
+        Assert.True(indexAlpha >= 0);
+        Assert.True(indexMiddle >= 0);
+        Assert.True(indexZeta >= 0);
+        Assert.True(indexAlpha < indexMiddle);
+        Assert.True(indexMiddle < indexZeta);
+    }
+
+    [Fact]
+    public void GenerateRlsMigrationDdl_HandlesEmptyCollectionSafely()
+    {
+        var ddl = _rlsService.GenerateRlsMigrationDdl(Array.Empty<string>());
+
+        Assert.NotNull(ddl);
+        Assert.Contains("SGrowing Enterprise PostgreSQL Row-Level Security", ddl);
+        Assert.DoesNotContain("ALTER TABLE", ddl);
+    }
+
+    [Fact]
+    public void AuditTablesRlsCoverage_HandlesEmptyListWithValidDeterministicChecksum()
+    {
+        var audit = _rlsService.AuditTablesRlsCoverage(Array.Empty<string>());
+
+        Assert.NotNull(audit);
+        Assert.Equal(0, audit.TotalAuditedTables);
+        Assert.Equal(0, audit.CompliantTablesCount);
+        Assert.Empty(audit.Policies);
+        Assert.False(string.IsNullOrWhiteSpace(audit.VerificationChecksum));
+    }
+
+    [Fact]
+    public void EvaluateRlsAccess_ReturnsFalse_WhenCurrentSessionTenantIsEmpty()
+    {
+        var rowTenant = Guid.NewGuid();
+        var result = _rlsService.EvaluateRlsAccess(Guid.Empty, rowTenant, bypassRls: false);
+
+        Assert.False(result);
+    }
 }
