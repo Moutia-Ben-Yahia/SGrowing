@@ -105,4 +105,87 @@ public class ChannelAdapterTests
         result.ExternalMessageId.Should().Be("msg_abc123xyz");
         result.Content.Should().Be("We have reviewed section 4 and agree with the terms.");
     }
+
+    [Fact]
+    public void TelegramAdapter_ShouldParseValidTelegramUpdateWebhook()
+    {
+        var tenantId = Guid.NewGuid();
+        var adapter = new TelegramAdapter();
+
+        var telegramJson = """
+        {
+          "update_id": 9928172,
+          "message": {
+            "message_id": 1024,
+            "from": {
+              "id": 12345678,
+              "username": "sarah_growth",
+              "first_name": "Sarah",
+              "last_name": "Mansour"
+            },
+            "text": "Hello SGrowing team, please send onboarding guide"
+          }
+        }
+        """;
+
+        var result = adapter.ParseInboundWebhook(tenantId, telegramJson);
+
+        result.Should().NotBeNull();
+        result!.ChannelType.Should().Be("telegram");
+        result.ExternalSenderId.Should().Be("12345678");
+        result.SenderName.Should().Be("sarah_growth");
+        result.ExternalMessageId.Should().Be("1024");
+        result.Content.Should().Be("Hello SGrowing team, please send onboarding guide");
+    }
+
+    [Fact]
+    public void TelegramAdapter_ShouldReturnNull_WhenPayloadHasNoMessageOrSender()
+    {
+        var tenantId = Guid.NewGuid();
+        var adapter = new TelegramAdapter();
+
+        var emptyUpdateJson = "{\"update_id\":123}";
+        var result = adapter.ParseInboundWebhook(tenantId, emptyUpdateJson);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void DiscordAdapter_ShouldParseValidDiscordMessageWebhook()
+    {
+        var tenantId = Guid.NewGuid();
+        var adapter = new DiscordAdapter();
+
+        var discordJson = """
+        {
+          "id": "119922883377",
+          "content": "Can we integrate Discord webhooks?",
+          "author": {
+            "id": "8877665544",
+            "username": "gamer_merchant"
+          }
+        }
+        """;
+
+        var result = adapter.ParseInboundWebhook(tenantId, discordJson);
+
+        result.Should().NotBeNull();
+        result!.ChannelType.Should().Be("discord");
+        result.ExternalSenderId.Should().Be("8877665544");
+        result.SenderName.Should().Be("gamer_merchant");
+        result.ExternalMessageId.Should().Be("119922883377");
+        result.Content.Should().Be("Can we integrate Discord webhooks?");
+    }
+
+    [Fact]
+    public void DiscordAdapter_ShouldReturnNull_WhenAuthorIsMissing()
+    {
+        var tenantId = Guid.NewGuid();
+        var adapter = new DiscordAdapter();
+
+        var noAuthorJson = "{\"id\":\"119922883377\",\"content\":\"No author here\"}";
+        var result = adapter.ParseInboundWebhook(tenantId, noAuthorJson);
+
+        result.Should().BeNull();
+    }
 }

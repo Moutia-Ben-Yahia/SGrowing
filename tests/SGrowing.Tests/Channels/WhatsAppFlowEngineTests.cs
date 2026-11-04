@@ -54,4 +54,119 @@ public class WhatsAppFlowEngineTests
         Assert.True(turn3.IsEscalated);
         Assert.Equal("EscalatedToHumanAgent", turn3.ExecutedAction);
     }
+
+    [Fact]
+    public void AnalyzeMessageText_CorrectlyDetectsSentimentAndLanguage()
+    {
+        var db = CreateDbContext();
+        var service = new WhatsAppFlowEngineService(db);
+
+        // Positive sentiment
+        var (langPos, sentPos) = service.AnalyzeMessageText("merci beaucoup service top ya3tikom saha");
+        Assert.Equal(0.9m, sentPos);
+
+        // Negative sentiment
+        var (langNeg, sentNeg) = service.AnalyzeMessageText("voleur arnaque scam ghachitou el ness");
+        Assert.Equal(0.15m, sentNeg);
+
+        // Arabic detection
+        var (langAr, _) = service.AnalyzeMessageText("مرحبا بكم كيف يمكنني تتبع طلبيتي");
+        Assert.Equal("Arabic", langAr);
+
+        // French detection
+        var (langFr, _) = service.AnalyzeMessageText("Bonjour, je souhaite suivre ma commande");
+        Assert.Equal("French", langFr);
+
+        // English detection
+        var (langEn, _) = service.AnalyzeMessageText("Hello, could you track my order support?");
+        Assert.Equal("English", langEn);
+
+        // Darija detection
+        var (langDar, _) = service.AnalyzeMessageText("3aslema chnawa el 7al behi");
+        Assert.Equal("Darija", langDar);
+    }
+
+    [Fact]
+    public async Task ExecuteFlowTurnAsync_WhenSelectingTracking_ReturnsCurrentOrderStatus()
+    {
+        var db = CreateDbContext();
+        var service = new WhatsAppFlowEngineService(db);
+        var tenantId = Guid.NewGuid();
+
+        var flow = FlowDefinition.Create(tenantId, "Tracking Flow", "START", "Order tracking");
+        await service.CreateFlowDefinitionAsync(tenantId, flow);
+
+        var order = CodOrder.Create(tenantId, "ORD-TRK-771", "Karim Jaziri", "+21622334455", "Centre Ville", "Sfax", "Sfax", 95m);
+        order.Status = CodOrderStatus.Dispatched;
+        db.CodOrders.Add(order);
+        await db.SaveChangesAsync();
+
+        // 1. Initial greeting transitions to main_menu
+        await service.ExecuteFlowTurnAsync(tenantId, flow.Id, "+21622334455", "3aslema");
+
+        // 2. Second turn selects tracking
+        var turn = await service.ExecuteFlowTurnAsync(tenantId, flow.Id, "+21622334455", "2. تتبع الطرد");
+
+        Assert.Equal("tracking_info", turn.NextNodeKey);
+        Assert.Contains("ORD-TRK-771", turn.ResponseMessage);
+        Assert.Contains(nameof(CodOrderStatus.Dispatched), turn.ResponseMessage);
+    }
+
+    [Fact]
+    public async Task ExecuteFlowTurnAsync_WhenConfirmingWithoutPendingOrder_ReturnsNoPendingOrderAction()
+    {
+        var db = CreateDbContext();
+        var service = new WhatsAppFlowEngineService(db);
+        var tenantId = Guid.NewGuid();
+
+        var flow = FlowDefinition.Create(tenantId, "Care Flow", "START", "Care");
+        await service.CreateFlowDefinitionAsync(tenantId, flow);
+
+        // 1. Initial greeting transitions to main_menu
+        await service.ExecuteFlowTurnAsync(tenantId, flow.Id, "+21650998877", "bonjour");
+
+        // 2. Second turn attempts confirmation
+        var turn = await service.ExecuteFlowTurnAsync(tenantId, flow.Id, "+21650998877", "1. Confirmer");
+
+        Assert.Equal("order_confirmed", turn.NextNodeKey);
+        Assert.Equal("NoPendingOrderFound", turn.ExecutedAction);
+        Assert.Contains("en attente", turn.ResponseMessage);
+    }
+
+    [Fact]
+    public async Task ListFlowsAsync_ReturnsFlowsForTenant()
+    {
+        var db = CreateDbContext();
+        var service = new WhatsAppFlowEngineService(db);
+        var tenantId = Guid.NewGuid();
+
+        var flow1 = FlowDefinition.Create(tenantId, "Onboarding Flow", "START", "New user flow");
+        var flow2 = FlowDefinition.Create(tenantId, "Retention Flow", "START", "Win-back flow");
+        await service.CreateFlowDefinitionAsync(tenantId, flow1);
+        await service.CreateFlowDefinitionAsync(tenantId, flow2);
+
+        var flows = await service.ListFlowsAsync(tenantId);
+
+        Assert.Equal(2, flows.Count);
+        Assert.Contains(flows, f => f.Name == "Onboarding Flow");
+        Assert.Contains(flows, f => f.Name == "Retention Flow");
+    }
+
+    [Fact]
+    public async Task ExecuteFlowTurnAsync_GreetingMessage_ReturnsMainMenuInFrench()
+    {
+        var db = CreateDbContext();
+        var service = new WhatsAppFlowEngineService(db);
+        var tenantId = Guid.NewGuid();
+
+        var flow = FlowDefinition.Create(tenantId, "French Flow", "START", "Support en francais");
+        await service.CreateFlowDefinitionAsync(tenantId, flow);
+
+        var turn = await service.ExecuteFlowTurnAsync(tenantId, flow.Id, "+33612345678", "Bonjour!");
+
+        Assert.Equal("main_menu", turn.NextNodeKey);
+        Assert.Equal("French", turn.DetectedLanguage);
+        Assert.Contains("Bienvenue chez SGrowing", turn.ResponseMessage);
+        Assert.Contains("1. Confirmer commande", turn.Buttons);
+    }
 }

@@ -17,7 +17,6 @@ public class WhatsAppBroadcastTests
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         var tenantContext = new TenantContext();
-        // tenantContext.SetTenant(Guid.NewGuid());
         return new SGrowingDbContext(options, tenantContext);
     }
 
@@ -63,5 +62,102 @@ public class WhatsAppBroadcastTests
         outboxMessages.Should().HaveCount(2);
         outboxMessages.Any(m => m.Payload.Contains("Peter")).Should().BeTrue();
         outboxMessages.Any(m => m.Payload.Contains("Miles")).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task DispatchBroadcast_ReturnsFailure_WhenCampaignDoesNotExist()
+    {
+        var db = CreateDbContext();
+        var outbox = new OutboxService(db);
+        var service = new BroadcastDispatcherService(db, outbox);
+        var tenantId = Guid.NewGuid();
+
+        var res = await service.DispatchBroadcastAsync(tenantId, Guid.NewGuid());
+
+        res.IsSuccess.Should().BeFalse();
+        res.Error.Should().Be("Broadcast campaign not found.");
+    }
+
+    [Fact]
+    public async Task DispatchBroadcast_ReturnsFailure_WhenTemplateDoesNotExist()
+    {
+        var db = CreateDbContext();
+        var outbox = new OutboxService(db);
+        var service = new BroadcastDispatcherService(db, outbox);
+        var tenantId = Guid.NewGuid();
+
+        var campaign = BroadcastCampaign.Create(tenantId, "Missing Template Campaign", Guid.NewGuid(), "target_tag");
+        db.BroadcastCampaigns.Add(campaign);
+        await db.SaveChangesAsync();
+
+        var res = await service.DispatchBroadcastAsync(tenantId, campaign.Id);
+
+        res.IsSuccess.Should().BeFalse();
+        res.Error.Should().Be("Template not found.");
+    }
+
+    [Fact]
+    public async Task DispatchBroadcast_ReturnsFailure_WhenTemplateIsNotApproved()
+    {
+        var db = CreateDbContext();
+        var outbox = new OutboxService(db);
+        var service = new BroadcastDispatcherService(db, outbox);
+        var tenantId = Guid.NewGuid();
+
+        var template = WhatsAppTemplate.Create(
+            tenantId,
+            "pending_template",
+            WhatsAppTemplateCategory.Marketing,
+            "Hello {{1}}"
+        );
+        template.Status = WhatsAppTemplateStatus.Pending; // Not Approved
+        db.WhatsAppTemplates.Add(template);
+
+        var campaign = BroadcastCampaign.Create(tenantId, "Unapproved Template Campaign", template.Id, "target_tag");
+        db.BroadcastCampaigns.Add(campaign);
+        await db.SaveChangesAsync();
+
+        var res = await service.DispatchBroadcastAsync(tenantId, campaign.Id);
+
+        res.IsSuccess.Should().BeFalse();
+        res.Error.Should().Contain("Template is not approved by Meta");
+    }
+
+    [Fact]
+    public async Task DispatchBroadcast_ExcludesContactsWithMissingOrEmptyPhoneNumber()
+    {
+        var db = CreateDbContext();
+        var outbox = new OutboxService(db);
+        var service = new BroadcastDispatcherService(db, outbox);
+        var tenantId = Guid.NewGuid();
+
+        var template = WhatsAppTemplate.Create(
+            tenantId,
+            "promo_template",
+            WhatsAppTemplateCategory.Marketing,
+            "Special promo for {{1}} {{2}}"
+        );
+        db.WhatsAppTemplates.Add(template);
+
+        var contactWithPhone = Contact.Create(tenantId, "Valid", "Phone", "valid@phone.com", "+21698765432");
+        contactWithPhone.Tags.Add("promo");
+
+        var contactWithoutPhone = Contact.Create(tenantId, "No", "Phone", "no@phone.com", null);
+        contactWithoutPhone.Tags.Add("promo");
+
+        var contactEmptyPhone = Contact.Create(tenantId, "Empty", "Phone", "empty@phone.com", "");
+        contactEmptyPhone.Tags.Add("promo");
+
+        db.Contacts.AddRange(contactWithPhone, contactWithoutPhone, contactEmptyPhone);
+
+        var campaign = BroadcastCampaign.Create(tenantId, "Promo Campaign", template.Id, "promo");
+        db.BroadcastCampaigns.Add(campaign);
+        await db.SaveChangesAsync();
+
+        var res = await service.DispatchBroadcastAsync(tenantId, campaign.Id);
+
+        res.IsSuccess.Should().BeTrue();
+        res.Value.RecipientsMatched.Should().Be(1);
+        res.Value.SentCount.Should().Be(1);
     }
 }
