@@ -84,4 +84,33 @@ public class RateLimiterPolicyTests
         // Assert
         Assert.NotNull(result);
     }
+
+    [Fact]
+    public void ResolveClientPartitionKey_WhenXForwardedForMissing_FallsBackToUnknownClient()
+    {
+        var context = new DefaultHttpContext();
+
+        var key = SGrowingRateLimitingExtensions.ResolveClientPartitionKey(context);
+
+        Assert.Equal("unknown-client", key);
+    }
+
+    [Fact]
+    public void ResolveTenantPartitionKey_WhenNoHeaderOrClaim_FallsBackToIpKey()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers["X-Forwarded-For"] = "192.168.1.100";
+
+        var key = SGrowingRateLimitingExtensions.ResolveTenantPartitionKey(context);
+
+        Assert.Equal("ip:192.168.1.100", key);
+    }
+
+    [Fact]
+    public void PolicyConstants_DefineExpectedValues()
+    {
+        Assert.Equal("fixed-strict", SGrowingRateLimitingExtensions.PolicyFixedStrict);
+        Assert.Equal("sliding-tenant", SGrowingRateLimitingExtensions.PolicySlidingTenant);
+        Assert.Equal("concurrency-heavy", SGrowingRateLimitingExtensions.PolicyConcurrencyHeavy);
+    }
 }

@@ -114,4 +114,39 @@ public class EmailDeliverabilityTests
         Assert.NotEmpty(logs);
         Assert.Contains(logs, l => l.Direction == "Sent" || l.Direction == "Received");
     }
+
+    [Fact]
+    public async Task GetWarmupCadence_WhenSenderDoesNotExist_ReturnsNull()
+    {
+        var tenantId = Guid.NewGuid();
+        var result = await _service.GetWarmupCadenceAsync(tenantId, "nonexistent@nowhere.com");
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task StartWarmupCadence_WhenAlreadyExists_ReactivatesAndReturnsExisting()
+    {
+        var tenantId = Guid.NewGuid();
+        var sender = "growth-sdr@trysgrowing.com";
+
+        var first = await _service.StartWarmupCadenceAsync(tenantId, sender, 30, "Linear");
+        Assert.NotNull(first);
+        first.IsActive = false;
+        await _db.SaveChangesAsync();
+
+        var reactivated = await _service.StartWarmupCadenceAsync(tenantId, sender, 30, "Linear");
+        Assert.NotNull(reactivated);
+        Assert.Equal(first.Id, reactivated.Id);
+        Assert.True(reactivated.IsActive);
+    }
+
+    [Fact]
+    public async Task SimulateWarmupStep_WhenCadenceNotFound_ThrowsInvalidOperationException()
+    {
+        var tenantId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _service.SimulateWarmupStepAsync(tenantId, nonExistentId));
+    }
 }

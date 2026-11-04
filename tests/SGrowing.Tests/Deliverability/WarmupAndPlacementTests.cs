@@ -135,4 +135,46 @@ public class WarmupAndPlacementTests
         Assert.True(report.OverallSpamPercentage > 50.0);
         Assert.Contains(report.InboxingRecommendations, r => r.Contains("Deliverability alert"));
     }
+
+    [Fact]
+    public async Task PlacementTestService_PromotionalContent_PlacesSeedsInGooglePromotionsTab()
+    {
+        // Arrange
+        var (_, service) = CreatePlacementService();
+        var tenantId = Guid.NewGuid();
+
+        // Act
+        var report = await service.RunSeedPlacementTestAsync(
+            tenantId,
+            "sales@store.com",
+            "Special limited deal for you",
+            "<p>Check out our special deal and massive discount for Q4!</p>"
+        );
+
+        // Assert
+        Assert.NotNull(report);
+        var googleSummary = report.EspBreakdowns.FirstOrDefault(b => b.Esp == EspCategory.GoogleWorkspace);
+        Assert.NotNull(googleSummary);
+        Assert.True(googleSummary.PromotionsCount >= 1);
+    }
+
+    [Fact]
+    public void WarmupThreadGenerator_DifferentTopics_GeneratesDistinctSubjects()
+    {
+        var threadA = _threadGenerator.GenerateThread("s@a.com", "p@b.com", WarmupDialogueTopic.ProductInquiry, turnsCount: 2);
+        var threadB = _threadGenerator.GenerateThread("s@a.com", "p@b.com", WarmupDialogueTopic.PartnershipProposal, turnsCount: 2);
+
+        Assert.NotEqual(threadA.Turns[0].Subject, threadB.Turns[0].Subject);
+    }
+
+    [Fact]
+    public async Task PlacementTestService_CancellationRequested_ThrowsOperationCanceledException()
+    {
+        var (_, service) = CreatePlacementService();
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            service.RunSeedPlacementTestAsync(Guid.NewGuid(), "a@b.com", "Test", "<p>Hello</p>", cts.Token));
+    }
 }
