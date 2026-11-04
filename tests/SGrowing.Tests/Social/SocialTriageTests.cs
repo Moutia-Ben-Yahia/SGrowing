@@ -63,4 +63,43 @@ public sealed class SocialTriageTests
         Assert.Equal("ApprovedAndSent", approved.Status);
         Assert.Equal("Approved: Our engineering team has already mitigated the issue.", approved.DraftReply);
     }
+
+    [Fact]
+    public async Task IngestAndTriageMessage_NullRequest_ThrowsArgumentNullException()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            _engine.IngestAndTriageMessageAsync(null!));
+    }
+
+    [Fact]
+    public async Task ApproveAndSendReply_WhenQueueIdDoesNotExist_ThrowsKeyNotFoundException()
+    {
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _engine.ApproveAndSendReplyAsync("non_existent_queue_id", new ApproveReplyRequest("Reply")));
+    }
+
+    [Fact]
+    public async Task GetQueueItems_FilterByChannelAndStatus_ReturnsFilteredSubsets()
+    {
+        var waItems = await _engine.GetQueueItemsAsync(channel: "WhatsApp");
+        Assert.All(waItems, i => Assert.Equal("WhatsApp", i.Message.Channel));
+
+        var liItems = await _engine.GetQueueItemsAsync(channel: "LinkedIn");
+        Assert.All(liItems, i => Assert.Equal("LinkedIn", i.Message.Channel));
+
+        var pendingItems = await _engine.GetQueueItemsAsync(status: "PendingReview");
+        Assert.All(pendingItems, i => Assert.Equal("PendingReview", i.Status));
+    }
+
+    [Fact]
+    public async Task GetAnalytics_ReturnsAggregatesAndChannelBreakdown()
+    {
+        var analytics = await _engine.GetAnalyticsAsync();
+
+        Assert.NotNull(analytics);
+        Assert.True(analytics.TotalTriaged >= 2);
+        Assert.True(analytics.SlaCompliancePercent > 90.0);
+        Assert.Contains("WhatsApp", analytics.ChannelBreakdown.Keys);
+        Assert.Contains("LinkedIn", analytics.ChannelBreakdown.Keys);
+    }
 }

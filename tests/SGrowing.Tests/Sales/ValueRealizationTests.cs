@@ -69,4 +69,40 @@ public class ValueRealizationTests
         var overview = engine.GetOverview();
         Assert.Contains(overview.TopRealizedMetrics, m => m.MetricId == metric.MetricId);
     }
+
+    [Fact]
+    public void AttestRoi_WhenRealizedCurrentValueExceedsBaseline_ReturnsZeroSavings()
+    {
+        var engine = new ValueRealizationEngine();
+        var request = new AttestRoiRequest(
+            "Acme Global Logistics",
+            "COST_OVERRUN",
+            500_000m,
+            800_000m, // current value > baseline
+            "AUDIT"
+        );
+
+        var metric = engine.AttestRoi(request);
+
+        Assert.Equal(0m, metric.AnnualizedRoiDollars); // Math.Max(0, 500k - 800k) = 0
+        Assert.Equal(0.6, metric.RealizationMultiplier); // 500 / 800 = 0.625 -> 0.6
+    }
+
+    [Fact]
+    public void AttestRoi_WhenRealizedCurrentValueIsZero_ReturnsMultiplierOne()
+    {
+        var engine = new ValueRealizationEngine();
+        var request = new AttestRoiRequest(
+            "Acme Global Logistics",
+            "EFFICIENCY",
+            100_000m,
+            0m,
+            "AUDIT"
+        );
+
+        var metric = engine.AttestRoi(request);
+
+        Assert.Equal(100_000m, metric.AnnualizedRoiDollars);
+        Assert.Equal(1.0, metric.RealizationMultiplier);
+    }
 }

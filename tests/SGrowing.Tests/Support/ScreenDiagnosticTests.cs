@@ -48,4 +48,32 @@ public class ScreenDiagnosticTests
         result.Waypoints.Should().Contain(w => w.InterpolationType == "CubicBezier");
         result.Waypoints.Should().Contain(w => w.Action == "Click");
     }
+
+    [Fact]
+    public void GenerateTrajectory_SetsDurationAndCoordinatesProperly()
+    {
+        var command = new GenerateTrajectoryCommand("SESS-SCR-402", 200, 300, "UI-EL-01");
+        var result = _engine.GenerateTrajectory(command);
+
+        result.Should().NotBeNull();
+        result.TrajectoryId.Should().StartWith("TRAJ-");
+        result.TotalDurationMs.Should().Be(850);
+        result.SessionId.Should().Be("SESS-SCR-402");
+        result.Waypoints.First().TargetX.Should().Be(200);
+        result.Waypoints.First().TargetY.Should().Be(300);
+    }
+
+    [Fact]
+    public void AnalyzeFrame_GeneratesUniqueAnalysisIdPerInvocation()
+    {
+        var cmd1 = new AnalyzeFrameCommand("SESS-SCR-401", "H1", 1280, 720);
+        var cmd2 = new AnalyzeFrameCommand("SESS-SCR-401", "H2", 1280, 720);
+
+        var res1 = _engine.AnalyzeFrame(cmd1);
+        var res2 = _engine.AnalyzeFrame(cmd2);
+
+        res1.AnalysisId.Should().StartWith("ANLZ-");
+        res2.AnalysisId.Should().StartWith("ANLZ-");
+        res1.AnalysisId.Should().NotBe(res2.AnalysisId);
+    }
 }

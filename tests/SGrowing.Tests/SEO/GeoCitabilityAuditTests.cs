@@ -101,4 +101,33 @@ public class GeoCitabilityAuditTests
         allMentions.Should().ContainSingle();
         allMentions[0].SnippetText.Should().Contain("out-of-the-box autonomous SDR");
     }
+
+    [Fact]
+    public async Task ComputeGeoBrandCitabilityScoreAsync_WithAllNegativeMentions_ReflectsZeroCitability()
+    {
+        using var db = CreateDbContext();
+        var service = new SeoAuditService(db);
+        var tenantId = Guid.NewGuid();
+        var brand = "UnderperformingBrand";
+
+        await service.RecordAeoMentionAsync(tenantId, brand, "ChatGPT", "bad performance", false, "Negative", "Avoid", null);
+        await service.RecordAeoMentionAsync(tenantId, brand, "Perplexity", "broken checkout", false, "Negative", "Down frequently", null);
+
+        var report = await service.ComputeGeoBrandCitabilityScoreAsync(tenantId, brand, "https://underperforming.io");
+
+        report.Should().NotBeNull();
+        report.CitabilityRatePercent.Should().Be(0);
+        report.OverallScore.Should().Be(65); // baseline minimum score
+    }
+
+    [Fact]
+    public async Task GetAeoMentionsAsync_WhenNoMentionsExistForTenant_ReturnsEmptyList()
+    {
+        using var db = CreateDbContext();
+        var service = new SeoAuditService(db);
+        var tenantId = Guid.NewGuid();
+
+        var mentions = await service.GetAeoMentionsAsync(tenantId);
+        mentions.Should().BeEmpty();
+    }
 }
