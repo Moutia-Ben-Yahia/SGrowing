@@ -33,4 +33,12 @@ describe('DealSlippageStudioComponent (Twenty-Style Opportunity Stage-Gate & Dea
     expect(() => component.advanceDeal(deal)).not.toThrow();
     expect(() => component.openNewDealModal()).not.toThrow();
   });
+
+  it('should calculate zero pipeline and risk amounts when deals list is empty', () => {
+    component.deals.set([]);
+    expect(component.totalPipeline()).toBe(0);
+    expect(component.atRiskAmount()).toBe(0);
+    expect(component.weightedAmount()).toBe(0);
+    expect(component.blockedCount()).toBe(0);
+  });
 });

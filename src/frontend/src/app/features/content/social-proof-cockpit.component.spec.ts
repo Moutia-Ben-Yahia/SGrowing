@@ -30,4 +30,13 @@ describe('SocialProofCockpitComponent (Horizon 62)', () => {
     expect(component.widgetSnippet()).toContain('Published');
     expect(component.widgetSnippet()).toContain('Schema.org');
   });
+
+  it('should compute avgRating and handle empty list fallback safely', () => {
+    expect(component.avgRating()).toBe('5.0');
+
+    component.items.set([]);
+    expect(component.avgRating()).toBe(0);
+    expect(component.approvedCount()).toBe(0);
+    expect(component.videoCount()).toBe(0);
+  });
 });

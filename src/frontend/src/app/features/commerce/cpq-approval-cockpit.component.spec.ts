@@ -34,4 +34,12 @@ describe('CpqApprovalCockpitComponent', () => {
     expect(escalated?.slaMinutesRemaining).toBe(180);
     expect(comp.lastActionNotice()).toContain('escalated to CRO');
   });
+
+  it('should return 0 avgDiscount when no quotes are approved', () => {
+    const comp = new CpqApprovalCockpitComponent();
+    comp.quotes.set(comp.quotes().map(q => ({ ...q, status: 'Draft' as const })));
+    expect(comp.avgDiscount()).toBe(0);
+    expect(comp.pendingCount()).toBe(0);
+    expect(comp.pendingValue()).toBe(0);
+  });
 });

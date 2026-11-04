@@ -33,6 +33,15 @@ describe('ReplenishmentCockpitComponent', () => {
     expect(component.stagedPo()?.status).toBe('Dispatched');
   });
 
+  it('should allow selecting a replenishment recommendation and compute totalStagedCost', () => {
+    const second = component.recommendations()[1];
+    component.selectRecommendation(second);
+    expect(component.selectedRecommendation()?.skuId).toBe(second.skuId);
+    expect(component.totalStagedCost()).toBe(
+      component.recommendations().reduce((acc, r) => acc + r.estimatedCost, 0)
+    );
+  });
+
   function AssertContains(actual: string, expected: string): void {
     expect(actual.includes(expected)).toBe(true);
   }

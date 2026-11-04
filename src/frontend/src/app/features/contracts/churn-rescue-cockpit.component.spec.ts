@@ -37,4 +37,15 @@ describe('ChurnRescueCockpitComponent', () => {
     expect(agreement?.priceLockYears).toBe(2);
     expect(agreement?.signatureStatus).toBe('PendingSignature');
   });
+
+  it('should return correct risk badge classes and handle account selection', () => {
+    expect(component.getRiskBadgeClass('SevereCritical')).toContain('bg-rose-900/80');
+    expect(component.getRiskBadgeClass('High')).toContain('bg-amber-900/80');
+    expect(component.getRiskBadgeClass('Moderate')).toContain('bg-yellow-900/80');
+    expect(component.getRiskBadgeClass('Low')).toContain('bg-emerald-900/80');
+
+    const second = component.accounts()[1];
+    component.selectAccount(second);
+    expect(component.selectedAccount()?.accountId).toBe(second.accountId);
+  });
 });

@@ -28,4 +28,14 @@ describe('InfluencerEscrowV2CockpitComponent', () => {
     const updated = comp.campaigns().find(c => c.campaignId === 'escrow_camp_01');
     expect(updated?.status).toBe('MilestoneReleased');
   });
+
+  it('should compute averageRoas correctly and return 0 when campaigns are empty', () => {
+    const comp = new InfluencerEscrowV2CockpitComponent();
+    expect(comp.averageRoas()).toBeCloseTo(4.1, 1);
+
+    comp.campaigns.set([]);
+    expect(comp.averageRoas()).toBe(0);
+    expect(comp.totalGmv()).toBe(0);
+    expect(comp.totalEscrowLocked()).toBe(0);
+  });
 });

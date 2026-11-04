@@ -31,4 +31,10 @@ describe('CartRescueCockpitComponent (Horizon 63)', () => {
     expect(component.nudgePreview()).toContain('WhatsApp Dispatched');
     expect(component.nudgePreview()).toContain(cart.email);
   });
+
+  it('should allow selecting an active rescue cart', () => {
+    const secondCart = component.rescues()[1];
+    component.selectRescue(secondCart);
+    expect(component.selectedRescue()?.rescueId).toBe(secondCart.rescueId);
+  });
 });

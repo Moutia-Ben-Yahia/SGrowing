@@ -25,4 +25,13 @@ describe('ConversationHierarchyStudioComponent', () => {
     component.openMergeModal();
     expect(mergeSpy).toHaveBeenCalled();
   });
+
+  it('should maintain stable method signatures for modal actions', () => {
+    expect(typeof component.openSplitModal).toBe('function');
+    expect(typeof component.openMergeModal).toBe('function');
+    expect(() => {
+      component.openSplitModal();
+      component.openMergeModal();
+    }).not.toThrow();
+  });
 });

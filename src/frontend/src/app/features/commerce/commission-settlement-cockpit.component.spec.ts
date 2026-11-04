@@ -33,4 +33,12 @@ describe('CommissionSettlementCockpitComponent', () => {
     comp.releaseEscrow('COMM-2026-102');
     expect(comp.totalInEscrow()).toBe(0);
   });
+
+  it('should return default 100 attainment when records list is empty', () => {
+    const comp = new CommissionSettlementCockpitComponent();
+    comp.records.set([]);
+    expect(comp.avgAttainment()).toBe(100);
+    expect(comp.totalPaid()).toBe(0);
+    expect(comp.totalInEscrow()).toBe(0);
+  });
 });

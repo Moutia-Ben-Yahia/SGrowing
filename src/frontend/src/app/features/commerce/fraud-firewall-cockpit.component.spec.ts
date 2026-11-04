@@ -32,4 +32,13 @@ describe('FraudFirewallCockpitComponent', () => {
     expect(component.evaluations()[0].decision).toBe('Block');
     expect(component.evaluations()[0].riskScore).toBe(85);
   });
+
+  it('should compute blockRate and challengeCount correctly', () => {
+    expect(component.blockRate()).toBe(0);
+    expect(component.challengeCount()).toBe(2);
+
+    component.simulateEvaluation();
+    expect(component.blockRate()).toBe(25);
+    expect(component.challengeCount()).toBe(2);
+  });
 });

@@ -26,4 +26,14 @@ describe('ContentRepurposingCockpitComponent', () => {
     expect(comp.slides().every((s, idx) => s.slideNum === idx + 1)).toBe(true);
     expect(comp.slides()[4].header).toBe('Takeaway & Action');
   });
+
+  it('should verify individual hashtags and channels across initial derivatives', () => {
+    const comp = new ContentRepurposingCockpitComponent();
+    const linkedin = comp.derivatives().find(d => d.channel === 'LinkedIn');
+    expect(linkedin?.hashtags).toContain('#B2BGrowth');
+    const twitter = comp.derivatives().find(d => d.channel === 'XTwitter');
+    expect(twitter?.hashtags).toContain('#SalesTech');
+    const newsletter = comp.derivatives().find(d => d.channel === 'Newsletter');
+    expect(newsletter?.hashtags).toContain('#ExecutiveBriefing');
+  });
 });

@@ -30,4 +30,13 @@ describe('CpqMarginCockpitComponent', () => {
     expect(comp.totalContractValue()).toBe(0);
     expect(comp.blendedMargin()).toBe(0);
   });
+
+  it('should verify termYears and individual year ramp margins in baseline state', () => {
+    const comp = new CpqMarginCockpitComponent();
+    expect(comp.termYears()).toBe(3);
+    const yr1 = comp.ramps().find(r => r.year === 1);
+    expect(yr1?.netAcv).toBe(105000);
+    expect(yr1?.margin).toBe(78.1);
+    expect(comp.auditHash()).toBe('4B8D2A1F9E3C7B5D');
+  });
 });
