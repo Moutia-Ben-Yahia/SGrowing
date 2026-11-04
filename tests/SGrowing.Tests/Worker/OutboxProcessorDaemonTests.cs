@@ -238,4 +238,111 @@ public class OutboxProcessorDaemonTests
             pendingMsg!.ProcessedOnUtc.Should().BeNull();
         }
     }
+
+    [Fact]
+    public async Task ProcessBatchAsync_WhenBatchExceeds50_ProcessesFirst50OrderedByOccurredOnUtc()
+    {
+        var (provider, _) = CreateServiceProvider();
+        var tenantId = Guid.NewGuid();
+        var baseTime = DateTime.UtcNow.AddHours(-10);
+
+        using (var seedDb = GetDbContext(provider))
+        {
+            for (int i = 0; i < 60; i++)
+            {
+                var msg = OutboxMessage.Create(tenantId, $"EventBatch_{i:D2}", $"{{\"index\":{i}}}");
+                seedDb.OutboxMessages.Add(msg);
+                seedDb.Entry(msg).Property(m => m.OccurredOnUtc).CurrentValue = baseTime.AddMinutes(i);
+            }
+            await seedDb.SaveChangesAsync();
+        }
+
+        var mockLogger = new Mock<ILogger<OutboxProcessorDaemon>>();
+        var daemon = new OutboxProcessorDaemon(provider, mockLogger.Object);
+
+        var processedCount = await daemon.ProcessBatchAsync();
+
+        processedCount.Should().Be(50);
+
+        using (var verifyDb = GetDbContext(provider))
+        {
+            var processedMessages = await verifyDb.OutboxMessages.AsNoTracking().Where(m => m.ProcessedOnUtc != null).ToListAsync();
+            var remainingPending = await verifyDb.OutboxMessages.AsNoTracking().Where(m => m.ProcessedOnUtc == null).ToListAsync();
+
+            processedMessages.Should().HaveCount(50);
+            remainingPending.Should().HaveCount(10);
+
+            // Verify earliest 50 were processed
+            processedMessages.Select(m => m.EventType).Should().Contain("EventBatch_00");
+            processedMessages.Select(m => m.EventType).Should().Contain("EventBatch_49");
+            remainingPending.Select(m => m.EventType).Should().Contain("EventBatch_50");
+            remainingPending.Select(m => m.EventType).Should().Contain("EventBatch_59");
+        }
+    }
+
+    [Fact]
+    public async Task ProcessBatchAsync_MixedSuccessAndFailure_ProperlyPartitionsProcessedAndFailedStates()
+    {
+        var tenantId = Guid.NewGuid();
+        var mockBroker = new Mock<IRedisStreamBroker>();
+        mockBroker
+            .Setup(b => b.PublishEventAsync(It.IsAny<string>(), "FailEvent", It.IsAny<string>(), It.IsAny<Guid>()))
+            .ThrowsAsync(new InvalidOperationException("Broker partition unreachable"));
+        mockBroker
+            .Setup(b => b.PublishEventAsync(It.IsAny<string>(), "SuccessEvent", It.IsAny<string>(), It.IsAny<Guid>()))
+            .ReturnsAsync("stream-ok-123");
+
+        var (provider, _) = CreateServiceProvider(broker: mockBroker.Object);
+
+        var msgSuccess = OutboxMessage.Create(tenantId, "SuccessEvent", "{\"status\":\"ok\"}");
+        var msgFail = OutboxMessage.Create(tenantId, "FailEvent", "{\"status\":\"fail\"}");
+
+        using (var seedDb = GetDbContext(provider))
+        {
+            seedDb.OutboxMessages.AddRange(msgSuccess, msgFail);
+            await seedDb.SaveChangesAsync();
+        }
+
+        var mockLogger = new Mock<ILogger<OutboxProcessorDaemon>>();
+        var daemon = new OutboxProcessorDaemon(provider, mockLogger.Object);
+
+        var count = await daemon.ProcessBatchAsync();
+        count.Should().Be(2);
+
+        using (var verifyDb = GetDbContext(provider))
+        {
+            var success = await verifyDb.OutboxMessages.AsNoTracking().FirstAsync(m => m.Id == msgSuccess.Id);
+            var failed = await verifyDb.OutboxMessages.AsNoTracking().FirstAsync(m => m.Id == msgFail.Id);
+
+            success.ProcessedOnUtc.Should().NotBeNull();
+            success.RetryCount.Should().Be(0);
+            success.Error.Should().BeNull();
+
+            failed.ProcessedOnUtc.Should().BeNull();
+            failed.RetryCount.Should().Be(1);
+            failed.Error.Should().Contain("Broker partition unreachable");
+        }
+    }
+
+    [Fact]
+    public async Task ProcessBatchAsync_WhenCancellationTokenCancelled_AbortsProcessing()
+    {
+        var (provider, _) = CreateServiceProvider();
+        var tenantId = Guid.NewGuid();
+
+        using (var seedDb = GetDbContext(provider))
+        {
+            seedDb.OutboxMessages.Add(OutboxMessage.Create(tenantId, "CanceledEvent", "{}"));
+            await seedDb.SaveChangesAsync();
+        }
+
+        var mockLogger = new Mock<ILogger<OutboxProcessorDaemon>>();
+        var daemon = new OutboxProcessorDaemon(provider, mockLogger.Object);
+
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        Func<Task> act = async () => await daemon.ProcessBatchAsync(cts.Token);
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
 }

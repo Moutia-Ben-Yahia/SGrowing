@@ -151,4 +151,122 @@ public class SlaWatchdogDaemonTests
         var updatedConv = await verifyDb.Conversations.FirstAsync(c => c.Id == conv.Id);
         updatedConv.IsSlaBreached.Should().BeFalse();
     }
+
+    [Fact]
+    public async Task CheckSlaBreachesAsync_WhenDifferentTenantWithoutPolicy_DoesNotFlagOrBreach()
+    {
+        var (sp, db) = SetupDependencies();
+        using var scope = db;
+        var policyTenantId = Guid.NewGuid();
+        var noPolicyTenantId = Guid.NewGuid();
+        var inboxId = Guid.NewGuid();
+        var contactId = Guid.NewGuid();
+
+        var policy = SlaPolicy.Create(policyTenantId, "Enterprise SLA", ConversationPriority.Normal, 10, 60);
+        db.SlaPolicies.Add(policy);
+
+        var conv = Conversation.Create(noPolicyTenantId, inboxId, contactId);
+        conv.Priority = ConversationPriority.Normal;
+        conv.Status = ConversationStatus.Open;
+        db.Conversations.Add(conv);
+        db.Entry(conv).Property(c => c.CreatedAtUtc).CurrentValue = DateTime.UtcNow.AddMinutes(-120);
+        await db.SaveChangesAsync();
+
+        var daemon = new SlaWatchdogDaemon(sp, NullLogger<SlaWatchdogDaemon>.Instance);
+        var breachCount = await daemon.CheckSlaBreachesAsync();
+
+        breachCount.Should().Be(0);
+
+        using var verifyScope = sp.CreateScope();
+        var verifyDb = verifyScope.ServiceProvider.GetRequiredService<SGrowingDbContext>();
+        var updatedConv = await verifyDb.Conversations.FirstAsync(c => c.Id == conv.Id);
+        updatedConv.IsSlaBreached.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CheckSlaBreachesAsync_WhenConversationAlreadyBreachedOrClosed_Ignores()
+    {
+        var (sp, db) = SetupDependencies();
+        using var scope = db;
+        var tenantId = Guid.NewGuid();
+        var inboxId = Guid.NewGuid();
+        var contactId = Guid.NewGuid();
+
+        var policy = SlaPolicy.Create(tenantId, "Strict SLA", ConversationPriority.Normal, 15, 60);
+        db.SlaPolicies.Add(policy);
+
+        var alreadyBreachedConv = Conversation.Create(tenantId, inboxId, contactId);
+        alreadyBreachedConv.Priority = ConversationPriority.Urgent;
+        alreadyBreachedConv.Status = ConversationStatus.Open;
+        alreadyBreachedConv.IsSlaBreached = true;
+
+        var closedConv = Conversation.Create(tenantId, inboxId, contactId);
+        closedConv.Priority = ConversationPriority.Normal;
+        closedConv.Status = ConversationStatus.Resolved;
+        closedConv.IsSlaBreached = false;
+
+        db.Conversations.AddRange(alreadyBreachedConv, closedConv);
+        db.Entry(alreadyBreachedConv).Property(c => c.CreatedAtUtc).CurrentValue = DateTime.UtcNow.AddHours(-3);
+        db.Entry(closedConv).Property(c => c.CreatedAtUtc).CurrentValue = DateTime.UtcNow.AddHours(-3);
+        await db.SaveChangesAsync();
+
+        var daemon = new SlaWatchdogDaemon(sp, NullLogger<SlaWatchdogDaemon>.Instance);
+        var breachCount = await daemon.CheckSlaBreachesAsync();
+
+        breachCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task CheckSlaBreachesAsync_WhenMultipleConversationsBreached_EscalatesAllAndCreatesOutboxEvents()
+    {
+        var (sp, db) = SetupDependencies();
+        using var scope = db;
+        var tenantId = Guid.NewGuid();
+        var inboxId = Guid.NewGuid();
+        var contactId = Guid.NewGuid();
+
+        var policy = SlaPolicy.Create(tenantId, "Customer SLA", ConversationPriority.Normal, 20, 120);
+        db.SlaPolicies.Add(policy);
+
+        var convOverFirst = Conversation.Create(tenantId, inboxId, contactId);
+        convOverFirst.Priority = ConversationPriority.Normal;
+        convOverFirst.Status = ConversationStatus.Open;
+
+        var convOverResolution = Conversation.Create(tenantId, inboxId, contactId);
+        convOverResolution.Priority = ConversationPriority.Normal;
+        convOverResolution.Status = ConversationStatus.Open;
+        convOverResolution.FirstResponseAtUtc = DateTime.UtcNow.AddMinutes(-100);
+
+        var convCompliant = Conversation.Create(tenantId, inboxId, contactId);
+        convCompliant.Priority = ConversationPriority.Normal;
+        convCompliant.Status = ConversationStatus.Open;
+
+        db.Conversations.AddRange(convOverFirst, convOverResolution, convCompliant);
+        db.Entry(convOverFirst).Property(c => c.CreatedAtUtc).CurrentValue = DateTime.UtcNow.AddMinutes(-45); // > 20 min
+        db.Entry(convOverResolution).Property(c => c.CreatedAtUtc).CurrentValue = DateTime.UtcNow.AddMinutes(-150); // > 120 min
+        db.Entry(convCompliant).Property(c => c.CreatedAtUtc).CurrentValue = DateTime.UtcNow.AddMinutes(-5); // < 20 min
+        await db.SaveChangesAsync();
+
+        var daemon = new SlaWatchdogDaemon(sp, NullLogger<SlaWatchdogDaemon>.Instance);
+        var breachCount = await daemon.CheckSlaBreachesAsync();
+
+        breachCount.Should().Be(2);
+
+        using var verifyScope = sp.CreateScope();
+        var verifyDb = verifyScope.ServiceProvider.GetRequiredService<SGrowingDbContext>();
+
+        var c1 = await verifyDb.Conversations.FirstAsync(c => c.Id == convOverFirst.Id);
+        var c2 = await verifyDb.Conversations.FirstAsync(c => c.Id == convOverResolution.Id);
+        var c3 = await verifyDb.Conversations.FirstAsync(c => c.Id == convCompliant.Id);
+
+        c1.IsSlaBreached.Should().BeTrue();
+        c1.Priority.Should().Be(ConversationPriority.Urgent);
+        c2.IsSlaBreached.Should().BeTrue();
+        c2.Priority.Should().Be(ConversationPriority.Urgent);
+        c3.IsSlaBreached.Should().BeFalse();
+        c3.Priority.Should().Be(ConversationPriority.Normal);
+
+        var outboxEvents = await verifyDb.OutboxMessages.Where(m => m.EventType == "SlaBreachedEvent").ToListAsync();
+        outboxEvents.Should().HaveCount(2);
+    }
 }

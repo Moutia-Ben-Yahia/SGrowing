@@ -190,4 +190,96 @@ public class MultiInboxDispatchDaemonTests
         var updated = await db.SenderAccounts.FirstAsync(a => a.Id == healthyAcc.Id);
         updated.Status.Should().Be(InboxRotationStatus.Active);
     }
+
+    [Fact]
+    public async Task ResetMidnightCountersAsync_WhenNoAccounts_ReturnsZeroAndDoesNotThrow()
+    {
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+
+        var resetCount = await MultiInboxDispatchDaemon.ResetMidnightCountersAsync(db);
+
+        resetCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task AuditPoolHealthAsync_WhenWarmupAccountYoungerThan14DaysOrHighBounceRate_DoesNotPromote()
+    {
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+        var tenantId = Guid.NewGuid();
+        var now = DateTime.UtcNow;
+
+        // Young account (< 14 days)
+        var youngAcc = new SenderAccount
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            Email = "young@sgrowing.io",
+            Status = InboxRotationStatus.Warmup,
+            CreatedAtUtc = now.AddDays(-10),
+            HealthScore = 95,
+            TotalDispatched = 100,
+            TotalDelivered = 100,
+            TotalBounced = 0
+        };
+
+        // Old account with high bounce rate (> 1.0%)
+        var highBounceAcc = new SenderAccount
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            Email = "bouncy@sgrowing.io",
+            Status = InboxRotationStatus.Warmup,
+            CreatedAtUtc = now.AddDays(-20),
+            HealthScore = 92,
+            TotalDispatched = 100,
+            TotalDelivered = 95,
+            TotalBounced = 5 // BounceRate = 5.0%
+        };
+
+        db.SenderAccounts.AddRange(youngAcc, highBounceAcc);
+        await db.SaveChangesAsync();
+
+        var result = await MultiInboxDispatchDaemon.AuditPoolHealthAsync(db, referenceTimeUtc: now);
+
+        result.WarmupAccountsPromoted.Should().Be(0);
+
+        var verifyYoung = await db.SenderAccounts.FirstAsync(a => a.Id == youngAcc.Id);
+        verifyYoung.Status.Should().Be(InboxRotationStatus.Warmup);
+
+        var verifyBounce = await db.SenderAccounts.FirstAsync(a => a.Id == highBounceAcc.Id);
+        verifyBounce.Status.Should().Be(InboxRotationStatus.Warmup);
+    }
+
+    [Fact]
+    public async Task AuditPoolHealthAsync_WhenQuarantinedMissingDkimOrDmarc_DoesNotRecover()
+    {
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+        var tenantId = Guid.NewGuid();
+        var now = DateTime.UtcNow;
+
+        var failedDkimAcc = new SenderAccount
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            Email = "failed-dkim@sgrowing.io",
+            Status = InboxRotationStatus.Quarantined,
+            QuarantinedAtUtc = now.AddDays(-5),
+            HasSpf = true,
+            HasDkim = false,
+            HasDmarc = true
+        };
+
+        db.SenderAccounts.Add(failedDkimAcc);
+        await db.SaveChangesAsync();
+
+        var result = await MultiInboxDispatchDaemon.AuditPoolHealthAsync(db, referenceTimeUtc: now);
+
+        result.QuarantinedAccountsRecovered.Should().Be(0);
+
+        var updated = await db.SenderAccounts.FirstAsync(a => a.Id == failedDkimAcc.Id);
+        updated.Status.Should().Be(InboxRotationStatus.Quarantined);
+    }
 }

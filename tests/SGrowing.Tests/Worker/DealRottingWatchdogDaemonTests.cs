@@ -114,4 +114,75 @@ public class DealRottingWatchdogDaemonTests
         var updated = await db.Deals.FirstAsync(d => d.Id == freshDeal.Id);
         updated.Notes.Should().Be("Intro call scheduled");
     }
+
+    [Fact]
+    public async Task ProcessRottenDealsAsync_WhenMultipleStagnantDeals_FlagsUpToBatchLimit()
+    {
+        using var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var contactId = Guid.NewGuid();
+
+        for (int i = 1; i <= 25; i++)
+        {
+            var deal = Deal.Create(tenantId, contactId, $"Enterprise Account {i}", 10000m * i, DealStage.Proposal);
+            db.Deals.Add(deal);
+            db.Entry(deal).Property(d => d.CreatedAtUtc).CurrentValue = DateTime.UtcNow.AddDays(-15);
+        }
+        await db.SaveChangesAsync();
+
+        var flagged = await DealRottingWatchdogDaemon.ProcessRottenDealsAsync(db, thresholdDays: 7);
+
+        flagged.Should().Be(20);
+
+        var allDeals = await db.Deals.ToListAsync();
+        var flaggedDeals = allDeals.Where(d => d.Notes != null && d.Notes.Contains("[ROTTEN DEAL ALERT]")).ToList();
+        flaggedDeals.Should().HaveCount(20);
+    }
+
+    [Fact]
+    public async Task ProcessRottenDealsAsync_WhenEmptyNotes_SetsRottenAlertCleanly()
+    {
+        using var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var contactId = Guid.NewGuid();
+
+        var dealWithNullNotes = Deal.Create(tenantId, contactId, "Null Notes Deal", 12000m, DealStage.Prospecting);
+        dealWithNullNotes.Notes = null;
+        db.Deals.Add(dealWithNullNotes);
+        db.Entry(dealWithNullNotes).Property(d => d.CreatedAtUtc).CurrentValue = DateTime.UtcNow.AddDays(-10);
+        await db.SaveChangesAsync();
+
+        var flagged = await DealRottingWatchdogDaemon.ProcessRottenDealsAsync(db, thresholdDays: 7);
+
+        flagged.Should().Be(1);
+
+        var updated = await db.Deals.FirstAsync(d => d.Id == dealWithNullNotes.Id);
+        updated.Notes.Should().Be("[ROTTEN DEAL ALERT] Deal has stagnated in Prospecting for over 7 days. Action required.");
+    }
+
+    [Fact]
+    public async Task ProcessRottenDealsAsync_CustomThresholdDays_RespectsShorterCutoff()
+    {
+        using var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var contactId = Guid.NewGuid();
+
+        var deal4DaysOld = Deal.Create(tenantId, contactId, "Deal 4 Days Old", 18000m, DealStage.Proposal);
+        var deal2DaysOld = Deal.Create(tenantId, contactId, "Deal 2 Days Old", 22000m, DealStage.Proposal);
+
+        db.Deals.AddRange(deal4DaysOld, deal2DaysOld);
+        db.Entry(deal4DaysOld).Property(d => d.CreatedAtUtc).CurrentValue = DateTime.UtcNow.AddDays(-4);
+        db.Entry(deal2DaysOld).Property(d => d.CreatedAtUtc).CurrentValue = DateTime.UtcNow.AddDays(-2);
+        await db.SaveChangesAsync();
+
+        var flagged = await DealRottingWatchdogDaemon.ProcessRottenDealsAsync(db, thresholdDays: 3);
+
+        flagged.Should().Be(1);
+
+        var updated4 = await db.Deals.FirstAsync(d => d.Id == deal4DaysOld.Id);
+        updated4.Notes.Should().StartWith("[ROTTEN DEAL ALERT]");
+
+        var updated2 = await db.Deals.FirstAsync(d => d.Id == deal2DaysOld.Id);
+        updated2.Notes.Should().BeNullOrEmpty();
+    }
 }
