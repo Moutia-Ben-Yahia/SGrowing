@@ -89,4 +89,15 @@ public class RevenueIntelligenceTests
             Assert.True(firstCohort[i].RetentionRatePercent <= firstCohort[i - 1].RetentionRatePercent);
         }
     }
+
+    [Fact]
+    public void ComputeSnapshot_ArrEqualsTwelveTimesMrr_WithBenchmarkLtvCac()
+    {
+        var snapshot = _engine.ComputeSnapshot("tenant_arr_calc");
+
+        Assert.Equal(146200.0, snapshot.Mrr);
+        Assert.Equal(snapshot.Mrr * 12.0, snapshot.Arr);
+        Assert.Equal(1754400.0, snapshot.Arr);
+        Assert.Equal(4.8, snapshot.LtvCacRatio);
+    }
 }

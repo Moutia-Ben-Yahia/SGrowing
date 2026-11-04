@@ -116,4 +116,22 @@ public class BiReportBuilderTests
         Assert.Contains("sales_rep", result.Title);
         Assert.True(result.ExecutionLatencyMs > 0);
     }
+
+    [Fact]
+    public void RunMonteCarloForecast_DeterministicSeed_ProducesConsistentPercentiles()
+    {
+        var req = new MonteCarloSimRequest(
+            BaselineArrUsd: 1_000_000m,
+            PipelineWinRatePercent: 30.0,
+            ChurnRatePercent: 5.0,
+            SimulationRuns: 500
+        );
+
+        var run1 = _engine.RunMonteCarloForecast(req);
+        var run2 = _engine.RunMonteCarloForecast(req);
+
+        Assert.Equal(run1.ExpectedScenario.P10Floor, run2.ExpectedScenario.P10Floor);
+        Assert.Equal(run1.ExpectedScenario.P50Expected, run2.ExpectedScenario.P50Expected);
+        Assert.Equal(run1.ExpectedScenario.P90Optimistic, run2.ExpectedScenario.P90Optimistic);
+    }
 }

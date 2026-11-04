@@ -262,4 +262,17 @@ public class BotSimulatorTests
 
         Assert.Contains(session.Transcript, m => m.Content == "Hello Sarah! Your discount code is GROWTH2026.");
     }
+
+    [Fact]
+    public void BotSimulator_EmptyWorkflowNodes_CompletesImmediatelyWithTraceLog()
+    {
+        var workflow = WorkflowGraph.Create(Guid.NewGuid(), "EmptyBot", "BotCanvas", "[]");
+
+        var session = _simulator.StartSimulation(workflow);
+
+        Assert.True(session.IsCompleted);
+        Assert.False(session.IsWaitingForUserInput);
+        Assert.False(session.IsHandedOverToHuman);
+        Assert.Empty(session.Transcript);
+    }
 }

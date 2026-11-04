@@ -187,4 +187,30 @@ public class AdvancedWorkflowTests
         Assert.False(refreshed!.IsResolved);
         Assert.Equal(0, refreshed.RetryCount);
     }
+
+    [Fact]
+    public async Task DeadLetterQueue_ReplayAlreadyResolved_IncrementsRetryCountAndMaintainsResolvedState()
+    {
+        var tenantId = Guid.NewGuid();
+        var item = await _schedulerService.EnqueueDeadLetterAsync(
+            tenantId,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "node_retry",
+            "Action:Email",
+            "{}",
+            "SMTP server unavailable");
+
+        // First replay
+        var firstReplay = await _schedulerService.ReplayDeadLetterStepAsync(tenantId, item.Id);
+        Assert.True(firstReplay.Success);
+
+        // Second replay on already resolved item
+        var secondReplay = await _schedulerService.ReplayDeadLetterStepAsync(tenantId, item.Id);
+        Assert.True(secondReplay.Success);
+
+        var refreshed = await _db.WorkflowDeadLetterLogs.FindAsync(item.Id);
+        Assert.True(refreshed!.IsResolved);
+        Assert.Equal(2, refreshed.RetryCount);
+    }
 }
