@@ -211,4 +211,103 @@ public class OutboxPublisherJobTests
             updated!.ProcessedOnUtc.Should().NotBeNull();
         }
     }
+
+    [Fact]
+    public async Task ProcessPendingOutboxMessagesAsync_WhenBrokerIsNull_MarksProcessedAndIncrementsCount()
+    {
+        var (provider, _) = CreateServiceProvider(); // no broker registered
+        var tenantId = Guid.NewGuid();
+
+        var msg = OutboxMessage.Create(tenantId, "BrokerlessEvent", "{\"status\":\"direct\"}");
+        using (var seedDb = GetDbContext(provider))
+        {
+            seedDb.OutboxMessages.Add(msg);
+            await seedDb.SaveChangesAsync();
+        }
+
+        var mockLogger = new Mock<ILogger<OutboxPublisherJob>>();
+        var job = new OutboxPublisherJob(provider, mockLogger.Object);
+
+        var count = await job.ProcessPendingOutboxMessagesAsync();
+
+        count.Should().Be(1);
+
+        using (var verifyDb = GetDbContext(provider))
+        {
+            var processed = await verifyDb.OutboxMessages.AsNoTracking().FirstOrDefaultAsync(m => m.Id == msg.Id);
+            processed.Should().NotBeNull();
+            processed!.ProcessedOnUtc.Should().NotBeNull();
+            processed.Error.Should().BeNull();
+        }
+    }
+
+    [Fact]
+    public async Task ProcessPendingOutboxMessagesAsync_WhenBackoffDurationNotYetElapsed_SkipsMessage()
+    {
+        var mockBroker = new Mock<IRedisStreamBroker>();
+        var (provider, _) = CreateServiceProvider(broker: mockBroker.Object);
+        var tenantId = Guid.NewGuid();
+
+        var msg = OutboxMessage.Create(tenantId, "BackoffPendingEvent", "{}");
+        msg.MarkFailed("Attempt failed"); // RetryCount = 1
+        msg.MarkFailed("Attempt failed again"); // RetryCount = 2 (delay 2^2 = 4s)
+
+        using (var seedDb = GetDbContext(provider))
+        {
+            seedDb.OutboxMessages.Add(msg);
+            // Occurred 1 second ago, but backoff requires 4s
+            seedDb.Entry(msg).Property(m => m.OccurredOnUtc).CurrentValue = DateTime.UtcNow.AddSeconds(-1);
+            await seedDb.SaveChangesAsync();
+        }
+
+        var mockLogger = new Mock<ILogger<OutboxPublisherJob>>();
+        var job = new OutboxPublisherJob(provider, mockLogger.Object);
+
+        var count = await job.ProcessPendingOutboxMessagesAsync();
+
+        count.Should().Be(0);
+        mockBroker.Verify(b => b.PublishEventAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>()), Times.Never);
+
+        using (var verifyDb = GetDbContext(provider))
+        {
+            var pending = await verifyDb.OutboxMessages.AsNoTracking().FirstOrDefaultAsync(m => m.Id == msg.Id);
+            pending!.ProcessedOnUtc.Should().BeNull();
+            pending.RetryCount.Should().Be(2);
+        }
+    }
+
+    [Fact]
+    public async Task ProcessPendingOutboxMessagesAsync_WhenBatchExceeds100_ProcessesFirst100Messages()
+    {
+        var (provider, _) = CreateServiceProvider();
+        var tenantId = Guid.NewGuid();
+        var baseTime = DateTime.UtcNow.AddHours(-1);
+
+        using (var seedDb = GetDbContext(provider))
+        {
+            for (int i = 0; i < 110; i++)
+            {
+                var msg = OutboxMessage.Create(tenantId, $"BulkEvent_{i:D3}", $"{{\"i\":{i}}}");
+                seedDb.OutboxMessages.Add(msg);
+                seedDb.Entry(msg).Property(m => m.OccurredOnUtc).CurrentValue = baseTime.AddSeconds(i);
+            }
+            await seedDb.SaveChangesAsync();
+        }
+
+        var mockLogger = new Mock<ILogger<OutboxPublisherJob>>();
+        var job = new OutboxPublisherJob(provider, mockLogger.Object);
+
+        var processedCount = await job.ProcessPendingOutboxMessagesAsync();
+
+        processedCount.Should().Be(100);
+
+        using (var verifyDb = GetDbContext(provider))
+        {
+            var processed = await verifyDb.OutboxMessages.AsNoTracking().Where(m => m.ProcessedOnUtc != null).ToListAsync();
+            var remaining = await verifyDb.OutboxMessages.AsNoTracking().Where(m => m.ProcessedOnUtc == null).ToListAsync();
+
+            processed.Should().HaveCount(100);
+            remaining.Should().HaveCount(10);
+        }
+    }
 }

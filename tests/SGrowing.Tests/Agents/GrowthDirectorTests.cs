@@ -194,4 +194,81 @@ public class GrowthDirectorTests
         nonExistent.Should().BeNull();
         wrongTenant.Should().BeNull();
     }
+
+    [Fact]
+    public void DecomposeObjective_WithZeroOrNegativeBudget_AllocatesZeroBudgetsWithoutThrowing()
+    {
+        // Arrange
+        var objective = new GrowthMissionObjective(
+            ObjectiveId: "obj-zero-budget",
+            TenantId: TestTenantId,
+            Title: "Organic Growth Sprint",
+            TargetMetric: "OrganicReferrals",
+            TargetValue: 50m,
+            MaxBudgetUsd: -100m, // Negative budget should be normalized to 0
+            DeadlineUtc: DateTime.UtcNow.AddDays(7)
+        );
+
+        // Act
+        var plan = _engine.DecomposeObjective(objective);
+
+        // Assert
+        plan.Should().NotBeNull();
+        plan.TotalEstimatedCostUsd.Should().Be(0m);
+        plan.ExceedsAutoApprovalThreshold.Should().BeFalse();
+        plan.Status.Should().Be("AutoApproved");
+        plan.SubTasks.Should().AllSatisfy(t =>
+        {
+            t.AllocatedBudget.Should().Be(0m);
+            t.RequiresHumanApproval.Should().BeFalse();
+            t.Status.Should().Be("AutoApproved");
+        });
+    }
+
+    [Fact]
+    public void ApproveAndExecuteMission_WhenMissionNotFound_ReturnsFailureResult()
+    {
+        // Act
+        var result = _engine.ApproveAndExecuteMission("tenant-random", "msn_nonexistent", new List<string> { "task-1" });
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Success.Should().BeFalse();
+        result.MissionId.Should().Be("msn_nonexistent");
+        result.TasksExecuted.Should().Be(0);
+        result.StatusMessage.Should().Contain("not found");
+    }
+
+    [Fact]
+    public void ApproveAndExecuteMission_WhenAllTasksApproved_CompletesEntireMissionPlan()
+    {
+        // Arrange
+        var tenantId = "tenant-full-approval";
+        var objective = new GrowthMissionObjective(
+            ObjectiveId: "obj-full-approval",
+            TenantId: tenantId,
+            Title: "Full Funnel Blitz",
+            TargetMetric: "ARR",
+            TargetValue: 50000m,
+            MaxBudgetUsd: 800m,
+            DeadlineUtc: DateTime.UtcNow.AddDays(30)
+        );
+        var plan = _engine.DecomposeObjective(objective);
+        var allTaskIds = plan.SubTasks.Select(s => s.TaskId).ToList();
+
+        // Act
+        var result = _engine.ApproveAndExecuteMission(tenantId, plan.MissionId, allTaskIds);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Success.Should().BeTrue();
+        result.TasksExecuted.Should().Be(4);
+        result.TasksPendingApproval.Should().Be(0);
+        result.TotalApprovedSpend.Should().Be(800m);
+
+        var stored = _engine.GetMission(tenantId, plan.MissionId);
+        stored.Should().NotBeNull();
+        stored!.Status.Should().Be("Executed");
+        stored.SubTasks.Should().AllSatisfy(t => t.Status.Should().Be("Executed"));
+    }
 }

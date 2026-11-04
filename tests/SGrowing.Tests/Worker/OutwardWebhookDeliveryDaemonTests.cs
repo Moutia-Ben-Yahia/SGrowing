@@ -194,4 +194,162 @@ public class OutwardWebhookDeliveryDaemonTests
         updated.NextAttemptAtUtc.Should().BeNull();
         updated.IsDeadLetter.Should().BeFalse();
     }
+
+    [Fact]
+    public async Task ProcessPendingWebhookDeliveriesAsync_WhenHttpFailsUnderMaxRetries_IncrementsAttemptAndSchedulesBackoff()
+    {
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+        var tenantId = Guid.NewGuid();
+
+        var sub = WebhookSubscriptionRecord.Create(
+            tenantId,
+            "https://merchant.tn/webhooks/deals",
+            new List<string> { "deal.won" }
+        );
+        db.WebhookSubscriptionRecords.Add(sub);
+
+        var log = WebhookDeliveryAttemptLog.Create(
+            tenantId,
+            sub.Id,
+            "deal.won",
+            "{\"dealId\":\"D-100\"}",
+            statusCode: 0,
+            isSuccess: false,
+            durationMs: 0,
+            attemptNumber: 1,
+            maxRetries: 5,
+            signature: "sha256=test",
+            timestamp: DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+        );
+        log.NextAttemptAtUtc = DateTime.UtcNow.AddMinutes(-1);
+        db.WebhookDeliveryAttemptLogs.Add(log);
+        await db.SaveChangesAsync();
+
+        var handlerMock = new Mock<HttpMessageHandler>();
+        handlerMock.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.InternalServerError,
+                Content = new StringContent("{\"error\":\"Internal Server Error\"}")
+            });
+
+        using var client = new HttpClient(handlerMock.Object);
+
+        var processed = await OutwardWebhookDeliveryDaemon.ProcessPendingWebhookDeliveriesAsync(db, client);
+
+        processed.Should().Be(1);
+        var updatedLog = await db.WebhookDeliveryAttemptLogs.FirstAsync(l => l.Id == log.Id);
+        updatedLog.IsSuccess.Should().BeFalse();
+        updatedLog.IsDeadLetter.Should().BeFalse();
+        updatedLog.ResponseStatusCode.Should().Be(500);
+        updatedLog.AttemptNumber.Should().Be(2);
+        updatedLog.NextAttemptAtUtc.Should().NotBeNull();
+        updatedLog.NextAttemptAtUtc!.Value.Should().BeAfter(DateTime.UtcNow.AddSeconds(30));
+
+        var updatedSub = await db.WebhookSubscriptionRecords.FirstAsync(s => s.Id == sub.Id);
+        updatedSub.FailureCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ProcessPendingWebhookDeliveriesAsync_WhenMaxRetriesExhausted_MovesToDeadLetterQueue()
+    {
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+        var tenantId = Guid.NewGuid();
+
+        var sub = WebhookSubscriptionRecord.Create(
+            tenantId,
+            "https://merchant.tn/webhooks/final-fail",
+            new List<string> { "order.delivered" }
+        );
+        db.WebhookSubscriptionRecords.Add(sub);
+
+        var log = WebhookDeliveryAttemptLog.Create(
+            tenantId,
+            sub.Id,
+            "order.delivered",
+            "{\"orderId\":\"ORD-FINAL\"}",
+            statusCode: 0,
+            isSuccess: false,
+            durationMs: 0,
+            attemptNumber: 5,
+            maxRetries: 5,
+            signature: "sha256=test",
+            timestamp: DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+        );
+        log.NextAttemptAtUtc = DateTime.UtcNow.AddMinutes(-2);
+        db.WebhookDeliveryAttemptLogs.Add(log);
+        await db.SaveChangesAsync();
+
+        var handlerMock = new Mock<HttpMessageHandler>();
+        handlerMock.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.BadGateway,
+                Content = new StringContent("{\"error\":\"Bad Gateway\"}")
+            });
+
+        using var client = new HttpClient(handlerMock.Object);
+
+        var processed = await OutwardWebhookDeliveryDaemon.ProcessPendingWebhookDeliveriesAsync(db, client);
+
+        processed.Should().Be(1);
+        var updatedLog = await db.WebhookDeliveryAttemptLogs.FirstAsync(l => l.Id == log.Id);
+        updatedLog.IsSuccess.Should().BeFalse();
+        updatedLog.IsDeadLetter.Should().BeTrue();
+        updatedLog.DeadLetterReason.Should().Contain("Max retry attempts (5) exhausted");
+        updatedLog.NextAttemptAtUtc.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task RetryDeadLetterDeliveryAsync_WhenCalled_ResetsForImmediateReplayOrReturnsNull()
+    {
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+        var tenantId = Guid.NewGuid();
+        var subId = Guid.NewGuid();
+
+        var dlqLog = WebhookDeliveryAttemptLog.Create(
+            tenantId,
+            subId,
+            "fraud.flagged",
+            "{}",
+            statusCode: 500,
+            isSuccess: false,
+            durationMs: 20,
+            attemptNumber: 5,
+            maxRetries: 5,
+            signature: "sha256=dlq",
+            timestamp: DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+        );
+        dlqLog.IsDeadLetter = true;
+        dlqLog.DeadLetterReason = "Fatal failure";
+        dlqLog.NextAttemptAtUtc = null;
+
+        db.WebhookDeliveryAttemptLogs.Add(dlqLog);
+        await db.SaveChangesAsync();
+
+        // 1. Existing log
+        var replayed = await OutwardWebhookDeliveryDaemon.RetryDeadLetterDeliveryAsync(db, dlqLog.Id);
+        replayed.Should().NotBeNull();
+        replayed!.IsDeadLetter.Should().BeFalse();
+        replayed.DeadLetterReason.Should().BeNull();
+        replayed.AttemptNumber.Should().Be(1);
+        replayed.NextAttemptAtUtc.Should().NotBeNull();
+
+        // 2. Non-existent log
+        var missing = await OutwardWebhookDeliveryDaemon.RetryDeadLetterDeliveryAsync(db, Guid.NewGuid());
+        missing.Should().BeNull();
+    }
 }

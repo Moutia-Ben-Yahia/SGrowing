@@ -154,4 +154,64 @@ public sealed class DynamicAgentToolRegistryTests
         result.OutputJson.Should().Contain("\"tool\":\"stripe_charge_create\"");
         result.OutputJson.Should().Contain("\"amount\":5000");
     }
+
+    [Fact]
+    public async Task GetActiveToolsAsync_TenantIsolation_OnlyReturnsToolsForSpecifiedTenant()
+    {
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        await _registry.RegisterToolAsync(tenantA, "tool_a1", "Tenant A Tool 1", "{}", "https://a.com/1");
+        await _registry.RegisterToolAsync(tenantA, "tool_a2", "Tenant A Tool 2", "{}", "https://a.com/2");
+        await _registry.RegisterToolAsync(tenantB, "tool_b1", "Tenant B Tool 1", "{}", "https://b.com/1");
+
+        var toolsA = await _registry.GetActiveToolsAsync(tenantA);
+        var toolsB = await _registry.GetActiveToolsAsync(tenantB);
+
+        toolsA.Should().HaveCount(2);
+        toolsA.Select(t => t.Name).Should().Contain(new[] { "tool_a1", "tool_a2" });
+        toolsA.Should().NotContain(t => t.Name == "tool_b1");
+
+        toolsB.Should().HaveCount(1);
+        toolsB.First().Name.Should().Be("tool_b1");
+    }
+
+    [Fact]
+    public async Task RegisterToolAsync_DefaultHttpMethod_DefaultsToPostWhenNotSpecified()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var tool = await _registry.RegisterToolAsync(
+            tenantId,
+            "sendgrid_email_sender",
+            "Dispatches transactional emails",
+            "{}",
+            "https://api.sendgrid.com/v3/mail/send");
+
+        tool.HttpMethod.Should().Be("POST");
+
+        var persisted = await _db.DynamicAgentTools.FirstAsync(t => t.Id == tool.Id);
+        persisted.HttpMethod.Should().Be("POST");
+    }
+
+    [Fact]
+    public async Task ExecuteToolAsync_EmptyOrComplexJsonArguments_EchoesArgumentsInSimulatedResponse()
+    {
+        var tenantId = Guid.NewGuid();
+
+        await _registry.RegisterToolAsync(
+            tenantId,
+            "analytics_event_track",
+            "Tracks telemetry events",
+            "{}",
+            "https://api.mixpanel.com/track",
+            "POST");
+
+        var complexJson = "{\"nested\":{\"flag\":true,\"count\":42}}";
+        var result = await _registry.ExecuteToolAsync(tenantId, "analytics_event_track", complexJson);
+
+        result.Success.Should().BeTrue();
+        result.OutputJson.Should().Contain("\"tool\":\"analytics_event_track\"");
+        result.OutputJson.Should().Contain("\"received\":{\"nested\":{\"flag\":true,\"count\":42}}");
+    }
 }
