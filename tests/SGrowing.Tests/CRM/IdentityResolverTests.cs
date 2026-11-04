@@ -70,4 +70,70 @@ public class IdentityResolverTests
         timelineRes.Value.Deals.Should().ContainSingle();
         timelineRes.Value.Events.Should().ContainSingle();
     }
+
+    [Fact]
+    public async Task ResolveOrCreateContactAsync_WithNewContact_CreatesAndSetsAnonymousDefaults()
+    {
+        var db = CreateDbContext();
+        var service = new IdentityResolverService(db);
+        var tenantId = Guid.NewGuid();
+
+        // No name provided -> Anonymous User defaults
+        var res = await service.ResolveOrCreateContactAsync(tenantId, "ghost@domain.com", null, null, null);
+
+        res.IsSuccess.Should().BeTrue();
+        res.Value.FirstName.Should().Be("Anonymous");
+        res.Value.LastName.Should().Be("User");
+        res.Value.Email.Should().Be("ghost@domain.com");
+    }
+
+    [Fact]
+    public async Task ResolveOrCreateContactAsync_NormalizesPunctuationAndWhitespaceInPhone()
+    {
+        var db = CreateDbContext();
+        var service = new IdentityResolverService(db);
+        var tenantId = Guid.NewGuid();
+
+        // Phone with parentheses, spaces, dots and dashes: "+1 (555) 123-4567"
+        var res = await service.ResolveOrCreateContactAsync(tenantId, null, "+1 (555) 123-4567", "Peter", "Parker");
+
+        res.IsSuccess.Should().BeTrue();
+        res.Value.Phone.Should().Be("15551234567");
+
+        // Subsequent call with stripped format matches existing contact
+        var matchRes = await service.ResolveOrCreateContactAsync(tenantId, "peter@dailybugle.com", "15551234567", "Peter", "Parker");
+        matchRes.Value.Id.Should().Be(res.Value.Id);
+        matchRes.Value.Email.Should().Be("peter@dailybugle.com");
+    }
+
+    [Fact]
+    public async Task ResolveOrCreateContactAsync_WhenMatchingByEmail_EnrichesMissingPhone()
+    {
+        var db = CreateDbContext();
+        var service = new IdentityResolverService(db);
+        var tenantId = Guid.NewGuid();
+
+        // 1. Initial contact created with email only
+        var initial = await service.ResolveOrCreateContactAsync(tenantId, "clark@kent.com", null, "Clark", "Kent");
+        initial.Value.Phone.Should().BeNull();
+
+        // 2. Incoming touchpoint matching email provides phone
+        var enriched = await service.ResolveOrCreateContactAsync(tenantId, "clark@kent.com", "+1-800-METROPOLIS", "Clark", "Kent");
+        enriched.Value.Id.Should().Be(initial.Value.Id);
+        enriched.Value.Phone.Should().Be("1800METROPOLIS");
+    }
+
+    [Fact]
+    public async Task GetUnifiedCustomerTimelineAsync_WithNonExistentContactId_ReturnsFailure()
+    {
+        var db = CreateDbContext();
+        var service = new IdentityResolverService(db);
+        var tenantId = Guid.NewGuid();
+        var missingContactId = Guid.NewGuid();
+
+        var res = await service.GetUnifiedCustomerTimelineAsync(tenantId, missingContactId);
+
+        res.IsSuccess.Should().BeFalse();
+        res.Error.Should().Contain("Contact not found");
+    }
 }

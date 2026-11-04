@@ -107,4 +107,62 @@ public class RedisStreamBrokerTests
         var remainingMessages = await broker.ReadGroupMessagesAsync("sgrowing:stream:outbox", "sgrowing-worker-group", "unit-test-worker");
         Assert.Empty(remainingMessages);
     }
+
+    [Fact]
+    public async Task PublishEventAsync_GeneratesUniqueMessageIds()
+    {
+        var broker = new InMemoryStreamBroker();
+        var tenantId = Guid.NewGuid();
+        var streamKey = "sgrowing:unique:ids";
+
+        var id1 = await broker.PublishEventAsync(streamKey, "test.ev1", "{}", tenantId);
+        var id2 = await broker.PublishEventAsync(streamKey, "test.ev2", "{}", tenantId);
+        var id3 = await broker.PublishEventAsync(streamKey, "test.ev3", "{}", tenantId);
+
+        Assert.NotEqual(id1, id2);
+        Assert.NotEqual(id2, id3);
+        Assert.NotEqual(id1, id3);
+    }
+
+    [Fact]
+    public async Task ReadGroupMessagesAsync_WhenStreamEmpty_ReturnsEmptyList()
+    {
+        var broker = new InMemoryStreamBroker();
+        var messages = await broker.ReadGroupMessagesAsync("sgrowing:empty:stream", "grp", "c1", 10);
+
+        Assert.NotNull(messages);
+        Assert.Empty(messages);
+    }
+
+    [Fact]
+    public async Task AcknowledgeAsync_IsIdempotentAcrossMultipleCalls()
+    {
+        var broker = new InMemoryStreamBroker();
+        var tenantId = Guid.NewGuid();
+        var streamKey = "sgrowing:ack:idempotent";
+        var groupName = "grp1";
+
+        await broker.EnsureConsumerGroupAsync(streamKey, groupName);
+        var msgId = await broker.PublishEventAsync(streamKey, "item.created", "{}", tenantId);
+
+        // Acknowledge multiple times
+        await broker.AcknowledgeAsync(streamKey, groupName, msgId);
+        await broker.AcknowledgeAsync(streamKey, groupName, msgId);
+
+        var remaining = await broker.ReadGroupMessagesAsync(streamKey, groupName, "c1", 10);
+        Assert.Empty(remaining);
+    }
+
+    [Fact]
+    public async Task EnsureConsumerGroupAsync_InitializesStreamIfNonExistent()
+    {
+        var broker = new InMemoryStreamBroker();
+        var streamKey = "sgrowing:new:stream";
+        var groupName = "new-group";
+
+        await broker.EnsureConsumerGroupAsync(streamKey, groupName);
+
+        var messages = await broker.ReadGroupMessagesAsync(streamKey, groupName, "c1");
+        Assert.Empty(messages);
+    }
 }

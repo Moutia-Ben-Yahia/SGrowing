@@ -94,4 +94,101 @@ public class CustomerReputationTests
         Assert.Equal(0, updatedInv!.ReservedStock);
         Assert.Equal(1, updatedInv.CommittedStock);
     }
+
+    [Fact]
+    public async Task EvaluateCustomerReputationAsync_WithNoHistoricalOrders_ReturnsBaselineStandardTier()
+    {
+        var db = CreateDbContext();
+        var service = new CustomerReputationService(db);
+        var tenantId = Guid.NewGuid();
+        var phone = "+21620000000";
+
+        var evaluation = await service.EvaluateCustomerReputationAsync(tenantId, phone);
+
+        Assert.Equal(phone, evaluation.CustomerPhone);
+        Assert.Equal(70, evaluation.ReputationScore);
+        Assert.Equal(ReputationTier.Standard, evaluation.Tier);
+        Assert.False(evaluation.RequiresMicroDeposit);
+        Assert.Contains("Standard Customer", evaluation.RecommendedAction);
+    }
+
+    [Fact]
+    public async Task EvaluateCustomerReputationAsync_WithMultipleDeliveredOrdersAndZeroReturns_ReturnsTrustedTier()
+    {
+        var db = CreateDbContext();
+        var service = new CustomerReputationService(db);
+        var tenantId = Guid.NewGuid();
+        var phone = "+21699000111";
+
+        // Seed 5 delivered orders with substantial spend ($500)
+        for (int i = 0; i < 5; i++)
+        {
+            var ord = CodOrder.Create(tenantId, $"ORD-VIP-{i}", "VIP Buyer", phone, "Street", "Tunis", "Tunis", 100m);
+            ord.Status = CodOrderStatus.Delivered;
+            db.CodOrders.Add(ord);
+        }
+        await db.SaveChangesAsync();
+
+        var evaluation = await service.EvaluateCustomerReputationAsync(tenantId, phone);
+
+        Assert.True(evaluation.ReputationScore >= 80);
+        Assert.Equal(ReputationTier.Trusted, evaluation.Tier);
+        Assert.False(evaluation.RequiresMicroDeposit);
+        Assert.Equal(100.0m, evaluation.DeliverySuccessRate);
+        Assert.Contains("Trusted Customer", evaluation.RecommendedAction);
+    }
+
+    [Fact]
+    public async Task EvaluateCustomerReputationAsync_WithExcessiveReturns_ReturnsBlacklistedTier()
+    {
+        var db = CreateDbContext();
+        var service = new CustomerReputationService(db);
+        var tenantId = Guid.NewGuid();
+        var phone = "+21655667788";
+
+        // Seed 4 orders where all 4 were returned/refused
+        for (int i = 0; i < 4; i++)
+        {
+            var ord = CodOrder.Create(tenantId, $"ORD-BAD-{i}", "Serial Rejector", phone, "Street", "Bizerte", "Bizerte", 50m);
+            ord.Status = CodOrderStatus.Returned;
+            db.CodOrders.Add(ord);
+        }
+        await db.SaveChangesAsync();
+
+        var evaluation = await service.EvaluateCustomerReputationAsync(tenantId, phone);
+
+        Assert.True(evaluation.ReputationScore < 20);
+        Assert.Equal(ReputationTier.Blacklisted, evaluation.Tier);
+        Assert.True(evaluation.RequiresMicroDeposit);
+        Assert.Equal(0m, evaluation.DeliverySuccessRate);
+        Assert.Contains("Blacklisted", evaluation.RecommendedAction);
+    }
+
+    [Fact]
+    public async Task GenerateMicroDepositLinkAsync_WithUnknownOrderId_ThrowsInvalidOperationException()
+    {
+        var db = CreateDbContext();
+        var service = new CustomerReputationService(db);
+        var tenantId = Guid.NewGuid();
+        var missingOrderId = Guid.NewGuid();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.GenerateMicroDepositLinkAsync(tenantId, missingOrderId, "+216000"));
+
+        Assert.Contains("not found", ex.Message);
+    }
+
+    [Fact]
+    public async Task RecordMicroDepositSettlementAsync_WithUnknownLinkId_ThrowsInvalidOperationException()
+    {
+        var db = CreateDbContext();
+        var service = new CustomerReputationService(db);
+        var tenantId = Guid.NewGuid();
+        var missingLinkId = Guid.NewGuid();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.RecordMicroDepositSettlementAsync(tenantId, missingLinkId));
+
+        Assert.Contains("not found", ex.Message);
+    }
 }

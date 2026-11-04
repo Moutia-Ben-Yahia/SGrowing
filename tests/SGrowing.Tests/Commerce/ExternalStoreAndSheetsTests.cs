@@ -87,4 +87,75 @@ public class ExternalStoreAndSheetsTests
         var updatedConfig = await db.GoogleSheetsSyncConfigs.FirstAsync(c => c.TenantId == tenantId);
         Assert.Equal(1, updatedConfig.RowsAppendedCount);
     }
+
+    [Fact]
+    public async Task PushFulfillmentUpdateAsync_WithUnknownOrder_ThrowsInvalidOperationException()
+    {
+        var db = CreateDbContext();
+        var service = new ExternalStoreAndSheetsService(db);
+        var tenantId = Guid.NewGuid();
+        var nonExistentOrderId = Guid.NewGuid();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.PushFulfillmentUpdateAsync(tenantId, nonExistentOrderId, "DHL", "DHL-999"));
+
+        Assert.Contains("not found", ex.Message);
+    }
+
+    [Fact]
+    public async Task GenerateGoogleSheetsRowAsync_WithUnknownOrder_ThrowsInvalidOperationException()
+    {
+        var db = CreateDbContext();
+        var service = new ExternalStoreAndSheetsService(db);
+        var tenantId = Guid.NewGuid();
+        var nonExistentOrderId = Guid.NewGuid();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.GenerateGoogleSheetsRowAsync(tenantId, nonExistentOrderId));
+
+        Assert.Contains("not found", ex.Message);
+    }
+
+    [Fact]
+    public async Task IngestExternalStoreOrderAsync_WithMissingCustomerAndAddress_FallsBackToDefaults()
+    {
+        var db = CreateDbContext();
+        var service = new ExternalStoreAndSheetsService(db);
+        var tenantId = Guid.NewGuid();
+
+        var minimalPayload = """
+        {
+            "id": 990011,
+            "name": "#WOO-501"
+        }
+        """;
+
+        var order = await service.IngestExternalStoreOrderAsync(tenantId, ExternalStorePlatform.WooCommerce, minimalPayload);
+
+        Assert.Equal("#WOO-501", order.OrderNumber);
+        Assert.Equal("Shopify Buyer", order.CustomerName);
+        Assert.Equal("+21600000000", order.PhoneNumber);
+        Assert.Equal("Tunis", order.GovernorateOrWilaya);
+        Assert.Equal(95m, order.TotalAmount); // default 95 fallback
+    }
+
+    [Fact]
+    public async Task GenerateGoogleSheetsRowAsync_WithoutActiveConfig_StillReturnsRowVector()
+    {
+        var db = CreateDbContext();
+        var service = new ExternalStoreAndSheetsService(db);
+        var tenantId = Guid.NewGuid();
+
+        // No GoogleSheetsSyncConfig seeded in DB
+        var order = CodOrder.Create(tenantId, "ORD-NO-CONFIG", "Nadia Ben", "+216223344", "Address", "Sfax", "Sfax", 65m);
+        db.CodOrders.Add(order);
+        await db.SaveChangesAsync();
+
+        var row = await service.GenerateGoogleSheetsRowAsync(tenantId, order.Id);
+
+        Assert.NotNull(row);
+        Assert.Equal(11, row.Count);
+        Assert.Equal("ORD-NO-CONFIG", row[1]);
+        Assert.Equal(65m, row[6]);
+    }
 }
