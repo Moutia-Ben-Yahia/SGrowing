@@ -103,4 +103,49 @@ public class FunnelSplitTestTests
         test!.Status.Should().Be("Concluded");
         test.WinnerVariant.Should().Be("Variant B (Urgency & COD Proof)");
     }
+
+    [Fact]
+    public async Task RecordEventAsync_Views_IncrementsViewsCount()
+    {
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(databaseName: $"FunnelSplitTestDb_{Guid.NewGuid()}")
+            .Options;
+
+        var tenantId = Guid.NewGuid();
+        var funnelRunId = Guid.NewGuid();
+
+        using var db = new SGrowingDbContext(options);
+        var service = new FunnelSplitTestService(db);
+
+        var initial = await service.CreateOrGetSplitTestAsync(tenantId, funnelRunId, new CreateFunnelSplitTestRequest(null, null, 50, null, null, 50));
+        var initialViewsA = initial.VariantA_Views;
+
+        var updated = await service.RecordEventAsync(tenantId, funnelRunId, new RecordSplitTestEventRequest("A", "view"));
+
+        updated.Should().NotBeNull();
+        updated!.VariantA_Views.Should().Be(initialViewsA + 1);
+    }
+
+    [Fact]
+    public async Task OperationsOnNonExistentTest_ReturnGracefulFallbacks()
+    {
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(databaseName: $"FunnelSplitTestDb_{Guid.NewGuid()}")
+            .Options;
+
+        var tenantId = Guid.NewGuid();
+        var missingFunnelRunId = Guid.NewGuid();
+
+        using var db = new SGrowingDbContext(options);
+        var service = new FunnelSplitTestService(db);
+
+        var getResult = await service.GetSplitTestAsync(tenantId, missingFunnelRunId);
+        getResult.Should().BeNull();
+
+        var recordResult = await service.RecordEventAsync(tenantId, missingFunnelRunId, new RecordSplitTestEventRequest("A", "view"));
+        recordResult.Should().BeNull();
+
+        var concludeResult = await service.ConcludeTestAsync(tenantId, missingFunnelRunId, "Variant A");
+        concludeResult.Should().BeFalse();
+    }
 }

@@ -100,4 +100,66 @@ public class SentimentAndHandoffTests
         enrollment.Status.Should().Be(EnrollmentStatus.Unsubscribed);
         contact.Tags.Should().Contain("opted_out");
     }
+
+    [Fact]
+    public async Task ProcessProspectReply_WhenOutOfOffice_DelaysNextStepByFiveDays()
+    {
+        var db = CreateDbContext();
+        var notifier = new Mock<IRealtimeNotifier>();
+        var tenantId = Guid.NewGuid();
+
+        var campaign = OutboundCampaign.Create(tenantId, "Q4 SaaS Outbound", new List<Guid> { Guid.NewGuid() });
+        db.OutboundCampaigns.Add(campaign);
+        var contact = Contact.Create(tenantId, "Bruce", "Wayne", "bruce@wayneenterprises.com");
+        db.Contacts.Add(contact);
+        var conv = Conversation.Create(tenantId, Guid.NewGuid(), contact.Id);
+        db.Conversations.Add(conv);
+
+        var enrollment = ProspectEnrollment.Create(tenantId, campaign.Id, contact.Id);
+        enrollment.Status = EnrollmentStatus.Active;
+        db.ProspectEnrollments.Add(enrollment);
+        await db.SaveChangesAsync();
+
+        var handoffService = new ProspectReplyHandoffService(db, new ReplySentimentClassifier(), notifier.Object);
+        var result = await handoffService.HandleReplyAsync(tenantId, contact.Id, conv.Id, "I am currently out of office on annual leave until next Tuesday.");
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Sentiment.Should().Be(ReplySentiment.OutOfOffice);
+        result.Value.DealCreated.Should().BeFalse();
+
+        enrollment.Status.Should().Be(EnrollmentStatus.Active);
+        enrollment.NextRunAtUtc.Should().NotBeNull();
+        enrollment.NextRunAtUtc.Should().BeAfter(DateTime.UtcNow.AddDays(4));
+    }
+
+    [Fact]
+    public async Task ProcessProspectReply_WhenNeutral_DoesNotAlterEnrollmentOrGenerateDeal()
+    {
+        var db = CreateDbContext();
+        var notifier = new Mock<IRealtimeNotifier>();
+        var tenantId = Guid.NewGuid();
+
+        var campaign = OutboundCampaign.Create(tenantId, "Q4 SaaS Outbound", new List<Guid> { Guid.NewGuid() });
+        db.OutboundCampaigns.Add(campaign);
+        var contact = Contact.Create(tenantId, "Diana", "Prince", "diana@themyscira.org");
+        db.Contacts.Add(contact);
+        var conv = Conversation.Create(tenantId, Guid.NewGuid(), contact.Id);
+        db.Conversations.Add(conv);
+
+        var enrollment = ProspectEnrollment.Create(tenantId, campaign.Id, contact.Id);
+        enrollment.Status = EnrollmentStatus.Active;
+        db.ProspectEnrollments.Add(enrollment);
+        await db.SaveChangesAsync();
+
+        var handoffService = new ProspectReplyHandoffService(db, new ReplySentimentClassifier(), notifier.Object);
+        var result = await handoffService.HandleReplyAsync(tenantId, contact.Id, conv.Id, "Acknowledged receipt.");
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Sentiment.Should().Be(ReplySentiment.Neutral);
+        result.Value.DealCreated.Should().BeFalse();
+
+        enrollment.Status.Should().Be(EnrollmentStatus.Active);
+        var deal = await db.Deals.FirstOrDefaultAsync(d => d.ContactId == contact.Id);
+        deal.Should().BeNull();
+    }
 }

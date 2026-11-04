@@ -63,4 +63,59 @@ public class ContractRedlineTests
         Assert.NotNull(clause);
         Assert.Equal("APPROVED", clause.Status);
     }
+
+    [Fact]
+    public void NegotiateClause_GoverningLaw_ClassifiesAsStandardAccept()
+    {
+        var engine = new ContractRedlineEngine();
+        var request = new NegotiateClauseRequest(
+            "MSA-2026-NORTHSTAR",
+            "GOVERNING_LAW",
+            "Agreement shall be governed by the laws of the State of Delaware."
+        );
+
+        var record = engine.NegotiateClause(request);
+
+        Assert.NotNull(record);
+        Assert.Equal(20.0, record.DeviationRiskScore);
+        Assert.Equal("STANDARD_ACCEPT", record.RiskClassification);
+        Assert.Equal("COMPROMISE_OFFERED", record.Status);
+    }
+
+    [Fact]
+    public void NegotiateClause_Indemnification_ClassifiesAsAcceptableCompromise()
+    {
+        var engine = new ContractRedlineEngine();
+        var request = new NegotiateClauseRequest(
+            "MSA-2026-NORTHSTAR",
+            "INDEMNIFICATION",
+            "Customer seeks mutual defense obligations for direct IP infringement."
+        );
+
+        var record = engine.NegotiateClause(request);
+
+        Assert.NotNull(record);
+        Assert.Equal(35.0, record.DeviationRiskScore);
+        Assert.Equal("ACCEPTABLE_COMPROMISE", record.RiskClassification);
+    }
+
+    [Fact]
+    public void ApproveDeviation_UnknownClauseId_StillGeneratesSealAndApproval()
+    {
+        var engine = new ContractRedlineEngine();
+        var request = new ApproveDeviationRequest(
+            "RED-UNKNOWN-999",
+            "Elena Rostova (General Counsel)",
+            "Special waiver for sandbox partnership"
+        );
+
+        var approval = engine.ApproveDeviation(request);
+
+        Assert.NotNull(approval);
+        Assert.Equal("RED-UNKNOWN-999", approval.ClauseId);
+        Assert.StartsWith("SEAL-SHA256-", approval.CryptographicAuditSeal);
+
+        var overview = engine.GetOverview();
+        Assert.Contains(overview.RecentApprovals, a => a.ApprovalId == approval.ApprovalId);
+    }
 }
