@@ -83,4 +83,93 @@ public class B2BCreditAndFactoringTests
         Assert.Equal(1, summary.FactoringContractsActive);
         Assert.Equal(48750m, summary.TotalImmediateLiquidityUnlocked);
     }
+
+    [Fact]
+    public async Task EstablishCreditAccount_ExistingAccount_UpdatesLimitsAndTermsWithoutDuplicates()
+    {
+        var tenantId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+
+        var initial = await _service.EstablishCreditAccountAsync(
+            tenantId, companyId, "Atlas Retail SARL", creditLimit: 15000m, termsDays: 30, score: "A"
+        );
+        Assert.Equal(15000m, initial.CreditLimit);
+
+        // Re-establish with upgraded terms
+        var updated = await _service.EstablishCreditAccountAsync(
+            tenantId, companyId, "Atlas Retail SARL", creditLimit: 30000m, termsDays: 60, score: "AAA"
+        );
+        Assert.Equal(30000m, updated.CreditLimit);
+        Assert.Equal(60, updated.PaymentTermsDays);
+        Assert.Equal("AAA", updated.CreditScoreRating);
+
+        var allAccounts = await _service.GetCreditAccountsAsync(tenantId);
+        Assert.Single(allAccounts);
+    }
+
+    [Fact]
+    public async Task RecordInvoiceDrawdown_NonExistentAccount_ThrowsInvalidOperationException()
+    {
+        var tenantId = Guid.NewGuid();
+        var unknownCompany = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _service.RecordInvoiceDrawdownAsync(tenantId, unknownCompany, 1000m));
+    }
+
+    [Fact]
+    public async Task RecordPaymentSettlement_NonExistentAccount_ThrowsInvalidOperationException()
+    {
+        var tenantId = Guid.NewGuid();
+        var unknownCompany = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _service.RecordPaymentSettlementAsync(tenantId, unknownCompany, 500m));
+    }
+
+    [Fact]
+    public async Task RecordPaymentSettlement_Overpayment_ClampsOutstandingBalanceToZero()
+    {
+        var tenantId = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+
+        await _service.EstablishCreditAccountAsync(tenantId, companyId, "Overpay Test Co", 10000m);
+        await _service.RecordInvoiceDrawdownAsync(tenantId, companyId, 2000m);
+
+        // Settle with 3000m (> 2000m)
+        var settled = await _service.RecordPaymentSettlementAsync(tenantId, companyId, 3000m);
+
+        Assert.Equal(0m, settled.OutstandingBalance);
+        Assert.Equal(10000m, settled.AvailableCredit);
+    }
+
+    [Fact]
+    public async Task FundFactoringAdvance_NonExistentRecord_ThrowsInvalidOperationException()
+    {
+        var tenantId = Guid.NewGuid();
+        var nonExistentFactoringId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _service.FundFactoringAdvanceAsync(tenantId, nonExistentFactoringId));
+    }
+
+    [Fact]
+    public async Task MultiTenantIsolation_CreditAccountsAndFactoringRecords_AreIsolatedByTenant()
+    {
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+        var companyId = Guid.NewGuid();
+
+        await _service.EstablishCreditAccountAsync(tenantA, companyId, "Tenant A Merchant", 50000m);
+        await _service.RequestCourierCashFactoringAsync(tenantA, "DHL-01", "DHL", 10000m, 20000m);
+
+        var accountsB = await _service.GetCreditAccountsAsync(tenantB);
+        var factoringsB = await _service.GetFactoringRecordsAsync(tenantB);
+        var summaryB = await _service.GetFinancialSummaryAsync(tenantB);
+
+        Assert.Empty(accountsB);
+        Assert.Empty(factoringsB);
+        Assert.Equal(0, summaryB.TotalCreditAccounts);
+        Assert.Equal(0m, summaryB.TotalCreditLinesExtended);
+    }
 }

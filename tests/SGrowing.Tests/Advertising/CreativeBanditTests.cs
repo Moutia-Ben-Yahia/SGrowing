@@ -96,4 +96,69 @@ public class CreativeBanditTests
         Assert.NotNull(mutant);
         Assert.StartsWith("[AI-Evolved]", mutant.Headline);
     }
+
+    [Fact]
+    public void GenerateVariants_NullOrEmptyTargetAngles_UsesDefaultThreeAngles()
+    {
+        var request = new GenerateVariantsRequest("camp_default_angles", "B2B SaaS Growth", null);
+        var report = _engine.GenerateVariants(request);
+
+        Assert.NotNull(report);
+        Assert.Equal(3, report.Variants.Count);
+        Assert.Contains(report.Variants, v => v.Angle == HookAngle.PainPointAgitation);
+        Assert.Contains(report.Variants, v => v.Angle == HookAngle.DirectOutcomeTransformation);
+        Assert.Contains(report.Variants, v => v.Angle == HookAngle.ContrarianCuriosity);
+    }
+
+    [Fact]
+    public void AllocateTraffic_HighImpressions_UpdatesImpressionsAndConversions()
+    {
+        var campaignId = "camp_high_traffic";
+        _engine.GenerateVariants(new GenerateVariantsRequest(campaignId, "Enterprise Security", new List<HookAngle> { HookAngle.PainPointAgitation }));
+
+        var report = _engine.AllocateTraffic(new AllocateTrafficRequest(campaignId, 50000));
+
+        Assert.NotNull(report);
+        Assert.True(report.Variants.Sum(v => v.Impressions) >= 50000);
+        Assert.True(report.TotalConversions > 0);
+    }
+
+    [Fact]
+    public void SynthesizeMutant_NonExistentCampaign_ReturnsEvolvedVariantSafely()
+    {
+        var mutant = _engine.SynthesizeMutant("camp_brand_new_auto", "var_any");
+
+        Assert.NotNull(mutant);
+        Assert.StartsWith("[AI-Evolved]", mutant.Headline);
+        Assert.False(mutant.IsFatigued);
+    }
+
+    [Fact]
+    public void GenerateVariants_SingleAngle_Allocates100PercentShare()
+    {
+        var request = new GenerateVariantsRequest(
+            "camp_single_angle",
+            "Niche PLG",
+            new List<HookAngle> { HookAngle.DirectOutcomeTransformation }
+        );
+
+        var report = _engine.GenerateVariants(request);
+
+        Assert.NotNull(report);
+        Assert.Single(report.Variants);
+        Assert.Equal(100.0, report.Variants[0].AllocatedShare);
+    }
+
+    [Fact]
+    public void GetCampaignReport_SeededCampaign_CalculatesTotalConversionsAndImpressions()
+    {
+        var report = _engine.GetCampaignReport("camp_growth_q1");
+
+        Assert.NotNull(report);
+        var expectedImpressions = report.Variants.Sum(v => v.Impressions);
+        var expectedConversions = report.Variants.Sum(v => v.Conversions);
+
+        Assert.True(expectedImpressions > 0);
+        Assert.Equal(expectedConversions, report.TotalConversions);
+    }
 }

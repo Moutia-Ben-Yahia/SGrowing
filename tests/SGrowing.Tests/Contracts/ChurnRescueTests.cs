@@ -129,4 +129,78 @@ public sealed class ChurnRescueTests
         await Assert.ThrowsAsync<KeyNotFoundException>(() =>
             _engine.GenerateRenewalAgreementAsync(new GenerateRenewalAgreementRequest("acc_unknown", 50000m, 10, 1)));
     }
+
+    [Fact]
+    public async Task AssessAccountRisk_LowRiskAccount_IdentifiesLowRiskAndStableDrivers()
+    {
+        var assessment = await _engine.AssessAccountRiskAsync("acc_novus_health");
+
+        Assert.NotNull(assessment);
+        Assert.Equal("Novus Digital Health", assessment.AccountName);
+        Assert.Equal("Low", assessment.RiskLevel);
+        Assert.True(assessment.ChurnPropensityScore < 40);
+        Assert.Equal("UsageCredits", assessment.RecommendedPlaybook);
+        Assert.Contains(assessment.PrimaryRiskDrivers, d => d.Contains("Stable recurring usage"));
+    }
+
+    [Fact]
+    public async Task GenerateRenewalAgreement_ZeroOrNegativeLockYears_DefaultsToOneYearLock()
+    {
+        var request = new GenerateRenewalAgreementRequest(
+            AccountId: "acc_novus_health",
+            AnnualContractValue: 80000m,
+            DiscountPercent: 10,
+            LockYears: 0 // <= 0 should default to 1 year
+        );
+
+        var agreement = await _engine.GenerateRenewalAgreementAsync(request);
+
+        Assert.NotNull(agreement);
+        Assert.Equal(72000m, agreement.AnnualContractValue);
+        Assert.Equal(0, agreement.PriceLockYears);
+        Assert.True(agreement.NewContractEndDateUtc > DateTime.UtcNow.AddDays(85));
+    }
+
+    [Fact]
+    public async Task GenerateRenewalAgreement_ZeroDiscount_PreservesFullAnnualContractValue()
+    {
+        var request = new GenerateRenewalAgreementRequest(
+            AccountId: "acc_novus_health",
+            AnnualContractValue: 95000m,
+            DiscountPercent: 0,
+            LockYears: 3
+        );
+
+        var agreement = await _engine.GenerateRenewalAgreementAsync(request);
+
+        Assert.NotNull(agreement);
+        Assert.Equal(95000m, agreement.AnnualContractValue);
+        Assert.Equal(0, agreement.DiscountAppliedPercent);
+        Assert.Equal(3, agreement.PriceLockYears);
+    }
+
+    [Fact]
+    public async Task GetRiskRadar_ContainsMultipleAccountsOrderedDescendingByPropensity()
+    {
+        var radar = await _engine.GetRiskRadarAsync();
+
+        Assert.NotNull(radar);
+        Assert.True(radar.Count >= 3);
+
+        for (int i = 0; i < radar.Count - 1; i++)
+        {
+            Assert.True(radar[i].ChurnPropensityScore >= radar[i + 1].ChurnPropensityScore);
+        }
+    }
+
+    [Fact]
+    public async Task ExecutePlaybook_CustomRetentionSequence_GeneratesDefaultSummary()
+    {
+        var request = new TriggerPlaybookRequest("acc_zenith_media", "CustomSurpriseBonus");
+        var result = await _engine.ExecutePlaybookAsync(request);
+
+        Assert.NotNull(result);
+        Assert.Equal("CustomSurpriseBonus", result.PlaybookType);
+        Assert.Contains("proactive customer retention", result.ActionSummary);
+    }
 }
