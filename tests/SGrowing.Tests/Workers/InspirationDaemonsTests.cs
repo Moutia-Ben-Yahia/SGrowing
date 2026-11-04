@@ -98,4 +98,94 @@ public class InspirationDaemonsTests
         Assert.NotNull(updated);
         Assert.Contains("[ROTTEN DEAL ALERT]", updated.Notes);
     }
+
+    [Fact]
+    public async Task AutonomousSdrTickDaemon_WhenNextStepExceedsThreshold_CompletesEnrollment()
+    {
+        using var db = CreateInMemoryDb();
+        var tenantId = Guid.NewGuid();
+
+        var enrollment = ProspectEnrollment.Create(tenantId, Guid.NewGuid(), Guid.NewGuid());
+        enrollment.CurrentStepNumber = 4;
+        enrollment.NextRunAtUtc = DateTime.UtcNow.AddMinutes(-5); // due
+        db.ProspectEnrollments.Add(enrollment);
+        await db.SaveChangesAsync();
+
+        var processed = await AutonomousSdrTickDaemon.ProcessSdrTicksAsync(db);
+        Assert.Equal(1, processed);
+
+        var updated = await db.ProspectEnrollments.FindAsync(enrollment.Id);
+        Assert.NotNull(updated);
+        Assert.Equal(EnrollmentStatus.Completed, updated.Status);
+    }
+
+    [Fact]
+    public async Task DurableSocialPublishingDaemon_AuditTokenExpirationHealthAsync_FlagsAccountsExpiringWithinSevenDays()
+    {
+        using var db = CreateInMemoryDb();
+        var tenantId = Guid.NewGuid();
+
+        // Expiring in 3 days -> within 7 day window
+        var expiringAccount = SocialAccount.Create(
+            tenantId,
+            SocialPlatform.LinkedIn,
+            "LinkedIn Company Page",
+            "li-9921",
+            tokenExpiresAtUtc: DateTime.UtcNow.AddDays(3));
+
+        // Expiring in 30 days -> healthy
+        var healthyAccount = SocialAccount.Create(
+            tenantId,
+            SocialPlatform.Instagram,
+            "Instagram Brand",
+            "ig-8812",
+            tokenExpiresAtUtc: DateTime.UtcNow.AddDays(30));
+
+        db.SocialAccounts.AddRange(expiringAccount, healthyAccount);
+        await db.SaveChangesAsync();
+
+        var flagged = await DurableSocialPublishingDaemon.AuditTokenExpirationHealthAsync(db);
+        Assert.Equal(1, flagged);
+
+        var refreshedExpiring = await db.SocialAccounts.FindAsync(expiringAccount.Id);
+        Assert.True(refreshedExpiring!.RefreshTokenRequired);
+
+        var refreshedHealthy = await db.SocialAccounts.FindAsync(healthyAccount.Id);
+        Assert.False(refreshedHealthy!.RefreshTokenRequired);
+    }
+
+    [Fact]
+    public async Task DealRottingWatchdogDaemon_WonOrLostDeals_AreNotFlaggedAsRotten()
+    {
+        using var db = CreateInMemoryDb();
+        var tenantId = Guid.NewGuid();
+
+        var wonDeal = Deal.Create(tenantId, Guid.NewGuid(), "Won Enterprise Deal", 120000m, DealStage.Won);
+        var lostDeal = Deal.Create(tenantId, Guid.NewGuid(), "Lost SMB Deal", 10000m, DealStage.Lost);
+        db.Deals.AddRange(wonDeal, lostDeal);
+        await db.SaveChangesAsync();
+
+        var flagged = await DealRottingWatchdogDaemon.ProcessRottenDealsAsync(db, 0);
+        Assert.Equal(0, flagged);
+    }
+
+    [Fact]
+    public async Task DealRottingWatchdogDaemon_AlreadyFlaggedDeal_DoesNotDuplicateAlertNote()
+    {
+        using var db = CreateInMemoryDb();
+        var tenantId = Guid.NewGuid();
+
+        var deal = Deal.Create(tenantId, Guid.NewGuid(), "Already Flagged Deal", 50000m, DealStage.Qualified);
+        deal.Notes = "[ROTTEN DEAL ALERT] Deal has stagnated in Qualified for over 7 days.";
+        db.Deals.Add(deal);
+        await db.SaveChangesAsync();
+
+        var flagged = await DealRottingWatchdogDaemon.ProcessRottenDealsAsync(db, 0);
+        Assert.Equal(0, flagged);
+
+        var updated = await db.Deals.FindAsync(deal.Id);
+        Assert.NotNull(updated);
+        Assert.NotNull(updated.Notes);
+        Assert.Equal(1, updated.Notes!.Split("[ROTTEN DEAL ALERT]").Length - 1);
+    }
 }

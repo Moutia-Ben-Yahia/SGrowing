@@ -105,4 +105,83 @@ public class SerpRankScheduledTrackerDaemonTests
 
         count.Should().Be(3);
     }
+
+    [Fact]
+    public void SerpRankHistoryRecord_RankDrop_CalculatesNegativeDelta()
+    {
+        var tenantId = Guid.NewGuid();
+
+        // Dropped from rank 2 to rank 7 => delta = 2 - 7 = -5
+        var record = SerpRankHistoryRecord.Create(
+            tenantId,
+            "crm b2b tunisie",
+            "https://sgrowing.io/crm",
+            position: 7,
+            previousPosition: 2
+        );
+
+        record.Position.Should().Be(7);
+        record.PreviousPosition.Should().Be(2);
+        record.DeltaPosition.Should().Be(-5);
+    }
+
+    [Fact]
+    public void SerpRankHistoryRecord_Defaults_SetGoogleDesktopAndNullFeatures()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var record = SerpRankHistoryRecord.Create(
+            tenantId,
+            "saas omnicanal",
+            "https://sgrowing.io/omnichannel",
+            position: 1,
+            previousPosition: 1
+        );
+
+        record.DeviceType.Should().Be("Desktop");
+        record.CountryCode.Should().Be("TN");
+        record.SearchEngine.Should().Be("Google");
+        record.SerpFeaturesJson.Should().Be("[]");
+        record.DeltaPosition.Should().Be(0);
+    }
+
+    [Fact]
+    public void SeoMultipageGraphReport_Create_SerializesOrphanUrlsAndInitializesCounters()
+    {
+        var tenantId = Guid.NewGuid();
+        var orphanUrls = new List<string> { "https://site.com/orphan-1", "https://site.com/orphan-2" };
+
+        var report = SeoMultipageGraphReport.Create(
+            tenantId,
+            "https://site.com",
+            totalPages: 150,
+            orphanUrls: orphanUrls,
+            duplicateTitlesJson: "[{\"title\":\"Home\",\"count\":2}]",
+            redirectChainsJson: "[]"
+        );
+
+        report.Should().NotBeNull();
+        report.TenantId.Should().Be(tenantId);
+        report.RootDomain.Should().Be("https://site.com");
+        report.TotalPagesDiscovered.Should().Be(150);
+        report.OrphanPageCount.Should().Be(2);
+        report.OrphanPageUrlsJson.Should().Contain("orphan-1");
+        report.DuplicateTitleClustersJson.Should().Contain("Home");
+    }
+
+    [Fact]
+    public async Task AuditTrackedKeywordsAsync_WhenOlderThan24Hours_ExcludedFromAudit()
+    {
+        using var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+
+        var record = SerpRankHistoryRecord.Create(tenantId, "expired keyword", "https://site.com/old", 12, 14);
+        record.RecordedDateUtc = DateTime.UtcNow.AddHours(-25); // 25 hours old
+
+        db.SerpRankHistoryRecords.Add(record);
+        await db.SaveChangesAsync();
+
+        var count = await SerpRankScheduledTrackerDaemon.AuditTrackedKeywordsAsync(db);
+        count.Should().Be(0);
+    }
 }

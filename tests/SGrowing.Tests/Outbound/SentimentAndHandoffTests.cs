@@ -162,4 +162,75 @@ public class SentimentAndHandoffTests
         var deal = await db.Deals.FirstOrDefaultAsync(d => d.ContactId == contact.Id);
         deal.Should().BeNull();
     }
+
+    [Fact]
+    public async Task ProcessProspectReply_WhenInterested_TagsContactWithHotLead()
+    {
+        var db = CreateDbContext();
+        var notifier = new Mock<IRealtimeNotifier>();
+        var tenantId = Guid.NewGuid();
+
+        var campaign = OutboundCampaign.Create(tenantId, "Enterprise Outbound", new List<Guid> { Guid.NewGuid() });
+        db.OutboundCampaigns.Add(campaign);
+        var contact = Contact.Create(tenantId, "Tony", "Stark", "tony@stark.com");
+        db.Contacts.Add(contact);
+        var conv = Conversation.Create(tenantId, Guid.NewGuid(), contact.Id);
+        db.Conversations.Add(conv);
+
+        var enrollment = ProspectEnrollment.Create(tenantId, campaign.Id, contact.Id);
+        enrollment.Status = EnrollmentStatus.Active;
+        db.ProspectEnrollments.Add(enrollment);
+        await db.SaveChangesAsync();
+
+        var handoffService = new ProspectReplyHandoffService(db, new ReplySentimentClassifier(), notifier.Object);
+        var result = await handoffService.HandleReplyAsync(tenantId, contact.Id, conv.Id, "I would love to see a demo of your platform.");
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Sentiment.Should().Be(ReplySentiment.Interested);
+
+        var updatedContact = await db.Contacts.FindAsync(contact.Id);
+        updatedContact!.Tags.Should().Contain("hot-lead");
+    }
+
+    [Fact]
+    public async Task ProcessProspectReply_WhenUnsubscribe_TransitionsLifecycleStageToChurned()
+    {
+        var db = CreateDbContext();
+        var notifier = new Mock<IRealtimeNotifier>();
+        var tenantId = Guid.NewGuid();
+
+        var campaign = OutboundCampaign.Create(tenantId, "Outbound SMB", new List<Guid> { Guid.NewGuid() });
+        db.OutboundCampaigns.Add(campaign);
+        var contact = Contact.Create(tenantId, "Peter", "Parker", "peter@dailybugle.com");
+        contact.LifecycleStage = LifecycleStage.Lead;
+        db.Contacts.Add(contact);
+        var conv = Conversation.Create(tenantId, Guid.NewGuid(), contact.Id);
+        db.Conversations.Add(conv);
+
+        var enrollment = ProspectEnrollment.Create(tenantId, campaign.Id, contact.Id);
+        enrollment.Status = EnrollmentStatus.Active;
+        db.ProspectEnrollments.Add(enrollment);
+        await db.SaveChangesAsync();
+
+        var handoffService = new ProspectReplyHandoffService(db, new ReplySentimentClassifier(), notifier.Object);
+        var result = await handoffService.HandleReplyAsync(tenantId, contact.Id, conv.Id, "Please remove me from your list immediately");
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Sentiment.Should().Be(ReplySentiment.Unsubscribe);
+
+        var updatedContact = await db.Contacts.FindAsync(contact.Id);
+        updatedContact!.LifecycleStage.Should().Be(LifecycleStage.Churned);
+        updatedContact.Tags.Should().Contain("opted_out");
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public void ReplySentimentClassifier_WhitespaceAndEmptyInput_ReturnsNeutral(string? input)
+    {
+        var classifier = new ReplySentimentClassifier();
+        var result = classifier.Classify(input!);
+        result.Should().Be(ReplySentiment.Neutral);
+    }
 }

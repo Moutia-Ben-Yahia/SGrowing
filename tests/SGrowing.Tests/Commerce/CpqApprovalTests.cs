@@ -95,4 +95,63 @@ public class CpqApprovalTests
         result.RequiredTier.Should().Be(ApprovalTier.SalesDirector);
         result.SlaMinutesRemaining.Should().Be(180);
     }
+
+    [Fact]
+    public void RejectQuote_SetsStatusToRejectedAndRecordsApproverReason()
+    {
+        var command = new RejectQuoteCommand(
+            QuoteId: "QUOTE-2026-882",
+            ApproverId: "dir-202",
+            ApproverName: "Sarah Director",
+            Reason: "Discount too deep without executive sponsorship"
+        );
+
+        var result = _engine.RejectQuote(command);
+
+        result.Should().NotBeNull();
+        result.Status.Should().Be(QuoteApprovalStatus.Rejected);
+        result.ApprovedBy.Should().Contain("Sarah Director");
+        result.ApprovedBy.Should().Contain("Discount too deep without executive sponsorship");
+        result.SlaMinutesRemaining.Should().Be(0);
+    }
+
+    [Fact]
+    public void SubmitQuote_MidLevelDiscount_RoutesToSalesManagerTier()
+    {
+        var request = new QuoteApprovalRequest(
+            QuoteId: "QUOTE-MID-15",
+            AccountName: "MidMarket Co",
+            TotalListPrice: 60000m,
+            DiscountPercentage: 15.0m,
+            PaymentTerms: "Net 30",
+            RequesterId: "rep-005",
+            RequesterName: "Daniel Rep",
+            Items: new() { new QuoteItem("SKU-PRO", "Growth OS Pro", 1, 60000m, 60000m) },
+            Justification: "Standard mid-market competitive concession"
+        );
+
+        var result = _engine.SubmitQuote(request);
+
+        result.Should().NotBeNull();
+        result.RequiredTier.Should().Be(ApprovalTier.SalesManager);
+        result.Status.Should().Be(QuoteApprovalStatus.PendingApproval);
+        result.SlaMinutesRemaining.Should().Be(240);
+        result.AuditToken.Should().BeNull();
+    }
+
+    [Fact]
+    public void ApproveQuote_NonExistentQuote_ThrowsKeyNotFoundException()
+    {
+        var command = new ApproveQuoteCommand(
+            QuoteId: "QUOTE-DOES-NOT-EXIST",
+            ApproverId: "mgr-001",
+            ApproverName: "Manager",
+            Comments: "Approve"
+        );
+
+        var act = () => _engine.ApproveQuote(command);
+
+        act.Should().Throw<KeyNotFoundException>()
+            .WithMessage("*QUOTE-DOES-NOT-EXIST*");
+    }
 }
