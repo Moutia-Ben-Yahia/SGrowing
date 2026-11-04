@@ -100,4 +100,33 @@ public sealed class AppGeneratorTests
         Assert.Equal("Name", app.PrimaryField);
         Assert.Equal("minimal-app", app.Slug);
     }
+
+    [Fact]
+    public void ListApps_AfterCreatingMultipleApps_ReturnsAllAppsOrderedDescending()
+    {
+        var app1 = _engine.CreateApp(new CreateAppRequest("App Beta", "Second app", Array.Empty<AppFieldSchema>(), "Public"));
+        var app2 = _engine.CreateApp(new CreateAppRequest("App Gamma", "Third app", Array.Empty<AppFieldSchema>(), "Private"));
+
+        var allApps = _engine.ListApps();
+
+        Assert.True(allApps.Count >= 3);
+        Assert.Contains(allApps, a => a.AppId == app1.AppId);
+        Assert.Contains(allApps, a => a.AppId == app2.AppId);
+        Assert.Equal(allApps.OrderByDescending(a => a.CreatedAtUtc).Select(a => a.AppId), allApps.Select(a => a.AppId));
+    }
+
+    [Fact]
+    public void InsertRecord_MultipleRecordsToApp_RetrievedInDescendingOrder()
+    {
+        var app = _engine.CreateApp(new CreateAppRequest("Lead Pipeline", "Tracks inbound leads", Array.Empty<AppFieldSchema>(), "Public"));
+
+        var rec1 = _engine.InsertRecord(new InsertRecordRequest(app.AppId, new Dictionary<string, object> { { "Lead", "Lead 1" } }));
+        var rec2 = _engine.InsertRecord(new InsertRecordRequest(app.AppId, new Dictionary<string, object> { { "Lead", "Lead 2" } }));
+
+        var records = _engine.ListRecords(app.AppId);
+
+        Assert.Equal(2, records.Count);
+        Assert.Equal(rec2.Id, records[0].Id);
+        Assert.Equal(rec1.Id, records[1].Id);
+    }
 }

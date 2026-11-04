@@ -128,4 +128,26 @@ public class GrowthOsTelemetryHubTests
 
         _mockGroups.Verify(g => g.RemoveFromGroupAsync(ConnectionId, expectedGroup, default), Times.Once);
     }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task JoinTenantGroup_NullOrWhitespaceTenantId_DoesNotAddToGroup(string? invalidTenantId)
+    {
+        await _hub.JoinTenantGroup(invalidTenantId!);
+
+        _mockGroups.Verify(g => g.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), default), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task LeaveTenantGroup_NullOrWhitespaceTenantId_DoesNotRemoveFromGroup(string? invalidTenantId)
+    {
+        await _hub.LeaveTenantGroup(invalidTenantId!);
+
+        _mockGroups.Verify(g => g.RemoveFromGroupAsync(It.IsAny<string>(), It.IsAny<string>(), default), Times.Never);
+    }
 }

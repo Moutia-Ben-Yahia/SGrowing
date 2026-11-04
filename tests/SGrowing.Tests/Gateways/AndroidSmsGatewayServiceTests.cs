@@ -203,4 +203,48 @@ public class AndroidSmsGatewayServiceTests
         var missingUpdate = await service.RecordDeliveryStatusAsync(tenantId, Guid.NewGuid(), "Failed", "Network timeout");
         missingUpdate.Should().BeFalse();
     }
+
+    [Fact]
+    public async Task DispatchSmsAsync_MultipleDevices_PrefersDeviceWithLowestDailySentCount()
+    {
+        using var db = CreateDbContext();
+        var service = new AndroidSmsGatewayService(db);
+        var tenantId = Guid.NewGuid();
+
+        // Register 2 devices with different sent counts
+        var busyDevice = await service.RegisterDeviceAsync(tenantId, "Busy Device", "DEV-BUSY", "fcm_busy", dailyQuota: 500);
+        busyDevice.DailySentCount = 10;
+
+        var freshDevice = await service.RegisterDeviceAsync(tenantId, "Fresh Device", "DEV-FRESH", "fcm_fresh", dailyQuota: 500);
+        freshDevice.DailySentCount = 2;
+        await db.SaveChangesAsync();
+
+        // Dispatch should pick freshDevice (lowest daily sent count)
+        var dispatch = await service.DispatchSmsAsync(tenantId, "+21655555555", "Test load balancing");
+
+        dispatch.IsSuccess.Should().BeTrue();
+        dispatch.DeviceId.Should().Be(freshDevice.Id);
+        dispatch.DeviceName.Should().Be("Fresh Device");
+
+        var updatedFresh = await db.AndroidSmsGatewayDevices.FindAsync(freshDevice.Id);
+        updatedFresh!.DailySentCount.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task DispatchSmsAsync_NullPreferredSimSlot_DefaultsToSimSlot1()
+    {
+        using var db = CreateDbContext();
+        var service = new AndroidSmsGatewayService(db);
+        var tenantId = Guid.NewGuid();
+
+        await service.RegisterDeviceAsync(tenantId, "Default Sim Device", "DEV-SIM-1", "fcm_sim");
+
+        var dispatch = await service.DispatchSmsAsync(tenantId, "+21644444444", "Sim Slot Default Test", preferredSimSlot: null);
+
+        dispatch.IsSuccess.Should().BeTrue();
+        dispatch.SimSlot.Should().Be(1);
+
+        var recordInDb = await db.AndroidSmsDispatchRecords.FindAsync(dispatch.DispatchId!.Value);
+        recordInDb!.SimSlot.Should().Be(1);
+    }
 }

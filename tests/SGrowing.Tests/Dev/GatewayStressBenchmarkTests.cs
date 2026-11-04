@@ -152,4 +152,50 @@ public class GatewayStressBenchmarkTests
         Assert.True(result.EndpointsCount >= 2);
         Assert.True(result.Spec.ContainsKey("paths"));
     }
+
+    [Fact]
+    public void ConfigureSandboxSession_AndGetSandboxSession_StoresAndRetrievesSessionConfig()
+    {
+        var engine = new DevGatewayEngine();
+        var tenantId = $"tenant_sbx_{Guid.NewGuid():N}";
+        var config = new SandboxSessionConfig(
+            TenantId: tenantId,
+            IsSandboxMode: true,
+            SimulatedLatencyMs: 150,
+            SimulateFailures: false,
+            FailureRatePercent: 0.0,
+            MockHeaders: new List<string> { "X-Mock-Provider: StripeSandbox" }
+        );
+
+        var configured = engine.ConfigureSandboxSession(config);
+        Assert.Equal(tenantId, configured.TenantId);
+        Assert.True(configured.IsSandboxMode);
+        Assert.Equal(150, configured.SimulatedLatencyMs);
+
+        var retrieved = engine.GetSandboxSession(tenantId);
+        Assert.NotNull(retrieved);
+        Assert.Equal(tenantId, retrieved.TenantId);
+        Assert.Single(retrieved.MockHeaders);
+        Assert.Contains("X-Mock-Provider: StripeSandbox", retrieved.MockHeaders);
+    }
+
+    [Fact]
+    public void ExportOpenApiSpec_WithAdminRole_IncludesAdminEndpointsAndHigherCount()
+    {
+        var engine = new DevGatewayEngine();
+        var query = new OpenApiExportQuery(
+            TargetRole: "admin",
+            IncludeSchemas: true,
+            Format: "json"
+        );
+
+        var result = engine.ExportOpenApiSpec(query);
+
+        Assert.NotNull(result);
+        Assert.Equal("admin", result.TargetRole);
+        Assert.Equal(5, result.EndpointsCount);
+        Assert.True(result.Spec.ContainsKey("paths"));
+        Assert.True(result.Spec.ContainsKey("openapi"));
+        Assert.Equal("3.0.3", result.Spec["openapi"]);
+    }
 }
