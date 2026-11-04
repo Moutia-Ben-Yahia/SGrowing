@@ -257,4 +257,87 @@ public class CartReservationSweeperDaemonTests
         stockBInDb!.QuantityAvailable.Should().Be(9);
         stockBInDb.QuantityReserved.Should().Be(0);
     }
+
+    [Fact]
+    public async Task SweepExpiredCartReservationsAsync_WhenMoreThan100Expired_LimitsBatchTo100()
+    {
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+
+        for (int i = 0; i < 110; i++)
+        {
+            var lockRec = new CartReservationLockRecord
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                WarehouseId = warehouseId,
+                Sku = $"SKU-BATCH-{i}",
+                Quantity = 1,
+                CartId = Guid.NewGuid(),
+                Status = "Active",
+                ExpiresAtUtc = DateTime.UtcNow.AddMinutes(-5)
+            };
+            db.CartReservationLocks.Add(lockRec);
+        }
+        await db.SaveChangesAsync();
+
+        var returned = await CartReservationSweeperDaemon.SweepExpiredCartReservationsAsync(db);
+
+        // Swept 100 out of 110 (all stock records missing, so returned = 0, but 100 marked Expired)
+        var expiredCount = await db.CartReservationLocks.CountAsync(l => l.Status == "Expired");
+        var activeCount = await db.CartReservationLocks.CountAsync(l => l.Status == "Active");
+
+        expiredCount.Should().Be(100);
+        activeCount.Should().Be(10);
+    }
+
+    [Fact]
+    public async Task SweepExpiredCartReservationsAsync_WhenReservedLessThenLockQuantity_ClampsReservedToZero()
+    {
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+        var sku = "SKU-CLAMP-TEST";
+
+        var stock = new WarehouseStockRecord
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            WarehouseId = warehouseId,
+            Sku = sku,
+            ProductName = "Clamping Test Item",
+            QuantityAvailable = 10,
+            QuantityReserved = 2, // Less than lock quantity
+            RowVersion = 1,
+            CreatedAtUtc = DateTime.UtcNow
+        };
+        db.WarehouseStockRecords.Add(stock);
+
+        var lockRec = new CartReservationLockRecord
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            WarehouseId = warehouseId,
+            Sku = sku,
+            Quantity = 5,
+            CartId = Guid.NewGuid(),
+            Status = "Active",
+            ExpiresAtUtc = DateTime.UtcNow.AddMinutes(-3)
+        };
+        db.CartReservationLocks.Add(lockRec);
+        await db.SaveChangesAsync();
+
+        var returned = await CartReservationSweeperDaemon.SweepExpiredCartReservationsAsync(db);
+
+        returned.Should().Be(5);
+        var updatedStock = await db.WarehouseStockRecords.FindAsync(stock.Id);
+        updatedStock!.QuantityReserved.Should().Be(0); // Clamped from 2 - 5 to 0
+        updatedStock.QuantityAvailable.Should().Be(15);
+
+        var updatedLock = await db.CartReservationLocks.FindAsync(lockRec.Id);
+        updatedLock!.Status.Should().Be("Expired");
+    }
 }

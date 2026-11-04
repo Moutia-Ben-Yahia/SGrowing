@@ -174,4 +174,57 @@ public class AutonomousAgentExecutionDaemonTests
         var updatedMission = await db.AgentMissions.FindAsync(mission.Id);
         updatedMission!.Status.Should().Be(AgentMissionStatus.Running);
     }
+
+    [Fact]
+    public async Task ExecuteMissionStepAsync_WhenToolExecutionFails_SetsStepAndMissionFailed()
+    {
+        using var db = CreateDbContext();
+        var mockMcp = new Mock<IMcpServerRegistryService>();
+        mockMcp.Setup(m => m.ExecuteMcpToolAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<Dictionary<string, object>>()))
+            .ReturnsAsync(new McpToolExecutionResultDto(
+                ToolName: "web_search",
+                IsSuccess: false,
+                OutputPayload: null,
+                ErrorMessage: "Remote rate limit 429",
+                TokensConsumed: 50,
+                ExecutionTimeMs: 45.0
+            ));
+
+        var tenantId = Guid.NewGuid();
+        var mission = AgentMission.Create(tenantId, "Failing Mission", "Perform flaky search", autonomyMode: "Auto-Approve");
+        var step = AgentMissionStep.Create(mission.Id, 1, "web_search", "{}", "Searching external target");
+        mission.Steps.Add(step);
+        mission.Status = AgentMissionStatus.Running;
+
+        db.AgentMissions.Add(mission);
+        await db.SaveChangesAsync();
+
+        var executed = await AutonomousAgentExecutionDaemon.ExecuteMissionStepAsync(db, mockMcp.Object, mission.Id);
+
+        executed.Should().BeFalse();
+
+        var updatedStep = await db.AgentMissionSteps.FindAsync(step.Id);
+        updatedStep!.Status.Should().Be(AgentMissionStepStatus.Failed);
+
+        var updatedMission = await db.AgentMissions.FindAsync(mission.Id);
+        updatedMission!.Status.Should().Be(AgentMissionStatus.Failed);
+        updatedMission.ReasoningTrace.Should().Contain("execution failed: Remote rate limit 429");
+    }
+
+    [Fact]
+    public async Task ApproveMissionStepAsync_WhenMissionOrStepNotFound_ReturnsFalse()
+    {
+        using var db = CreateDbContext();
+        var fakeId = Guid.NewGuid();
+
+        var resultNotFoundMission = await AutonomousAgentExecutionDaemon.ApproveMissionStepAsync(db, fakeId, fakeId, "admin@sgrowing.io");
+        resultNotFoundMission.Should().BeFalse();
+
+        var mission = AgentMission.Create(Guid.NewGuid(), "Valid Mission", "Valid Goal");
+        db.AgentMissions.Add(mission);
+        await db.SaveChangesAsync();
+
+        var resultNotFoundStep = await AutonomousAgentExecutionDaemon.ApproveMissionStepAsync(db, mission.Id, fakeId, "admin@sgrowing.io");
+        resultNotFoundStep.Should().BeFalse();
+    }
 }

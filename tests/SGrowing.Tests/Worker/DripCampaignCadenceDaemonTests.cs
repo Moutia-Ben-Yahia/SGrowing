@@ -230,4 +230,88 @@ public class DripCampaignCadenceDaemonTests
         updated.TotalSimulatedSent.Should().Be(50);
         (await db.WarmupExchangeLogs.CountAsync()).Should().Be(0);
     }
+
+    [Fact]
+    public async Task ProcessDueCadencesAsync_WhenEnrollmentStatePaused_IgnoresEnrollment()
+    {
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+        var tenantId = Guid.NewGuid();
+        var cadenceId = Guid.NewGuid();
+
+        db.SalesCadenceStepItems.Add(new SalesCadenceStepItem
+        {
+            Id = Guid.NewGuid(),
+            CadenceId = cadenceId,
+            StepNumber = 2,
+            DayOffset = 1,
+            Channel = CadenceChannel.Email,
+            BodyTemplate = "Checking in"
+        });
+
+        var pausedEnrollment = new SalesCadenceLeadEnrollment
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            CadenceId = cadenceId,
+            LeadName = "Paused Lead",
+            Email = "paused@example.com",
+            CurrentStepNumber = 1,
+            State = CadenceEnrollmentState.Paused, // Paused
+            NextExecutionAtUtc = DateTime.UtcNow.AddMinutes(-10)
+        };
+        db.SalesCadenceLeadEnrollments.Add(pausedEnrollment);
+        await db.SaveChangesAsync();
+
+        var processed = await DripCampaignCadenceDaemon.ProcessDueCadencesAsync(db);
+
+        processed.Should().Be(0);
+        (await db.SdrTaskItems.CountAsync()).Should().Be(0);
+
+        var inDb = await db.SalesCadenceLeadEnrollments.FindAsync(pausedEnrollment.Id);
+        inDb!.CurrentStepNumber.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ProcessDueCadencesAsync_WhenNextStepHasZeroDayOffset_EnforcesMinimumOneDayOffset()
+    {
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+        var tenantId = Guid.NewGuid();
+        var cadenceId = Guid.NewGuid();
+
+        // Step with DayOffset = 0
+        db.SalesCadenceStepItems.Add(new SalesCadenceStepItem
+        {
+            Id = Guid.NewGuid(),
+            CadenceId = cadenceId,
+            StepNumber = 2,
+            DayOffset = 0,
+            Channel = CadenceChannel.Email,
+            BodyTemplate = "Instant follow up"
+        });
+
+        var enrollment = new SalesCadenceLeadEnrollment
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            CadenceId = cadenceId,
+            LeadName = "Offset Lead",
+            Email = "offset@example.com",
+            CurrentStepNumber = 1,
+            State = CadenceEnrollmentState.Active,
+            NextExecutionAtUtc = DateTime.UtcNow.AddMinutes(-5)
+        };
+        db.SalesCadenceLeadEnrollments.Add(enrollment);
+        await db.SaveChangesAsync();
+
+        var processed = await DripCampaignCadenceDaemon.ProcessDueCadencesAsync(db);
+
+        processed.Should().Be(1);
+
+        var inDb = await db.SalesCadenceLeadEnrollments.FindAsync(enrollment.Id);
+        inDb!.CurrentStepNumber.Should().Be(2);
+        // Math.Max(1, nextStep.DayOffset) enforces minimum 1 day offset
+        inDb.NextExecutionAtUtc.Should().BeAfter(DateTime.UtcNow.AddHours(23));
+    }
 }

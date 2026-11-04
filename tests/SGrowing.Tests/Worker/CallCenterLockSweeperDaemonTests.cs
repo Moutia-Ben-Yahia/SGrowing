@@ -169,4 +169,42 @@ public class CallCenterLockSweeperDaemonTests
         var allInactive = await db.CallCenterOrderLocks.AllAsync(l => !l.IsActive);
         allInactive.Should().BeTrue();
     }
+
+    [Fact]
+    public async Task SweepExpiredLocksAsync_MixedActiveAndExpired_OnlySweepsExpiredLocks()
+    {
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+        var tenantId = Guid.NewGuid();
+
+        var expired1 = CallCenterOrderLockRecord.Create(tenantId, Guid.NewGuid(), "ORD-EXP-1", Guid.NewGuid(), "Agent 1", TimeSpan.FromMinutes(-5));
+        var expired2 = CallCenterOrderLockRecord.Create(tenantId, Guid.NewGuid(), "ORD-EXP-2", Guid.NewGuid(), "Agent 2", TimeSpan.FromMinutes(-1));
+        var active1 = CallCenterOrderLockRecord.Create(tenantId, Guid.NewGuid(), "ORD-ACT-1", Guid.NewGuid(), "Agent 3", TimeSpan.FromMinutes(10));
+        var active2 = CallCenterOrderLockRecord.Create(tenantId, Guid.NewGuid(), "ORD-ACT-2", Guid.NewGuid(), "Agent 4", TimeSpan.FromMinutes(25));
+
+        db.CallCenterOrderLocks.AddRange(expired1, expired2, active1, active2);
+        await db.SaveChangesAsync();
+
+        var swept = await CallCenterLockSweeperDaemon.SweepExpiredLocksAsync(db);
+
+        swept.Should().Be(2);
+        (await db.CallCenterOrderLocks.CountAsync(l => l.IsActive)).Should().Be(2);
+        (await db.CallCenterOrderLocks.FindAsync(expired1.Id))!.IsActive.Should().BeFalse();
+        (await db.CallCenterOrderLocks.FindAsync(expired2.Id))!.IsActive.Should().BeFalse();
+        (await db.CallCenterOrderLocks.FindAsync(active1.Id))!.IsActive.Should().BeTrue();
+        (await db.CallCenterOrderLocks.FindAsync(active2.Id))!.IsActive.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SweepExpiredLocksAsync_WhenCancellationTokenCancelled_ThrowsOperationCanceledException()
+    {
+        var (_, db) = SetupDependencies();
+        using var scope = db;
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var act = async () => await CallCenterLockSweeperDaemon.SweepExpiredLocksAsync(db, cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
 }
