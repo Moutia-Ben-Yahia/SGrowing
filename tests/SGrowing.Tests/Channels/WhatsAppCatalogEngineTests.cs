@@ -263,4 +263,40 @@ public class WhatsAppCatalogEngineTests
         Assert.Equal(5, updatedInv1!.ReservedStock); // 2 + 3
         Assert.Equal(1, updatedInv2!.ReservedStock); // 0 + 1
     }
+
+    [Fact]
+    public void BuildMultiProductMessagePayload_FormatsHeaderAndSectionsProperly()
+    {
+        var db = CreateDbContext();
+        var engine = new WhatsAppCatalogEngine(db);
+
+        var sections = new List<WhatsAppMpmSection>
+        {
+            new WhatsAppMpmSection { Title = "Featured", ProductRetailerIds = new List<string> { "SKU-FEAT-1" } },
+            new WhatsAppMpmSection { Title = "New", ProductRetailerIds = new List<string> { "SKU-NEW-1", "SKU-NEW-2" } }
+        };
+
+        var payload = engine.BuildMultiProductMessagePayload("+21612345678", "CAT-XYZ", "Special Discounts Today", sections);
+
+        Assert.Contains("21612345678", payload);
+        Assert.Contains("CAT-XYZ", payload);
+        Assert.Contains("Special Discounts Today", payload);
+        Assert.Contains("Featured", payload);
+        Assert.Contains("New", payload);
+        Assert.Contains("SKU-FEAT-1", payload);
+        Assert.Contains("SKU-NEW-2", payload);
+    }
+
+    [Fact]
+    public async Task GenerateMetaCatalogFeedJsonAsync_WhenNoProductsExist_ReturnsEmptyDataArray()
+    {
+        var db = CreateDbContext();
+        var engine = new WhatsAppCatalogEngine(db);
+        var tenantId = Guid.NewGuid();
+
+        var json = await engine.GenerateMetaCatalogFeedJsonAsync(tenantId);
+
+        Assert.NotNull(json);
+        Assert.Contains("\"data\": []", json);
+    }
 }

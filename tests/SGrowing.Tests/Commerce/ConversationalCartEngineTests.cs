@@ -148,4 +148,57 @@ public class ConversationalCartEngineTests
         Assert.Equal("+21698112233", intent.PhoneNumber);
         Assert.True(intent.IsCompleteForCheckout);
     }
+
+    [Fact]
+    public void ParseCartIntent_AlgerianCity_ExtractsGovernorateWithStandardShippingFee()
+    {
+        var db = CreateDbContext();
+        var wms = new DefensiveWmsService(db);
+        var engine = new ConversationalCartEngine(db, wms);
+
+        var message = "Bonjour, mon nom est Bilal, commander 2 articles pour Oran au +213551234567";
+        var intent = engine.ParseCartIntent(message, defaultUnitPrice: 45.0m, currency: "DZD");
+
+        Assert.Equal("Bilal", intent.CustomerName);
+        Assert.Equal("Oran", intent.Governorate);
+        Assert.Equal("+213551234567", intent.PhoneNumber);
+        Assert.Equal(2, intent.Quantity);
+        Assert.Equal(7.0m, intent.EstimatedShippingFee);
+        Assert.Equal(97.0m, intent.TotalAmount); // (2 * 45) + 7
+        Assert.True(intent.IsCompleteForCheckout);
+    }
+
+    [Fact]
+    public async Task CreateInChatOrder_WhenWarehouseIdNull_CreatesOrderWithoutWmsReservation()
+    {
+        var db = CreateDbContext();
+        var wms = new DefensiveWmsService(db);
+        var engine = new ConversationalCartEngine(db, wms);
+
+        var tenantId = Guid.NewGuid();
+        var conversationId = Guid.NewGuid();
+
+        var intent = new InChatCartIntent
+        {
+            CustomerName = "Nidhal Khemir",
+            PhoneNumber = "+21620998877",
+            Governorate = "Tunis",
+            DelegationOrAddress = "Carthage Byrsa",
+            ProductName = "Amber Essence",
+            VariantSku = "AMBER-ESSENCE-100",
+            Quantity = 1,
+            UnitPrice = 90.0m,
+            EstimatedShippingFee = 7.0m,
+            Currency = "TND"
+        };
+
+        var result = await engine.CreateInChatOrderAsync(tenantId, conversationId, intent, warehouseId: null);
+
+        Assert.NotNull(result.Order);
+        Assert.Equal(CodOrderStatus.PendingConfirmation, result.Order.Status);
+        Assert.Equal("Nidhal Khemir", result.Order.CustomerName);
+        Assert.Equal(90.0m, result.Order.TotalAmount);
+        Assert.Equal(7.0m, result.Order.ShippingFee);
+        Assert.Contains("AMBER-ESSENCE-100", result.InteractiveReplyPayload);
+    }
 }

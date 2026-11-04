@@ -230,4 +230,36 @@ public class ConcurrentStockAllocationStressTests
         var lockRec = await db.CartReservationLocks.FirstAsync(l => l.CartId == cartId);
         lockRec.Status.Should().Be("Committed");
     }
+
+    [Fact]
+    public async Task CommitReservation_WhenReservationNotFound_ReturnsFalse()
+    {
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(databaseName: $"CommitMissingDb_{Guid.NewGuid()}")
+            .Options;
+
+        using var db = new SGrowingDbContext(options);
+        var cartService = new CartReservationService(db);
+        var tenantId = Guid.NewGuid();
+
+        var committed = await cartService.CommitReservationAsync(tenantId, Guid.NewGuid(), Guid.NewGuid());
+
+        committed.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ReleaseReservation_WhenReservationNotFound_ReturnsFalse()
+    {
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(databaseName: $"ReleaseMissingDb_{Guid.NewGuid()}")
+            .Options;
+
+        using var db = new SGrowingDbContext(options);
+        var cartService = new CartReservationService(db);
+        var tenantId = Guid.NewGuid();
+
+        var released = await cartService.ReleaseReservationAsync(tenantId, new ReleaseCartReservationRequest(CartId: Guid.NewGuid()));
+
+        released.Should().BeFalse();
+    }
 }

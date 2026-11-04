@@ -169,4 +169,37 @@ public class WhatsAppFlowEngineTests
         Assert.Contains("Bienvenue chez SGrowing", turn.ResponseMessage);
         Assert.Contains("1. Confirmer commande", turn.Buttons);
     }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public void AnalyzeMessageText_WithEmptyOrWhitespace_ReturnsDarijaAndNeutralSentiment(string? input)
+    {
+        var db = CreateDbContext();
+        var service = new WhatsAppFlowEngineService(db);
+
+        var (lang, sentiment) = service.AnalyzeMessageText(input!);
+
+        Assert.Equal("Darija", lang);
+        Assert.Equal(0.5m, sentiment);
+    }
+
+    [Fact]
+    public async Task ExecuteFlowTurnAsync_WhenCustomerSpeaksEnglish_ReturnsEnglishGreeting()
+    {
+        var db = CreateDbContext();
+        var service = new WhatsAppFlowEngineService(db);
+        var tenantId = Guid.NewGuid();
+
+        var flow = FlowDefinition.Create(tenantId, "English Support", "START", "English Support Flow");
+        await service.CreateFlowDefinitionAsync(tenantId, flow);
+
+        var turn = await service.ExecuteFlowTurnAsync(tenantId, flow.Id, "+14155551234", "Hello there, need help with my order!");
+
+        Assert.Equal("main_menu", turn.NextNodeKey);
+        Assert.Equal("English", turn.DetectedLanguage);
+        Assert.Contains("SGrowing", turn.ResponseMessage);
+        Assert.Contains("1. تأكيد الطلب", turn.Buttons);
+    }
 }
