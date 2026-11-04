@@ -1,9 +1,11 @@
+using System;
+using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Automation;
 using SGrowing.Core.Entities;
 using SGrowing.Core.Tenancy;
-using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace SGrowing.Tests.Automation;
@@ -16,7 +18,6 @@ public class WorkflowEngineTests
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         var tenantContext = new TenantContext();
-        // tenantContext.SetTenant(Guid.NewGuid());
         return new SGrowingDbContext(options, tenantContext);
     }
 
@@ -299,5 +300,93 @@ public class WorkflowEngineTests
         execution.ExecutionLog.Should().Contain("[Step: Inbound Webhook]");
         execution.ExecutionLog.Should().Contain("[Condition: Check Tier] Evaluated condition => TRUE");
         execution.ExecutionLog.Should().Contain("[Action: Webhook 'Notify Slack Channel']");
+    }
+
+    [Fact]
+    public async Task CreateWorkflow_SetsActiveStatusAndInitializesExecutionCount()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var engine = new WorkflowEngineService();
+
+        // Act
+        var workflow = await engine.CreateWorkflowAsync(tenantId, "Auto Lead Nurture", "LeadCreated", "[]");
+
+        // Assert
+        workflow.Should().NotBeNull();
+        workflow.Name.Should().Be("Auto Lead Nurture");
+        workflow.TriggerType.Should().Be("LeadCreated");
+        workflow.IsActive.Should().BeTrue();
+        workflow.NodesJson.Should().Be("[]");
+    }
+
+    [Fact]
+    public async Task ExecuteWorkflow_MissingWorkflow_ThrowsKeyNotFoundException()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var engine = new WorkflowEngineService();
+
+        // Act
+        var act = () => engine.ExecuteWorkflowAsync(tenantId, Guid.NewGuid(), "{}");
+
+        // Assert
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
+    [Fact]
+    public async Task ExecuteWorkflow_InterpolatesTemplateVariablesInActions()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var engine = new WorkflowEngineService();
+
+        var nodesJson = """
+        [
+          {
+            "id": "node_msg",
+            "type": "Action: SendMessage",
+            "name": "Interpolate Message",
+            "config": {
+              "channel": "SMS",
+              "recipient": "{{phone}}",
+              "message": "Hello {{name}}, your order #{{orderId}} is confirmed."
+            }
+          }
+        ]
+        """;
+
+        var workflow = await engine.CreateWorkflowAsync(tenantId, "SMS Confirmation", "OrderPaid", nodesJson);
+
+        var payload = """
+        {
+          "name": "Sarah Connor",
+          "phone": "+1-555-8000",
+          "orderId": "ORD-7749"
+        }
+        """;
+
+        // Act
+        var execution = await engine.ExecuteWorkflowAsync(tenantId, workflow.Id, payload);
+
+        // Assert
+        execution.Status.Should().Be("Completed");
+        execution.ExecutionLog.Should().Contain("Hello Sarah Connor, your order #ORD-7749 is confirmed.");
+    }
+
+    [Fact]
+    public async Task ExecuteWorkflow_InvalidJsonNodes_HandlesGracefullyWithoutCrash()
+    {
+        // Arrange: workflow with empty nodes
+        var tenantId = Guid.NewGuid();
+        var engine = new WorkflowEngineService();
+        var workflow = await engine.CreateWorkflowAsync(tenantId, "Empty Flow", "Manual", "[]");
+
+        // Act
+        var execution = await engine.ExecuteWorkflowAsync(tenantId, workflow.Id, "{}");
+
+        // Assert
+        execution.Status.Should().Be("Completed");
+        execution.ExecutedNodesCount.Should().Be(0);
     }
 }

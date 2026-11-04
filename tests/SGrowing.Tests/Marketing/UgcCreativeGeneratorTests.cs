@@ -1,3 +1,7 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Marketing;
@@ -30,22 +34,22 @@ public class UgcCreativeGeneratorTests
 
         var scripts = await _service.GenerateScriptsForProductAsync(tenantId, sku, productName, "Darija", "Women 25-45");
 
-        Assert.NotNull(scripts);
-        Assert.Equal(5, scripts.Count);
+        scripts.Should().NotBeNull();
+        scripts.Should().HaveCount(5);
 
         // Check Angle 1: Problem Agitator
-        Assert.Contains(scripts, s => s.HookAngle == UgcHookAngle.ProblemAgitator);
+        scripts.Should().Contain(s => s.HookAngle == UgcHookAngle.ProblemAgitator);
         // Check Angle 3: Cultural COD Reassurance
-        Assert.Contains(scripts, s => s.HookAngle == UgcHookAngle.CulturalCodReassurance);
+        scripts.Should().Contain(s => s.HookAngle == UgcHookAngle.CulturalCodReassurance);
         // Check Angle 4: Unboxing ASMR
-        Assert.Contains(scripts, s => s.HookAngle == UgcHookAngle.UnboxingDemonstration);
+        scripts.Should().Contain(s => s.HookAngle == UgcHookAngle.UnboxingDemonstration);
 
         var codScript = scripts.First(s => s.HookAngle == UgcHookAngle.CulturalCodReassurance);
-        Assert.Contains("livraison", codScript.HookText.ToLower() + codScript.ScenesJson.ToLower());
-        Assert.Contains("Yalidine", codScript.ScenesJson);
+        (codScript.HookText.ToLower() + codScript.ScenesJson.ToLower()).Should().Contain("livraison");
+        codScript.ScenesJson.Should().Contain("Yalidine");
 
         var fetched = await _service.GetScriptsByProductAsync(tenantId, sku);
-        Assert.Equal(5, fetched.Count);
+        fetched.Should().HaveCount(5);
     }
 
     [Fact]
@@ -57,18 +61,59 @@ public class UgcCreativeGeneratorTests
 
         var scripts = await _service.GenerateScriptsForProductAsync(tenantId, sku, productName, "French", "Homeowners 25-60");
 
-        Assert.NotNull(scripts);
-        Assert.Equal(5, scripts.Count);
+        scripts.Should().NotBeNull();
+        scripts.Should().HaveCount(5);
 
         var problemScript = scripts.First(s => s.HookAngle == UgcHookAngle.ProblemAgitator);
-        Assert.Equal("Arrêtez d'acheter n'importe quoi !", problemScript.HookText);
-        Assert.Contains("Cliquez sur le lien ci-dessous avant rupture de stock !", problemScript.CallToAction);
+        problemScript.HookText.Should().Be("Arrêtez d'acheter n'importe quoi !");
+        problemScript.CallToAction.Should().Contain("Cliquez sur le lien ci-dessous avant rupture de stock !");
 
         var unboxingScript = scripts.First(s => s.HookAngle == UgcHookAngle.UnboxingDemonstration);
-        Assert.Equal("Ce déballage va vous laisser bouche bée !", unboxingScript.HookText);
+        unboxingScript.HookText.Should().Be("Ce déballage va vous laisser bouche bée !");
 
         var scarcityScript = scripts.First(s => s.HookAngle == UgcHookAngle.ScarcityFlashDeal);
-        Assert.Equal("Dernier appel pour l'offre flash !", scarcityScript.HookText);
+        scarcityScript.HookText.Should().Be("Dernier appel pour l'offre flash !");
+    }
+
+    [Fact]
+    public async Task GenerateScriptsForProduct_GeneratesCompetitorCalloutAngleWithScenes()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var sku = "BLENDER-TITANIUM-PRO";
+        var productName = "Titanium Vortex Blender";
+
+        // Act
+        var scripts = await _service.GenerateScriptsForProductAsync(tenantId, sku, productName, "French");
+        var competitorScript = scripts.FirstOrDefault(s => s.HookAngle == UgcHookAngle.CompetitorCallout);
+
+        // Assert
+        competitorScript.Should().NotBeNull();
+        competitorScript!.HookText.Should().Contain("Ne vous faites plus avoir");
+        competitorScript.ScenesJson.Should().Contain("Marque X");
+        competitorScript.CallToAction.Should().Contain("Profitez de l'offre spéciale");
+    }
+
+    [Fact]
+    public async Task GenerateScriptsForProduct_PreservesTargetAudienceAndLanguageMetadata()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var sku = "WIRELESS-EARBUDS-ANC";
+        var productName = "ProSound ANC Earbuds";
+        var audience = "Gamers & Tech Enthusiasts 18-28";
+
+        // Act
+        var scripts = await _service.GenerateScriptsForProductAsync(tenantId, sku, productName, "Darija", audience);
+
+        // Assert
+        scripts.Should().AllSatisfy(s =>
+        {
+            s.Language.Should().Be("Darija");
+            s.TargetAudience.Should().Be(audience);
+            s.ProductSku.Should().Be(sku);
+            s.ProductName.Should().Be(productName);
+        });
     }
 
     [Fact]
@@ -80,14 +125,14 @@ public class UgcCreativeGeneratorTests
 
         // First generation
         var firstRun = await _service.GenerateScriptsForProductAsync(tenantId, sku, productName, "Darija");
-        Assert.Equal(5, firstRun.Count);
+        firstRun.Should().HaveCount(5);
 
         // Second generation call should return the exact existing records without inserting duplicates
         var secondRun = await _service.GenerateScriptsForProductAsync(tenantId, sku, productName, "Darija");
-        Assert.Equal(5, secondRun.Count);
+        secondRun.Should().HaveCount(5);
 
         var totalInDb = await _db.UgcVideoScripts.Where(s => s.TenantId == tenantId && s.ProductSku == sku).CountAsync();
-        Assert.Equal(5, totalInDb);
+        totalInDb.Should().Be(5);
     }
 
     [Fact]
@@ -102,10 +147,38 @@ public class UgcCreativeGeneratorTests
         await _service.GenerateScriptsForProductAsync(tenantB, skuB, "Product Beta");
 
         var resultsA = await _service.GetScriptsByProductAsync(tenantA, skuA);
-        Assert.Equal(5, resultsA.Count);
-        Assert.All(resultsA, s => Assert.Equal(tenantA, s.TenantId));
+        resultsA.Should().HaveCount(5);
+        resultsA.Should().AllSatisfy(s => s.TenantId.Should().Be(tenantA));
 
         var resultsB = await _service.GetScriptsByProductAsync(tenantB, skuA);
-        Assert.Empty(resultsB);
+        resultsB.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetScriptsByProduct_WhenNoScriptsExist_ReturnsEmptyList()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+
+        // Act
+        var results = await _service.GetScriptsByProductAsync(tenantId, "NONEXISTENT-SKU");
+
+        // Assert
+        results.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GenerateScriptsForProduct_GeneratesUniqueScriptIds()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var sku = "LED-RING-LIGHT";
+
+        // Act
+        var scripts = await _service.GenerateScriptsForProductAsync(tenantId, sku, "Ring Light Pro");
+
+        // Assert
+        var ids = scripts.Select(s => s.Id).Distinct().ToList();
+        ids.Should().HaveCount(5);
     }
 }
