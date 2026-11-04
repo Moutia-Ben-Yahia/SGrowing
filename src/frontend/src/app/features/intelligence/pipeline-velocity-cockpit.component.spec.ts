@@ -30,4 +30,13 @@ describe('PipelineVelocityCockpitComponent', () => {
     expect(updated?.isBottleneck).toBe(false);
     expect(updated?.averageDwellDays).toBe(21.0); // 28.0 - 7.0
   });
+
+  it('should return 0 dailyVelocity and 0 totalCycleDays when stages list is empty', () => {
+    const comp = new PipelineVelocityCockpitComponent();
+    comp.stages.set([]);
+    expect(comp.totalDeals()).toBe(0);
+    expect(comp.totalCycleDays()).toBe(0);
+    expect(comp.dailyVelocity()).toBe(0);
+    expect(comp.bottleneckCount()).toBe(0);
+  });
 });

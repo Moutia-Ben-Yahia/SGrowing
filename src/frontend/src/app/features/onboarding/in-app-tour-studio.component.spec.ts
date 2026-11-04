@@ -140,4 +140,13 @@ describe('InAppTourStudioComponent', () => {
     expect(component.currentPreviewSteps().length).toBe(1);
     expect(component.currentPreviewStep()?.title).toBe('Welcome to SGrowing');
   });
+
+  it('should add a step and recalculate preview step order', () => {
+    const initialStepsCount = component.currentPreviewSteps().length;
+    component.addStepToCurrentTour();
+    expect(component.selectedTour()?.steps.length).toBe(initialStepsCount + 1);
+    expect(component.currentPreviewSteps().length).toBe(initialStepsCount + 1);
+    const added = component.selectedTour()?.steps[initialStepsCount];
+    expect(added?.stepOrder).toBe(initialStepsCount + 1);
+  });
 });

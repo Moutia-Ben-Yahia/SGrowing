@@ -32,4 +32,14 @@ describe('WinLossCockpitComponent', () => {
     expect(comp.winRate()).toBe(75);
     expect(comp.selectedDeal()?.accountName).toBe('Vertex BioPharma Labs');
   });
+
+  it('should return 0 for all financial and rate metrics when deals list is empty', () => {
+    const comp = new WinLossCockpitComponent();
+    comp.deals.set([]);
+    expect(comp.winRate()).toBe(0);
+    expect(comp.totalWonValue()).toBe(0);
+    expect(comp.totalLostValue()).toBe(0);
+    expect(comp.avgWonDeal()).toBe(0);
+    expect(comp.avgSentiment()).toBe(0);
+  });
 });

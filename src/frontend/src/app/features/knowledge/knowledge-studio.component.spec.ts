@@ -86,4 +86,17 @@ describe('KnowledgeStudioComponent', () => {
     expect(component.ragResult()?.articleSlug).toBe('whatsapp-meta-setup');
     expect(component.ragResult()?.confidenceScore).toBe(92);
   });
+
+  it('should set deflected false when query fails with unrecognized subject', () => {
+    component.searchQuery = 'How do I cancel my subscription?';
+    mockApi.queryHelpCenter = vi.fn().mockImplementation(() => {
+      const { throwError } = require('rxjs');
+      return throwError(() => new Error('Search indexing down'));
+    });
+
+    component.askAi();
+    expect(component.ragResult()?.deflected).toBe(false);
+    expect(component.ragResult()?.confidenceScore).toBe(35);
+    expect(component.ragResult()?.answer).toContain('notified our support team');
+  });
 });

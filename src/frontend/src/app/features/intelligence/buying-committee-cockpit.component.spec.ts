@@ -28,4 +28,13 @@ describe('BuyingCommitteeCockpitComponent', () => {
     expect(comp.members().length).toBe(4);
     expect(comp.gaps().some(g => g.missingRole === 'SecurityCiso')).toBe(false);
   });
+
+  it('should calculate dealReadiness as High Risk Incomplete when members list is empty', () => {
+    const comp = new BuyingCommitteeCockpitComponent();
+    expect(comp.dealReadiness()).toBe('Moderate Progress');
+    comp.members.set([]);
+    expect(comp.consensusScore()).toBe(0);
+    expect(comp.approvedCount()).toBe(0);
+    expect(comp.dealReadiness()).toBe('High Risk Incomplete');
+  });
 });

@@ -32,4 +32,12 @@ describe('DeAnonymizationCockpitComponent (Horizon 56)', () => {
     expect(component.lastAlert()).toContain('Alert Dispatched');
     expect(component.lastAlert()).toContain(acc.companyName);
   });
+
+  it('should return 0 avgScore and 0 readyToBuyCount when accounts list is empty', () => {
+    expect(component.avgScore()).toBe(85);
+    expect(component.readyToBuyCount()).toBe(1);
+    component.accounts.set([]);
+    expect(component.avgScore()).toBe(0);
+    expect(component.readyToBuyCount()).toBe(0);
+  });
 });

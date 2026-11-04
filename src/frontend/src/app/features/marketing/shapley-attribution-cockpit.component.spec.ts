@@ -34,4 +34,11 @@ describe('ShapleyAttributionCockpitComponent', () => {
     expect(retargeting?.recommendedSpendShift).toBe(0);
     expect(comp.rebalanceLog()).toContain('Reallocated $30,000 on LinkedIn & Meta ABM Retargeting');
   });
+
+  it('should return 0 blendedRoas and 0 totalSpend when channels list is empty', () => {
+    const comp = new ShapleyAttributionCockpitComponent();
+    comp.channels.set([]);
+    expect(comp.totalSpend()).toBe(0);
+    expect(comp.blendedRoas()).toBe(0);
+  });
 });

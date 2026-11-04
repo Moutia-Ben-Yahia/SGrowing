@@ -55,4 +55,17 @@ describe('OrganizationMarginCockpitComponent', () => {
     expect(component.dealLedger()[0].dealTitle).toBe('Test Enterprise Omnichannel Agreement');
     expect(component.toastMessage()).toContain('recorded with True Gross Margin');
   });
+
+  it('should flag Low Margin Risk when true gross margin falls below 20%', () => {
+    component.calcRevenue.set(1000);
+    component.calcCogs.set(700);
+    component.calcCourierFees.set(100);
+    component.calcLaborHours.set(5);
+    component.calcHourlyRate.set(25); // Labor = 125, margin = 1000 - 700 - 100 - 125 = 75 (7.5%)
+
+    expect(component.computedMarginPct()).toBe(7.5);
+    expect(component.marginHealthLabel()).toBe('Low Margin Risk (<20%)');
+    expect(component.marginHealthColor()).toBe('text-red-400');
+    expect(component.marginHealthBadge()).toContain('bg-red-500/20');
+  });
 });

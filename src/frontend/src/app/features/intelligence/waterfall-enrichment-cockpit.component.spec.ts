@@ -30,4 +30,13 @@ describe('WaterfallEnrichmentCockpitComponent (Horizon 61)', () => {
     component.verifyMx(lead);
     expect(component.leads()[0].deliverability).toBe('DeliverableWithMx');
   });
+
+  it('should return 0 avgLatency and 0 verifiedCount when arrays are empty', () => {
+    expect(component.avgLatency()).toBeGreaterThan(0);
+    expect(component.verifiedCount()).toBe(2);
+    component.providers.set([]);
+    component.leads.set([]);
+    expect(component.avgLatency()).toBe(0);
+    expect(component.verifiedCount()).toBe(0);
+  });
 });

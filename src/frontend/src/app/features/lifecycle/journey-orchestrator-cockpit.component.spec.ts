@@ -33,4 +33,12 @@ describe('JourneyOrchestratorCockpitComponent', () => {
     expect(component.activeJourney().activeEnrollments).toBe(initial + 1);
     expect(component.enrollments()[0].email).toBe('founder@stealth.ai');
   });
+
+  it('should approve outreach when contact is not in cooldown', () => {
+    component.testContactEmail = 'elena@startup.io';
+    component.testFatigue();
+
+    expect(component.fatigueCheckResult()?.canSend).toBe(true);
+    expect(component.fatigueCheckResult()?.reason).toContain('fully eligible');
+  });
 });

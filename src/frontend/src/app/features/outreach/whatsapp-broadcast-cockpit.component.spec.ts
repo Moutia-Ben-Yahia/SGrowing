@@ -38,4 +38,19 @@ describe('WhatsAppBroadcastCockpitComponent', () => {
     expect(component.selectedTemplate().name).toBe('order_dispatch_verification');
     expect(component.selectedTemplate().buttons.length).toBe(2);
   });
+
+  it('should return 0 percent metrics when campaign total is zero', () => {
+    component.campaign.set({
+      campaignId: 'zero_campaign',
+      name: 'Zero Campaign',
+      total: 0,
+      sent: 0,
+      delivered: 0,
+      read: 0,
+      status: 'Draft'
+    });
+
+    expect(component.deliveredPercent()).toBe(0);
+    expect(component.readPercent()).toBe(0);
+  });
 });

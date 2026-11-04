@@ -28,4 +28,13 @@ describe('AccountExpansionCockpitComponent', () => {
     expect(updated?.proposalGenerated).toBe(true);
     expect(comp.selectedAccount()?.proposalGenerated).toBe(true);
   });
+
+  it('should compute averageNrr accurately and return 0 for empty accounts', () => {
+    const comp = new AccountExpansionCockpitComponent();
+    expect(comp.averageNrr()).toBeCloseTo(136.4, 1);
+    comp.accounts.set([]);
+    expect(comp.averageNrr()).toBe(0);
+    expect(comp.totalExpansionArr()).toBe(0);
+    expect(comp.expansionReadyCount()).toBe(0);
+  });
 });
