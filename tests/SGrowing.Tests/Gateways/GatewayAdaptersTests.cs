@@ -107,4 +107,46 @@ public class GatewayAdaptersTests
         Assert.False(result.IsReachable);
         Assert.NotNull(result.ErrorMessage);
     }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    [InlineData("invalid_header_without_sha256_prefix")]
+    public void WhatsAppCloudApiAdapter_VerifyWebhookSignature_MissingOrMalformedHeader_ReturnsFalse(string? badHeader)
+    {
+        var adapter = new WhatsAppCloudApiAdapter(new HttpClient());
+        var isValid = adapter.VerifyWebhookSignature("{}", badHeader, "secret");
+        Assert.False(isValid);
+    }
+
+    [Fact]
+    public async Task WhatsAppCloudApiAdapter_SendTextMessage_MockToken_ReturnsAcceptedResult()
+    {
+        var adapter = new WhatsAppCloudApiAdapter(new HttpClient());
+
+        var result = await adapter.SendTextMessageAsync(
+            phoneNumberId: "phone_555",
+            accessToken: "mock_test_token_888",
+            recipientPhone: "+21698112233",
+            message: "Your shipment has been dispatched with express tracking."
+        );
+
+        Assert.NotNull(result);
+        Assert.Equal("accepted", result.Status);
+        Assert.Equal("+21698112233", result.RecipientPhone);
+        Assert.StartsWith("WAMID-", result.MessageId);
+    }
+
+    [Fact]
+    public void LiveKitMediaServerAdapter_GenerateWebRtcRoomToken_DefaultDuration_SetsExpiresFourHoursAhead()
+    {
+        var adapter = new LiveKitMediaServerAdapter();
+        var token = adapter.GenerateWebRtcRoomToken("default_room", "agent_sam", "apiKey123", "secret_key_at_least_32_characters_long!");
+
+        var handler = new JwtSecurityTokenHandler();
+        var jwt = handler.ReadJwtToken(token);
+
+        Assert.True(jwt.ValidTo > DateTime.UtcNow.AddHours(3.9));
+        Assert.True(jwt.ValidTo <= DateTime.UtcNow.AddHours(4.1));
+    }
 }

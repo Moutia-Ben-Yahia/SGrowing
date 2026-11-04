@@ -173,4 +173,66 @@ public class AgentHeartbeatJobTests
         executed.Should().Be(1);
         mockPersonaService.Verify(p => p.RunHeartbeatCycleAsync(defaultTenantId, It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task RunHeartbeatOnceAsync_WithCancellationToken_PropagatesCancellationToken()
+    {
+        var targetTenant = Guid.NewGuid();
+        using var cts = new CancellationTokenSource();
+        var token = cts.Token;
+
+        var mockPersonaService = new Mock<IAgentPersonaService>();
+        mockPersonaService
+            .Setup(p => p.RunHeartbeatCycleAsync(targetTenant, token))
+            .ReturnsAsync(new AgentHeartbeatCycleResult(targetTenant, 1, 0, new(), DateTime.UtcNow));
+
+        var (provider, _) = CreateServiceProvider(personaService: mockPersonaService.Object);
+        var mockLogger = new Mock<ILogger<AgentHeartbeatJob>>();
+        var job = new AgentHeartbeatJob(provider, mockLogger.Object);
+
+        var executed = await job.RunHeartbeatOnceAsync(targetTenant, token);
+
+        executed.Should().Be(1);
+        mockPersonaService.Verify(p => p.RunHeartbeatCycleAsync(targetTenant, token), Times.Once);
+    }
+
+    [Fact]
+    public void Constructor_WithCustomCycleInterval_InstantiatesSuccessfully()
+    {
+        var (provider, _) = CreateServiceProvider();
+        var mockLogger = new Mock<ILogger<AgentHeartbeatJob>>();
+        var customInterval = TimeSpan.FromMinutes(45);
+
+        var job = new AgentHeartbeatJob(provider, mockLogger.Object, customInterval);
+
+        job.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task RunHeartbeatOnceAsync_WithMultipleSuccessfulTenants_ReturnsAccurateCount()
+    {
+        var tenantA = new Tenant { Id = Guid.NewGuid(), Name = "Alpha", Slug = "alpha" };
+        var tenantB = new Tenant { Id = Guid.NewGuid(), Name = "Beta", Slug = "beta" };
+        var tenantC = new Tenant { Id = Guid.NewGuid(), Name = "Gamma", Slug = "gamma" };
+
+        var mockPersonaService = new Mock<IAgentPersonaService>();
+        mockPersonaService
+            .Setup(p => p.RunHeartbeatCycleAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid tid, CancellationToken _) => new AgentHeartbeatCycleResult(tid, 2, 0, new(), DateTime.UtcNow));
+
+        var (provider, _) = CreateServiceProvider(personaService: mockPersonaService.Object);
+
+        using (var seedDb = GetDbContext(provider))
+        {
+            seedDb.Tenants.AddRange(tenantA, tenantB, tenantC);
+            await seedDb.SaveChangesAsync();
+        }
+
+        var mockLogger = new Mock<ILogger<AgentHeartbeatJob>>();
+        var job = new AgentHeartbeatJob(provider, mockLogger.Object);
+
+        var executed = await job.RunHeartbeatOnceAsync();
+
+        executed.Should().Be(3);
+    }
 }

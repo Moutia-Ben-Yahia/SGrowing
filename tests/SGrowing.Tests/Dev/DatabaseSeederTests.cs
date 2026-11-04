@@ -147,4 +147,49 @@ public class DatabaseSeederTests
         Assert.NotNull(reloaded);
         Assert.Equal("Custom Pre-existing Tenant", reloaded.Name);
     }
+
+    [Fact]
+    public async Task SeedEnterpriseDemoAsync_ProvisionsPasswordHashesThatVerifyWithHasher()
+    {
+        var (db, seeder) = CreateContext();
+        var hasher = new Pbkdf2PasswordHasher();
+        var targetTenant = Guid.NewGuid();
+
+        await seeder.SeedEnterpriseDemoAsync(targetTenant);
+
+        var adminUser = await db.Users.FirstOrDefaultAsync(u => u.TenantId == targetTenant && u.Email == "admin@sgrowing.io");
+        Assert.NotNull(adminUser);
+        Assert.True(hasher.VerifyPassword("SecurePassword999!", adminUser.PasswordHash, adminUser.PasswordSalt));
+        Assert.False(hasher.VerifyPassword("WrongPassword123!", adminUser.PasswordHash, adminUser.PasswordSalt));
+    }
+
+    [Fact]
+    public async Task SeedEnterpriseDemoAsync_ProvisionsAiAgentBudget_WithConfiguredMonthlyLimits()
+    {
+        var (db, seeder) = CreateContext();
+        var targetTenant = Guid.NewGuid();
+
+        await seeder.SeedEnterpriseDemoAsync(targetTenant);
+
+        var budget = await db.AiAgentBudgets.FirstOrDefaultAsync(b => b.TenantId == targetTenant);
+        Assert.NotNull(budget);
+        Assert.Equal(5_000_000, budget.MonthlyTokenLimit);
+        Assert.True(budget.MaxMonthlyCostUsd > 0);
+        Assert.True(budget.IsHardCapEnforced);
+    }
+
+    [Fact]
+    public async Task SeedEnterpriseDemoAsync_ProvisionsDocumentTrackingEnvelope_WithCompletedStatus()
+    {
+        var (db, seeder) = CreateContext();
+        var targetTenant = Guid.NewGuid();
+
+        await seeder.SeedEnterpriseDemoAsync(targetTenant);
+
+        var envelope = await db.DocumentEnvelopes.FirstOrDefaultAsync(e => e.TenantId == targetTenant);
+        Assert.NotNull(envelope);
+        Assert.Equal(EnvelopeStatus.Completed, envelope.Status);
+        Assert.NotEmpty(envelope.Title);
+        Assert.NotEmpty(envelope.DocumentUrl);
+    }
 }
