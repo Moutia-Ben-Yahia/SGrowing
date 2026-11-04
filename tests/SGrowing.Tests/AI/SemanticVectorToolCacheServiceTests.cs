@@ -179,4 +179,21 @@ public class SemanticVectorToolCacheServiceTests
         var lookup2 = await _cacheService.LookupAsync(tenant2, "ToolA", vec);
         lookup2.IsHit.Should().BeTrue();
     }
+
+    [Fact]
+    public async Task LookupAsync_NullOrEmptyEmbedding_ReturnsMissAndIncrementsMissCount()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var nullResult = await _cacheService.LookupAsync(tenantId, "ToolTest", null!);
+        nullResult.IsHit.Should().BeFalse();
+        nullResult.CachedEntry.Should().BeNull();
+
+        var emptyResult = await _cacheService.LookupAsync(tenantId, "ToolTest", []);
+        emptyResult.IsHit.Should().BeFalse();
+        emptyResult.CachedEntry.Should().BeNull();
+
+        var metrics = _cacheService.GetMetrics(tenantId);
+        metrics.TotalMisses.Should().Be(2);
+    }
 }

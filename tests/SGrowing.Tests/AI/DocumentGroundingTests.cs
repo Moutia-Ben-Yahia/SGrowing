@@ -150,4 +150,25 @@ public sealed class DocumentGroundingTests
         result.SentenceCitations[0].CitationReference.Should().BeNull();
         result.HallucinationRiskDetected.Should().BeTrue();
     }
+
+    [Fact]
+    public void VerifyAnswerGrounding_SecondChunkMatch_CitesSectionFourteenAccurately()
+    {
+        var question = "Which court handles disputes?";
+        var answer = "This Agreement shall be governed by and construed in accordance with the laws of the Commercial Court of Algiers, Algeria.";
+
+        var request = new AuditAnswerGroundingRequest(
+            Question: question,
+            CandidateAnswer: answer,
+            RetrievedCorpusChunks: CreateContractCorpus()
+        );
+
+        var result = _engine.VerifyAnswerGrounding(request);
+
+        result.Should().NotBeNull();
+        result.GroundedSentencesCount.Should().Be(1);
+        result.SentenceCitations[0].IsGrounded.Should().BeTrue();
+        result.SentenceCitations[0].CitationReference.Should().Contain("Section 14.1");
+        result.SentenceCitations[0].CitationReference.Should().Contain("p. 21");
+    }
 }

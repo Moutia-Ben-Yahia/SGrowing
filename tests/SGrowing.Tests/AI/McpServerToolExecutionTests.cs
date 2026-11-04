@@ -155,4 +155,15 @@ public class McpServerToolExecutionTests
         logs.Should().NotBeEmpty();
         logs.Any(l => l.ActionSummary.Contains("Draft Only")).Should().BeTrue();
     }
+
+    [Fact]
+    public async Task ExecuteMcpTool_UnknownTool_ReturnsFailureWithErrorMessage()
+    {
+        var result = await _service.ExecuteMcpToolAsync(_tenantId, "unknown_custom_tool", new Dictionary<string, object>());
+
+        result.IsSuccess.Should().BeFalse();
+        result.ToolName.Should().Be("unknown_custom_tool");
+        result.ErrorMessage.Should().Be("Unknown tool 'unknown_custom_tool'.");
+        result.OutputPayload.Should().BeNull();
+    }
 }

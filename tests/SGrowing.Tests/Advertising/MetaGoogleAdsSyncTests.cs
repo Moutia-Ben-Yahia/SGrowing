@@ -302,6 +302,23 @@ public class MetaGoogleAdsSyncTests
         savedEntity.IsDeduplicated.Should().BeFalse();
     }
 
+    [Fact]
+    public void SyncAudienceHashes_WithEmptyTenantId_ThrowsArgumentException()
+    {
+        var request = new AudienceHashSyncRequest(
+            TenantId: "",
+            Platform: "Meta",
+            AudienceId: "aud_test",
+            RawEmails: new List<string> { "user@example.com" },
+            RawPhoneNumbers: new List<string>()
+        );
+
+        var act = () => _engine.SyncAudienceHashes(request);
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*TenantId is required.*");
+    }
+
     private class TestHttpMessageHandler : HttpMessageHandler
     {
         public HttpRequestMessage? LastRequest { get; private set; }
