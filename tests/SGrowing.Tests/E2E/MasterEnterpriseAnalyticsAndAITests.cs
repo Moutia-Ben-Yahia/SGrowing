@@ -144,4 +144,39 @@ public class MasterEnterpriseAnalyticsAndAITests
         Assert.False(unregTool.Success);
         Assert.Contains("is not registered or active", unregTool.Error);
     }
+
+    [Fact]
+    public async Task MasterLeadershipE2E_FirstTouch_LastTouch_And_LinearAttributionModels_FairnessCheck()
+    {
+        var tenantId = Guid.NewGuid();
+        var contactId = Guid.NewGuid();
+
+        var deal = Deal.Create(tenantId, contactId, "Enterprise Platform Deal", 60000m, DealStage.Won);
+        await _db.Deals.AddAsync(deal);
+
+        await _attribution.RecordTouchpointAsync(tenantId, contactId, "GoogleOrganic", "SEO-Brand", TouchpointStage.FirstDiscovery, deal.Id, cost: 100m);
+        await _attribution.RecordTouchpointAsync(tenantId, contactId, "LinkedInAd", "ABM-Whitepaper", TouchpointStage.LeadCreated, deal.Id, cost: 200m);
+        await _attribution.RecordTouchpointAsync(tenantId, contactId, "InboundWebinar", "Live-Demo", TouchpointStage.OpportunityCreated, deal.Id, cost: 300m);
+
+        // 1. First-Touch Attribution returns single touchpoint with 100% revenue
+        var firstTouch = await _attribution.CalculateAttributionAsync(tenantId, deal.Id, AttributionModelType.FirstTouch);
+        Assert.Single(firstTouch);
+        Assert.Equal("GoogleOrganic", firstTouch[0].Channel);
+        Assert.Equal(60000m, firstTouch[0].AttributedRevenue);
+        Assert.Equal(100m, firstTouch[0].WeightPercent);
+
+        // 2. Last-Touch Attribution returns single touchpoint with 100% revenue
+        var lastTouch = await _attribution.CalculateAttributionAsync(tenantId, deal.Id, AttributionModelType.LastTouch);
+        Assert.Single(lastTouch);
+        Assert.Equal("InboundWebinar", lastTouch[0].Channel);
+        Assert.Equal(60000m, lastTouch[0].AttributedRevenue);
+        Assert.Equal(100m, lastTouch[0].WeightPercent);
+
+        // 3. Linear Attribution divides revenue equally ($20,000 each)
+        var linear = await _attribution.CalculateAttributionAsync(tenantId, deal.Id, AttributionModelType.Linear);
+        Assert.Equal(3, linear.Count);
+        Assert.Equal(20000m, linear[0].AttributedRevenue);
+        Assert.Equal(20000m, linear[1].AttributedRevenue);
+        Assert.Equal(20000m, linear[2].AttributedRevenue);
+    }
 }

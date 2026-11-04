@@ -187,4 +187,44 @@ public class MasterAllDomainsEndToEndTests
         var bogusResult = jwtService.ValidateToken("header.payload.signature_bogus");
         Assert.Null(bogusResult);
     }
+
+    [Fact]
+    public async Task MasterAllDomains_CreatorAffiliateDuplicateCode_And_EscrowVoidLifecycle()
+    {
+        using var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var creatorService = new CreatorAffiliateService(db);
+
+        var creator = CreatorProfile.Create(
+            tenantId,
+            fullName: "Layla Ben Salem",
+            handle: "layla_style",
+            email: "layla@creators.tn",
+            phone: "+21698765432",
+            platform: CreatorPlatform.Instagram,
+            commissionType: CommissionType.Percentage,
+            commissionRate: 15.0m
+        );
+        await creatorService.RegisterCreatorAsync(tenantId, creator);
+
+        var code = await creatorService.CreateReferralCodeAsync(tenantId, creator.Id, "LAYLA15");
+        Assert.Equal("LAYLA15", code.Code);
+
+        // Duplicate code creation throws
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            creatorService.CreateReferralCodeAsync(tenantId, creator.Id, "layla15"));
+
+        // Attribute commission to an order
+        var orderId = Guid.NewGuid();
+        var ledger = await creatorService.AttributeOrderCommissionAsync(tenantId, "LAYLA15", orderId, "TRK-COD-7788", 200m);
+        Assert.NotNull(ledger);
+        Assert.Equal(EscrowStatus.EscrowHold, ledger!.Status);
+        Assert.Equal(30m, ledger.CommissionAmount); // 15% of 200m
+
+        // Customer returns package -> Void escrow
+        var voidedLedger = await creatorService.VoidEscrowOnReturnOrCancelAsync(tenantId, orderId, "Customer doorstep refusal");
+        Assert.NotNull(voidedLedger);
+        Assert.Equal(EscrowStatus.VoidedReturn, voidedLedger!.Status);
+        Assert.Equal("Customer doorstep refusal", voidedLedger.VoidReason);
+    }
 }

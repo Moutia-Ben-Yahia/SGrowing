@@ -218,4 +218,44 @@ public class EnterpriseHorizonTests
         await Assert.ThrowsAsync<KeyNotFoundException>(() =>
             contractService.DispatchInChatContractAsync(tenantId, Guid.NewGuid()));
     }
+
+    [Fact]
+    public async Task MasterEnterpriseE2E_ContractViewAudit_And_StandaloneContractSigning()
+    {
+        var tenantId = Guid.NewGuid();
+        var contractService = new ContractSigningService(_db, NullLogger<ContractSigningService>.Instance);
+
+        // 1. Create a standalone vendor service level agreement (no CRM deal attached)
+        var contract = await contractService.CreateContractAsync(
+            tenantId,
+            title: "Vendor Enterprise SLA Master Agreement",
+            contractType: "SLA",
+            signerName: "Victoria Thorne",
+            signerEmail: "victoria@clouddefense.org",
+            contractValue: 85000m,
+            companyId: null,
+            dealId: null
+        );
+
+        Assert.Equal(ContractStatus.Draft, contract.Status);
+        Assert.NotNull(contract.SigningToken);
+
+        // 2. Mark viewed when client loads electronic signing page
+        var viewed = await contractService.GetAndMarkViewedAsync(contract.SigningToken);
+        Assert.NotNull(viewed);
+        Assert.Equal(ContractStatus.Viewed, viewed!.Status);
+
+        // 3. Execute legal electronic signature
+        var signRes = await contractService.CompleteSigningAsync(
+            contract.SigningToken,
+            signerSignatureName: "Victoria Thorne",
+            signedPdfUrl: "https://storage.sgrowing.io/contracts/sla_signed_99.pdf"
+        );
+
+        Assert.True(signRes.Success);
+        Assert.Equal(ContractStatus.Signed, signRes.Status);
+        Assert.Equal(85000m, signRes.ContractValue);
+        Assert.Null(signRes.ClosedWonDealId);
+        Assert.Equal("https://storage.sgrowing.io/contracts/sla_signed_99.pdf", signRes.SignedPdfUrl);
+    }
 }

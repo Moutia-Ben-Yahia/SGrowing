@@ -355,4 +355,39 @@ public class EnterpriseOmniEndToEndTests
         missingLinkRes.IsSuccess.Should().BeFalse();
         missingLinkRes.Error.Should().Be("Checkout link not found.");
     }
+
+    [Fact]
+    public async Task EnterpriseOmni_AppointmentBooking_SlotValidation_And_ContactLifecycleTransition()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var notifier = new Mock<IRealtimeNotifier>();
+        var bookingService = new AppointmentBookingService(db, notifier.Object);
+
+        var contact = Contact.Create(tenantId, "Cassian", "Andor", "cassian@rebel.net");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        // 1. Booking a non-existent or inactive slot fails cleanly
+        var missingSlotRes = await bookingService.BookSlotAsync(tenantId, Guid.NewGuid(), contact.Id, DateTime.UtcNow.AddDays(2));
+        missingSlotRes.IsSuccess.Should().BeFalse();
+        missingSlotRes.Error.Should().Be("Appointment slot not found or inactive.");
+
+        // 2. Create active slot and execute booking
+        var slot = AppointmentSlot.Create(tenantId, "Enterprise Architecture Deep Dive", 45, "Chief Architect");
+        db.AppointmentSlots.Add(slot);
+        await db.SaveChangesAsync();
+
+        var scheduledTime = DateTime.UtcNow.AddDays(3);
+        var bookingRes = await bookingService.BookSlotAsync(tenantId, slot.Id, contact.Id, scheduledTime);
+        bookingRes.IsSuccess.Should().BeTrue();
+        bookingRes.Value.SlotId.Should().Be(slot.Id);
+        bookingRes.Value.ContactId.Should().Be(contact.Id);
+
+        // 3. Verify contact automatically advanced to Lead lifecycle stage and tagged
+        var updatedContact = await db.Contacts.FindAsync(contact.Id);
+        updatedContact.Should().NotBeNull();
+        updatedContact!.LifecycleStage.Should().Be(LifecycleStage.Lead);
+        updatedContact.Tags.Should().Contain("demo-scheduled");
+    }
 }

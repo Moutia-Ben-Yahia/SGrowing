@@ -246,4 +246,44 @@ public class EndToEndFlowTests
         secondApprove.IsSuccess.Should().BeFalse();
         secondApprove.Error.Should().Be("Draft has already been processed.");
     }
+
+    [Fact]
+    public async Task CompleteCustomerLifecycle_EmailChannelIngress_And_MultiTenantIsolation()
+    {
+        var db = CreateDbContext();
+        var outbox = new OutboxService(db);
+        var ingressService = new ChannelIngressService(db, outbox);
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+        var inboxA = Guid.NewGuid();
+
+        var emailMsgA = new SGrowing.Core.Channels.InboundChannelMessage(
+            TenantId: tenantA,
+            ChannelType: "email",
+            ExternalSenderId: "alexander@macedon.org",
+            SenderName: "Alexander TheGreat",
+            ExternalMessageId: "msg-email-001",
+            ContentType: "text/plain",
+            Content: "We would like to integrate SGrowing into our logistics fleet."
+        );
+
+        var resultA = await ingressService.IngestAsync(inboxA, emailMsgA);
+        resultA.IsSuccess.Should().BeTrue();
+        resultA.Value.SenderType.Should().Be(MessageSenderType.Contact);
+
+        var contactA = await db.Contacts.FirstOrDefaultAsync(c => c.TenantId == tenantA && c.Email == "alexander@macedon.org");
+        contactA.Should().NotBeNull();
+        contactA!.FirstName.Should().Be("Alexander");
+        contactA.LastName.Should().Be("TheGreat");
+
+        // Verify Tenant B cannot see Tenant A's contact or outbox messages
+        var contactB = await db.Contacts.FirstOrDefaultAsync(c => c.TenantId == tenantB && c.Email == "alexander@macedon.org");
+        contactB.Should().BeNull();
+
+        var outboxA = await db.OutboxMessages.Where(o => o.TenantId == tenantA).ToListAsync();
+        outboxA.Should().HaveCount(1);
+
+        var outboxB = await db.OutboxMessages.Where(o => o.TenantId == tenantB).ToListAsync();
+        outboxB.Should().BeEmpty();
+    }
 }
