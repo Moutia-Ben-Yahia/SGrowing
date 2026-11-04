@@ -66,4 +66,64 @@ public class TopicalAuthorityTests
         Assert.Contains("href=\"/solutions/b2b-growth-automation\"", result.InjectedHtmlTag);
         Assert.Contains("autonomous B2B growth automation", result.InjectedHtmlTag);
     }
+
+    [Fact]
+    public void AnalyzeTopicalMesh_NullRequest_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => _engine.AnalyzeTopicalMesh(null!));
+    }
+
+    [Fact]
+    public void AnalyzeTopicalMesh_EmptyDomain_DefaultsToSgrowingDomain()
+    {
+        var request = new AnalyzeTopicalMeshRequest(
+            DomainOrBaseUrl: "   ",
+            ExistingArticleUrls: new List<string>()
+        );
+
+        var result = _engine.AnalyzeTopicalMesh(request);
+
+        Assert.NotNull(result);
+        Assert.Equal("sgrowing.io", result.Domain);
+        Assert.True(result.OverallTopicalAuthorityScore > 0);
+    }
+
+    [Fact]
+    public void GetInternalLinkOpportunities_SortedByRelevanceScoreDescending()
+    {
+        var opps = _engine.GetInternalLinkOpportunities();
+
+        Assert.NotEmpty(opps);
+        for (var i = 0; i < opps.Count - 1; i++)
+        {
+            Assert.True(opps[i].PredictedRelevanceScore >= opps[i + 1].PredictedRelevanceScore);
+        }
+    }
+
+    [Fact]
+    public void ApplyLinkInjection_NullRequest_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => _engine.ApplyLinkInjection(null!));
+    }
+
+    [Fact]
+    public void ApplyLinkInjection_GeneratesHtmlAnchorWithTitleAndCssClass()
+    {
+        var request = new ApplyLinkInjectionRequest(
+            OpportunityId: "opp_custom_seo",
+            SourcePageUrl: "/blog/post-seo",
+            TargetPageUrl: "/pillar/cdp",
+            AnchorText: "Enterprise CDP Graph"
+        );
+
+        var result = _engine.ApplyLinkInjection(request);
+
+        Assert.NotNull(result);
+        Assert.Equal(
+            "<a href=\"/pillar/cdp\" title=\"Enterprise CDP Graph\" class=\"internal-pillar-link\">Enterprise CDP Graph</a>",
+            result.InjectedHtmlTag
+        );
+        Assert.Equal("/blog/post-seo", result.ModifiedSourcePageUrl);
+        Assert.True(result.Applied);
+    }
 }

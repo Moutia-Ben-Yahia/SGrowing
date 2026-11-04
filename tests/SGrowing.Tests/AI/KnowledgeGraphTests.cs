@@ -79,4 +79,69 @@ public sealed class KnowledgeGraphTests
         Assert.NotEmpty(result.MatchedEntities);
         Assert.True(result.MatchedEntities.Count <= 10);
     }
+
+    [Fact]
+    public void GetGraphSnapshot_EntitiesOrderedByCentralityScoreDescending()
+    {
+        var snapshot = _engine.GetGraphSnapshot();
+
+        Assert.NotEmpty(snapshot.Entities);
+        for (var i = 0; i < snapshot.Entities.Count - 1; i++)
+        {
+            Assert.True(snapshot.Entities[i].CentralityScore >= snapshot.Entities[i + 1].CentralityScore);
+        }
+    }
+
+    [Fact]
+    public void GetGraphSnapshot_TriplesOrderedByConfidenceDescending()
+    {
+        var snapshot = _engine.GetGraphSnapshot();
+
+        Assert.NotEmpty(snapshot.Triples);
+        for (var i = 0; i < snapshot.Triples.Count - 1; i++)
+        {
+            Assert.True(snapshot.Triples[i].Confidence >= snapshot.Triples[i + 1].Confidence);
+        }
+    }
+
+    [Fact]
+    public void IngestKnowledge_LongTextOverFortyCharacters_TruncatesTitleWithEllipsis()
+    {
+        const string longText = "Enterprise multi-tenant database partitioning ensures cryptographic isolation across tenants.";
+        var req = new IngestKnowledgeRequest(longText, "Doc_Partitioning");
+        var res = _engine.IngestKnowledge(req);
+
+        Assert.Equal("Success", res.Status);
+        Assert.Single(res.CreatedNodeIds);
+
+        var snapshot = _engine.GetGraphSnapshot();
+        var entity = snapshot.Entities.First(e => e.Id == res.CreatedNodeIds[0]);
+
+        Assert.EndsWith("...", entity.Name);
+        Assert.Equal(43, entity.Name.Length); // 40 chars + "..."
+        Assert.Equal(longText, entity.Description);
+        Assert.Equal("Doc_Partitioning", entity.Properties["source"]);
+    }
+
+    [Fact]
+    public void HybridSearch_NullQueryText_HandledSafelyWithoutNullReferenceException()
+    {
+        var query = new HybridSearchQuery(QueryText: null!, MaxTriples: 5, MinConfidence: 0.5);
+        var result = _engine.HybridSearch(query);
+
+        Assert.NotNull(result);
+        Assert.Equal(string.Empty, result.QueryText);
+        Assert.NotEmpty(result.MatchedEntities);
+    }
+
+    [Fact]
+    public void HybridSearch_MinConfidenceFilter_ExcludesLowerConfidenceTriples()
+    {
+        // Require extremely high confidence (0.999) which seeded triples (max 0.95) do not satisfy
+        var query = new HybridSearchQuery("Autonomous", MaxTriples: 10, MinConfidence: 0.999);
+        var result = _engine.HybridSearch(query);
+
+        Assert.NotNull(result);
+        Assert.Empty(result.MatchedTriples);
+    }
 }

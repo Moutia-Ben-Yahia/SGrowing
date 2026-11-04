@@ -203,4 +203,66 @@ public class ContentFactoryTests
         Assert.Equal("Operations Guild", retrieved.Author);
         Assert.Equal("Published", retrieved.Status);
     }
+
+    [Fact]
+    public void ListArticles_OrderedByPublishedAtUtcDescending()
+    {
+        var articles = _engine.ListArticles();
+
+        Assert.NotEmpty(articles);
+        for (var i = 0; i < articles.Count - 1; i++)
+        {
+            Assert.True(articles[i].PublishedAtUtc >= articles[i + 1].PublishedAtUtc);
+        }
+    }
+
+    [Fact]
+    public void EvaluateBrandVoice_NullContent_HandledGracefullyWithoutException()
+    {
+        var eval = _engine.EvaluateBrandVoice(new EvaluateVoiceRequest(Content: null!, TargetTone: "Neutral"));
+
+        Assert.NotNull(eval);
+        Assert.Equal(80.0, eval.ComplianceScore); // 95 base - 15 (0 words < 10)
+        Assert.Empty(eval.BannedPhrasesFound);
+    }
+
+    [Fact]
+    public void EvaluateBrandVoice_ScoreFlooredAtTenPoints()
+    {
+        var request = new EvaluateVoiceRequest(
+            Content: "Guaranteed riches and miracle hack your way secret trick for overnight success!",
+            TargetTone: "Hyperbole"
+        );
+
+        var eval = _engine.EvaluateBrandVoice(request);
+
+        Assert.NotNull(eval);
+        Assert.Equal(10.0, eval.ComplianceScore); // Clamped at 10.0 minimum floor
+        Assert.Equal(5, eval.BannedPhrasesFound.Count);
+    }
+
+    [Fact]
+    public void TriggerLocalization_ExistingArticleWithMultipleBlocks_ReflectsBlockCount()
+    {
+        var job = _engine.TriggerLocalization("art_welcome_enterprise", "es-ES");
+
+        Assert.NotNull(job);
+        Assert.Equal("en-US", job.SourceLocale);
+        Assert.Equal("es-ES", job.TargetLocale);
+        Assert.Equal(3, job.TranslatedBlocksCount);
+        Assert.Equal("Completed", job.Status);
+    }
+
+    [Fact]
+    public void DispatchEdgeWebhook_CreatesCompletedDispatchWithIsoTimestamp()
+    {
+        var now = DateTime.UtcNow;
+        var result = _engine.DispatchEdgeWebhook("art_any", "https://cdn.sgrowing.io/hooks/purge");
+
+        Assert.NotNull(result);
+        Assert.True(result.Success);
+        Assert.Equal(200, result.HttpStatus);
+        Assert.Equal("cms.article.published", result.EventType);
+        Assert.True(result.DispatchedAtUtc >= now.AddSeconds(-2));
+    }
 }
