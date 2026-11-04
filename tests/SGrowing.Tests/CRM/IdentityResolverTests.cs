@@ -136,4 +136,46 @@ public class IdentityResolverTests
         res.IsSuccess.Should().BeFalse();
         res.Error.Should().Contain("Contact not found");
     }
+
+    [Fact]
+    public async Task ResolveOrCreateContactAsync_WhenDifferentTenantsShareSamePhone_CreatesSeparateContacts()
+    {
+        var db = CreateDbContext();
+        var service = new IdentityResolverService(db);
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+        var sharedPhone = "+216-99-888-777";
+
+        var resA = await service.ResolveOrCreateContactAsync(tenantA, "userA@acme.com", sharedPhone, "Alice", "TenantA");
+        var resB = await service.ResolveOrCreateContactAsync(tenantB, "userB@globex.com", sharedPhone, "Bob", "TenantB");
+
+        resA.IsSuccess.Should().BeTrue();
+        resB.IsSuccess.Should().BeTrue();
+        resA.Value.Id.Should().NotBe(resB.Value.Id);
+        resA.Value.TenantId.Should().Be(tenantA);
+        resB.Value.TenantId.Should().Be(tenantB);
+
+        var totalContacts = await db.Contacts.CountAsync();
+        totalContacts.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task GetUnifiedCustomerTimelineAsync_WhenContactHasNoEvents_ReturnsEmptyTimelineCollections()
+    {
+        var db = CreateDbContext();
+        var service = new IdentityResolverService(db);
+        var tenantId = Guid.NewGuid();
+
+        var contact = Contact.Create(tenantId, "Solo", "User", "solo@domain.com", "99887766");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        var res = await service.GetUnifiedCustomerTimelineAsync(tenantId, contact.Id);
+
+        res.IsSuccess.Should().BeTrue();
+        res.Value.Contact.FirstName.Should().Be("Solo");
+        res.Value.Conversations.Should().BeEmpty();
+        res.Value.Deals.Should().BeEmpty();
+        res.Value.Events.Should().BeEmpty();
+    }
 }

@@ -89,4 +89,40 @@ public class Asc606RevenueTests
         schedules.Should().NotBeEmpty();
         schedules.Should().BeInAscendingOrder(s => s.ScheduleId);
     }
+
+    [Fact]
+    public void RecognizeNextMonth_ConsecutiveMonthlyCalls_CorrectlyReducesRemainingLiabilityStepByStep()
+    {
+        var scheduleId = "asc606_sched_301";
+
+        // Month 3 recognition
+        var m3 = _engine.RecognizeNextMonth(new RecognizeNextMonthRequest(scheduleId));
+        m3.CumulativeRecognizedUsd.Should().Be(30000m);
+        m3.DeferredRevenueLiabilityUsd.Should().Be(90000m);
+
+        // Month 4 recognition
+        var m4 = _engine.RecognizeNextMonth(new RecognizeNextMonthRequest(scheduleId));
+        m4.CumulativeRecognizedUsd.Should().Be(40000m);
+        m4.DeferredRevenueLiabilityUsd.Should().Be(80000m);
+
+        // Month 5 recognition
+        var m5 = _engine.RecognizeNextMonth(new RecognizeNextMonthRequest(scheduleId));
+        m5.CumulativeRecognizedUsd.Should().Be(50000m);
+        m5.DeferredRevenueLiabilityUsd.Should().Be(70000m);
+
+        m5.Tranches.Take(5).Should().OnlyContain(t => t.IsRecognized);
+        m5.Tranches.Skip(5).Should().OnlyContain(t => !t.IsRecognized);
+    }
+
+    [Fact]
+    public void GetSchedule_CaseInsensitiveScheduleId_ReturnsSchedule()
+    {
+        var scheduleUpper = _engine.GetSchedule("ASC606_SCHED_301");
+
+        scheduleUpper.Should().NotBeNull();
+        scheduleUpper!.ScheduleId.Should().Be("asc606_sched_301");
+        scheduleUpper.CustomerName.Should().Be("Acme Global Enterprise");
+        scheduleUpper.ContractDurationMonths.Should().Be(12);
+        scheduleUpper.TotalContractValueUsd.Should().Be(120000m);
+    }
 }

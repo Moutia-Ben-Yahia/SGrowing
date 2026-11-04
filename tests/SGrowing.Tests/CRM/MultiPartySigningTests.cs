@@ -168,4 +168,42 @@ public class MultiPartySigningTests
 
         Assert.Contains("must be verified via OTP", ex.Message);
     }
+
+    [Fact]
+    public async Task GetContractStatusAsync_WithNonExistentContract_ThrowsKeyNotFoundException()
+    {
+        var nonExistentId = Guid.NewGuid();
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _signingService.GetContractStatusAsync(nonExistentId));
+    }
+
+    [Fact]
+    public async Task GetContractBySigningTokenAsync_NonExistentAndExistentToken_BehavesExpectedly()
+    {
+        // 1. Non-existent token returns null
+        var nonExistentResult = await _signingService.GetContractBySigningTokenAsync("non_existent_token_123");
+        Assert.Null(nonExistentResult);
+
+        // 2. Existent contract token marks signer as Viewed
+        var tenantId = Guid.NewGuid();
+        var req = new CreateMultiPartyContractRequest(
+            Title: "Token Retrieval Test Agreement",
+            DocumentUrl: "https://storage.sgrowing.io/contracts/token-test.pdf",
+            WorkflowType: SigningWorkflowType.Sequential,
+            Signers: [
+                new(OrderIndex: 1, FullName: "Token Viewer", Email: "viewer@token.com", RequiresOtp: false)
+            ],
+            VisualFields: new()
+        );
+
+        var contract = await _signingService.CreateMultiPartyContractAsync(tenantId, req);
+        var started = await _signingService.InitiateWorkflowAsync(tenantId, contract.ContractId);
+        var validToken = started.Signers[0].SigningToken;
+
+        var retrieved = await _signingService.GetContractBySigningTokenAsync(validToken);
+        Assert.NotNull(retrieved);
+        Assert.Equal(contract.ContractId, retrieved.ContractId);
+        Assert.Equal(SignerStatus.Viewed, retrieved.Signers[0].Status);
+        Assert.NotNull(retrieved.Signers[0].ViewedAtUtc);
+    }
 }

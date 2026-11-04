@@ -162,4 +162,41 @@ public class WorkspaceAndTenantIsolationTests
         workspaces.Should().ContainSingle();
         workspaces[0].Slug.Should().Be("ws-1");
     }
+
+    [Fact]
+    public void TenantContext_DefaultState_HasTenantIsFalse()
+    {
+        var tenantContext = new TenantContext();
+
+        tenantContext.HasTenant.Should().BeFalse();
+        tenantContext.TenantId.Should().Be(Guid.Empty);
+        tenantContext.WorkspaceId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GlobalQueryFilter_Deals_AreStrictlyIsolatedByTenant()
+    {
+        var tenant1 = Guid.NewGuid();
+        var tenant2 = Guid.NewGuid();
+        var dbName = Guid.NewGuid().ToString();
+
+        // Seed deals across tenants using context without filter
+        var seedDb = CreateDbContext(Guid.Empty, dbName);
+        var deal1 = Deal.Create(tenant1, Guid.NewGuid(), "Deal Alpha", 1000m, DealStage.Prospecting);
+        var deal2 = Deal.Create(tenant2, Guid.NewGuid(), "Deal Beta", 2000m, DealStage.Qualified);
+        seedDb.Deals.AddRange(deal1, deal2);
+        await seedDb.SaveChangesAsync();
+
+        // Query with Tenant 1 scope
+        var dbTenant1 = CreateDbContext(tenant1, dbName);
+        var dealsTenant1 = await dbTenant1.Deals.ToListAsync();
+        dealsTenant1.Should().ContainSingle();
+        dealsTenant1[0].Title.Should().Be("Deal Alpha");
+
+        // Query with Tenant 2 scope
+        var dbTenant2 = CreateDbContext(tenant2, dbName);
+        var dealsTenant2 = await dbTenant2.Deals.ToListAsync();
+        dealsTenant2.Should().ContainSingle();
+        dealsTenant2[0].Title.Should().Be("Deal Beta");
+    }
 }
