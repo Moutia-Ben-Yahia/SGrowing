@@ -122,4 +122,155 @@ public class AdSpendOptimizerTests
         Assert.Equal(115m, winnerLog.NewDailyBudget); // 100 -> 115 (+15%)
         Assert.Contains("Scaling daily budget", winnerLog.Reason);
     }
+
+    [Fact]
+    public async Task CalculateDeliveredRoasAsync_WithEmptyAttributedOrders_ShouldHandleGracefully()
+    {
+        var db = CreateDbContext();
+        var service = new AdSpendOptimizerService(db);
+        var tenantId = Guid.NewGuid();
+
+        var metric = await service.CalculateDeliveredRoasAsync(
+            tenantId,
+            AdPlatformType.TikTok,
+            "ADSET-NO-ORDERS",
+            "Broad Audience Test",
+            DateTime.UtcNow.Date,
+            adSpend: 80m,
+            new List<Guid>());
+
+        Assert.NotNull(metric);
+        Assert.Equal(0, metric.TotalOrdersAttributed);
+        Assert.Equal(0, metric.DeliveredOrdersCount);
+        Assert.Equal(0m, metric.GrossAttributedGmv);
+        Assert.Equal(0m, metric.DeliveredNetCashRemitted);
+        Assert.Equal(0m, metric.DeliveryRatePercentage);
+        Assert.Equal(0m, metric.StandardPixelRoas);
+        Assert.Equal(0m, metric.RealDeliveredRoas);
+    }
+
+    [Fact]
+    public async Task EvaluateAndApplyRulesAsync_WhenMetricNotFound_ShouldThrowInvalidOperationException()
+    {
+        var db = CreateDbContext();
+        var service = new AdSpendOptimizerService(db);
+        var tenantId = Guid.NewGuid();
+
+        var nonExistentMetricId = Guid.NewGuid();
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.EvaluateAndApplyRulesAsync(tenantId, nonExistentMetricId, 100m));
+
+        Assert.Contains("not found", exception.Message);
+    }
+
+    [Fact]
+    public async Task EvaluateAndApplyRulesAsync_WhenSpendBelowMinThreshold_ShouldTakeNoAction()
+    {
+        var db = CreateDbContext();
+        var service = new AdSpendOptimizerService(db);
+        var tenantId = Guid.NewGuid();
+
+        await service.ConfigureRuleAsync(tenantId, new AdOptimizationRule
+        {
+            TenantId = tenantId,
+            Platform = AdPlatformType.Google,
+            RuleName = "Google Min Spend Rule",
+            MinSpendThreshold = 100m,
+            MinDeliveryRateCutoff = 50.0m
+        });
+
+        // Metric with only 40m spend (< 100m threshold)
+        var metric = await service.CalculateDeliveredRoasAsync(
+            tenantId,
+            AdPlatformType.Google,
+            "ADSET-LOW-SPEND",
+            "PMax Campaign",
+            DateTime.UtcNow.Date,
+            adSpend: 40m,
+            new List<Guid>());
+
+        var log = await service.EvaluateAndApplyRulesAsync(tenantId, metric.Id, currentDailyBudget: 50m);
+
+        Assert.Equal(AdOptimizationAction.NoAction, log.Action);
+        Assert.Null(log.NewDailyBudget);
+        Assert.Equal("Performance within acceptable thresholds.", log.Reason);
+    }
+
+    [Fact]
+    public async Task EvaluateAndApplyRulesAsync_WhenDeliveryAcceptableAndRoasModerate_ShouldTakeNoAction()
+    {
+        var db = CreateDbContext();
+        var service = new AdSpendOptimizerService(db);
+        var tenantId = Guid.NewGuid();
+
+        await service.ConfigureRuleAsync(tenantId, new AdOptimizationRule
+        {
+            TenantId = tenantId,
+            Platform = AdPlatformType.Meta,
+            MinSpendThreshold = 50m,
+            MinDeliveryRateCutoff = 50.0m,
+            MinDeliveredRoasToScale = 4.0m
+        });
+
+        // Create 10 orders: 7 delivered = 70% delivery rate (> 50% cutoff, but < 80% scale threshold)
+        var orderIds = new List<Guid>();
+        for (int i = 0; i < 10; i++)
+        {
+            var ord = CodOrder.Create(tenantId, $"ORD-MOD-{i}", $"Cust {i}", "+21612345678", "St", "Ariana", "Ariana", 30m);
+            ord.Status = i < 7 ? CodOrderStatus.Delivered : CodOrderStatus.Returned;
+            db.CodOrders.Add(ord);
+            orderIds.Add(ord.Id);
+        }
+        await db.SaveChangesAsync();
+
+        var metric = await service.CalculateDeliveredRoasAsync(
+            tenantId,
+            AdPlatformType.Meta,
+            "ADSET-MODERATE",
+            "Moderate Retargeting",
+            DateTime.UtcNow.Date,
+            adSpend: 100m,
+            orderIds);
+
+        var log = await service.EvaluateAndApplyRulesAsync(tenantId, metric.Id, currentDailyBudget: 100m);
+
+        Assert.Equal(AdOptimizationAction.NoAction, log.Action);
+        Assert.Null(log.NewDailyBudget);
+        Assert.Equal("Performance within acceptable thresholds.", log.Reason);
+    }
+
+    [Fact]
+    public async Task ListRoasMetricsAndLogs_ShouldFilterByTenantAndPlatformCorrectly()
+    {
+        var db = CreateDbContext();
+        var service = new AdSpendOptimizerService(db);
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        // Tenant A: Meta and TikTok
+        var metricMetaA = await service.CalculateDeliveredRoasAsync(
+            tenantA, AdPlatformType.Meta, "ADSET-A1", "Meta A1", DateTime.UtcNow.Date, 100m, new List<Guid>());
+        var metricTikTokA = await service.CalculateDeliveredRoasAsync(
+            tenantA, AdPlatformType.TikTok, "ADSET-A2", "TikTok A2", DateTime.UtcNow.Date, 80m, new List<Guid>());
+
+        // Tenant B: Meta
+        var metricMetaB = await service.CalculateDeliveredRoasAsync(
+            tenantB, AdPlatformType.Meta, "ADSET-B1", "Meta B1", DateTime.UtcNow.Date, 120m, new List<Guid>());
+
+        // Logs
+        await service.EvaluateAndApplyRulesAsync(tenantA, metricMetaA.Id, 100m);
+        await service.EvaluateAndApplyRulesAsync(tenantB, metricMetaB.Id, 120m);
+
+        var metricsForAAll = await service.ListRoasMetricsAsync(tenantA);
+        var metricsForAMeta = await service.ListRoasMetricsAsync(tenantA, AdPlatformType.Meta);
+        var logsForA = await service.ListExecutionLogsAsync(tenantA);
+
+        Assert.Equal(2, metricsForAAll.Count);
+        Assert.Single(metricsForAMeta);
+        Assert.Equal("ADSET-A1", metricsForAMeta[0].AdSetId);
+
+        Assert.Single(logsForA);
+        Assert.Equal(tenantA, logsForA[0].TenantId);
+        Assert.Equal("ADSET-A1", logsForA[0].AdSetId);
+    }
 }
