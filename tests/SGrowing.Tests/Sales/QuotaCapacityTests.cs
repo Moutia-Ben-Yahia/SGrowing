@@ -48,4 +48,32 @@ public class QuotaCapacityTests
         Assert.NotNull(updated);
         Assert.Equal("Balanced", updated.CapacityStatus);
     }
+
+    [Fact]
+    public void GetTerritory_NonExistentTerritory_ReturnsNull()
+    {
+        var territory = _engine.GetTerritory("NON_EXISTENT_TERRITORY");
+        Assert.Null(territory);
+    }
+
+    [Fact]
+    public void RebalanceTerritory_NonExistentTerritory_ThrowsInvalidOperationException()
+    {
+        var request = new RebalanceRequest("NON_EXISTENT_TERRITORY", 2, 4.0m);
+        Assert.Throws<InvalidOperationException>(() =>
+            _engine.RebalanceTerritory(request));
+    }
+
+    [Fact]
+    public void RebalanceTerritory_ComputesCorrectQuotaPerRep()
+    {
+        // TERR-US-EAST has TotalAnnualQuotaEur = 28,000,000, AssignedRepsCount = 14
+        // Adding 6 reps -> 20 reps -> 28,000,000 / 20 = 1,400,000
+        var request = new RebalanceRequest("TERR-US-EAST", 6, 4.0m);
+        var result = _engine.RebalanceTerritory(request);
+
+        Assert.NotNull(result);
+        Assert.Equal(20, result.NewHeadcount);
+        Assert.Equal(1400000m, result.OptimizedQuotaPerRepEur);
+    }
 }

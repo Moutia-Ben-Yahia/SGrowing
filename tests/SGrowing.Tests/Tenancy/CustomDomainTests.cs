@@ -67,4 +67,45 @@ public sealed class CustomDomainTests
         Assert.StartsWith("SHA256:", renewal.CertificateFingerprint);
         Assert.True(renewal.ExpiresAtUtc > DateTime.UtcNow.AddDays(80));
     }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public async Task RegisterCustomDomain_EmptyDomain_ThrowsArgumentException(string? domain)
+    {
+        var request = new CustomDomainRegistrationRequest(
+            TenantId: "tenant_err",
+            DomainName: domain!
+        );
+
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _engine.RegisterCustomDomainAsync(request));
+    }
+
+    [Fact]
+    public async Task VerifyDnsRecords_NonExistentDomain_ThrowsKeyNotFoundException()
+    {
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _engine.VerifyDnsRecordsAsync("dom_nonexistent_xyz"));
+    }
+
+    [Fact]
+    public async Task IssueOrRenewSsl_NonExistentDomain_ThrowsKeyNotFoundException()
+    {
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _engine.IssueOrRenewSslAsync("dom_nonexistent_xyz"));
+    }
+
+    [Fact]
+    public async Task ResolveTenantBrand_UnknownDomain_ReturnsDefaultFallbackBrand()
+    {
+        var brand = await _engine.ResolveTenantBrandAsync("unknown.domain.org");
+
+        Assert.NotNull(brand);
+        Assert.Equal("default", brand.TenantId);
+        Assert.Equal("unknown.domain.org", brand.DomainName);
+        Assert.Equal("Growth OS Portal", brand.Theming.PageTitle);
+        Assert.True(brand.IsSecure);
+    }
 }

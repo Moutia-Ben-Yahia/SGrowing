@@ -48,4 +48,39 @@ public class IntentRollupTests
         result.ExpiresAt.Should().BeAfter(DateTime.UtcNow);
         result.AuditReceipt.Should().Contain("AUDIT-OUTREACH-LOCK");
     }
+
+    [Fact]
+    public void IngestIntentSignal_WithDuplicateSignal_IncrementsScoreByTwo()
+    {
+        // Existing signal on ACC-CORP-01: cto@acme.corp + G2_BuyerIntent
+        var command = new IngestIntentSignalCommand("acme.corp", "cto@acme.corp", "CTO", "G2_BuyerIntent", 92);
+        var result = _engine.IngestIntentSignal(command);
+
+        result.Should().NotBeNull();
+        result.IsDeDuplicatedDuplicate.Should().BeTrue();
+        result.UpdatedAggregateIntentScore.Should().Be(90); // 88 + 2 = 90
+    }
+
+    [Fact]
+    public void IngestIntentSignal_WhenAccountOutreachAlreadyLocked_RecommendsInboxRouting()
+    {
+        // ACC-CORP-01 has OutreachLocked = true
+        var command = new IngestIntentSignalCommand("acme.corp", "new.lead@acme.corp", "Lead", "WebsiteVisit", 50);
+        var result = _engine.IngestIntentSignal(command);
+
+        result.Should().NotBeNull();
+        result.RecommendedAction.Should().Contain("already locked to REP-SARAH-01");
+        result.RecommendedAction.Should().Contain("routing intelligence to owner's CRM inbox");
+    }
+
+    [Fact]
+    public void LockAccountOutreach_WithZeroOrNegativeDays_DefaultsToThirtyDays()
+    {
+        var command = new LockAccountOutreachCommand("ACC-CORP-03", "REP-ALEX-03", -10);
+        var result = _engine.LockAccountOutreach(command);
+
+        result.Should().NotBeNull();
+        result.ExpiresAt.Should().BeAfter(DateTime.UtcNow.AddDays(29));
+        result.ExpiresAt.Should().BeBefore(DateTime.UtcNow.AddDays(31));
+    }
 }

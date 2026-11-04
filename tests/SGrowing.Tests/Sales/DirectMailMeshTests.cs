@@ -60,4 +60,51 @@ public class DirectMailMeshTests
         verdict.MaxAllowableValueUsd.Should().Be(250.00m);
         verdict.ApplicablePolicyRule.Should().Contain("PASSED");
     }
+
+    [Fact]
+    public void VerifyGiftCompliance_UsGovJurisdiction_EnforcesStrict25DollarLimit()
+    {
+        var compliantReq = new VerifyGiftComplianceRequest(
+            "Department of Defense",
+            "Program Director",
+            20.00m,
+            "US_GOV"
+        );
+        var compliantVerdict = _engine.VerifyGiftCompliance(compliantReq);
+
+        compliantVerdict.Should().NotBeNull();
+        compliantVerdict.IsCompliant.Should().BeTrue();
+        compliantVerdict.MaxAllowableValueUsd.Should().Be(25.00m);
+
+        var nonCompliantReq = new VerifyGiftComplianceRequest(
+            "Department of Transportation",
+            "Inspector",
+            50.00m,
+            "US_GOV"
+        );
+        var nonCompliantVerdict = _engine.VerifyGiftCompliance(nonCompliantReq);
+
+        nonCompliantVerdict.Should().NotBeNull();
+        nonCompliantVerdict.IsCompliant.Should().BeFalse();
+        nonCompliantVerdict.MaxAllowableValueUsd.Should().Be(25.00m);
+        nonCompliantVerdict.ApplicablePolicyRule.Should().Be("VALUE_EXCEEDS_STATUTORY_MAX_THRESHOLD");
+    }
+
+    [Fact]
+    public void DispatchCampaign_AppendsToRecentDispatches()
+    {
+        var request = new DispatchCampaignRequest(
+            "CMP-DIR-02",
+            "Marcus Vance",
+            "CloudSphere",
+            "123 Tech Way",
+            "UPS 2nd Day Air",
+            "Personal note"
+        );
+
+        var receipt = _engine.DispatchCampaign(request);
+
+        var overview = _engine.GetOverview();
+        overview.RecentDispatches.Should().Contain(d => d.TrackingNumber == receipt.TrackingNumber);
+    }
 }
