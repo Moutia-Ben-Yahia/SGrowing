@@ -85,4 +85,44 @@ public class WebhookSignatureBurstLoadTests
         WebhookSignatureValidator.VerifyMetaSignature("", "secret", "sha256=123").Should().BeFalse();
         WebhookSignatureValidator.VerifyMetaSignature("{}", "secret", "invalidprefix123").Should().BeFalse();
     }
+
+    [Fact]
+    public void VerifyShopifyHmac_WithValidSignature_MatchesExpectedEncoding()
+    {
+        var body = "{\"order\":{\"id\":12345,\"total\":\"99.00\"}}";
+        var secret = "test_shared_secret_abc";
+        var expectedSig = ComputeShopifyHmac(body, secret);
+
+        var valid = ShopifyWebhookReceiver.VerifyShopifyHmac(body, secret, expectedSig);
+        valid.Should().BeTrue();
+    }
+
+    [Fact]
+    public void VerifyMetaSignature_WithTamperedPayload_ReturnsFalse()
+    {
+        var originalPayload = "{\"object\":\"whatsapp_business_account\",\"entry\":[]}";
+        var secret = "app_secret_meta_99";
+
+        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secret));
+        var hash = Convert.ToHexString(hmac.ComputeHash(Encoding.UTF8.GetBytes(originalPayload))).ToLowerInvariant();
+        var validHeader = $"sha256={hash}";
+
+        // Verify valid header
+        WebhookSignatureValidator.VerifyMetaSignature(originalPayload, secret, validHeader).Should().BeTrue();
+
+        // Tampered payload with valid header
+        var tamperedPayload = "{\"object\":\"whatsapp_business_account\",\"entry\":[{\"tampered\":true}]}";
+        WebhookSignatureValidator.VerifyMetaSignature(tamperedPayload, secret, validHeader).Should().BeFalse();
+    }
+
+    [Fact]
+    public void VerifyMetaSignature_WithMalformedPrefix_ReturnsFalse()
+    {
+        var payload = "{\"test\":true}";
+        var secret = "secret_123";
+
+        // Missing sha256= prefix
+        WebhookSignatureValidator.VerifyMetaSignature(payload, secret, "sha1=abcdef").Should().BeFalse();
+        WebhookSignatureValidator.VerifyMetaSignature(payload, secret, "plain_hash_without_prefix").Should().BeFalse();
+    }
 }

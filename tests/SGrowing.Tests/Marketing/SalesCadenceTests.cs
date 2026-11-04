@@ -84,4 +84,74 @@ public class SalesCadenceTests
         var tasksAfterReply = await engine.GetPendingSdrTasksAsync(tenantId);
         Assert.Empty(tasksAfterReply);
     }
+
+    [Fact]
+    public async Task EnrollLeadAsync_WithNonExistentCadence_ThrowsInvalidOperationException()
+    {
+        var db = CreateDbContext();
+        var engine = new SalesCadenceEngine(db);
+        var tenantId = Guid.NewGuid();
+        var missingCadenceId = Guid.NewGuid();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            engine.EnrollLeadAsync(tenantId, missingCadenceId, "Lead", "lead@domain.com", "+216000"));
+
+        Assert.Contains("not found", ex.Message);
+    }
+
+    [Fact]
+    public async Task AddCadenceStepAsync_WithNonExistentCadence_ThrowsInvalidOperationException()
+    {
+        var db = CreateDbContext();
+        var engine = new SalesCadenceEngine(db);
+        var missingCadenceId = Guid.NewGuid();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            engine.AddCadenceStepAsync(missingCadenceId, 1, 0, CadenceChannel.Email, "Subject", "Body"));
+
+        Assert.Contains("not found", ex.Message);
+    }
+
+    [Fact]
+    public async Task CompleteSdrTaskAsync_WithNonExistentTaskId_ThrowsInvalidOperationException()
+    {
+        var db = CreateDbContext();
+        var engine = new SalesCadenceEngine(db);
+        var tenantId = Guid.NewGuid();
+        var missingTaskId = Guid.NewGuid();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            engine.CompleteSdrTaskAsync(tenantId, missingTaskId, "Outcome"));
+
+        Assert.Contains("not found", ex.Message);
+    }
+
+    [Fact]
+    public async Task GetPendingSdrTasksAsync_ShouldFilterByTenantId()
+    {
+        var db = CreateDbContext();
+        var engine = new SalesCadenceEngine(db);
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        var cadenceA = await engine.CreateCadenceAsync(tenantA, "Cadence A", "Desc", "Audience");
+        await engine.AddCadenceStepAsync(cadenceA.Id, 1, 0, CadenceChannel.PhoneCallTask, null, "Call A");
+        await engine.EnrollLeadAsync(tenantA, cadenceA.Id, "Lead A", "a@corp.com", "+216111");
+
+        var cadenceB = await engine.CreateCadenceAsync(tenantB, "Cadence B", "Desc", "Audience");
+        await engine.AddCadenceStepAsync(cadenceB.Id, 1, 0, CadenceChannel.LinkedInTask, null, "Connect B");
+        await engine.EnrollLeadAsync(tenantB, cadenceB.Id, "Lead B", "b@corp.com", "+216222");
+
+        await engine.ProcessDueCadenceStepsAsync(tenantA);
+        await engine.ProcessDueCadenceStepsAsync(tenantB);
+
+        var tasksA = await engine.GetPendingSdrTasksAsync(tenantA);
+        var tasksB = await engine.GetPendingSdrTasksAsync(tenantB);
+
+        Assert.Single(tasksA);
+        Assert.Equal("Lead A", tasksA[0].LeadName);
+
+        Assert.Single(tasksB);
+        Assert.Equal("Lead B", tasksB[0].LeadName);
+    }
 }

@@ -79,4 +79,70 @@ public class CodCheckoutTests
         Assert.Equal(121.0m, confirmation.TotalAmountDueOnDoorstep);
         Assert.Equal("Confirmed", confirmation.Status);
     }
+
+    [Fact]
+    public async Task UpdateCustomerDetailsAsync_WithUnknownSession_ThrowsInvalidOperationException()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _service.UpdateCustomerDetailsAsync(
+                tenantId,
+                "chk_non_existent",
+                "Samir",
+                "+21611223344",
+                "TN-11",
+                "Carthage",
+                "Street 1"
+            ));
+
+        Assert.Contains("not found", ex.Message);
+    }
+
+    [Fact]
+    public async Task VerifyPhoneOtpAsync_WithIncorrectCode_ReturnsFalse()
+    {
+        var tenantId = Guid.NewGuid();
+        var session = await _service.CreateSessionAsync(tenantId, "[]", 50m);
+        await _service.SendPhoneOtpAsync(tenantId, session.SessionKey);
+
+        var verified = await _service.VerifyPhoneOtpAsync(tenantId, session.SessionKey, "0000");
+
+        Assert.False(verified);
+        var inDb = await _db.CodCheckoutSessions.FirstOrDefaultAsync(s => s.SessionKey == session.SessionKey);
+        Assert.False(inDb!.IsOtpVerified);
+    }
+
+    [Fact]
+    public async Task SendPhoneOtpAsync_WithUnknownSession_ThrowsInvalidOperationException()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _service.SendPhoneOtpAsync(tenantId, "chk_invalid"));
+
+        Assert.Contains("not found", ex.Message);
+    }
+
+    [Fact]
+    public async Task ApplyUpsellOfferAsync_WithUnknownSession_ThrowsInvalidOperationException()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _service.ApplyUpsellOfferAsync(tenantId, "chk_invalid", "UPSELL-SKU", 15m));
+
+        Assert.Contains("not found", ex.Message);
+    }
+
+    [Fact]
+    public async Task CompleteCodOrderAsync_WithUnknownSession_ThrowsInvalidOperationException()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _service.CompleteCodOrderAsync(tenantId, "chk_invalid"));
+
+        Assert.Contains("not found", ex.Message);
+    }
 }

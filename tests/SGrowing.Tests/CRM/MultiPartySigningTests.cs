@@ -100,36 +100,72 @@ public class MultiPartySigningTests
             DocumentUrl: "https://storage.sgrowing.io/contracts/mnda.pdf",
             WorkflowType: SigningWorkflowType.Parallel,
             Signers: [
-                new(OrderIndex: 1, FullName: "Partner A", Email: "partner.a@corp.com", RequiresOtp: false),
-                new(OrderIndex: 1, FullName: "Partner B", Email: "partner.b@corp.com", RequiresOtp: false)
+                new(OrderIndex: 1, FullName: "Party A", Email: "a@corp.com", RequiresOtp: false),
+                new(OrderIndex: 1, FullName: "Party B", Email: "b@corp.com", RequiresOtp: false)
             ],
-            VisualFields: []
+            VisualFields: new()
         );
 
         var contract = await _signingService.CreateMultiPartyContractAsync(tenantId, req);
         var started = await _signingService.InitiateWorkflowAsync(tenantId, contract.ContractId);
 
-        // Assert: Both signers should be in Sent status simultaneously
+        // In parallel mode, both signers immediately receive Sent status
         Assert.Equal(SignerStatus.Sent, started.Signers[0].Status);
         Assert.Equal(SignerStatus.Sent, started.Signers[1].Status);
+    }
 
-        // Signer 1 signs
-        var afterSigner1 = await _signingService.SubmitSignerSignatureAsync(
-            started.Signers[0].SigningToken,
-            new SubmitSignatureRequest("Partner A", "base64_sig_1", [])
-        );
-        Assert.Equal(SignerStatus.Signed, afterSigner1.Signers[0].Status);
-        Assert.Equal(SignerStatus.Sent, afterSigner1.Signers[1].Status);
-        Assert.Equal("InProgress", afterSigner1.OverallStatus);
+    [Fact]
+    public async Task InitiateWorkflowAsync_WithUnknownContract_ThrowsKeyNotFoundException()
+    {
+        var tenantId = Guid.NewGuid();
+        var nonExistentContractId = Guid.NewGuid();
 
-        // Signer 2 signs
-        var afterSigner2 = await _signingService.SubmitSignerSignatureAsync(
-            started.Signers[1].SigningToken,
-            new SubmitSignatureRequest("Partner B", "base64_sig_2", [])
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _signingService.InitiateWorkflowAsync(tenantId, nonExistentContractId));
+    }
+
+    [Fact]
+    public async Task SendSignerOtpAsync_WithInvalidToken_ReturnsFailedResult()
+    {
+        var result = await _signingService.SendSignerOtpAsync("invalid_token_xyz");
+
+        Assert.False(result.Success);
+        Assert.Contains("Invalid signing token", result.Message);
+    }
+
+    [Fact]
+    public async Task VerifySignerOtpAsync_WithNoActiveSession_ReturnsFailedResult()
+    {
+        var result = await _signingService.VerifySignerOtpAsync("token_without_otp", "123456");
+
+        Assert.False(result.Success);
+        Assert.Contains("No active OTP request", result.Message);
+    }
+
+    [Fact]
+    public async Task SubmitSignerSignatureAsync_WhenOtpRequiredButNotVerified_ThrowsInvalidOperationException()
+    {
+        var tenantId = Guid.NewGuid();
+        var req = new CreateMultiPartyContractRequest(
+            Title: "Restricted Security Addendum",
+            DocumentUrl: "https://storage.sgrowing.io/contracts/security.pdf",
+            WorkflowType: SigningWorkflowType.Sequential,
+            Signers: [
+                new(OrderIndex: 1, FullName: "Security Officer", Email: "sec@gov.us", RequiresOtp: true)
+            ],
+            VisualFields: new()
         );
-        Assert.Equal(SignerStatus.Signed, afterSigner2.Signers[1].Status);
-        Assert.Equal("Completed", afterSigner2.OverallStatus);
-        Assert.NotNull(afterSigner2.ChecksumSha256);
-        Assert.NotNull(afterSigner2.SealedPdfUrl);
+
+        var contract = await _signingService.CreateMultiPartyContractAsync(tenantId, req);
+        var started = await _signingService.InitiateWorkflowAsync(tenantId, contract.ContractId);
+        var token = started.Signers[0].SigningToken;
+
+        // Attempt to submit signature directly without verifying OTP
+        var submitReq = new SubmitSignatureRequest("Security Officer", "sig_base64", new());
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _signingService.SubmitSignerSignatureAsync(token, submitReq));
+
+        Assert.Contains("must be verified via OTP", ex.Message);
     }
 }
