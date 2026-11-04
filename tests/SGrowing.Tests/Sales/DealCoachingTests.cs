@@ -93,4 +93,21 @@ public sealed class DealCoachingTests
         Assert.Equal(2, updatedSession.ObjectionsHandledCount);
         Assert.Equal(97.0, updatedSession.CurrentAdherenceScore); // 100 - 1.5 - 1.5
     }
+
+    [Fact]
+    public void DetectObjection_WhenRepeatedObjections_FloorsAdherenceScoreAt85()
+    {
+        var session = _engine.StartSession("OPP-FLOOR-01", "Delta Global", "Alexandra Hayes");
+
+        for (int i = 0; i < 15; i++)
+        {
+            _engine.DetectObjection(session.SessionId, "This price is too expensive.");
+        }
+
+        var overview = _engine.GetOverview();
+        var updated = overview.ActiveSessions.FirstOrDefault(s => s.SessionId == session.SessionId);
+        Assert.NotNull(updated);
+        Assert.Equal(15, updated.ObjectionsHandledCount);
+        Assert.Equal(85.0, updated.CurrentAdherenceScore);
+    }
 }

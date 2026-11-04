@@ -174,4 +174,21 @@ public class CadenceOrchestrationTests
         var total = await db.ProspectEnrollments.CountAsync(e => e.CampaignId == campaign.Id && e.ContactId == contact.Id);
         total.Should().Be(1);
     }
+
+    [Fact]
+    public async Task EnrollProspects_WhenCampaignBelongsToDifferentTenant_ReturnsFailure()
+    {
+        var db = CreateDbContext();
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+        var campaign = OutboundCampaign.Create(tenantA, "Tenant A Campaign", new List<Guid>());
+        db.OutboundCampaigns.Add(campaign);
+        await db.SaveChangesAsync();
+
+        var handler = new EnrollProspectsHandler(db);
+        var result = await handler.HandleAsync(new EnrollProspectsRequest(tenantB, campaign.Id, new List<Guid> { Guid.NewGuid() }));
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("Campaign not found");
+    }
 }

@@ -222,4 +222,20 @@ public class B2BProposalTests
 
         invoice.TotalOverageAmount.Should().Be(0.00m);
     }
+
+    [Fact]
+    public void GetProposal_WhenNotFoundOrDifferentTenant_ReturnsNull()
+    {
+        var items = new List<QuoteLineItem>
+        {
+            new("SKU-TEST", "Test Item", 1, 100m, 0m, 100m, 20m)
+        };
+        var proposal = _engine.CreateProposal(TenantId, CustomerCompany, CustomerEmail, items);
+
+        var missing = _engine.GetProposal(TenantId, Guid.NewGuid());
+        missing.Should().BeNull();
+
+        var crossTenant = _engine.GetProposal("different-tenant-id", proposal.Id);
+        crossTenant.Should().BeNull();
+    }
 }

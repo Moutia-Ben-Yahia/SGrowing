@@ -108,4 +108,19 @@ public sealed class DealAutopsyTests
         Assert.Contains(expectedFragment, playbook.RecommendedRecoveryStrategy);
         Assert.Equal(60, playbook.ReEngagementCooldownDays);
     }
+
+    [Fact]
+    public void AnalyzeLostDeal_AppendsToRecentAutopsiesInOverview()
+    {
+        var record = _engine.AnalyzeLostDeal(
+            "OPP-NEW-99",
+            "Target Logistics",
+            120000.0,
+            "Sarah Jenkins",
+            "Lost due to customer renewing with existing vendor."
+        );
+
+        var overview = _engine.GetOverview();
+        Assert.Contains(overview.RecentAutopsies, a => a.AutopsyId == record.AutopsyId);
+    }
 }
