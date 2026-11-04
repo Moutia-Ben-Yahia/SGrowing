@@ -108,4 +108,17 @@ public sealed class CustomDomainTests
         Assert.Equal("Growth OS Portal", brand.Theming.PageTitle);
         Assert.True(brand.IsSecure);
     }
+
+    [Fact]
+    public async Task ListDomainsAsync_FiltersByTenantIdAndReturnsConfiguredDomains()
+    {
+        var tenantId = "tenant_list_test";
+        await _engine.RegisterCustomDomainAsync(new CustomDomainRegistrationRequest(tenantId, "domain1.test.com"));
+        await _engine.RegisterCustomDomainAsync(new CustomDomainRegistrationRequest(tenantId, "domain2.test.com"));
+
+        var domains = await _engine.ListDomainsAsync(tenantId);
+
+        Assert.Equal(2, domains.Count);
+        Assert.All(domains, d => Assert.Equal(tenantId, d.TenantId));
+    }
 }

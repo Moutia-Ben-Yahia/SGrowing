@@ -116,6 +116,21 @@ public class OutboundDispatcherTests
     }
 
     [Fact]
+    public async Task MetaWhatsAppDispatcher_MissingPhone_ReturnsFailure()
+    {
+        using var httpClient = new HttpClient();
+        var dispatcher = new MetaWhatsAppDispatcher(httpClient, _emptyConfig, NullLogger<MetaWhatsAppDispatcher>.Instance);
+
+        var result = await dispatcher.SendTextMessageAsync(
+            tenantId: Guid.NewGuid(),
+            recipientPhone: "",
+            message: "Hello WhatsApp");
+
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("Missing recipient phone number");
+    }
+
+    [Fact]
     public async Task RedisStreamConsumerDaemon_ProcessesOutboundMessageDispatched_AndRoutesCorrectly()
     {
         var services = new ServiceCollection();

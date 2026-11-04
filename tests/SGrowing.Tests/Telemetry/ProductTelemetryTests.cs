@@ -233,4 +233,25 @@ public class ProductTelemetryTests
         result.StepMetrics.Should().HaveCount(4);
         result.StepMetrics.Select(s => s.StepName).Should().ContainInOrder("pageview", "add_to_cart", "begin_checkout", "purchase");
     }
+
+    [Fact]
+    public async Task GetRecentEventsAsync_FiltersByTenantAndLimitsResults()
+    {
+        // Arrange
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        for (int i = 0; i < 5; i++)
+        {
+            await _service.IngestTelemetryEventAsync(tenantA, $"sess_a_{i}", $"vis_a_{i}", "click", $"/page/{i}");
+            await _service.IngestTelemetryEventAsync(tenantB, $"sess_b_{i}", $"vis_b_{i}", "click", $"/page/{i}");
+        }
+
+        // Act
+        var eventsA = await _service.GetRecentEventsAsync(tenantA, limit: 3);
+
+        // Assert
+        eventsA.Should().HaveCount(3);
+        eventsA.Should().OnlyContain(e => e.TenantId == tenantA);
+    }
 }

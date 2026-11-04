@@ -103,4 +103,18 @@ public class PostgreSqlRlsTests
 
         Assert.False(result);
     }
+
+    [Fact]
+    public void AuditTablesRlsCoverage_WithSingleTable_GeneratesDeterministicChecksumAndPolicyName()
+    {
+        var audit = _rlsService.AuditTablesRlsCoverage(new[] { "InvoiceLedger" });
+
+        Assert.Equal(1, audit.TotalAuditedTables);
+        Assert.Equal(1, audit.CompliantTablesCount);
+        Assert.Single(audit.Policies);
+        Assert.Equal("InvoiceLedger", audit.Policies[0].TableName);
+        Assert.Equal("invoiceledger_tenant_isolation_policy", audit.Policies[0].PolicyName);
+        Assert.True(audit.Policies[0].IsRowLevelSecurityEnabled);
+        Assert.True(audit.Policies[0].IsForcedRls);
+    }
 }

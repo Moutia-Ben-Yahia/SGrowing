@@ -129,4 +129,16 @@ public class ObjectionScoringTests
         Assert.Contains(recent, c => c.CallId == "call_order_a");
         Assert.Contains(recent, c => c.CallId == "call_order_b");
     }
+
+    [Fact]
+    public void ScoreCall_WithNullTranscriptTurns_HandlesSafelyAndComputesBaselineScores()
+    {
+        var request = new ScoreCallRequest("call_null_turns", "Jane Doe", "Enterprise Inc", null!);
+        var result = _engine.ScoreCall(request);
+
+        Assert.NotNull(result);
+        Assert.Equal("call_null_turns", result.CallId);
+        Assert.Equal(85.0, result.OverallScorePercent);
+        Assert.Equal("SalesQualifiedLead", result.OutcomeQualification);
+    }
 }
