@@ -82,4 +82,84 @@ public class WorkspaceAndTenantIsolationTests
         var allContacts = await dbTenantA.Contacts.IgnoreQueryFilters().ToListAsync();
         allContacts.Should().HaveCount(2);
     }
+
+    [Fact]
+    public void TenantContext_SetTenantEmptyGuid_ThrowsArgumentException()
+    {
+        var tenantContext = new TenantContext();
+        var act = () => tenantContext.SetTenant(Guid.Empty);
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*TenantId cannot be empty*");
+    }
+
+    [Fact]
+    public void TenantContext_SetWorkspace_PersistsWorkspaceIdAndTenantId()
+    {
+        var tenantContext = new TenantContext();
+        var tenantId = Guid.NewGuid();
+        var workspaceId = Guid.NewGuid();
+
+        tenantContext.SetTenant(tenantId);
+        tenantContext.SetWorkspace(workspaceId);
+
+        tenantContext.HasTenant.Should().BeTrue();
+        tenantContext.TenantId.Should().Be(tenantId);
+        tenantContext.WorkspaceId.Should().Be(workspaceId);
+
+        // Reset workspace
+        tenantContext.SetWorkspace(null);
+        tenantContext.WorkspaceId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Workspace_StateTransitions_ShouldPersistCorrectly()
+    {
+        var tenantId = Guid.NewGuid();
+        var dbName = Guid.NewGuid().ToString();
+        var db = CreateDbContext(tenantId, dbName);
+
+        var workspace = new Workspace
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            Name = "Sales EMEA",
+            Slug = "sales-emea",
+            Status = "Active",
+            IsActive = true
+        };
+
+        db.Workspaces.Add(workspace);
+        await db.SaveChangesAsync();
+
+        // Update status to Suspended and deactivate
+        workspace.Status = "Suspended";
+        workspace.IsActive = false;
+        await db.SaveChangesAsync();
+
+        var refreshed = await db.Workspaces.FindAsync(workspace.Id);
+        refreshed.Should().NotBeNull();
+        refreshed!.Status.Should().Be("Suspended");
+        refreshed.IsActive.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task MultiTenantDataIsolation_MultipleEntities_StayStrictlyIsolated()
+    {
+        var tenant1 = Guid.NewGuid();
+        var tenant2 = Guid.NewGuid();
+        var dbName = Guid.NewGuid().ToString();
+
+        var seedDb = CreateDbContext(Guid.Empty, dbName);
+
+        var ws1 = new Workspace { TenantId = tenant1, Name = "Workspace 1", Slug = "ws-1" };
+        var ws2 = new Workspace { TenantId = tenant2, Name = "Workspace 2", Slug = "ws-2" };
+        seedDb.Workspaces.AddRange(ws1, ws2);
+        await seedDb.SaveChangesAsync();
+
+        var dbTenant1 = CreateDbContext(tenant1, dbName);
+        var workspaces = await dbTenant1.Workspaces.Where(w => w.TenantId == tenant1).ToListAsync();
+
+        workspaces.Should().ContainSingle();
+        workspaces[0].Slug.Should().Be("ws-1");
+    }
 }

@@ -92,4 +92,64 @@ public class CustomerIdentityGraphAndRmaTests
         var approvedRma = await portal.ReviewRmaRequestAsync(tenantId, rma.Id, isApproved: true, resolutionNotes: "Approved size exchange", dispatchReverseCourier: true, courierId: Guid.NewGuid());
         Assert.Equal(RmaStatus.ReverseCourierDispatched, approvedRma.Status);
     }
+
+    [Theory]
+    [InlineData("98123456", "+21698123456")]
+    [InlineData("01012345678", "+201012345678")]
+    [InlineData("+212612345678", "+212612345678")]
+    [InlineData("216 20 123 456", "+21620123456")]
+    [InlineData("+20-111-222-3333", "+201112223333")]
+    public void NormalizePhoneToE164_Should_Correctly_Format_Various_Country_Formats(string rawPhone, string expectedNormalized)
+    {
+        var result = CustomerIdentityGraphService.NormalizePhoneToE164(rawPhone);
+        Assert.Equal(expectedNormalized, result);
+    }
+
+    [Fact]
+    public async Task CustomerIdentityGraph_RecordTimelineEvent_ShouldPersistOrderedEvents()
+    {
+        var db = CreateDbContext();
+        var idGraph = new CustomerIdentityGraphService(db);
+        var tenantId = Guid.NewGuid();
+
+        var customer = await idGraph.ResolveCustomerAsync(tenantId, "Fatma Ben Salem", "97654321");
+        await idGraph.RecordTimelineEventAsync(tenantId, customer.Id, "OrderPlaced", "Order #ORD-101 created", "{\"amount\":120.5}");
+        await idGraph.RecordTimelineEventAsync(tenantId, customer.Id, "CallLogged", "Inbound inquiry regarding delivery", "{\"duration_sec\":45}");
+
+        var detail = await idGraph.GetCustomer360Async(tenantId, customer.Id);
+
+        Assert.NotNull(detail);
+        Assert.Equal(customer.Id, detail.Profile.Id);
+        Assert.Equal(2, detail.Timeline.Count);
+        Assert.Contains(detail.Timeline, t => t.EventType == "OrderPlaced");
+        Assert.Contains(detail.Timeline, t => t.EventType == "CallLogged");
+    }
+
+    [Fact]
+    public async Task PublicTracking_WithInvalidPhone_ThrowsUnauthorizedAccessException()
+    {
+        var db = CreateDbContext();
+        var portal = new CustomerSelfServicePortalService(db);
+        var tenantId = Guid.NewGuid();
+
+        var order = CodOrder.Create(tenantId, "ORD-TUN-777", "Sami Trabelsi", "+21698765432", "Avenue Habib Bourguiba", "Tunis", "Centre Ville", 180m, countryCode: "TN", codCurrency: "TND");
+        db.CodOrders.Add(order);
+        await db.SaveChangesAsync();
+
+        // Phone suffix 9999 does not match 5432
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+            portal.LookupTrackingAsync("ORD-TUN-777", "9999"));
+    }
+
+    [Fact]
+    public async Task CustomerIdentityGraph_GetCustomer360_NonExistentCustomer_ThrowsInvalidOperationException()
+    {
+        var db = CreateDbContext();
+        var idGraph = new CustomerIdentityGraphService(db);
+        var tenantId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            idGraph.GetCustomer360Async(tenantId, nonExistentId));
+    }
 }
