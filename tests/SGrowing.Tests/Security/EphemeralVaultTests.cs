@@ -99,4 +99,25 @@ public class EphemeralVaultTests
         var countAgain = _engine.EmergencyRevokeAll("CisoAdmin");
         Assert.Equal(0, countAgain);
     }
+
+    [Fact]
+    public void IssueToken_WithDifferentAccessScopes_AssignsCorrectScopeAndPrefix()
+    {
+        var request = new RequestEphemeralTokenRequest(
+            "usr_audit_lead",
+            AccessScope.CustomerPiiAccess,
+            "Compliance verification routine",
+            25
+        );
+
+        var token = _engine.IssueToken(request);
+
+        Assert.NotNull(token);
+        Assert.Equal(AccessScope.CustomerPiiAccess, token.Scope);
+        Assert.Equal("Compliance verification routine", token.Reason);
+        Assert.StartsWith("eph_tok_", token.TokenId);
+        Assert.EndsWith("...", token.SecretValuePrefix);
+        Assert.Equal(11, token.SecretValuePrefix.Length);
+        Assert.Equal(24, token.CryptographicSignature.Length);
+    }
 }

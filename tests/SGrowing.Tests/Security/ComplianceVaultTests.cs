@@ -81,4 +81,31 @@ public class ComplianceVaultTests
 
         Assert.Equal(expectedHash, leaf.PayloadSha256);
     }
+
+    [Fact]
+    public void RedactPii_MultipleOccurrencesOfSameCategory_SanitizesAllAndIncrementsCount()
+    {
+        var input = "Primary email: alice@domain.org, secondary: support@backup.io; Call 415-555-1234 or 212-555-9876.";
+        var result = _engine.RedactPii(new ScanPiiRequest(input));
+
+        Assert.NotNull(result);
+        Assert.Equal(4, result.TotalPiiCount);
+        Assert.DoesNotContain("alice@domain.org", result.SanitizedText);
+        Assert.DoesNotContain("support@backup.io", result.SanitizedText);
+        Assert.DoesNotContain("415-555-1234", result.SanitizedText);
+        Assert.DoesNotContain("212-555-9876", result.SanitizedText);
+        Assert.Equal(2, result.Matches.Count(m => m.Category == PiiCategory.Email));
+        Assert.Equal(2, result.Matches.Count(m => m.Category == PiiCategory.PhoneNumber));
+    }
+
+    [Fact]
+    public void ListDataResidencyBoundaries_ContainsAsiaPacificJurisdictionWithPermittedSubprocessors()
+    {
+        var boundaries = _engine.ListDataResidencyBoundaries();
+
+        var apac = Assert.Single(boundaries, b => b.RegionCode == "ap-southeast-1");
+        Assert.True(apac.IsEnforced);
+        Assert.Contains("Singapore Equinix SG1", apac.PrimaryStorageLocation);
+        Assert.Contains("GCP Singapore", apac.PermittedSubprocessors);
+    }
 }

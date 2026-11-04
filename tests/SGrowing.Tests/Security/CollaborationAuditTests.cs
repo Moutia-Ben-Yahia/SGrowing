@@ -80,4 +80,42 @@ public sealed class CollaborationAuditTests
         var logs = _engine.ListAuditLogs();
         Assert.Contains(logs, l => l.Action == "UserSessionsTerminated" && l.UserId == "usr_ghost");
     }
+
+    [Fact]
+    public void SendHeartbeat_SameUserDifferentResource_CreatesMultipleActiveSessions()
+    {
+        var req1 = new CollaborationHeartbeatRequest("res_canvas_A", "Canvas", "usr_multires", "Multi User", 10, 20, "Field1");
+        var req2 = new CollaborationHeartbeatRequest("res_canvas_B", "Canvas", "usr_multires", "Multi User", 30, 40, "Field2");
+
+        _engine.SendHeartbeat(req1);
+        _engine.SendHeartbeat(req2);
+
+        var activeA = _engine.ListActiveCollaborators("res_canvas_A");
+        var activeB = _engine.ListActiveCollaborators("res_canvas_B");
+
+        Assert.Contains(activeA, c => c.UserId == "usr_multires" && c.ActiveField == "Field1");
+        Assert.Contains(activeB, c => c.UserId == "usr_multires" && c.ActiveField == "Field2");
+    }
+
+    [Fact]
+    public void SendHeartbeat_ConsecutiveHeartbeats_UpdatesPositionInPlaceWithoutDuplicatingSession()
+    {
+        const string resId = "res_dynamic_board";
+        const string userId = "usr_updater";
+
+        var initial = new CollaborationHeartbeatRequest(resId, "Board", userId, "Updater", 100, 200, "NodeA");
+        var updated = new CollaborationHeartbeatRequest(resId, "Board", userId, "Updater", 450, 650, "NodeB");
+
+        _engine.SendHeartbeat(initial);
+        var session = _engine.SendHeartbeat(updated);
+
+        Assert.Equal(450, session.CursorX);
+        Assert.Equal(650, session.CursorY);
+        Assert.Equal("NodeB", session.ActiveField);
+
+        var activeForResource = _engine.ListActiveCollaborators(resId).Where(c => c.UserId == userId).ToList();
+        Assert.Single(activeForResource);
+        Assert.Equal(450, activeForResource[0].CursorX);
+        Assert.Equal(650, activeForResource[0].CursorY);
+    }
 }

@@ -177,4 +177,73 @@ public class CascadingModelRouterServiceTests
         statuses.Should().HaveCount(4);
         statuses.Select(s => s.Provider).Should().BeEquivalentTo(["OpenAI", "Anthropic", "Local", "Google"]);
     }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenPrimaryThrowsUnhandledException_CascadesToNextTier()
+    {
+        var request = new CascadingRouteRequest(Prompt: "Explain exception fallback");
+
+        Task<ModelProviderResponse> CustomInvoker(ModelTierConfig tier, CancellationToken ct)
+        {
+            if (tier.Priority == 0)
+            {
+                throw new HttpRequestException("Socket connection refused by OpenAI gateway");
+            }
+
+            return Task.FromResult(new ModelProviderResponse(
+                Success: true,
+                StatusCode: 200,
+                Content: "Anthropic Claude rescued request after primary threw exception",
+                LatencyMs: 150
+            ));
+        }
+
+        var result = await _router.ExecuteAsync(request, CustomInvoker);
+
+        result.Success.Should().BeTrue();
+        result.IsFallback.Should().BeTrue();
+        result.ActualProvider.Should().Be("Anthropic");
+        result.Content.Should().Contain("Anthropic Claude rescued");
+        result.FallbackReason.Should().Contain("Socket connection refused");
+
+        var status = _router.GetCircuitBreakerStatuses().First(s => s.Provider == "OpenAI");
+        status.State.Should().Be(CircuitState.Open);
+    }
+
+    [Fact]
+    public async Task CircuitBreaker_AfterCooldownElapsed_TransitionsHalfOpenAndRecoversToClosedOnSuccess()
+    {
+        // 1. Manually trip OpenAI circuit breaker
+        _router.TripCircuitBreaker("OpenAI", "Gateway 503 outage");
+        var openStatus = _router.GetCircuitBreakerStatuses().First(s => s.Provider == "OpenAI");
+        openStatus.State.Should().Be(CircuitState.Open);
+
+        // 2. Set very short cooldown period (50ms)
+        _router.SetCooldownPeriod(TimeSpan.FromMilliseconds(50));
+        await Task.Delay(70);
+
+        // 3. Execute request where OpenAI now succeeds
+        var request = new CascadingRouteRequest(Prompt: "Recovery probe query");
+        Task<ModelProviderResponse> RecoveryInvoker(ModelTierConfig tier, CancellationToken ct)
+        {
+            return Task.FromResult(new ModelProviderResponse(
+                Success: true,
+                StatusCode: 200,
+                Content: "OpenAI successfully recovered!",
+                LatencyMs: 80
+            ));
+        }
+
+        var result = await _router.ExecuteAsync(request, RecoveryInvoker);
+
+        result.Success.Should().BeTrue();
+        result.IsFallback.Should().BeFalse();
+        result.ActualProvider.Should().Be("OpenAI");
+        result.Content.Should().Be("OpenAI successfully recovered!");
+
+        // 4. Verify circuit breaker returned to Closed
+        var recoveredStatus = _router.GetCircuitBreakerStatuses().First(s => s.Provider == "OpenAI");
+        recoveredStatus.State.Should().Be(CircuitState.Closed);
+        recoveredStatus.LastFailureReason.Should().BeNull();
+    }
 }
