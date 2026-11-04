@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using SGrowing.Api.Modules.Advertising.SpendAutopilot;
 using Xunit;
 
@@ -16,6 +20,21 @@ public sealed class AdSpendAutopilotTests
         Assert.NotEmpty(campaigns);
         Assert.Contains(campaigns, c => c.Channel == "GoogleSearch");
         Assert.Contains(campaigns, c => c.Status == "AnomalyPaused");
+        Assert.True(campaigns.First().Roas >= campaigns.Last().Roas); // Descending order
+    }
+
+    [Fact]
+    public async Task GetRebalanceRecommendations_IdentifiesHighAndLowPerformers()
+    {
+        var recommendations = await _engine.GetRebalanceRecommendationsAsync();
+
+        Assert.NotNull(recommendations);
+        Assert.Single(recommendations);
+        var rec = recommendations[0];
+        Assert.Equal("cmp_meta_retargeting", rec.SourceCampaignId);
+        Assert.Equal("cmp_google_pmax", rec.TargetCampaignId);
+        Assert.True(rec.ReallocatedAmount > 0);
+        Assert.True(rec.ExpectedRoasLiftPercent > 10.0);
     }
 
     [Fact]
@@ -32,10 +51,38 @@ public sealed class AdSpendAutopilotTests
         Assert.NotNull(updatedTarget);
         Assert.Equal("cmp_google_pmax", updatedTarget.CampaignId);
         Assert.Equal(4000m, updatedTarget.DailyBudget); // 3500 + 500
+        Assert.Equal("Optimized", updatedTarget.Status);
 
         var campaigns = await _engine.GetCampaignsAsync();
         var source = campaigns.First(c => c.CampaignId == "cmp_meta_retargeting");
         Assert.Equal(1700m, source.DailyBudget); // 2200 - 500
+    }
+
+    [Fact]
+    public async Task RebalanceBudget_FloorsSourceBudgetAtMinimumOneHundred()
+    {
+        var request = new RebalanceBudgetRequest(
+            SourceCampaignId: "cmp_meta_retargeting",
+            TargetCampaignId: "cmp_google_pmax",
+            Amount: 50000m // massive amount exceeding current budget of 2200
+        );
+
+        var updatedTarget = await _engine.RebalanceBudgetAsync(request);
+
+        Assert.NotNull(updatedTarget);
+        var campaigns = await _engine.GetCampaignsAsync();
+        var source = campaigns.First(c => c.CampaignId == "cmp_meta_retargeting");
+        Assert.Equal(100m, source.DailyBudget); // Clamped at 100m floor
+    }
+
+    [Fact]
+    public async Task RebalanceBudget_ThrowsWhenCampaignNotFound()
+    {
+        var requestMissingSource = new RebalanceBudgetRequest("missing_src", "cmp_google_pmax", 200m);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => _engine.RebalanceBudgetAsync(requestMissingSource));
+
+        var requestMissingTarget = new RebalanceBudgetRequest("cmp_meta_retargeting", "missing_tgt", 200m);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => _engine.RebalanceBudgetAsync(requestMissingTarget));
     }
 
     [Fact]
@@ -48,5 +95,25 @@ public sealed class AdSpendAutopilotTests
         Assert.True(telemetry.ShadedBidPrice < rawBid);
         Assert.True(telemetry.SavingsAmount > 0);
         Assert.True(telemetry.AuctionWinRatePercent >= 80.0);
+    }
+
+    [Fact]
+    public async Task ExecuteBidShading_ThrowsWhenCampaignNotFound()
+    {
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => _engine.ExecuteBidShadingAsync("non_existent_cmp", 4.00m));
+    }
+
+    [Fact]
+    public async Task GetSummary_CalculatesAggregatedMetricsAccurately()
+    {
+        var summary = await _engine.GetSummaryAsync();
+
+        Assert.NotNull(summary);
+        Assert.True(summary.TotalDailyBudget > 0m);
+        Assert.True(summary.TotalCurrentSpend > 0m);
+        Assert.True(summary.TotalSavingsFromBidShading > 0m);
+        Assert.True(summary.BlendedRoas > 0);
+        Assert.Equal(2, summary.TotalActiveCampaigns);
+        Assert.Equal(1, summary.AnomalyPausedCount);
     }
 }

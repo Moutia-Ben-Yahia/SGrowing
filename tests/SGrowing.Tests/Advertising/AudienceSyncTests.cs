@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using SGrowing.Api.Modules.Advertising.AudienceSync;
 using Xunit;
@@ -36,6 +37,32 @@ public class AudienceSyncTests
     }
 
     [Fact]
+    public void SyncCohortBatch_Should_Ignore_Empty_Or_Whitespace_Identifiers()
+    {
+        var request = new BatchAudienceSyncRequest(
+            Platform: DspPlatform.GoogleCustomerMatch,
+            ExternalAudienceId: "act_google_filtered",
+            Records: new List<AudienceSyncRecord>
+            {
+                new("valid.user@company.com", "SegmentA", SyncAction.Add),
+                new("", "SegmentA", SyncAction.Add),
+                new("   ", "SegmentA", SyncAction.Add)
+            }
+        );
+
+        var result = _engine.SyncCohortBatch(request);
+
+        Assert.Equal(3, result.ProcessedCount);
+        Assert.Equal(1, result.HashedCount); // Only 1 valid identifier hashed
+    }
+
+    [Fact]
+    public void SyncCohortBatch_Should_Throw_On_Null_Request()
+    {
+        Assert.Throws<ArgumentNullException>(() => _engine.SyncCohortBatch(null!));
+    }
+
+    [Fact]
     public void GetConnectorStatuses_ReturnsAllMajorDspsWithMetrics()
     {
         // Act
@@ -46,6 +73,8 @@ public class AudienceSyncTests
         Assert.True(connectors.Count >= 4);
         Assert.Contains(connectors, c => c.Platform == DspPlatform.GoogleCustomerMatch && c.IsConnected);
         Assert.Contains(connectors, c => c.Platform == DspPlatform.MetaCustomAudience && c.IsConnected);
+        Assert.Contains(connectors, c => c.Platform == DspPlatform.TikTokAudienceManager && c.IsConnected);
+        Assert.Contains(connectors, c => c.Platform == DspPlatform.LinkedInMatchedAudience && c.IsConnected);
     }
 
     [Fact]
@@ -58,5 +87,20 @@ public class AudienceSyncTests
         Assert.NotNull(result);
         Assert.True(result.Success);
         Assert.Equal("RecoveredAndStreamed", result.Status);
+    }
+
+    [Fact]
+    public void RetryFailedSync_Should_Update_Existing_Job_When_Previously_Recorded()
+    {
+        var batch = _engine.SyncCohortBatch(new BatchAudienceSyncRequest(
+            Platform: DspPlatform.LinkedInMatchedAudience,
+            ExternalAudienceId: "aud_linkedin_abm",
+            Records: new List<AudienceSyncRecord> { new("lead@acme.com", "ABM", SyncAction.Add) }
+        ));
+
+        var retried = _engine.RetryFailedSync(batch.SyncJobId);
+
+        Assert.Equal(batch.SyncJobId, retried.SyncJobId);
+        Assert.Equal("RecoveredAndStreamed", retried.Status);
     }
 }

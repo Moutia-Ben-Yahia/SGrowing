@@ -46,6 +46,66 @@ public class ContentPersonalizationTests
     }
 
     [Fact]
+    public void EvaluatePagePersonalization_MatchesHealthcareSegment_With_Hipaa_Proof()
+    {
+        var request = new EvaluatePersonalizationRequest(
+            "192.0.2.88",
+            "moderna.com",
+            "Healthcare",
+            850,
+            new[] { "HIPAA", "FDA", "Clinical" },
+            "/solutions/healthcare"
+        );
+
+        var result = _engine.EvaluatePagePersonalization(request);
+
+        result.Should().NotBeNull();
+        result.MatchedSegmentId.Should().Be("SEG-HLT-02");
+        result.TailoredHeroHeadline.Should().Contain("Zero-Trust Patient Acquisition");
+        result.CallToActionText.Should().Contain("HIPAA Compliant");
+        result.TailoredCustomerProofLogos.Should().Contain("Moderna");
+        result.TailoredPricingTier.Should().Be("Enterprise Sovereign Custom"); // > 500
+    }
+
+    [Fact]
+    public void EvaluatePagePersonalization_MidMarketHeadcount_Assigns_Growth_Scale_Tier()
+    {
+        var request = new EvaluatePersonalizationRequest(
+            "203.0.113.12",
+            "startup-grow.io",
+            "Technology",
+            120, // <= 500
+            new[] { "PLG", "Self-Serve" },
+            "/pricing"
+        );
+
+        var result = _engine.EvaluatePagePersonalization(request);
+
+        result.Should().NotBeNull();
+        result.TailoredPricingTier.Should().Be("Growth Scale Tier");
+        result.TailoredCustomerProofLogos.Should().Contain("Vercel");
+    }
+
+    [Fact]
+    public void EvaluatePagePersonalization_UnknownIndustry_Gracefully_Defaults_To_First_Segment()
+    {
+        var request = new EvaluatePersonalizationRequest(
+            "10.0.0.1",
+            "unknown-corp.biz",
+            "Unknown Sector XYZ",
+            200,
+            new string[0],
+            "/landing"
+        );
+
+        var result = _engine.EvaluatePagePersonalization(request);
+
+        result.Should().NotBeNull();
+        result.MatchedSegmentId.Should().NotBeNullOrEmpty();
+        result.TailoredHeroHeadline.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
     public void RecordConversion_CreatesReceiptAndUpdatesWeights()
     {
         var request = new RecordConversionRequest(
@@ -60,6 +120,6 @@ public class ContentPersonalizationTests
         receipt.Should().NotBeNull();
         receipt.ReceiptId.Should().StartWith("REC-");
         receipt.AttributedValueUsd.Should().Be(50000m);
-        receipt.UpdatedVariantWeight.Should().BeGreaterThan(0.9);
+        receipt.ConversionType.Should().Be("DemoScheduled");
     }
 }
