@@ -286,4 +286,71 @@ public class EndToEndFlowTests
         var outboxB = await db.OutboxMessages.Where(o => o.TenantId == tenantB).ToListAsync();
         outboxB.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task CompleteCustomerLifecycle_SmsChannelIngress_And_ConversationReopeningLifecycle()
+    {
+        var db = CreateDbContext();
+        var outbox = new OutboxService(db);
+        var ingressService = new ChannelIngressService(db, outbox);
+        var statusHandler = new ChangeStatusHandler(db);
+        var tenantId = Guid.NewGuid();
+        var inboxId = Guid.NewGuid();
+
+        // 1. Ingest WhatsApp/SMS inbound message
+        var msg1 = new SGrowing.Core.Channels.InboundChannelMessage(
+            TenantId: tenantId,
+            ChannelType: "whatsapp",
+            ExternalSenderId: "+213555123456",
+            SenderName: "Khadija Benali",
+            ExternalMessageId: "wa-inbound-101",
+            ContentType: "text/plain",
+            Content: "Hello, I want to track my pending order #DZ-8899."
+        );
+
+        var ingest1 = await ingressService.IngestAsync(inboxId, msg1);
+        ingest1.IsSuccess.Should().BeTrue();
+        ingest1.Value.SenderType.Should().Be(MessageSenderType.Contact);
+
+        var contact = await db.Contacts.FirstOrDefaultAsync(c => c.TenantId == tenantId && c.Phone == "+213555123456");
+        contact.Should().NotBeNull();
+        contact!.FirstName.Should().Be("Khadija");
+        contact.LastName.Should().Be("Benali");
+
+        var conv1 = await db.Conversations.FirstOrDefaultAsync(c => c.ContactId == contact.Id);
+        conv1.Should().NotBeNull();
+        conv1!.Status.Should().Be(ConversationStatus.Open);
+
+        // 2. Resolve initial conversation
+        var resolveRes = await statusHandler.HandleAsync(new ChangeStatusRequest(tenantId, conv1.Id, ConversationStatus.Resolved));
+        resolveRes.IsSuccess.Should().BeTrue();
+        var conv1Fresh = await db.Conversations.FindAsync(conv1.Id);
+        conv1Fresh!.Status.Should().Be(ConversationStatus.Resolved);
+
+        // 3. Second message from same contact creates a new conversation linking to the same Contact entity
+        var msg2 = new SGrowing.Core.Channels.InboundChannelMessage(
+            TenantId: tenantId,
+            ChannelType: "whatsapp",
+            ExternalSenderId: "+213555123456",
+            SenderName: "Khadija Benali",
+            ExternalMessageId: "wa-inbound-102",
+            ContentType: "text/plain",
+            Content: "My package arrived safely. Thank you so much!"
+        );
+
+        var ingest2 = await ingressService.IngestAsync(inboxId, msg2);
+        ingest2.IsSuccess.Should().BeTrue();
+
+        var allConversations = await db.Conversations
+            .Where(c => c.ContactId == contact.Id)
+            .OrderBy(c => c.CreatedAtUtc)
+            .ToListAsync();
+
+        allConversations.Should().HaveCount(2);
+        allConversations[0].Status.Should().Be(ConversationStatus.Resolved);
+        allConversations[1].Status.Should().Be(ConversationStatus.Open);
+
+        var outboxEvents = await db.OutboxMessages.Where(o => o.TenantId == tenantId).ToListAsync();
+        outboxEvents.Should().HaveCount(2);
+    }
 }

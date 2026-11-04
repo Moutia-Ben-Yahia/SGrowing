@@ -390,4 +390,60 @@ public class EnterpriseOmniEndToEndTests
         updatedContact!.LifecycleStage.Should().Be(LifecycleStage.Lead);
         updatedContact.Tags.Should().Contain("demo-scheduled");
     }
+
+    [Fact]
+    public async Task EnterpriseOmni_ContactIdentityMerging_And_CheckoutLinkTracking()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var notifier = new Mock<IRealtimeNotifier>();
+        var identityResolver = new IdentityResolverService(db);
+        var checkoutService = new CheckoutLinkService(db, notifier.Object);
+
+        // 1. Initial Contact Creation via Identity Resolver
+        var initialRes = await identityResolver.ResolveOrCreateContactAsync(
+            tenantId,
+            email: "elena.rostova@imperium.org",
+            phone: "+447700900077",
+            firstName: "Elena",
+            lastName: "Rostova"
+        );
+        initialRes.IsSuccess.Should().BeTrue();
+        var contact = initialRes.Value;
+
+        var conv = Conversation.Create(tenantId, Guid.NewGuid(), contact.Id);
+        db.Conversations.Add(conv);
+        await db.SaveChangesAsync();
+
+        // 2. Subsequent resolution matches existing Contact by email
+        var duplicateRes = await identityResolver.ResolveOrCreateContactAsync(
+            tenantId,
+            email: "elena.rostova@imperium.org",
+            phone: "+447700900077",
+            firstName: "Elena",
+            lastName: "Rostova"
+        );
+        duplicateRes.IsSuccess.Should().BeTrue();
+        duplicateRes.Value.Id.Should().Be(contact.Id);
+
+        // 3. Create checkout link and mark paid
+        var linkRes = await checkoutService.CreateCheckoutLinkAsync(
+            tenantId,
+            contact.Id,
+            conv.Id,
+            "Autonomous SDR Platform License",
+            3600m,
+            "EUR"
+        );
+        linkRes.IsSuccess.Should().BeTrue();
+
+        var payRes = await checkoutService.MarkPaidAsync(tenantId, linkRes.Value.Id);
+        payRes.IsSuccess.Should().BeTrue();
+
+        // 4. Verify Unified Timeline records the Won Deal
+        var timelineRes = await identityResolver.GetUnifiedCustomerTimelineAsync(tenantId, contact.Id);
+        timelineRes.IsSuccess.Should().BeTrue();
+        timelineRes.Value.Deals.Should().ContainSingle(d => d.Amount == 3600m && d.Stage == DealStage.Won);
+        timelineRes.Value.Contact.LifecycleStage.Should().Be(LifecycleStage.Customer);
+    }
 }

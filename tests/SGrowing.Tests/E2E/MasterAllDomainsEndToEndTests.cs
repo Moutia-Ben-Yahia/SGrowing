@@ -227,4 +227,54 @@ public class MasterAllDomainsEndToEndTests
         Assert.Equal(EscrowStatus.VoidedReturn, voidedLedger!.Status);
         Assert.Equal("Customer doorstep refusal", voidedLedger.VoidReason);
     }
+
+    [Fact]
+    public async Task MasterAllDomains_CreatorEscrowDeliveryClearance_And_PayoutLifecycle()
+    {
+        using var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var creatorService = new CreatorAffiliateService(db);
+
+        // 1. Register creator
+        var creator = CreatorProfile.Create(
+            tenantId: tenantId,
+            fullName: "Amine Triki",
+            handle: "amine_tech",
+            email: "amine@creators.tn",
+            phone: "+21671123456",
+            platform: CreatorPlatform.YouTube,
+            commissionType: CommissionType.Percentage,
+            commissionRate: 10.0m
+        );
+        await creatorService.RegisterCreatorAsync(tenantId, creator);
+
+        // 2. Generate referral code
+        var code = await creatorService.CreateReferralCodeAsync(tenantId, creator.Id, "TECH10");
+        Assert.Equal("TECH10", code.Code);
+
+        // 3. Customer purchases order with referral code
+        var orderId = Guid.NewGuid();
+        var holdLedger = await creatorService.AttributeOrderCommissionAsync(tenantId, "TECH10", orderId, "TRK-EXP-9900", 500m);
+        Assert.NotNull(holdLedger);
+        Assert.Equal(EscrowStatus.EscrowHold, holdLedger!.Status);
+        Assert.Equal(50m, holdLedger.CommissionAmount);
+
+        var creatorProfileHold = await db.CreatorProfiles.FindAsync(creator.Id);
+        Assert.Equal(50m, creatorProfileHold!.PendingEscrowBalance);
+        Assert.Equal(0m, creatorProfileHold.TotalEarned);
+
+        // 4. Courier confirms successful COD delivery -> Clear escrow
+        var clearedLedger = await creatorService.ClearEscrowOnDeliveryAsync(tenantId, orderId);
+        Assert.NotNull(clearedLedger);
+        Assert.Equal(EscrowStatus.ClearedForPayout, clearedLedger!.Status);
+        Assert.NotNull(clearedLedger.ClearedAtUtc);
+
+        var creatorProfileCleared = await db.CreatorProfiles.FindAsync(creator.Id);
+        Assert.Equal(0m, creatorProfileCleared!.PendingEscrowBalance);
+        Assert.Equal(50m, creatorProfileCleared.TotalEarned);
+
+        // 5. Duplicate delivery confirmation is safely ignored
+        var duplicateClear = await creatorService.ClearEscrowOnDeliveryAsync(tenantId, orderId);
+        Assert.Null(duplicateClear);
+    }
 }

@@ -267,4 +267,50 @@ public class MasterEnterpriseCommerceTests
         Assert.Single(outboxEvents);
         Assert.Contains(quote.QuoteNumber, outboxEvents[0].Payload);
     }
+
+    [Fact]
+    public async Task MasterEnterpriseCommerceE2E_InChatQuoteExceptions_And_AbandonedCartRecoveryDispatch()
+    {
+        var tenantId = Guid.NewGuid();
+        var cpq = new InChatCpqService(_db, NullLogger<InChatCpqService>.Instance);
+        var recoveryService = new AbandonedCartRecoveryService(_db, NullLogger<AbandonedCartRecoveryService>.Instance);
+
+        // 1. Nonexistent quote throws KeyNotFoundException on in-chat rendering and accept
+        var missingQuoteId = Guid.NewGuid();
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            cpq.GenerateInChatQuoteMessageAsync(tenantId, missingQuoteId));
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            cpq.AcceptQuoteAsync(tenantId, missingQuoteId));
+
+        // 2. Add an abandoned cart older than 60 minutes
+        var cartRecord = AbandonedCartRecord.Create(
+            tenantId: tenantId,
+            storefrontConnectionId: Guid.NewGuid(),
+            externalCartId: "cart_stale_9988",
+            customerEmail: "procurement@enterprise-corp.com",
+            cartTotal: 1540.00m,
+            recoveryUrl: "https://shop.sgrowing.com/checkouts/cart_stale_9988"
+        );
+        typeof(AbandonedCartRecord).GetProperty("DetectedAtUtc")!
+            .SetValue(cartRecord, DateTime.UtcNow.AddMinutes(-90));
+
+        await _db.AbandonedCartRecords.AddAsync(cartRecord);
+        await _db.SaveChangesAsync();
+
+        // 3. Trigger recovery scan
+        var scanResults = await recoveryService.TriggerRecoveryScanAsync(tenantId, TimeSpan.FromMinutes(60));
+        Assert.Single(scanResults);
+        Assert.Equal("procurement@enterprise-corp.com", scanResults[0].CustomerEmail);
+        Assert.Contains("SAVE10", scanResults[0].FormattedMessage);
+        Assert.Equal(cartRecord.RecoveryUrl, scanResults[0].RecoveryUrl);
+
+        var refreshedCart = await _db.AbandonedCartRecords.FindAsync(cartRecord.Id);
+        Assert.Equal(AbandonedCartStatus.RecoveryTriggered, refreshedCart!.Status);
+
+        var outboxEvents = await _db.OutboxMessages
+            .Where(o => o.TenantId == tenantId && o.EventType == "AbandonedCartRecoveryDispatchedEvent")
+            .ToListAsync();
+        Assert.Single(outboxEvents);
+    }
 }

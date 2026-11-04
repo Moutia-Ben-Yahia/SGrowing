@@ -258,4 +258,36 @@ public class EnterpriseHorizonTests
         Assert.Null(signRes.ClosedWonDealId);
         Assert.Equal("https://storage.sgrowing.io/contracts/sla_signed_99.pdf", signRes.SignedPdfUrl);
     }
+
+    [Fact]
+    public async Task MasterEnterpriseE2E_WarmTransferValidation_And_MultiLingualEncryptionLifecycle()
+    {
+        var tenantId = Guid.NewGuid();
+
+        // 1. Warm SIP Transfer creates valid SIP TwiML instructions
+        var bargeInService = new BargeInInterruptionService(NullLogger<BargeInInterruptionService>.Instance);
+        var voiceSession = StreamingVoiceCallSession.Create(tenantId, "CA_LIVE_TRANSFER_OK", "MZ_STREAM_OK");
+
+        var validTransfer = bargeInService.InitiateWarmSipTransfer(
+            voiceSession,
+            "sip:tier2-escalation@sgrowing.voice.net",
+            "Urgent deal closing consultation",
+            "Customer agreed to enterprise subscription");
+        Assert.True(validTransfer.Success);
+        Assert.Equal("sip:tier2-escalation@sgrowing.voice.net", validTransfer.TargetSipUri);
+        Assert.Contains("tier2-escalation", validTransfer.TwiMlXml);
+        Assert.True(validTransfer.ContextHeaders.ContainsKey("X-Transfer-Reason"));
+
+        // 2. AES Encryption & Decryption preserves multi-byte international text
+        var aes = new AesEncryptionService();
+        var multiLingualPayload = "اتفاقية المؤسسات لخدمات الحوسبة السحابية / エンタープライズ契約書 / Global Enterprise SLA 2026";
+        var encrypted = aes.Encrypt(multiLingualPayload);
+        var decrypted = aes.Decrypt(encrypted.CiphertextBase64, encrypted.NonceBase64, encrypted.TagBase64);
+        Assert.Equal(multiLingualPayload, decrypted);
+
+        // 3. Contract Signing on Nonexistent Token Throws Cleanly
+        var contractService = new ContractSigningService(_db, NullLogger<ContractSigningService>.Instance);
+        var nullResult = await contractService.GetAndMarkViewedAsync("invalid_token_99999");
+        Assert.Null(nullResult);
+    }
 }
