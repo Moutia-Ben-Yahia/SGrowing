@@ -42,4 +42,13 @@ describe('WinLossCockpitComponent', () => {
     expect(comp.avgWonDeal()).toBe(0);
     expect(comp.avgSentiment()).toBe(0);
   });
+
+  it('should update selectedDeal when selectDeal is invoked', () => {
+    const comp = new WinLossCockpitComponent();
+    const lostDeal = comp.deals().find(d => d.outcome === 'ClosedLost')!;
+    comp.selectDeal(lostDeal);
+    expect(comp.selectedDeal()?.dealId).toBe(lostDeal.dealId);
+    expect(comp.selectedDeal()?.competitorName).toBe('Epic Systems Integration Suite');
+    expect(comp.selectedDeal()?.outcome).toBe('ClosedLost');
+  });
 });

@@ -40,4 +40,11 @@ describe('DealRegistrationCockpitComponent (Horizon 64)', () => {
     expect(component.lockedCount()).toBe(0);
     expect(component.totalCommissions()).toBe(0);
   });
+
+  it('should update selectedDeal signal when selectDeal is called', () => {
+    const first = component.deals()[0];
+    component.selectDeal(first);
+    expect(component.selectedDeal()?.dealId).toBe(first.dealId);
+    expect(component.selectedDeal()?.partnerName).toBe(first.partnerName);
+  });
 });

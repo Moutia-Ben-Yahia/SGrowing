@@ -135,4 +135,12 @@ describe('CustomerLifecycleStudioComponent (DAG Journey Canvas & Multi-Channel F
     expect(mockHttp.post).toHaveBeenCalled();
     expect(component.showTriggerModal()).toBe(false);
   });
+
+  it('should save edited node changes and clear selectedNode signal', () => {
+    const node = component.activeJourney()!.nodes[0];
+    component.selectNode({ ...node, name: 'Custom Trigger Name' });
+    component.saveNodeChanges();
+    expect(component.selectedNode()).toBeNull();
+    expect(component.activeJourney()!.nodes[0].name).toBe('Custom Trigger Name');
+  });
 });

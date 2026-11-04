@@ -65,4 +65,10 @@ test2@example.com`;
     expect(component.previewHashes().length).toBe(2);
     expect(component.previewHashes()[0]).toHaveLength(64);
   });
+
+  it('should return 0 totalSpend and 0.00 blendedRoas when campaigns array is empty', () => {
+    component.campaigns.set([]);
+    expect(component.totalSpend()).toBe(0);
+    expect(component.blendedRoas()).toBe('0.00');
+  });
 });

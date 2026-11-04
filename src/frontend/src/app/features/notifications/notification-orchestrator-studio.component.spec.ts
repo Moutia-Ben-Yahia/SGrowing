@@ -39,4 +39,10 @@ describe('NotificationOrchestratorStudioComponent', () => {
   it('should execute fallback sweep without throwing', () => {
     expect(() => component.runFallbackSweep()).not.toThrow();
   });
+
+  it('should return default fallback badge classes for unknown channel and status', () => {
+    expect(component.getChannelBadge('Unknown' as any)).toBe('bg-slate-700 text-slate-300');
+    expect(component.getStatusBadge('Throttled')).toBe('bg-slate-700 text-slate-400');
+    expect(component.getStatusBadge('Unknown' as any)).toBe('bg-slate-700 text-slate-300');
+  });
 });

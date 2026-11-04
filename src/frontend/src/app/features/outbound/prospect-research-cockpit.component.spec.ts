@@ -63,4 +63,12 @@ describe('ProspectResearchCockpitComponent', () => {
     component.runDeepCrawl();
     expect(component.isCrawling()).toBe(true);
   });
+
+  it('should set toast notification when copyToClipboard or injectIntoCadence is invoked', () => {
+    component.injectIntoCadence('Custom AI SDR hook');
+    expect(component.toastMessage()).toContain('Injected sales hook into Active Cold Outreach Sequence!');
+
+    component.copyToClipboard('Sales hook sample');
+    expect(component.toastMessage()).toBe('Copied sales hook to clipboard!');
+  });
 });

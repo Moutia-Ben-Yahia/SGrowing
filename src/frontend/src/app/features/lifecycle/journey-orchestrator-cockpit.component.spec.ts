@@ -41,4 +41,12 @@ describe('JourneyOrchestratorCockpitComponent', () => {
     expect(component.fatigueCheckResult()?.canSend).toBe(true);
     expect(component.fatigueCheckResult()?.reason).toContain('fully eligible');
   });
+
+  it('should toggle showEnrollModal signal when opening and closing enrollment modal', () => {
+    expect(component.showEnrollModal()).toBe(false);
+    component.showEnrollModal.set(true);
+    expect(component.showEnrollModal()).toBe(true);
+    component.showEnrollModal.set(false);
+    expect(component.showEnrollModal()).toBe(false);
+  });
 });

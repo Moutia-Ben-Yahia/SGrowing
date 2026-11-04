@@ -41,4 +41,11 @@ describe('ShapleyAttributionCockpitComponent', () => {
     expect(comp.totalSpend()).toBe(0);
     expect(comp.blendedRoas()).toBe(0);
   });
+
+  it('should recalculate blendedRoas and projectedUplift when totalPipelineArr changes', () => {
+    const comp = new ShapleyAttributionCockpitComponent();
+    comp.totalPipelineArr.set(2450000);
+    expect(comp.blendedRoas()).toBe(10); // 2450000 / 245000
+    expect(comp.projectedUplift()).toBe(Math.round(2450000 * 0.185));
+  });
 });

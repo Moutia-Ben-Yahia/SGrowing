@@ -53,4 +53,19 @@ describe('WhatsAppBroadcastCockpitComponent', () => {
     expect(component.deliveredPercent()).toBe(0);
     expect(component.readPercent()).toBe(0);
   });
+
+  it('should accurately compute delivery and read percentages for custom campaign numbers', () => {
+    component.campaign.set({
+      campaignId: 'custom_wabc',
+      name: 'Custom Broadcast',
+      total: 1000,
+      sent: 1000,
+      delivered: 900,
+      read: 450,
+      status: 'Broadcasting'
+    });
+
+    expect(component.deliveredPercent()).toBe(90);
+    expect(component.readPercent()).toBe(45);
+  });
 });

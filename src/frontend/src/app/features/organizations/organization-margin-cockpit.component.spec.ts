@@ -68,4 +68,17 @@ describe('OrganizationMarginCockpitComponent', () => {
     expect(component.marginHealthColor()).toBe('text-red-400');
     expect(component.marginHealthBadge()).toContain('bg-red-500/20');
   });
+
+  it('should flag Moderate Margin (20-40%) when true margin is between 20% and 40%', () => {
+    component.calcRevenue.set(1000);
+    component.calcCogs.set(500);
+    component.calcCourierFees.set(100);
+    component.calcLaborHours.set(4);
+    component.calcHourlyRate.set(25); // Labor = 100, margin = 1000 - 500 - 100 - 100 = 300 (30%)
+
+    expect(component.computedMarginPct()).toBe(30);
+    expect(component.marginHealthLabel()).toBe('Moderate Margin (20-40%)');
+    expect(component.marginHealthColor()).toBe('text-amber-400');
+    expect(component.marginHealthBadge()).toContain('bg-amber-500/20');
+  });
 });

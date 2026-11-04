@@ -99,4 +99,13 @@ describe('KnowledgeStudioComponent', () => {
     expect(component.ragResult()?.confidenceScore).toBe(35);
     expect(component.ragResult()?.answer).toContain('notified our support team');
   });
+
+  it('should fall back to default mock articles when getArticles returns empty array or fails', () => {
+    const { throwError } = require('rxjs');
+    mockApi.getArticles = vi.fn().mockImplementation(() => throwError(() => new Error('DB timeout')));
+    component.ngOnInit();
+    expect(component.articles().length).toBe(2);
+    expect(component.articles()[1].slug).toBe('mailbox-warmup-guide');
+    expect(component.articles()[1].viewCount).toBe(89);
+  });
 });

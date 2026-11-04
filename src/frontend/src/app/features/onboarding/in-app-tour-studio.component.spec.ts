@@ -149,4 +149,17 @@ describe('InAppTourStudioComponent', () => {
     const added = component.selectedTour()?.steps[initialStepsCount];
     expect(added?.stepOrder).toBe(initialStepsCount + 1);
   });
+
+  it('should navigate through preview steps with previewSelectedTour, nextPreviewStep, and prevPreviewStep', () => {
+    component.addStepToCurrentTour(); // now has 2 steps
+    component.previewSelectedTour();
+    expect(component.activeTab()).toBe('preview');
+    expect(component.previewCurrentStepIndex()).toBe(0);
+
+    component.nextPreviewStep();
+    expect(component.previewCurrentStepIndex()).toBe(1);
+
+    component.prevPreviewStep();
+    expect(component.previewCurrentStepIndex()).toBe(0);
+  });
 });
