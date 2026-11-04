@@ -119,4 +119,107 @@ public class AdvancedWorkflowSchedulerServiceTests
         result.Success.Should().BeFalse();
         result.Message.Should().Contain("not found");
     }
+
+    [Fact]
+    public void QuietHoursPolicy_CreateDefault_SetsOvernightDefaults()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var policy = QuietHoursPolicy.CreateDefault(tenantId);
+
+        policy.Should().NotBeNull();
+        policy.TenantId.Should().Be(tenantId);
+        policy.IsEnabled.Should().BeTrue();
+        policy.StartHourLocal.Should().Be(21);
+        policy.EndHourLocal.Should().Be(8);
+        policy.AllowBypassForUrgent.Should().BeTrue();
+    }
+
+    [Fact]
+    public void QuietHoursPolicy_IsInQuietHours_EvaluatesOvernightBoundaryAccurately()
+    {
+        var tenantId = Guid.NewGuid();
+        var policy = QuietHoursPolicy.CreateDefault(tenantId);
+
+        var lateNight = new DateTime(2026, 11, 4, 22, 30, 0);
+        var earlyMorning = new DateTime(2026, 11, 4, 3, 15, 0);
+        var businessHours = new DateTime(2026, 11, 4, 14, 0, 0);
+        var exactEndHour = new DateTime(2026, 11, 4, 8, 0, 0);
+
+        policy.IsInQuietHours(lateNight).Should().BeTrue();
+        policy.IsInQuietHours(earlyMorning).Should().BeTrue();
+        policy.IsInQuietHours(businessHours).Should().BeFalse();
+        policy.IsInQuietHours(exactEndHour).Should().BeFalse();
+
+        policy.IsEnabled = false;
+        policy.IsInQuietHours(lateNight).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ReplayDeadLetterStepAsync_WhenAlreadyResolved_ReplaysAgainAndIncrementsRetryCount()
+    {
+        using var db = CreateDbContext();
+        var service = new AdvancedWorkflowSchedulerService(db);
+        var tenantId = Guid.NewGuid();
+
+        var log = await service.EnqueueDeadLetterAsync(
+            tenantId,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "sync-crm-node",
+            "CrmSyncAction",
+            "{\"leadId\":42}",
+            "HubSpot rate limit exceeded"
+        );
+
+        var firstReplay = await service.ReplayDeadLetterStepAsync(tenantId, log.Id);
+        firstReplay.Success.Should().BeTrue();
+
+        var secondReplay = await service.ReplayDeadLetterStepAsync(tenantId, log.Id);
+        secondReplay.Success.Should().BeTrue();
+
+        var finalRecord = await db.WorkflowDeadLetterLogs.FindAsync(log.Id);
+        finalRecord!.RetryCount.Should().Be(2);
+        finalRecord.IsResolved.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EnqueueDeadLetterAsync_MultipleStepsInWorkflow_PersistsDistinctEntries()
+    {
+        using var db = CreateDbContext();
+        var service = new AdvancedWorkflowSchedulerService(db);
+        var tenantId = Guid.NewGuid();
+        var workflowId = Guid.NewGuid();
+        var executionId = Guid.NewGuid();
+
+        var log1 = await service.EnqueueDeadLetterAsync(
+            tenantId,
+            workflowId,
+            executionId,
+            "step-1-fetch-order",
+            "HttpAction",
+            "{\"orderId\":101}",
+            "Gateway timeout"
+        );
+
+        var log2 = await service.EnqueueDeadLetterAsync(
+            tenantId,
+            workflowId,
+            executionId,
+            "step-2-generate-invoice",
+            "InvoiceAction",
+            "{\"orderId\":101}",
+            "Tax service down"
+        );
+
+        log1.Id.Should().NotBe(log2.Id);
+        log1.FailedNodeId.Should().Be("step-1-fetch-order");
+        log2.FailedNodeId.Should().Be("step-2-generate-invoice");
+
+        var logs = await db.WorkflowDeadLetterLogs
+            .Where(x => x.ExecutionId == executionId)
+            .ToListAsync();
+
+        logs.Should().HaveCount(2);
+    }
 }

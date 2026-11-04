@@ -137,4 +137,121 @@ public class OmnichannelMimeAndMacroTests
         Assert.NotNull(outboxMsg);
         Assert.Equal("CsatSurveyTriggeredEvent", outboxMsg.EventType);
     }
+
+    [Fact]
+    public async Task SlaEscalationEngine_EvaluateEscalationPolicies_WhenBreachedAndCritical_ElevatesPriorityAndSetsFlags()
+    {
+        // Arrange
+        var (db, service) = CreateSlaContext();
+        var tenantId = Guid.NewGuid();
+
+        var policy = SlaPolicy.Create(tenantId, "Urgent Priority SLA", ConversationPriority.Normal, 20, 120);
+        db.SlaPolicies.Add(policy);
+
+        var conv = Conversation.Create(tenantId, Guid.NewGuid(), Guid.NewGuid());
+        conv.Priority = ConversationPriority.Normal;
+        typeof(Conversation).GetProperty("CreatedAtUtc")!.SetValue(conv, DateTime.UtcNow.AddMinutes(-40)); // 40 min elapsed vs 20 min target => ratio 2.0 (Critical)
+        conv.Status = ConversationStatus.Open;
+        db.Conversations.Add(conv);
+        await db.SaveChangesAsync();
+
+        // Act
+        var result = await service.EvaluateEscalationPoliciesAsync(tenantId);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(1, result.TotalActiveEvaluated);
+        Assert.Equal(1, result.TotalCritical);
+        Assert.NotEmpty(result.Escalations);
+
+        var escalation = result.Escalations[0];
+        Assert.Equal(conv.Id, escalation.ConversationId);
+        Assert.Equal(SlaEscalationTier.Critical, escalation.EscalationTier);
+        Assert.True(escalation.PriorityElevated);
+
+        var updatedConv = await db.Conversations.FindAsync(conv.Id);
+        Assert.True(updatedConv!.IsSlaBreached);
+        Assert.Equal(ConversationPriority.Urgent, updatedConv.Priority);
+    }
+
+    [Fact]
+    public async Task CannedMacroService_CreateMacroAsync_StoresAndRetrievesCustomMacro()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var request = new CreateCannedMacroRequest(
+            TriggerKey: "vipwelcome",
+            Title: "VIP Welcome Onboarding",
+            Category: "Onboarding",
+            ContentTemplate: "Welcome {{contact.name}} to {{tier.name}} tier of {{company.name}}!"
+        );
+
+        // Act
+        var created = await _macroService.CreateMacroAsync(tenantId, request);
+
+        // Assert
+        Assert.NotNull(created);
+        Assert.Equal("/vipwelcome", created.TriggerKey);
+        Assert.Contains("tier.name", created.RequiredVariables);
+
+        var context = new MacroSubstitutionContext(
+            ContactName: "Sarah Connor",
+            CompanyName: "Cyberdyne Systems",
+            CustomVariables: new Dictionary<string, string> { ["tier.name"] = "Diamond" }
+        );
+
+        var resolved = await _macroService.ResolveMacroAsync(tenantId, "vipwelcome", context);
+        Assert.Contains("Welcome Sarah Connor to Diamond tier of Cyberdyne Systems!", resolved.ResolvedContent);
+        Assert.Empty(resolved.MissingVariables);
+    }
+
+    [Fact]
+    public async Task CannedMacroService_ResolveMacro_WhenMissingRequiredVariables_FlagsMissingVariables()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var request = new CreateCannedMacroRequest(
+            TriggerKey: "/shipnotice",
+            Title: "Shipping Notice",
+            Category: "Logistics",
+            ContentTemplate: "Hello {{contact.name}}, your order {{order.number}} of {{order.amount}} was shipped!"
+        );
+        await _macroService.CreateMacroAsync(tenantId, request);
+
+        // Context missing order details
+        var context = new MacroSubstitutionContext(ContactName: "John Doe");
+
+        // Act
+        var resolution = await _macroService.ResolveMacroAsync(tenantId, "/shipnotice", context);
+
+        // Assert
+        Assert.NotNull(resolution);
+        Assert.Contains("order.number", resolution.MissingVariables);
+        Assert.Contains("order.amount", resolution.MissingVariables);
+    }
+
+    [Fact]
+    public void MimeEmailParser_ParsesSimplePlainTextEmail_WithoutAttachments()
+    {
+        // Arrange
+        var rawMime = """
+            From: "Bob Support" <bob@vendor.org>
+            To: "Inbound" <inbound@sgrowing.io>
+            Subject: Simple Inquiry
+            Date: Tue, 27 Oct 2026 09:15:00 +0000
+            Message-ID: <simple-inq-123@vendor.org>
+            Content-Type: text/plain; charset=utf-8
+
+            Just wanted to check if your API documentation is publicly available.
+            """;
+
+        // Act
+        var parsed = _parser.ParseRawMime(rawMime);
+
+        // Assert
+        Assert.Equal("Simple Inquiry", parsed.Subject);
+        Assert.Equal("\"Bob Support\" <bob@vendor.org>", parsed.From);
+        Assert.Contains("Just wanted to check if your API documentation is publicly available.", parsed.CleanTextBody);
+        Assert.Empty(parsed.Attachments);
+    }
 }

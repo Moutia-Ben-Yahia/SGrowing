@@ -300,4 +300,155 @@ public class MultiTouchSdrTests
         refreshedExecB!.Status.Should().Be("Pending");
         refreshedExecB.ExecutedAtUtc.Should().BeNull();
     }
+
+    [Fact]
+    public async Task Orchestrator_ProcessDueMultiTouchSteps_WhenChannelIsSms_DispatchesSmsOutboundEvent()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var outbox = new OutboxService(db);
+        var mailboxService = new MailboxService(db);
+        var linkedInAdapter = new LinkedInOutreachAdapter(null, outbox);
+        var voiceService = new VoiceTelephonyService(db);
+
+        var contact = Contact.Create(tenantId, "Bruce", "Wayne", "bruce@wayne.com", "+12025550999");
+        db.Contacts.Add(contact);
+
+        var touchpoint = CadenceTouchpoint.Create(
+            tenantId,
+            Guid.NewGuid(),
+            1,
+            TouchpointChannel.Sms,
+            0,
+            null,
+            "Special VIP offer for {{first_name}}");
+        db.CadenceTouchpoints.Add(touchpoint);
+
+        var exec = TouchpointExecution.Create(
+            tenantId,
+            touchpoint.Id,
+            contact.Id,
+            TouchpointChannel.Sms,
+            DateTime.UtcNow.AddMinutes(-5));
+        db.TouchpointExecutions.Add(exec);
+        await db.SaveChangesAsync();
+
+        var orchestrator = new MultiTouchCadenceOrchestrator(
+            db,
+            mailboxService,
+            linkedInAdapter,
+            voiceService,
+            outbox);
+
+        var processed = await orchestrator.ProcessDueMultiTouchStepsAsync(tenantId);
+
+        processed.Should().Be(1);
+        exec.Status.Should().Be("Sent");
+        exec.ExecutedAtUtc.Should().NotBeNull();
+
+        var outboxEvents = await db.OutboxMessages
+            .Where(o => o.TenantId == tenantId && o.EventType == "SmsOutboundDispatched")
+            .ToListAsync();
+
+        outboxEvents.Should().HaveCount(1);
+        outboxEvents[0].Payload.Should().Contain("12025550999");
+        outboxEvents[0].Payload.Should().Contain("Special VIP offer for Bruce");
+    }
+
+    [Fact]
+    public async Task Orchestrator_ProcessDueMultiTouchSteps_WhenLinkedInProfileUrlMissing_FallsBackToDefaultProfileUrl()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var outbox = new OutboxService(db);
+        var mailboxService = new MailboxService(db);
+        var linkedInAdapter = new LinkedInOutreachAdapter(null, outbox);
+        var voiceService = new VoiceTelephonyService(db);
+
+        // Contact without LinkedIn URL in custom fields
+        var contact = Contact.Create(tenantId, "Clark", "Kent", "clark@dailyplanet.com");
+        db.Contacts.Add(contact);
+
+        var touchpoint = CadenceTouchpoint.Create(
+            tenantId,
+            Guid.NewGuid(),
+            1,
+            TouchpointChannel.LinkedInConnect,
+            0,
+            null,
+            "Hi {{first_name}}, let's network");
+        db.CadenceTouchpoints.Add(touchpoint);
+
+        var exec = TouchpointExecution.Create(
+            tenantId,
+            touchpoint.Id,
+            contact.Id,
+            TouchpointChannel.LinkedInConnect,
+            DateTime.UtcNow.AddMinutes(-2));
+        db.TouchpointExecutions.Add(exec);
+        await db.SaveChangesAsync();
+
+        var orchestrator = new MultiTouchCadenceOrchestrator(
+            db,
+            mailboxService,
+            linkedInAdapter,
+            voiceService,
+            outbox);
+
+        var processed = await orchestrator.ProcessDueMultiTouchStepsAsync(tenantId);
+
+        processed.Should().Be(1);
+        linkedInAdapter.SentConnectionRequests.Should().HaveCount(1);
+        linkedInAdapter.SentConnectionRequests[0].ProfileUrl.Should().Be("https://linkedin.com/in/clark-kent");
+        linkedInAdapter.SentConnectionRequests[0].NoteText.Should().Be("Hi Clark, let's network");
+    }
+
+    [Fact]
+    public async Task Orchestrator_ProcessDueMultiTouchSteps_WhenNoDueExecutions_ReturnsZeroAndPerformsNoOutboxDispatches()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var outbox = new OutboxService(db);
+        var mailboxService = new MailboxService(db);
+        var linkedInAdapter = new LinkedInOutreachAdapter(null, outbox);
+        var voiceService = new VoiceTelephonyService(db);
+
+        var orchestrator = new MultiTouchCadenceOrchestrator(
+            db,
+            mailboxService,
+            linkedInAdapter,
+            voiceService,
+            outbox);
+
+        var processed = await orchestrator.ProcessDueMultiTouchStepsAsync(tenantId);
+
+        processed.Should().Be(0);
+        var outboxEvents = await db.OutboxMessages.Where(o => o.TenantId == tenantId).ToListAsync();
+        outboxEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void TouchpointExecution_Lifecycle_TransitionsThroughStatuses()
+    {
+        var tenantId = Guid.NewGuid();
+        var touchpointId = Guid.NewGuid();
+        var contactId = Guid.NewGuid();
+        var scheduled = DateTime.UtcNow.AddHours(1);
+
+        var exec = TouchpointExecution.Create(tenantId, touchpointId, contactId, TouchpointChannel.Email, scheduled);
+
+        exec.Status.Should().Be("Pending");
+        exec.ExecutedAtUtc.Should().BeNull();
+
+        var now = DateTime.UtcNow;
+        exec.MarkSent(now);
+        exec.Status.Should().Be("Sent");
+        exec.ExecutedAtUtc.Should().Be(now);
+
+        exec.MarkDelivered();
+        exec.Status.Should().Be("Delivered");
+
+        exec.MarkReplied();
+        exec.Status.Should().Be("Replied");
+    }
 }

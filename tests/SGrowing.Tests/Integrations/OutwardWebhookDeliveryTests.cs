@@ -137,4 +137,99 @@ public class OutwardWebhookDeliveryTests
         var dlqAfterRetry = await _service.GetDeadLetterLogsAsync(tenantId);
         dlqAfterRetry.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task DispatchWebhookEventAsync_WhenEventTypeNotSubscribed_DoesNotGenerateDeliveryLog()
+    {
+        var tenantId = Guid.NewGuid();
+
+        await _service.RegisterWebhookSubscriptionAsync(
+            tenantId,
+            "https://merchant-crm.com/webhooks",
+            ["deal.won"]);
+
+        var logs = await _service.DispatchWebhookEventAsync(tenantId, "lead.created", new { leadId = 42 });
+
+        logs.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ToggleWebhookSubscriptionAsync_WhenDeactivated_SkipsEventDispatch()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var sub = await _service.RegisterWebhookSubscriptionAsync(
+            tenantId,
+            "https://merchant-crm.com/webhooks",
+            ["invoice.paid"]);
+
+        // Deactivate subscription
+        var toggleResult = await _service.ToggleWebhookSubscriptionAsync(tenantId, sub.Id, false);
+        toggleResult.Should().BeTrue();
+
+        var logsWhenDisabled = await _service.DispatchWebhookEventAsync(tenantId, "invoice.paid", new { invoiceId = 101 });
+        logsWhenDisabled.Should().BeEmpty();
+
+        // Reactivate subscription
+        await _service.ToggleWebhookSubscriptionAsync(tenantId, sub.Id, true);
+        var logsWhenActive = await _service.DispatchWebhookEventAsync(tenantId, "invoice.paid", new { invoiceId = 101 });
+        logsWhenActive.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task TenantApiKey_Lifecycle_GenerateValidateAndRevoke()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var (entity, plainKey) = await _service.GenerateApiKeyAsync(
+            tenantId,
+            "Production Integration Key",
+            ["orders:read", "webhooks:write"],
+            isLive: true,
+            rateLimit: 120);
+
+        entity.Should().NotBeNull();
+        entity.TenantId.Should().Be(tenantId);
+        entity.Name.Should().Be("Production Integration Key");
+        plainKey.Should().StartWith("sg_live_");
+
+        // Validate key
+        var validated = await _service.ValidateApiKeyAsync(plainKey);
+        validated.Should().NotBeNull();
+        validated!.Id.Should().Be(entity.Id);
+        validated.LastUsedAtUtc.Should().NotBeNull();
+
+        // Revoke key
+        var revoked = await _service.RevokeApiKeyAsync(tenantId, entity.Id);
+        revoked.Should().BeTrue();
+
+        // Validate again should fail
+        var revalidated = await _service.ValidateApiKeyAsync(plainKey);
+        revalidated.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetDeliveryLogsAsync_FiltersBySubscriptionIdAndEnforcesLimit()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var sub1 = await _service.RegisterWebhookSubscriptionAsync(
+            tenantId,
+            "https://sub1.com/webhook",
+            ["order.created"]);
+
+        var sub2 = await _service.RegisterWebhookSubscriptionAsync(
+            tenantId,
+            "https://sub2.com/webhook",
+            ["order.created"]);
+
+        // Dispatch 3 events
+        await _service.DispatchWebhookEventAsync(tenantId, "order.created", new { id = 1 });
+        await _service.DispatchWebhookEventAsync(tenantId, "order.created", new { id = 2 });
+        await _service.DispatchWebhookEventAsync(tenantId, "order.created", new { id = 3 });
+
+        var sub1Logs = await _service.GetDeliveryLogsAsync(tenantId, sub1.Id, limit: 2);
+        sub1Logs.Should().HaveCount(2);
+        sub1Logs.Should().OnlyContain(l => l.SubscriptionId == sub1.Id);
+    }
 }
