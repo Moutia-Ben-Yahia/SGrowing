@@ -86,4 +86,32 @@ public class CallComplianceTests
             corpus[i].TimestampUtc.Should().BeOnOrAfter(corpus[i + 1].TimestampUtc);
         }
     }
+
+    [Fact]
+    public void RecordDecision_PreservesUnrelatedAuditFields()
+    {
+        var original = _engine.GetAuditCorpus().Find(a => a.AuditId == "audit_rec_103")!;
+        var originalAgent = original.AgentName;
+        var originalDuration = original.DurationSeconds;
+        var originalScore = original.ScriptAdherenceScore;
+
+        var request = new AuditCallRequest("audit_rec_103", AuditStatus.CompliantPassed, "Approved with coaching");
+        var result = _engine.RecordDecision(request);
+
+        var updated = _engine.GetAuditCorpus().Find(a => a.AuditId == "audit_rec_103")!;
+        updated.AgentName.Should().Be(originalAgent);
+        updated.DurationSeconds.Should().Be(originalDuration);
+        updated.ScriptAdherenceScore.Should().Be(originalScore);
+        updated.Status.Should().Be(AuditStatus.CompliantPassed);
+    }
+
+    [Fact]
+    public void GetAuditCorpus_ReflectsUpdatedStatusImmediately()
+    {
+        _engine.RecordDecision(new AuditCallRequest("audit_rec_102", AuditStatus.FlaggedForReview, "Review needed"));
+
+        var corpus = _engine.GetAuditCorpus();
+        var entry = corpus.First(a => a.AuditId == "audit_rec_102");
+        entry.Status.Should().Be(AuditStatus.FlaggedForReview);
+    }
 }

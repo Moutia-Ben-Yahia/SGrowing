@@ -121,4 +121,33 @@ public class TelephonyWhisperTests
         Assert.Contains("Hint 1: offer SOC2 package", session.InjectedWhispers);
         Assert.Contains("Hint 2: mention volume discount", session.InjectedWhispers);
     }
+
+    [Fact]
+    public void InjectWhisper_UnknownSession_RecordsWhisperPromptWithoutModifyingActiveSessions()
+    {
+        var engine = new TelephonyWhisperCoachEngine();
+        var req = new InjectWhisperRequest("CALL-FRESH-99", "Coach hint for new session", "GENERAL", "Elena Rostova");
+
+        var whisper = engine.InjectWhisper(req);
+
+        Assert.NotNull(whisper);
+        Assert.Equal("CALL-FRESH-99", whisper.CallSessionId);
+
+        var overview = engine.GetOverview();
+        var session = overview.ActiveSessions.FirstOrDefault(s => s.CallSessionId == "CALL-FRESH-99");
+        Assert.Null(session);
+        Assert.Contains(overview.RecentWhispers, w => w.CallSessionId == "CALL-FRESH-99");
+    }
+
+    [Fact]
+    public void GetOverview_ReflectsNewWhisperAndSessionCounts()
+    {
+        var engine = new TelephonyWhisperCoachEngine();
+        var initial = engine.GetOverview();
+
+        engine.InjectWhisper(new InjectWhisperRequest("CALL-WHISP-001", "Extra hint", "PRICING", "Elena"));
+
+        var after = engine.GetOverview();
+        Assert.Equal(initial.TotalWhispersInjectedCount + 1, after.TotalWhispersInjectedCount);
+    }
 }

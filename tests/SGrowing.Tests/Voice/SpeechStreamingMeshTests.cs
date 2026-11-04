@@ -113,4 +113,30 @@ public class SpeechStreamingMeshTests
         receipt1.CutoffLatencyMs.Should().Be(38.5);
         receipt2.CutoffLatencyMs.Should().Be(38.5);
     }
+
+    [Fact]
+    public void ProcessAudioChunk_ConsecutiveChunks_IncrementsFramesSequentially()
+    {
+        var session = _engine.GetOverview().ActiveSessions.First(s => s.SessionId == "S2S-STREAM-901");
+        var initialFrames = session.FramesProcessed;
+
+        _engine.ProcessAudioChunk(new ProcessAudioChunkRequest("S2S-STREAM-901", "CHUNK1", 1, false));
+        _engine.ProcessAudioChunk(new ProcessAudioChunkRequest("S2S-STREAM-901", "CHUNK2", 2, false));
+        _engine.ProcessAudioChunk(new ProcessAudioChunkRequest("S2S-STREAM-901", "CHUNK3", 3, false));
+
+        var updated = _engine.GetOverview().ActiveSessions.First(s => s.SessionId == "S2S-STREAM-901");
+        updated.FramesProcessed.Should().Be(initialFrames + 3);
+    }
+
+    [Fact]
+    public void TriggerBargeIn_WithDecibelThresholdAndAudioTimestamp_ReturnsValidReceiptWithSession()
+    {
+        var request = new TriggerBargeInRequest("S2S-STREAM-902", -15.0, "00:02:10.800");
+        var receipt = _engine.TriggerBargeIn(request);
+
+        receipt.Should().NotBeNull();
+        receipt.SessionId.Should().Be("S2S-STREAM-902");
+        receipt.ReceiptId.Should().StartWith("RCP-BARGE-");
+        receipt.CutoffLatencyMs.Should().Be(38.5);
+    }
 }

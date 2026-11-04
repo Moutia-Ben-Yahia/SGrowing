@@ -129,4 +129,41 @@ public sealed class CallStateResumptionTests
         Assert.True(overview.AutoCallbackSuccessRatePct > 90.0);
         Assert.True(overview.AverageReconnectLatencySeconds > 0.0);
     }
+
+    [Fact]
+    public void TriggerAutoCallback_Session992_IncludesHelenaInGreeting()
+    {
+        var engine = new CallStateResumptionEngine();
+        var request = new TriggerAutoCallbackRequest("CALL-SES-992", "PACKET_LOSS");
+
+        var evt = engine.TriggerAutoCallback(request);
+
+        Assert.NotNull(evt);
+        Assert.Equal("CALL-SES-992", evt.OriginalSessionId);
+        Assert.Contains("Helena", evt.GeneratedAcousticGreeting);
+        Assert.Contains("Treasury & Payment Terms", evt.GeneratedAcousticGreeting);
+    }
+
+    [Fact]
+    public void SaveCallSnapshot_NewSession_IncrementsActiveSnapshotCount()
+    {
+        var engine = new CallStateResumptionEngine();
+        var initialCount = engine.GetOverview().MonitoredActiveCallsCount;
+
+        var req = new SaveCallSnapshotRequest(
+            "CALL-SES-BRAND-NEW",
+            "+1-555-888-9999",
+            "+1-800-111-2222",
+            "Diana Prince",
+            "Inquiry regarding government tier",
+            "Government SaaS",
+            "CONTRACT_SIGNING",
+            3
+        );
+
+        engine.SaveCallSnapshot(req);
+
+        var overview = engine.GetOverview();
+        Assert.Equal(initialCount + 1, overview.MonitoredActiveCallsCount);
+    }
 }
