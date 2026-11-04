@@ -180,4 +180,30 @@ public class ProductCatalogAndCpqTests
         Assert.Equal("Beta Softphone", products[1].Name);
         Assert.Equal("Zeta Analytics", products[2].Name);
     }
+
+    [Fact]
+    public async Task GetVariantsAsync_WhenProductHasNoVariants_ReturnsEmptyList()
+    {
+        var tenantId = Guid.NewGuid();
+        var product = await _catalog.CreateProductAsync(tenantId, "Solo Product", "solo-product", "No variants yet", ProductType.Physical, 50m);
+
+        var variants = await _catalog.GetVariantsAsync(tenantId, product.Id);
+
+        Assert.Empty(variants);
+    }
+
+    [Fact]
+    public async Task GetProductsAsync_FiltersByTenantId()
+    {
+        var tenant1 = Guid.NewGuid();
+        var tenant2 = Guid.NewGuid();
+
+        await _catalog.CreateProductAsync(tenant1, "Product One", "prod-one", "Desc", ProductType.Physical, 30m);
+        await _catalog.CreateProductAsync(tenant2, "Product Two", "prod-two", "Desc", ProductType.Physical, 60m);
+
+        var tenant1Products = await _catalog.GetProductsAsync(tenant1);
+
+        Assert.Single(tenant1Products);
+        Assert.Equal("Product One", tenant1Products[0].Name);
+    }
 }

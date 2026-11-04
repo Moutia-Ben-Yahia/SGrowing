@@ -253,4 +253,39 @@ public class InventoryLiquidationTests
         Assert.Single(bundlesA);
         Assert.Equal("Bundle A1", bundlesA[0].BundleName);
     }
+
+    [Fact]
+    public async Task GenerateLiquidationBundleAsync_CalculatesCombinedSavingsCorrectly()
+    {
+        var db = CreateDbContext();
+        var service = new InventoryLiquidationService(db);
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+
+        await service.RecordStockIntakeAgingAsync(tenantId, Guid.NewGuid(), "SKU-TOP-WINNER", "Top Perfume", warehouseId, 50, 40m, 100m, 10);
+        await service.RecordStockIntakeAgingAsync(tenantId, Guid.NewGuid(), "SKU-SLOW-AGING", "Slow Candle", warehouseId, 20, 20m, 50m, 80);
+
+        var bundle = await service.GenerateLiquidationBundleAsync(
+            tenantId,
+            "SKU-TOP-WINNER",
+            "SKU-SLOW-AGING",
+            "Fragrance & Candle Combo",
+            bundleDiscountPct: 30m);
+
+        Assert.Equal(150m, bundle.OriginalCombinedPrice); // 100 + 50
+        Assert.Equal(105m, bundle.DiscountedBundlePrice); // 150 * 0.70 = 105
+        Assert.True(bundle.ActiveInChatCpq);
+    }
+
+    [Fact]
+    public async Task ListAgingLedgerAsync_WhenNoItemsForTenant_ReturnsEmptyList()
+    {
+        var db = CreateDbContext();
+        var service = new InventoryLiquidationService(db);
+        var tenantId = Guid.NewGuid();
+
+        var ledger = await service.ListAgingLedgerAsync(tenantId);
+
+        Assert.Empty(ledger);
+    }
 }

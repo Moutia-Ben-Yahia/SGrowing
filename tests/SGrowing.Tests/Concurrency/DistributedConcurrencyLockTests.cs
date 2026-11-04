@@ -119,4 +119,46 @@ public class DistributedConcurrencyLockTests
         await using var contender = await lockService.TryAcquireLockAsync(resourceKey, TimeSpan.FromSeconds(10), TimeSpan.Zero);
         contender.Should().BeNull();
     }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task TryAcquireLockAsync_WhenKeyIsEmptyOrWhitespace_ThrowsArgumentNullException(string emptyKey)
+    {
+        var lockService = new RedisConcurrencyLockService();
+
+        var act = async () => await lockService.TryAcquireLockAsync(emptyKey);
+
+        await act.Should().ThrowAsync<ArgumentNullException>();
+    }
+
+    [Fact]
+    public async Task TryAcquireLockAsync_ExpiredLock_CanBeReacquired()
+    {
+        var lockService = new RedisConcurrencyLockService();
+        var resourceKey = $"expiring:lock:{Guid.NewGuid():N}";
+
+        // Acquire with very short lease (50ms)
+        var handle1 = await lockService.TryAcquireLockAsync(
+            resourceKey,
+            expiry: TimeSpan.FromMilliseconds(50),
+            waitTimeout: TimeSpan.FromMilliseconds(50));
+
+        handle1.Should().NotBeNull();
+
+        // Wait for expiry
+        await Task.Delay(120);
+
+        var isLocked = await lockService.IsLockedAsync(resourceKey);
+        isLocked.Should().BeFalse("lock should have expired");
+
+        // Reacquire
+        await using var handle2 = await lockService.TryAcquireLockAsync(
+            resourceKey,
+            expiry: TimeSpan.FromSeconds(5),
+            waitTimeout: TimeSpan.FromMilliseconds(50));
+
+        handle2.Should().NotBeNull();
+        handle2!.IsAcquired.Should().BeTrue();
+    }
 }

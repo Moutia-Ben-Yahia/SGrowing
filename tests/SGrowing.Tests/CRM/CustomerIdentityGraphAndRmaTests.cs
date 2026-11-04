@@ -152,4 +152,27 @@ public class CustomerIdentityGraphAndRmaTests
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             idGraph.GetCustomer360Async(tenantId, nonExistentId));
     }
+
+    [Fact]
+    public async Task SubmitRmaRequestAsync_WithNonExistentOrder_ThrowsInvalidOperationException()
+    {
+        var db = CreateDbContext();
+        var portal = new CustomerSelfServicePortalService(db);
+        var tenantId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            portal.SubmitRmaRequestAsync(tenantId, "ORD-NONEXISTENT-999", "12345678", RmaReason.Defective, "Defective item"));
+    }
+
+    [Fact]
+    public async Task ReviewRmaRequestAsync_NonExistentRma_ThrowsInvalidOperationException()
+    {
+        var db = CreateDbContext();
+        var portal = new CustomerSelfServicePortalService(db);
+        var tenantId = Guid.NewGuid();
+        var nonExistentRmaId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            portal.ReviewRmaRequestAsync(tenantId, nonExistentRmaId, isApproved: true, resolutionNotes: "Approved"));
+    }
 }
