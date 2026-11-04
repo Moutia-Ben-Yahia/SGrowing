@@ -1,4 +1,6 @@
+using FluentAssertions;
 using SGrowing.Api.Modules.Tenancy.Licensing;
+using Xunit;
 
 namespace SGrowing.Tests.Tenancy;
 
@@ -11,12 +13,12 @@ public class EnterpriseLicensingTests
     {
         var result = _engine.GetLicenseStatus();
 
-        Assert.NotNull(result);
-        Assert.True(result.IsValid);
-        Assert.NotNull(result.License);
-        Assert.True(result.DaysRemaining > 300);
-        Assert.True(result.License.IsAirGappedValid);
-        Assert.Contains("AI.Swarm", result.License.EntitledModules);
+        result.Should().NotBeNull();
+        result.IsValid.Should().BeTrue();
+        result.License.Should().NotBeNull();
+        result.DaysRemaining.Should().BeGreaterThan(300);
+        result.License!.IsAirGappedValid.Should().BeTrue();
+        result.License.EntitledModules.Should().Contain("AI.Swarm");
     }
 
     [Fact]
@@ -30,13 +32,13 @@ public class EnterpriseLicensingTests
 
         var result = _engine.ActivateLicense(req);
 
-        Assert.True(result.IsValid);
-        Assert.NotNull(result.License);
-        Assert.Equal("Acme Corporation Global", result.License.OrganizationName);
-        Assert.Equal(1000, result.License.MaxSeats);
+        result.IsValid.Should().BeTrue();
+        result.License.Should().NotBeNull();
+        result.License!.OrganizationName.Should().Be("Acme Corporation Global");
+        result.License.MaxSeats.Should().Be(1000);
 
         var status = _engine.GetLicenseStatus();
-        Assert.Equal("Acme Corporation Global", status.License?.OrganizationName);
+        status.License?.OrganizationName.Should().Be("Acme Corporation Global");
     }
 
     [Fact]
@@ -45,8 +47,23 @@ public class EnterpriseLicensingTests
         var req = new ActivateLicenseRequest("", "Acme", "payload");
         var result = _engine.ActivateLicense(req);
 
-        Assert.False(result.IsValid);
-        Assert.Null(result.License);
+        result.IsValid.Should().BeFalse();
+        result.License.Should().BeNull();
+        result.StatusMessage.Should().Contain("Invalid license key format");
+    }
+
+    [Fact]
+    public void ActivateLicense_ShortLicenseKey_ReturnsError()
+    {
+        // Arrange: key length < 10 characters
+        var req = new ActivateLicenseRequest("SG-SHORT", "Acme", "payload");
+
+        // Act
+        var result = _engine.ActivateLicense(req);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.StatusMessage.Should().Contain("Invalid license key format");
     }
 
     [Fact]
@@ -55,7 +72,51 @@ public class EnterpriseLicensingTests
         var req = new AirGapVerificationRequest("valid_signed_blob", "NODE-01-MAC-48-2C");
         var result = _engine.VerifyAirGappedPayload(req);
 
-        Assert.True(result.IsValid);
-        Assert.Contains("NODE-01-MAC-48-2C", result.StatusMessage);
+        result.IsValid.Should().BeTrue();
+        result.StatusMessage.Should().Contain("NODE-01-MAC-48-2C");
+    }
+
+    [Fact]
+    public void VerifyAirGappedPayload_MissingMachineFingerprint_ReturnsError()
+    {
+        // Arrange
+        var req = new AirGapVerificationRequest("valid_signed_blob", "");
+
+        // Act
+        var result = _engine.VerifyAirGappedPayload(req);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.StatusMessage.Should().Contain("Missing air-gap payload");
+    }
+
+    [Fact]
+    public void VerifyAirGappedPayload_MissingSignedPayload_ReturnsError()
+    {
+        // Arrange
+        var req = new AirGapVerificationRequest("", "NODE-02-MAC");
+
+        // Act
+        var result = _engine.VerifyAirGappedPayload(req);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.StatusMessage.Should().Contain("Missing air-gap payload");
+    }
+
+    [Fact]
+    public void ActivateLicense_BindsCustomOrganizationAndAirGappedCapability()
+    {
+        // Arrange
+        var req = new ActivateLicenseRequest("SG-AIRGAP-GOV-TUNISIA-2026", "National Digital Agency", "sig_blob");
+
+        // Act
+        var result = _engine.ActivateLicense(req);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.License!.OrganizationName.Should().Be("National Digital Agency");
+        result.License.EntitledModules.Should().Contain("AirGapped.Core");
+        result.License.MaxMonthlyEvents.Should().Be(50_000_000);
     }
 }
