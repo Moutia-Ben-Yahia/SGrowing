@@ -385,4 +385,71 @@ public class MasterOmnichannelEnterpriseTests
         execution.ExecutionLog.Should().Contain("VIP");
         execution.ExecutionLog.Should().Contain("Telegram");
     }
+
+    [Fact]
+    public async Task MasterOmnichannel_EdgeCases_InvalidPayloads_And_DomainAssociation_Failures()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+
+        // 1. Inbound channel parser resilience on malformed / unrecognized webhooks
+        var telegramAdapter = new TelegramAdapter();
+        var invalidTgPayload = "{\"unexpected_field\": 12345}";
+        var parsedTg = telegramAdapter.ParseInboundWebhook(tenantId, invalidTgPayload);
+        parsedTg.Should().BeNull();
+
+        var discordAdapter = new DiscordAdapter();
+        var invalidDiscordPayload = "{\"incomplete\": true}";
+        var parsedDiscord = discordAdapter.ParseInboundWebhook(tenantId, invalidDiscordPayload);
+        parsedDiscord.Should().BeNull();
+
+        // 2. B2B Account association: contact with unmatched or invalid domain
+        var companyService = new CompanyAccountService(db);
+        var contact = Contact.Create(tenantId, "Clark", "Kent", "clark@dailyplanet.com");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        var unmatchedCompany = await companyService.AssociateContactByDomainAsync(tenantId, contact.Id, contact.Email!);
+        unmatchedCompany.Should().BeNull();
+
+        var emptyEmailCompany = await companyService.AssociateContactByDomainAsync(tenantId, contact.Id, "");
+        emptyEmailCompany.Should().BeNull();
+
+        // 3. Visual Workflow Engine: False condition branch execution
+        var workflowEngine = new WorkflowEngineService(db);
+        var nodesJson = """
+        [
+            {
+                "id": "node_trigger",
+                "type": "Trigger",
+                "name": "Standard Inbound Trigger",
+                "next": "node_eval_score"
+            },
+            {
+                "id": "node_eval_score",
+                "type": "Condition",
+                "name": "Check Lead Score",
+                "config": {
+                    "field": "score",
+                    "operator": ">",
+                    "value": 80
+                },
+                "trueNext": "node_vip_branch",
+                "falseNext": "node_unconfigured_leaf"
+            }
+        ]
+        """;
+
+        var graph = WorkflowGraph.Create(tenantId, "Lead Branch Evaluator", "InboundLead", nodesJson);
+        WorkflowEngineService.RegisterWorkflow(graph);
+        db.WorkflowGraphs.Add(graph);
+        await db.SaveChangesAsync();
+
+        var lowScorePayload = "{\"score\": 45}";
+        var lowScoreExec = await workflowEngine.ExecuteWorkflowAsync(tenantId, graph.Id, lowScorePayload);
+
+        lowScoreExec.Should().NotBeNull();
+        lowScoreExec.Status.Should().Be("Completed");
+        lowScoreExec.ExecutionLog.Should().Contain("FALSE");
+    }
 }

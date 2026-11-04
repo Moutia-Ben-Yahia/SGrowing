@@ -170,4 +170,58 @@ public class MasterPlatformEndToEndTests
         var updatedArticle = await db.HelpArticles.FindAsync(article.Id);
         updatedArticle!.ViewCount.Should().Be(1);
     }
+
+    [Fact]
+    public async Task PlatformLifecycle_Unsubscribe_SurveyFailure_And_RagUnmatched_Scenarios()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var notifier = new Mock<IRealtimeNotifier>();
+
+        // 1. Knowledge Base RAG: Empty prompt and unindexed query fallback
+        var ragService = new HelpCenterRagService(db);
+        var emptyResult = await ragService.GenerateAiDeflectionReplyAsync(tenantId, "");
+        emptyResult.Deflected.Should().BeFalse();
+        emptyResult.ConfidenceScore.Should().Be(0);
+
+        var unmatchedResult = await ragService.GenerateAiDeflectionReplyAsync(tenantId, "How do I configure quantum computing teleportation protocol?");
+        unmatchedResult.Deflected.Should().BeFalse();
+        unmatchedResult.ConfidenceScore.Should().Be(35);
+
+        // 2. Feedback Service: Submitting response to non-existent survey form fails cleanly
+        var feedbackService = new FeedbackService(db, notifier.Object);
+        var badSurveyResult = await feedbackService.SubmitFeedbackAsync(tenantId, Guid.NewGuid(), Guid.NewGuid(), 5, "Great app!");
+        badSurveyResult.IsSuccess.Should().BeFalse();
+        badSurveyResult.Error.Should().Be("Survey form not found.");
+
+        // 3. Outbound Handoff: Unsubscribe opt-out behavior
+        var sentimentClassifier = new ReplySentimentClassifier();
+        var handoffService = new ProspectReplyHandoffService(db, sentimentClassifier, notifier.Object);
+
+        var contact = Contact.Create(tenantId, "Aaron", "Burr", "aaron@duel.org");
+        db.Contacts.Add(contact);
+
+        var campaign = OutboundCampaign.Create(tenantId, "General Pitch", new List<Guid> { Guid.NewGuid() });
+        db.OutboundCampaigns.Add(campaign);
+        await db.SaveChangesAsync();
+
+        var enrollment = ProspectEnrollment.Create(tenantId, campaign.Id, contact.Id);
+        db.ProspectEnrollments.Add(enrollment);
+
+        var conv = Conversation.Create(tenantId, Guid.NewGuid(), contact.Id);
+        db.Conversations.Add(conv);
+        await db.SaveChangesAsync();
+
+        var handoffRes = await handoffService.HandleReplyAsync(tenantId, contact.Id, conv.Id, "Please unsubscribe me from this mailing list and remove my email.");
+        handoffRes.IsSuccess.Should().BeTrue();
+        handoffRes.Value.Sentiment.Should().Be(ReplySentiment.Unsubscribe);
+        handoffRes.Value.DealCreated.Should().BeFalse();
+
+        var updatedContact = await db.Contacts.FindAsync(contact.Id);
+        updatedContact!.Tags.Should().Contain("opted_out");
+        updatedContact.LifecycleStage.Should().Be(LifecycleStage.Churned);
+
+        var updatedEnrollment = await db.ProspectEnrollments.FindAsync(enrollment.Id);
+        updatedEnrollment!.Status.Should().Be(EnrollmentStatus.Unsubscribed);
+    }
 }

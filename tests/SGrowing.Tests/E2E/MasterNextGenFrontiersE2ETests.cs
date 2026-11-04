@@ -146,4 +146,52 @@ public class MasterNextGenFrontiersE2ETests
         Assert.Equal(1, retried);
         Assert.Equal(1, deadLog.RetryCount);
     }
+
+    [Fact]
+    public async Task Master_NextGen_Frontiers_Edge_Cases_And_Safe_Fallbacks_Should_Be_Preserved()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+
+        // 1. Ad Spend Optimizer: missing metric check
+        var adOptimizer = new AdSpendOptimizerService(db);
+        var missingMetricId = Guid.NewGuid();
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            adOptimizer.EvaluateAndApplyRulesAsync(tenantId, missingMetricId));
+
+        // 2. Inventory Liquidation: fresh stock receives 0% markdown and Fresh tier
+        var liquidationService = new InventoryLiquidationService(db);
+        var freshItem = await liquidationService.RecordStockIntakeAgingAsync(
+            tenantId,
+            Guid.NewGuid(),
+            "FRESH-LOTION-100ML",
+            "Nourishing Body Lotion 100ml",
+            warehouseId,
+            quantity: 100,
+            costPrice: 8m,
+            retailPrice: 28m,
+            daysInWarehouse: 12);
+
+        Assert.Equal(StockAgeTier.Fresh, freshItem.Tier);
+        Assert.Equal(0m, freshItem.CurrentMarkdownPercentage);
+        Assert.Equal(28m, freshItem.CurrentEffectivePrice);
+
+        // 3. Worker DLQ Daemon: recently failed item (within backoff window) should not be retried
+        var scheduler = new AdvancedWorkflowSchedulerService(db);
+        var recentDeadLog = await scheduler.EnqueueDeadLetterAsync(
+            tenantId,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "node-fresh-fail",
+            "ShopifySync",
+            "{}",
+            "Transient Gateway Timeout 504");
+
+        Assert.Equal(0, recentDeadLog.RetryCount);
+        // FailedAtUtc is UtcNow by default, which means backoff (e.g. 1 minute) has not elapsed
+        int retried = await ResilientDlqDaemon.ProcessEligibleRetriesAsync(db);
+        Assert.Equal(0, retried);
+        Assert.Equal(0, recentDeadLog.RetryCount);
+    }
 }

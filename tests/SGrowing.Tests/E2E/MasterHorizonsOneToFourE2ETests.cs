@@ -101,4 +101,51 @@ public class MasterHorizonsOneToFourE2ETests
         Assert.Single(attempts);
         Assert.True(attempts[0].IsSuccess);
     }
+
+    [Fact]
+    public async Task Horizons_One_To_Four_Security_Validation_And_Constraint_Failures_Should_Be_Enforced()
+    {
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+
+        var db = new SGrowingDbContext(options);
+        var tenantId = Guid.NewGuid();
+
+        // 1. Horizon 1 Failures: Missing session and invalid OTP
+        var checkoutService = new CodCheckoutService(db);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            checkoutService.CompleteCodOrderAsync(tenantId, "non-existent-session-key"));
+
+        var session = await checkoutService.CreateSessionAsync(tenantId, "[]", 50m);
+        var otp = await checkoutService.SendPhoneOtpAsync(tenantId, session.SessionKey);
+        var wrongOtpResult = await checkoutService.VerifyPhoneOtpAsync(tenantId, session.SessionKey, "999999");
+        Assert.False(wrongOtpResult);
+
+        // 2. Horizon 3 Competitor Radar: Competitor price higher or parity maintains price
+        var competitorService = new CompetitorIntelligenceService(db);
+        var tracker = await competitorService.TrackPriceDisparityAsync(tenantId, "SKU-PREMIUM-ROSE", "HighEndShop.tn", "https://highend.tn", 150m, 120m);
+        Assert.Equal("MaintainPrice", tracker.RecommendedCounterAction);
+
+        // 3. Horizon 4 B2B Credit Line: Non-existent account and over-limit drawdowns
+        var b2bService = new B2BCreditAndFactoringService(db);
+        var missingCompanyId = Guid.NewGuid();
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            b2bService.RecordInvoiceDrawdownAsync(tenantId, missingCompanyId, 500m));
+
+        var testCompanyId = Guid.NewGuid();
+        await b2bService.EstablishCreditAccountAsync(tenantId, testCompanyId, "Micro Retail SARL", creditLimit: 2000m, termsDays: 15);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            b2bService.RecordInvoiceDrawdownAsync(tenantId, testCompanyId, 2500m));
+
+        // 4. Horizon 4 Developer Gateway: Malformed and unregistered API keys
+        var devService = new DeveloperGatewayService(db);
+        var badFormatResult = await devService.ValidateApiKeyAsync("plain_secret_string");
+        Assert.False(badFormatResult.IsValid);
+        Assert.Equal("Invalid key format", badFormatResult.ErrorMessage);
+
+        var unknownKeyResult = await devService.ValidateApiKeyAsync("sg_live_0123456789abcdef0123456789abcdef");
+        Assert.False(unknownKeyResult.IsValid);
+        Assert.Equal("Key not found or revoked", unknownKeyResult.ErrorMessage);
+    }
 }

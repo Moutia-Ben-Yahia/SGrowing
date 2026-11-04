@@ -140,4 +140,71 @@ public class OutboundSdrEndToEndTests
         // Verify Real-time alert was emitted to omni agents
         notifier.Verify(n => n.NotifyConversationUpdatedAsync(tenantId, It.IsAny<ConversationDto>()), Times.Once);
     }
+
+    [Fact]
+    public async Task OutboundSdr_OutOfOffice_And_QuotaExhaustion_Should_Be_Handled()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var outbox = new OutboxService(db);
+        var notifier = new Mock<IRealtimeNotifier>();
+
+        var mailboxService = new MailboxService(db);
+        var aiSdrService = new AiSdrService();
+        var sentimentClassifier = new ReplySentimentClassifier();
+        var handoffService = new ProspectReplyHandoffService(db, sentimentClassifier, notifier.Object);
+        var dispatcher = new CadenceDispatcherService(db, mailboxService, aiSdrService, outbox);
+
+        // 1. Quota exhaustion: sender has reached target daily quota
+        var exhaustedSender = SenderAccount.Create(
+            tenantId: tenantId,
+            email: "quota-maxed@trySGrowing.com",
+            displayName: "Busy Bot",
+            provider: MailboxProvider.GoogleWorkspace,
+            targetDailyQuota: 10,
+            rampDailyIncrement: 2
+        );
+        exhaustedSender.SentTodayCount = 10; // Quota completely reached
+        db.SenderAccounts.Add(exhaustedSender);
+
+        var contact = Contact.Create(tenantId, "Marcus", "Vance", "marcus@enterprise.co");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        var campaign = OutboundCampaign.Create(tenantId, "Cold Outreach Batch", new List<Guid> { exhaustedSender.Id });
+        db.OutboundCampaigns.Add(campaign);
+        await db.SaveChangesAsync();
+
+        var step1 = CadenceStep.Create(tenantId, campaign.Id, 1, 0, OutboundChannel.Email, "Hello", "Content");
+        db.CadenceSteps.Add(step1);
+
+        var enrollment = ProspectEnrollment.Create(tenantId, campaign.Id, contact.Id);
+        enrollment.PersonalizedHook = "Great seeing your work!";
+        db.ProspectEnrollments.Add(enrollment);
+        await db.SaveChangesAsync();
+
+        // Dispatcher runs: since no sender in pool has quota remaining, 0 processed
+        var processedCount = await dispatcher.ProcessDueCadencesAsync(tenantId);
+        processedCount.Should().Be(0);
+
+        var untouchedEnrollment = await db.ProspectEnrollments.FindAsync(enrollment.Id);
+        untouchedEnrollment!.CurrentStepNumber.Should().Be(1);
+        untouchedEnrollment.Status.Should().Be(EnrollmentStatus.Active);
+
+        // 2. Out of Office reply handling: delays next step without creating deals
+        var conversation = Conversation.Create(tenantId, Guid.NewGuid(), contact.Id);
+        db.Conversations.Add(conversation);
+        await db.SaveChangesAsync();
+
+        var oooReply = "Thank you for reaching out. I am currently out of office on annual leave until next Monday.";
+        var handoffResult = await handoffService.HandleReplyAsync(tenantId, contact.Id, conversation.Id, oooReply);
+
+        handoffResult.IsSuccess.Should().BeTrue();
+        handoffResult.Value.Sentiment.Should().Be(ReplySentiment.OutOfOffice);
+        handoffResult.Value.DealCreated.Should().BeFalse();
+
+        var delayedEnrollment = await db.ProspectEnrollments.FindAsync(enrollment.Id);
+        delayedEnrollment!.Status.Should().Be(EnrollmentStatus.Active);
+        delayedEnrollment.NextRunAtUtc.Should().BeAfter(DateTime.UtcNow.AddDays(4));
+    }
 }
