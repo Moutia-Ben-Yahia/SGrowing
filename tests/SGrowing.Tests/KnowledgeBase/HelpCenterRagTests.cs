@@ -183,4 +183,19 @@ public class HelpCenterRagTests
         result.Answer.Should().Contain("...");
         result.Answer.Should().Contain("/help/long-manual");
     }
+
+    [Fact]
+    public async Task GenerateAiDeflection_WhenNoArticlesExist_ReturnsFallbackEscalation()
+    {
+        var db = CreateDbContext();
+        var service = new HelpCenterRagService(db);
+        var tenantId = Guid.NewGuid();
+
+        var result = await service.GenerateAiDeflectionReplyAsync(tenantId, "How do I configure domain email deliverability?");
+
+        result.Deflected.Should().BeFalse();
+        result.ConfidenceScore.Should().BeLessThan(50);
+        result.ArticleTitle.Should().BeNull();
+        result.Answer.Should().Contain("notified our support team");
+    }
 }

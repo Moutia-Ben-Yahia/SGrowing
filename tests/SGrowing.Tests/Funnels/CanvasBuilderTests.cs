@@ -109,4 +109,17 @@ public class CanvasBuilderTests
         Assert.Equal(initialCount + 1, list.Count);
         Assert.Contains(list, c => c.CanvasId == saved.CanvasId);
     }
+
+    [Fact]
+    public void CompileHtml_TabletViewport_GeneratesExpectedMarkup()
+    {
+        var compiled = _engine.CompileHtml(new CompileHtmlRequest(
+            CanvasId: "canvas_sdr_funnel",
+            TargetViewport: "tablet"
+        ));
+
+        Assert.NotNull(compiled);
+        Assert.Equal("tablet", compiled.TargetViewport);
+        Assert.Contains("sgrowing-funnel-page", compiled.CompiledHtml);
+    }
 }

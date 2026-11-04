@@ -121,4 +121,23 @@ public sealed class InfluencerEscrowTests
         Assert.True(summary.AttributedGmv > 0m);
         Assert.Equal(4.8, summary.InfluencerRoas);
     }
+
+    [Fact]
+    public async Task CreateContract_AppendsContractToActiveContractsList()
+    {
+        var request = new CreateEscrowContractRequest(
+            CreatorId: "creator_sara_tech",
+            CampaignName: "Enterprise Expansion",
+            TotalEscrowAmount: 8000m,
+            Milestones: new[]
+            {
+                new EscrowMilestone("ms_exp_01", "Webinar", 8000m, "Live Webinar", 25000, 0, false, false)
+            }
+        );
+
+        var created = await _engine.CreateContractAsync(request);
+        var contracts = await _engine.GetContractsAsync();
+
+        Assert.Contains(contracts, c => c.ContractId == created.ContractId);
+    }
 }

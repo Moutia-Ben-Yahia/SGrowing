@@ -118,4 +118,23 @@ public class SignalRHubTests
         await actLock.Should().NotThrowAsync();
         await actUnlock.Should().NotThrowAsync();
     }
+
+    [Fact]
+    public async Task IOmniClient_OnAiDraftGenerated_ShouldBeCallable()
+    {
+        var mockClient = new Mock<IOmniClient>();
+        var draft = new AiDraftDto(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "Thank you for contacting support. How may we assist you?",
+            0.92f,
+            "Ready",
+            DateTime.UtcNow
+        );
+
+        mockClient.Setup(c => c.OnAiDraftGenerated(draft)).Returns(Task.CompletedTask);
+
+        var act = async () => await mockClient.Object.OnAiDraftGenerated(draft);
+        await act.Should().NotThrowAsync();
+    }
 }
