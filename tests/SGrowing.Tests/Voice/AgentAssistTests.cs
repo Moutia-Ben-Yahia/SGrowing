@@ -52,4 +52,49 @@ public class AgentAssistTests
         Assert.True(updated.TalkPacingAlertActive);
         Assert.Contains(updated.LiveSuggestions, s => s.Category == "PacingAlert");
     }
+
+    [Fact]
+    public void TriggerBattlecard_AddsRequestedCompetitorToActiveSession()
+    {
+        var session = _engine.TriggerBattlecard("call_live_501", "Gong");
+
+        Assert.NotNull(session);
+        Assert.Contains(session.ActiveBattlecards, b => b.CompetitorName == "Gong");
+        var gongCard = session.ActiveBattlecards.First(b => b.CompetitorName == "Gong");
+        Assert.Equal("28% higher close rate on objection calls", gongCard.ProofMetric);
+    }
+
+    [Fact]
+    public void TriggerBattlecard_UnknownCompetitor_DoesNotAddCard()
+    {
+        var before = _engine.GetSessionById("call_live_501")!;
+        var beforeCount = before.ActiveBattlecards.Count;
+
+        var after = _engine.TriggerBattlecard("call_live_501", "UnknownLegacyVendor");
+        Assert.Equal(beforeCount, after.ActiveBattlecards.Count);
+    }
+
+    [Fact]
+    public void StreamChunk_CustomerConcern_SetsSkepticalSentiment()
+    {
+        var request = new StreamChunkRequest(
+            "call_live_501",
+            "Customer",
+            "We have a serious concern that your enterprise pricing might be too expensive.",
+            10.0
+        );
+
+        var updated = _engine.StreamChunk(request);
+
+        Assert.NotNull(updated);
+        var lastChunk = updated.RecentTranscripts.Last();
+        Assert.Equal("Skeptical", lastChunk.Sentiment);
+    }
+
+    [Fact]
+    public void GetSessionById_NonExistentSession_ReturnsNull()
+    {
+        var session = _engine.GetSessionById("call_missing_99999");
+        Assert.Null(session);
+    }
 }

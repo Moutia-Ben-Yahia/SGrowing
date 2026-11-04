@@ -45,4 +45,45 @@ public class CallComplianceTests
         action.Should().Throw<KeyNotFoundException>()
             .WithMessage("*not found*");
     }
+
+    [Fact]
+    public void RecordDecision_ViolationCritical_MarksCallWithCriticalStatus()
+    {
+        var request = new AuditCallRequest("audit_rec_101", AuditStatus.ViolationCritical, "Severe breach of telemarketing calling hours detected.");
+        var result = _engine.RecordDecision(request);
+
+        result.Should().NotBeNull();
+        result.AuditId.Should().Be("audit_rec_101");
+        result.UpdatedStatus.Should().Be(AuditStatus.ViolationCritical);
+
+        var audit = _engine.GetAuditCorpus().Find(a => a.AuditId == "audit_rec_101");
+        audit.Should().NotBeNull();
+        audit!.Status.Should().Be(AuditStatus.ViolationCritical);
+    }
+
+    [Fact]
+    public void RecordDecision_CaseInsensitiveAuditId_SuccessfullyUpdates()
+    {
+        var request = new AuditCallRequest("AUDIT_REC_102", AuditStatus.FlaggedForReview, "Audited via upper-case key");
+        var result = _engine.RecordDecision(request);
+
+        result.Should().NotBeNull();
+        result.UpdatedStatus.Should().Be(AuditStatus.FlaggedForReview);
+
+        var audit = _engine.GetAuditCorpus().Find(a => a.AuditId.Equals("audit_rec_102", StringComparison.OrdinalIgnoreCase));
+        audit.Should().NotBeNull();
+        audit!.Status.Should().Be(AuditStatus.FlaggedForReview);
+    }
+
+    [Fact]
+    public void GetAuditCorpus_OrderedByTimestampDescending()
+    {
+        var corpus = _engine.GetAuditCorpus();
+        corpus.Should().NotBeEmpty();
+
+        for (int i = 0; i < corpus.Count - 1; i++)
+        {
+            corpus[i].TimestampUtc.Should().BeOnOrAfter(corpus[i + 1].TimestampUtc);
+        }
+    }
 }

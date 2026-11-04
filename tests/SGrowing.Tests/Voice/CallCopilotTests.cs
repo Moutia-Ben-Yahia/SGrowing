@@ -62,4 +62,62 @@ public class CallCopilotTests
         var finalSession = _engine.GetSession(session.SessionId);
         Assert.Equal("Completed", finalSession?.Status);
     }
+
+    [Fact]
+    public void GetAvailableBattlecards_ReturnsSeededBattlecards()
+    {
+        var battlecards = _engine.GetAvailableBattlecards();
+
+        Assert.NotNull(battlecards);
+        Assert.True(battlecards.Count >= 3);
+        Assert.Contains(battlecards, b => b.CardId == "bc_pricing_roi");
+        Assert.Contains(battlecards, b => b.CardId == "bc_competitor_stack");
+        Assert.Contains(battlecards, b => b.CardId == "bc_security_compliance");
+    }
+
+    [Fact]
+    public void IngestUtterance_NonExistentSession_ThrowsKeyNotFoundException()
+    {
+        var req = new IngestUtteranceRequest("call_nonexistent_xyz", SpeakerRole.Prospect, "Test message");
+        Assert.Throws<KeyNotFoundException>(() => _engine.IngestUtterance(req));
+    }
+
+    [Fact]
+    public void EndSessionAndSummarize_NonExistentSession_ThrowsKeyNotFoundException()
+    {
+        Assert.Throws<KeyNotFoundException>(() => _engine.EndSessionAndSummarize("call_missing_999"));
+    }
+
+    [Fact]
+    public void GetSession_NonExistentSession_ReturnsNull()
+    {
+        var session = _engine.GetSession("call_unknown_123");
+        Assert.Null(session);
+    }
+
+    [Fact]
+    public void IngestUtterance_CalculatesSentimentAdjustmentsCorrectly()
+    {
+        var session = _engine.StartSession("agent_morpheus", "+1-312-555-0199", "Nebuchadnezzar Corp");
+
+        var neg = _engine.IngestUtterance(new IngestUtteranceRequest(
+            session.SessionId,
+            SpeakerRole.Prospect,
+            "We have a severe problem with our expensive dialer and are struggling with conversion."
+        ));
+        Assert.Equal(-0.60, neg.SentimentScore);
+
+        var pos = _engine.IngestUtterance(new IngestUtteranceRequest(
+            session.SessionId,
+            SpeakerRole.Prospect,
+            "That sounds great, we would love to see this in action, it looks perfect!"
+        ));
+        Assert.Equal(0.75, pos.SentimentScore);
+
+        var updated = _engine.GetSession(session.SessionId);
+        Assert.NotNull(updated);
+        Assert.Equal(2, updated.Utterances.Count);
+        // Average of -0.60 and +0.75 is +0.075 -> rounded to 0.08
+        Assert.Equal(0.08, updated.AverageSentiment);
+    }
 }
