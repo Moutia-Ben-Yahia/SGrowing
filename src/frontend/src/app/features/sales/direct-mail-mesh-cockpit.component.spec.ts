@@ -19,4 +19,14 @@ describe('DirectMailMeshCockpitComponent', () => {
     expect(comp.dispatches()[0].recipientExecutiveName).toContain('Elena Rostova');
     expect(comp.dispatches()[0].deliveryStatus).toBe('LABEL_CREATED_SCHEDULED_PICKUP');
   });
+
+  it('should verify campaign budget tiers and carrier allocation', () => {
+    const comp = new DirectMailMeshCockpitComponent();
+    const enterpriseCamp = comp.campaigns().find(c => c.targetTier === 'ENTERPRISE_TIER_1');
+    expect(enterpriseCamp).toBeDefined();
+    expect(enterpriseCamp?.unitCostUsd).toBe(145.00);
+
+    const hasFedEx = comp.dispatches().some(d => d.carrier.includes('FedEx'));
+    expect(hasFedEx).toBe(true);
+  });
 });

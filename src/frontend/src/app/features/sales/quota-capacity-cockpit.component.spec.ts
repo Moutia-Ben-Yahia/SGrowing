@@ -19,4 +19,15 @@ describe('QuotaCapacityCockpitComponent', () => {
     expect(comp.activeOutcome()?.newHeadcount).toBe(11); // 8 + 3
     expect(comp.activeOutcome()?.newAvgQuotaEur).toBeLessThan(2500000);
   });
+
+  it('should reset active outcome on selecting a different territory and handle empty selection safely', () => {
+    const comp = new QuotaCapacityCockpitComponent();
+    comp.selectTerritory(comp.territories()[0]);
+    expect(comp.selectedTerritory()?.territoryId).toBe('TERR-US-EAST');
+    expect(comp.activeOutcome()).toBeNull();
+
+    comp.selectedTerritory.set(null);
+    comp.rebalanceTerritory();
+    expect(comp.activeOutcome()).toBeNull();
+  });
 });

@@ -20,4 +20,19 @@ describe('RepRampCockpitComponent', () => {
     expect(comp.activeGuidance()?.recommendedWhisperPrompt).toContain('Net Value');
     expect(comp.activeGuidance()?.confidenceScore).toBe(94);
   });
+
+  it('should generate discovery guidance for general inquiries without pricing objections', () => {
+    const comp = new RepRampCockpitComponent();
+    comp.selectRep(comp.reps()[1]);
+    expect(comp.selectedRep()?.name).toBe('Elena Rostova');
+
+    comp.liveTranscript = 'Can you walk through how the architecture handles peak telemetry loads?';
+    comp.generateGuidance();
+
+    expect(comp.activeGuidance()).not.toBeNull();
+    expect(comp.activeGuidance()?.repId).toBe('REP-RAMP-102');
+    expect(comp.activeGuidance()?.detectedIntent).toBe('Discovery Inquiry');
+    expect(comp.activeGuidance()?.confidenceScore).toBe(88);
+    expect(comp.activeGuidance()?.microCoachingTip).toContain('executive business impact');
+  });
 });

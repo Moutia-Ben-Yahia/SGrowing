@@ -21,4 +21,16 @@ describe('TerritoryRebalancingCockpitComponent', () => {
     comp.applyRebalance();
     expect(comp.planStatus()).toBe('Scheduled (14-Day Grace)');
   });
+
+  it('should verify territory workload imbalance index and account distribution', () => {
+    const comp = new TerritoryRebalancingCockpitComponent();
+    const emea = comp.territories().find(t => t.territoryId === 'TERR-EMEA-CENTRAL');
+    expect(emea).toBeDefined();
+    expect(emea?.workloadIndex).toBeGreaterThan(1.5);
+    expect(emea?.assignedRepId).toBe('REP-103');
+
+    const totalPipeline = comp.territories().reduce((sum, t) => sum + t.totalPipelinePotential, 0);
+    expect(totalPipeline).toBe(14700000); // 4.85M + 2.9M + 5.1M + 1.85M
+    expect(comp.efficiencyGainPct()).toBe(24.6);
+  });
 });

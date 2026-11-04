@@ -90,4 +90,11 @@ describe('TelemetryStudioComponent', () => {
     expect(component.recentEvents().length).toBe(2);
     expect(component.recentEvents()[0].eventName).toBe('add_to_cart');
   });
+
+  it('should trigger traffic simulation fallback when recent event stream is empty on load', () => {
+    mockApi.getRecentTelemetryEvents.mockReturnValue(of([]));
+    component.loadData();
+
+    expect(mockApi.ingestTelemetry).toHaveBeenCalled();
+  });
 });

@@ -26,4 +26,17 @@ describe('EnterpriseLicenseCockpitComponent', () => {
     expect(component.license().organizationName).toBe('New Corp Ltd');
     expect(component.activationMessage()).toContain('successfully verified');
   });
+
+  it('should ignore empty license key submission and apply default sovereign organization name if org is blank', () => {
+    component.inputKey = '   ';
+    component.applyLicense();
+    expect(component.activationMessage()).toBe('');
+
+    component.inputKey = 'SG-SOVEREIGN-KEY';
+    component.inputOrg = '';
+    component.applyLicense();
+    expect(component.license().organizationName).toBe('Acme Global Sovereign');
+    expect(component.license().daysRemaining).toBe(365);
+    expect(component.activationMessage()).toContain('SHA-256');
+  });
 });

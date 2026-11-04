@@ -23,4 +23,19 @@ describe('ValueRealizationCockpitComponent', () => {
     expect(comp.decks()[initialDecks].customerAccountName).toBe('Starlight Financial Network');
     expect(comp.decks()[initialDecks].fiscalQuarter).toBe('2026-Q3');
   });
+
+  it('should verify value metric categories, multiplier factors, and audit sources', () => {
+    const comp = new ValueRealizationCockpitComponent();
+    const metrics = comp.metrics();
+    expect(metrics.length).toBe(2);
+
+    const costRed = metrics.find(m => m.objectiveCategory === 'COST_REDUCTION');
+    expect(costRed).toBeDefined();
+    expect(costRed?.annualizedRoiDollars).toBe(830000);
+    expect(costRed?.verificationSource).toBe('AUTOMATED_LEDGER_AUDIT');
+
+    const cycleTime = metrics.find(m => m.objectiveCategory === 'CYCLE_TIME_SPEEDUP');
+    expect(cycleTime).toBeDefined();
+    expect(cycleTime?.realizationMultiplier).toBe(4.8);
+  });
 });

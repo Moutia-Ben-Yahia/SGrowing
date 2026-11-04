@@ -18,4 +18,16 @@ describe('RfpResponseCockpitComponent', () => {
     expect(comp.answers()[0].questionPrompt).toContain('failover');
     expect(comp.answers()[0].synthesizedAnswer).toContain('multi-cloud');
   });
+
+  it('should verify questionnaire completion progress and security compliance references', () => {
+    const comp = new RfpResponseCockpitComponent();
+    const soc2Rfp = comp.questionnaires().find(q => q.questionnaireType === 'SECURITY_SOC2_ISO');
+    expect(soc2Rfp).toBeDefined();
+    expect(soc2Rfp?.answeredQuestionsCount).toBe(115);
+    expect(soc2Rfp?.totalQuestionsCount).toBe(120);
+
+    const initialAnswer = comp.answers()[0];
+    expect(initialAnswer.canonicalSourceReference).toContain('ISO/IEC 27001');
+    expect(initialAnswer.synthesizedAnswer).toContain('AES-256-GCM');
+  });
 });

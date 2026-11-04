@@ -18,4 +18,11 @@ describe('MutualActionPlanCockpitComponent', () => {
     expect(comp.milestones()[0].isCompleted).toBe(true);
     expect(comp.milestones()[0].title).toContain('Budget Signoff');
   });
+
+  it('should verify total pipeline value and on-track deal status across active plans', () => {
+    const comp = new MutualActionPlanCockpitComponent();
+    const totalPipelineUsd = comp.plans().reduce((sum, p) => sum + p.dealValueUsd, 0);
+    expect(totalPipelineUsd).toBe(730000); // 450,000 + 280,000
+    expect(comp.plans().every(p => p.status === 'ON_TRACK_TO_CLOSE')).toBe(true);
+  });
 });

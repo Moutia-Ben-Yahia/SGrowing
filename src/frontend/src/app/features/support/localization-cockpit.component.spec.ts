@@ -19,4 +19,11 @@ describe('LocalizationCockpitComponent', () => {
     expect(comp.currentMessage().localizedText).toContain('誠にありがとうございます');
     expect(comp.currentMessage().politenessScore).toBeGreaterThan(98);
   });
+
+  it('should maintain glossary term preservation across Japanese translation', () => {
+    const comp = new LocalizationCockpitComponent();
+    comp.translateToJapaneseKeigo();
+    expect(comp.currentMessage().preservedTerms).toEqual(['SGrowing', 'SOC2 Type II', 'CAPI']);
+    expect(comp.activeLatency()).toBe(168);
+  });
 });

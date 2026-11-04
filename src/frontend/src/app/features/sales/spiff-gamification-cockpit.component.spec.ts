@@ -18,4 +18,16 @@ describe('SpiffGamificationCockpitComponent', () => {
     expect(comp.campaigns().length).toBe(initialCount + 1);
     expect(comp.campaigns()[comp.campaigns().length - 1].campaignName).toBe('Q1 AI Agent Enterprise Tier Rush');
   });
+
+  it('should verify rep leaderboard ranking and cash payouts', () => {
+    const comp = new SpiffGamificationCockpitComponent();
+    const rankOne = comp.leaderboard().find(r => r.rank === 1);
+    expect(rankOne).toBeDefined();
+    expect(rankOne?.salesRepName).toBe('Alexandra Hayes');
+    expect(rankOne?.tierBadge).toBe('DIAMOND_CHAMPION');
+    expect(rankOne?.totalEarnedUsd).toBe(20000);
+
+    const totalDeals = comp.leaderboard().reduce((sum, r) => sum + r.dealsClosed, 0);
+    expect(totalDeals).toBe(14); // 8 + 6
+  });
 });

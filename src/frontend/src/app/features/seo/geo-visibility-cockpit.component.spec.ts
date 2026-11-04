@@ -25,4 +25,13 @@ describe('GeoVisibilityCockpitComponent', () => {
     expect(component.citations()[0].query).toBe('Top B2B AI Growth Engine');
     expect(component.showAuditModal()).toBe(false);
   });
+
+  it('should ignore empty audit queries without changing citations list', () => {
+    const initialCount = component.citations().length;
+    component.newAuditQuery = '   ';
+    component.runQueryAudit();
+
+    expect(component.citations().length).toBe(initialCount);
+    expect(component.newAuditQuery).toBe('   ');
+  });
 });
