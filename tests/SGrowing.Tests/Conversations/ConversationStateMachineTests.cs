@@ -151,4 +151,16 @@ public class ConversationStateMachineTests
         refreshed.Status.Should().Be(ConversationStatus.WaitingOnCustomer);
         refreshed.PausedAtUtc.Should().NotBeNull();
     }
+
+    [Fact]
+    public void ChangeStatus_TransitionOutOfWaitingOnCustomer_ClearsPausedAtUtc()
+    {
+        var conv = Conversation.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+        conv.ChangeStatus(ConversationStatus.WaitingOnCustomer);
+        conv.PausedAtUtc.Should().NotBeNull();
+
+        conv.ChangeStatus(ConversationStatus.Open);
+        conv.Status.Should().Be(ConversationStatus.Open);
+        conv.PausedAtUtc.Should().BeNull();
+    }
 }

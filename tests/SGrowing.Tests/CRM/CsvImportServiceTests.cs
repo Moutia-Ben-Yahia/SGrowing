@@ -242,4 +242,17 @@ public class CsvImportServiceTests
         Assert.Equal("Col1", rows[0][0]);
         Assert.Equal("Val1", rows[1][0]);
     }
+
+    [Fact]
+    public void PreviewCsv_EmptyOrWhitespaceCsv_ReturnsZeroTotalRowsAndEmptyHeaders()
+    {
+        var (_, service) = CreateContext();
+
+        var preview = service.PreviewCsv("");
+
+        Assert.Equal(0, preview.TotalRows);
+        Assert.Empty(preview.DetectedHeaders);
+        Assert.Empty(preview.SampleRows);
+        Assert.Empty(preview.PreviewErrors);
+    }
 }

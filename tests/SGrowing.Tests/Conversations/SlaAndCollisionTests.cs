@@ -195,4 +195,22 @@ public class SlaAndCollisionTests
         alerts[0].MinutesRemaining.Should().Be(0);
         alerts[0].PolicyName.Should().Be("Tier 1 SLA");
     }
+
+    [Fact]
+    public async Task GetActiveViewersAsync_TenantIsolation_DoesNotLeakAcrossTenants()
+    {
+        var db = CreateDbContext();
+        var service = new CollisionDetectionAndSlaService(db);
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+        var conversationId = Guid.NewGuid();
+
+        await service.UpdatePresenceAsync(tenantA, conversationId, "op_a", "Operator A", isTyping: true);
+
+        var viewersA = await service.GetActiveViewersAsync(tenantA, conversationId);
+        viewersA.Should().ContainSingle();
+
+        var viewersB = await service.GetActiveViewersAsync(tenantB, conversationId);
+        viewersB.Should().BeEmpty();
+    }
 }

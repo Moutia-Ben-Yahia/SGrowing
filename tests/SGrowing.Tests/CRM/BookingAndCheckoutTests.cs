@@ -191,4 +191,21 @@ public class BookingAndCheckoutTests
         // Tag should appear exactly once
         updatedContact!.Tags.Count(t => t == "paying-customer").Should().Be(1);
     }
+
+    [Fact]
+    public async Task MarkPaidAsync_CrossTenantIsolation_CannotPayOtherTenantsLink()
+    {
+        var db = CreateDbContext();
+        var notifier = new Mock<IRealtimeNotifier>();
+        var service = new CheckoutLinkService(db, notifier.Object);
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        var linkRes = await service.CreateCheckoutLinkAsync(tenantA, Guid.NewGuid(), Guid.NewGuid(), "Private Link", 150m);
+        linkRes.IsSuccess.Should().BeTrue();
+
+        var crossTenantResult = await service.MarkPaidAsync(tenantB, linkRes.Value.Id);
+        crossTenantResult.IsSuccess.Should().BeFalse();
+        crossTenantResult.Error.Should().Be("Checkout link not found.");
+    }
 }
