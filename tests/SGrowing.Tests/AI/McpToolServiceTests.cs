@@ -152,4 +152,32 @@ public class McpToolServiceTests
         var listResponse = await toolService.HandleJsonRpcAsync(listPayload);
         listResponse.Should().Contain("crm_search_leads");
     }
+
+    [Fact]
+    public async Task ExecuteToolAsync_UnknownTool_ReturnsIsErrorTrueAndNotFoundMessage()
+    {
+        var (_, _, toolService) = CreateContext();
+
+        var (result, isError) = await toolService.ExecuteToolAsync("non_existent_tool_xyz", new JsonObject());
+
+        isError.Should().BeTrue();
+        result.ToString().Should().Contain("is not implemented");
+    }
+
+    [Fact]
+    public async Task ExecuteToolAsync_CrmSearchLeads_WhenNoContactsMatch_ReturnsEmptyLeadsArray()
+    {
+        var (_, _, toolService) = CreateContext();
+
+        var args = new JsonObject
+        {
+            ["query"] = "UnmatchedContactQuery9999",
+            ["limit"] = 10
+        };
+
+        var (result, isError) = await toolService.ExecuteToolAsync("crm_search_leads", args);
+
+        isError.Should().BeFalse();
+        result.ToString().Should().Contain("leads");
+    }
 }

@@ -152,4 +152,44 @@ public class AgentPersonaServiceTests
 
         remediations.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task GetPersonasAsync_WhenLayerMatchesNoPersonas_ReturnsEmptyCollection()
+    {
+        using var db = CreateDbContext();
+        var service = new AgentPersonaService(db);
+
+        var results = await service.GetPersonasAsync(layer: "NonExistentSpaceLayer");
+
+        results.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task RunHeartbeatCycleAsync_WithUrgentBlockedTasks_GeneratesWarningForDeliveryScrumMaster()
+    {
+        using var db = CreateDbContext();
+        var service = new AgentPersonaService(db);
+        var tenantId = Guid.NewGuid();
+
+        var urgentTask = new TaskItemRecord
+        {
+            Id = Guid.NewGuid(),
+            ProjectId = Guid.NewGuid(),
+            TenantId = tenantId,
+            Title = "Contract Security Clearance",
+            Priority = "Urgent",
+            Status = "Pending",
+            CreatedAtUtc = DateTime.UtcNow
+        };
+        db.TaskItems.Add(urgentTask);
+        await db.SaveChangesAsync();
+
+        var cycleResult = await service.RunHeartbeatCycleAsync(tenantId);
+
+        cycleResult.Should().NotBeNull();
+        var scrumMasterReport = cycleResult.Reports.FirstOrDefault(r => r.RoleKey == "delivery-scrum-master");
+        scrumMasterReport.Should().NotBeNull();
+        scrumMasterReport!.Status.Should().Be("Warning");
+        scrumMasterReport.FindingsSummary.Should().Contain("1 urgent client onboarding milestone task(s)");
+    }
 }

@@ -172,4 +172,65 @@ public class McpJsonRpcProtocolTests
         node!["id"]?.GetValue<int>().Should().Be(5);
         node["result"]?["isError"]?.GetValue<bool>().Should().BeTrue();
     }
+
+    [Fact]
+    public async Task HandleJsonRpc_ToolsCall_CodCalculateNetMargin_ShouldExecuteSuccessfully()
+    {
+        // Arrange
+        const string request = """
+        {
+            "jsonrpc": "2.0",
+            "id": 6,
+            "method": "tools/call",
+            "params": {
+                "name": "cod_calculate_net_margin",
+                "arguments": {
+                    "orderTotal": 200.0,
+                    "productCost": 60.0,
+                    "shippingFee": 10.0,
+                    "callCenterFee": 5.0,
+                    "returnRatePercent": 10.0,
+                    "returnPenaltyFee": 20.0
+                }
+            }
+        }
+        """;
+
+        // Act
+        var responseJson = await _mcpService.HandleJsonRpcAsync(request);
+
+        // Assert
+        var node = JsonNode.Parse(responseJson);
+        node.Should().NotBeNull();
+        node!["id"]?.GetValue<int>().Should().Be(6);
+        node["result"]?["isError"]?.GetValue<bool>().Should().BeFalse();
+
+        var contentText = node["result"]?["content"]?[0]?["text"]?.GetValue<string>();
+        contentText.Should().NotBeNullOrEmpty();
+        contentText.Should().Contain("\"trueNetMarginTnd\":123");
+    }
+
+    [Fact]
+    public async Task HandleJsonRpc_ToolsCall_MissingToolName_ShouldReturnMissingToolNameError()
+    {
+        // Arrange
+        const string request = """
+        {
+            "jsonrpc": "2.0",
+            "id": 7,
+            "method": "tools/call",
+            "params": {}
+        }
+        """;
+
+        // Act
+        var responseJson = await _mcpService.HandleJsonRpcAsync(request);
+
+        // Assert
+        var node = JsonNode.Parse(responseJson);
+        node.Should().NotBeNull();
+        node!["id"]?.GetValue<int>().Should().Be(7);
+        node["error"]?["code"]?.GetValue<int>().Should().Be(-32602);
+        node["error"]?["message"]?.GetValue<string>().Should().Contain("Missing tool name in params");
+    }
 }

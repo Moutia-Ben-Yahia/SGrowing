@@ -134,4 +134,39 @@ public class PredictiveLtvServiceTests
         summary.TotalPredictedResidualRevenue365d.Should().BeGreaterThan(0m);
         summary.TopVipRiskCustomers.Should().ContainSingle();
     }
+
+    [Fact]
+    public async Task GetAtRiskVipInterventionsAsync_WhenNoPredictionsStored_ReturnsEmptyList()
+    {
+        var interventions = await _service.GetAtRiskVipInterventionsAsync(Guid.NewGuid());
+
+        interventions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetAtRiskVipInterventionsAsync_WhenAtRiskCustomerPredicted_ReturnsInterventionRecord()
+    {
+        var tenantId = Guid.NewGuid();
+        var customerId = Guid.NewGuid();
+
+        var history = new CustomerTransactionHistory(
+            customerId,
+            "At Risk VIP Corp",
+            "vip@riskcorp.com",
+            Frequency: 8,
+            RecencyDays: 120,
+            TotalObservationDays: 365,
+            HistoricalAverageOrderValue: 200m,
+            TotalLifetimeRevenue: 1600m
+        );
+
+        await _service.PredictCustomerLtvAsync(tenantId, history);
+
+        var interventions = await _service.GetAtRiskVipInterventionsAsync(tenantId);
+
+        interventions.Should().ContainSingle();
+        interventions[0].CustomerId.Should().Be(customerId);
+        interventions[0].RequiresAutomatedWinBackIntervention.Should().BeTrue();
+        interventions[0].Tier.Should().Be(CustomerPltvTier.AtRiskDefecting);
+    }
 }
