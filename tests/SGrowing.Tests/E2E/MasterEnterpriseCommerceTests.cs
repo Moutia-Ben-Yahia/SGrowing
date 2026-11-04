@@ -144,4 +144,34 @@ public class MasterEnterpriseCommerceTests
         Assert.Equal("Anonymized", anonymizedContact!.FirstName);
         Assert.Contains("anonymized_", anonymizedContact.Email);
     }
+
+    [Fact]
+    public async Task MasterEnterpriseCommerceE2E_FaultInjection_RejectsMalformedShopifyWebhooksAndDuplicatePayments()
+    {
+        var tenantId = Guid.NewGuid();
+
+        // 1. Malformed Shopify payload rejection & unhandled topic
+        var shopifyReceiver = new ShopifyWebhookReceiver(_db, NullLogger<ShopifyWebhookReceiver>.Instance);
+        await Assert.ThrowsAnyAsync<System.Text.Json.JsonException>(() =>
+            shopifyReceiver.ProcessWebhookAsync(tenantId, "checkouts/create", "INVALID-JSON-PAYLOAD"));
+
+        var ignoredResult = await shopifyReceiver.ProcessWebhookAsync(tenantId, "inventory_levels/update", "{}");
+        Assert.True(ignoredResult.Success);
+        Assert.Equal("Ignored topic", ignoredResult.Message);
+
+        // 2. Stripe Webhook with unhandled event type returns Handled = false
+        var stripeHandler = new StripePaymentWebhookHandler(_db, NullLogger<StripePaymentWebhookHandler>.Instance);
+        var unhandledPayload = @"{
+            ""type"": ""customer.subscription.created"",
+            ""data"": {}
+        }";
+        var unhandledResult = await stripeHandler.ProcessStripeEventAsync(tenantId, unhandledPayload);
+        Assert.False(unhandledResult.Handled);
+
+        // 3. Customer GDPR Right to be Forgotten on non-existent customer
+        var privacyService = new CustomerPrivacyService(_db, NullLogger<CustomerPrivacyService>.Instance);
+        var erasure = await privacyService.ExecuteRightToBeForgottenAsync(tenantId, "nonexistent_ghost@enterprise.com");
+        Assert.True(erasure.Success);
+        Assert.Equal(0, erasure.ErasedContactsCount);
+    }
 }

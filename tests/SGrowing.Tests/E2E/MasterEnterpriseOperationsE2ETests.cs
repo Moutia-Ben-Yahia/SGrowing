@@ -117,4 +117,67 @@ public class MasterEnterpriseOperationsE2ETests
         var dueReminders = await retentionService.ProcessDueReplenishmentRemindersAsync(tenantId, targetDate);
         Assert.NotEmpty(dueReminders);
     }
+
+    [Fact]
+    public async Task Master_E2E_Operations_WhenCommentDoesNotMatchFlashTrigger_DoesNotCreateOrderAndPreservesInventory()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var whId = Guid.NewGuid();
+
+        // Setup warehouse
+        db.Warehouses.Add(new Warehouse { Id = whId, TenantId = tenantId, Name = "Tunis Central Hub", IsPrimary = true });
+        db.WarehouseInventories.Add(new WarehouseInventory
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            WarehouseId = whId,
+            Sku = "SERUM-VIT-C",
+            PhysicalStock = 50,
+            ReservedStock = 0
+        });
+
+        // Setup live stream with keyword "ACHETER"
+        var liveService = new LiveCommerceOverlayService(db);
+        var liveSession = LiveStreamSession.Create(tenantId, "Instagram Live Flash", LiveStreamPlatform.InstagramLive, "IG-STREAM-101");
+        db.LiveStreamSessions.Add(liveSession);
+
+        var flashDeal = new LiveFlashDeal
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            SessionId = liveSession.Id,
+            Sku = "SERUM-VIT-C",
+            ProductName = "Serum Vitamin C",
+            TriggerKeyword = "ACHETER",
+            FlashPrice = 45.0m,
+            OriginalPrice = 65.0m,
+            MaxQuantity = 10,
+            SoldQuantity = 0,
+            IsActive = true
+        };
+        db.LiveFlashDeals.Add(flashDeal);
+        await db.SaveChangesAsync();
+
+        // 1. Customer leaves a comment without trigger keyword
+        var commentResult = await liveService.ProcessLiveCommentAsync(
+            tenantId,
+            liveSession.Id,
+            commenterUsername: "curious_shopper",
+            commentText: "Bonjour est-ce qu'il y a d'autres couleurs disponibles ?",
+            customerPhone: "+21699887766",
+            governorate: "Tunis");
+
+        Assert.False(commentResult.Success);
+        Assert.Null(commentResult.OrderId);
+
+        // Flash deal was not purchased
+        var freshDeal = await db.LiveFlashDeals.FindAsync(flashDeal.Id);
+        Assert.Equal(0, freshDeal!.SoldQuantity);
+
+        // 2. Recording survey response for unknown survey throws InvalidOperationException
+        var retentionService = new PostPurchaseRetentionService(db);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            retentionService.RecordSurveyResponseAsync(tenantId, Guid.NewGuid(), 5, "Great"));
+    }
 }

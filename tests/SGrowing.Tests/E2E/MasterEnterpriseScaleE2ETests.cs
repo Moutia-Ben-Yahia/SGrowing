@@ -129,4 +129,72 @@ public class MasterEnterpriseScaleE2ETests
         Assert.Equal(60.0m, finalCreator.PaidOutCommission);
         Assert.Equal(0m, finalCreator.AvailableForPayoutBalance);
     }
+
+    [Fact]
+    public async Task Master_Enterprise_Scale_WhenCustomerReturnsOrder_VoidsAffiliateEscrowAndProtectsFinances()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+
+        var affiliateService = new CreatorAffiliateService(db);
+        var securityService = new SecurityAuditAndRbacService(db);
+        var demandForecastingService = new DemandForecastingService(db);
+
+        // 1. Setup Creator & Referral Code
+        var creator = CreatorProfile.Create(
+            tenantId,
+            fullName: "Youssef Fashion",
+            handle: "@youssefstyle",
+            email: "youssef@fashion.tn",
+            phone: "+21655112233",
+            platform: CreatorPlatform.TikTok,
+            commissionType: CommissionType.Percentage,
+            commissionRate: 15.0m,
+            minPayoutThreshold: 50.0m,
+            paymentMethod: "BankTransfer",
+            payoutDetails: "TN5910006035183492817342");
+        await affiliateService.RegisterCreatorAsync(tenantId, creator);
+        await affiliateService.CreateReferralCodeAsync(tenantId, creator.Id, "YOUSSEF15", "Percentage", 15.0m);
+
+        // Order placed with creator code
+        var order = CodOrder.Create(
+            tenantId,
+            "ORD-RET-001",
+            "Sami Ben Ali",
+            "+21622334455",
+            "Avenue Habib Bourguiba",
+            "Tunis",
+            "Centre Ville",
+            200.0m);
+        order.Status = CodOrderStatus.Dispatched;
+        db.CodOrders.Add(order);
+        await db.SaveChangesAsync();
+
+        // Commission placed in escrow hold
+        var ledger = await affiliateService.AttributeOrderCommissionAsync(tenantId, "YOUSSEF15", order.Id, "TRK-RET-001", 200.0m);
+        Assert.NotNull(ledger);
+        Assert.Equal(EscrowStatus.EscrowHold, ledger.Status);
+        Assert.Equal(30.0m, ledger.CommissionAmount);
+
+        // 2. Customer returns / cancels order -> Escrow voided
+        var voided = await affiliateService.VoidEscrowOnReturnOrCancelAsync(tenantId, order.Id, "Parcel refused at delivery door");
+        Assert.NotNull(voided);
+        Assert.Equal(EscrowStatus.VoidedReturn, voided.Status);
+
+        var creatorSummary = await affiliateService.GetCreatorSummaryAsync(tenantId, creator.Id);
+        Assert.Equal(0m, creatorSummary.AvailableForPayoutBalance);
+        Assert.Equal(0m, creatorSummary.TotalEarnedCommission);
+
+        // Payout batch generation yields 0 payouts
+        var payouts = await affiliateService.GeneratePayoutBatchAsync(tenantId);
+        Assert.Empty(payouts);
+
+        // 3. Security Service: Querying masked order on non-existent order throws InvalidOperationException
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            securityService.GetMaskedCustomerOrderAsync(tenantId, Guid.NewGuid(), UserSystemRole.CallCenterAgent));
+
+        // 4. Demand forecasting: Approving non-existent restock order throws InvalidOperationException
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            demandForecastingService.ApproveRestockOrderAsync(tenantId, Guid.NewGuid()));
+    }
 }
