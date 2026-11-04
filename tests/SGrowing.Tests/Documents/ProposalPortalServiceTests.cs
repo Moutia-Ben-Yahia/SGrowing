@@ -160,4 +160,77 @@ public class ProposalPortalServiceTests
         result.CryptographicDigestSha256.Should().NotBeNullOrWhiteSpace();
         result.CertificateUrl.Should().Contain(envelopeId.ToString());
     }
+
+    [Fact]
+    public async Task RecordViewerTelemetryBeaconAsync_ThrowsArgumentException_WhenTokenIsMissing()
+    {
+        using var db = CreateDbContext();
+        var service = new ProposalPortalService(db);
+
+        var act = async () => await service.RecordViewerTelemetryBeaconAsync("", new ProposalBeaconDto(1, 10.0, 50.0));
+        await act.Should().ThrowAsync<ArgumentException>().WithMessage("*token*");
+    }
+
+    [Fact]
+    public async Task RecordViewerTelemetryBeaconAsync_ThrowsKeyNotFoundException_WhenTokenNotFound()
+    {
+        using var db = CreateDbContext();
+        var service = new ProposalPortalService(db);
+
+        var act = async () => await service.RecordViewerTelemetryBeaconAsync("prop_unknown_000", new ProposalBeaconDto(1, 10.0, 50.0));
+        await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
+    [Fact]
+    public async Task SignOrAcceptProposalAsync_ThrowsArgumentException_WhenSignerCredentialsMissing()
+    {
+        using var db = CreateDbContext();
+        var service = new ProposalPortalService(db);
+
+        var token = await service.CreateProposalShareTokenAsync(new CreateProposalShareTokenRequest(
+            TenantId: Guid.NewGuid(),
+            EnvelopeId: Guid.NewGuid(),
+            Title: "Test Proposal",
+            RecipientName: "Recipient",
+            RecipientEmail: "recip@test.com"
+        ));
+
+        var missingNameDto = new AcceptProposalDto("", "recip@test.com", "sig");
+        var actName = async () => await service.SignOrAcceptProposalAsync(token, missingNameDto);
+        await actName.Should().ThrowAsync<ArgumentException>().WithMessage("*legal name*");
+
+        var missingEmailDto = new AcceptProposalDto("Name", "", "sig");
+        var actEmail = async () => await service.SignOrAcceptProposalAsync(token, missingEmailDto);
+        await actEmail.Should().ThrowAsync<ArgumentException>().WithMessage("*email*");
+    }
+
+    [Fact]
+    public async Task GetProposalAnalyticsAsync_AggregatesPageMetricsCorrectly()
+    {
+        using var db = CreateDbContext();
+        var service = new ProposalPortalService(db);
+        var envelopeId = Guid.NewGuid();
+        var tenantId = Guid.NewGuid();
+
+        var token = await service.CreateProposalShareTokenAsync(new CreateProposalShareTokenRequest(
+            TenantId: tenantId,
+            EnvelopeId: envelopeId,
+            Title: "Analytics Benchmark Proposal",
+            RecipientName: "Buyer VIP",
+            RecipientEmail: "vip@buyer.com",
+            TotalPages: 3,
+            PricingPageNumber: 2
+        ));
+
+        // Send two beacons on page 1
+        await service.RecordViewerTelemetryBeaconAsync(token, new ProposalBeaconDto(1, 20.0, 80.0, ViewerEmail: "vip@buyer.com"));
+        await service.RecordViewerTelemetryBeaconAsync(token, new ProposalBeaconDto(1, 30.0, 100.0, ViewerEmail: "vip@buyer.com"));
+
+        var analytics = await service.GetProposalTelemetryAnalyticsAsync(tenantId, envelopeId);
+
+        analytics.Should().NotBeNull();
+        analytics.EnvelopeId.Should().Be(envelopeId);
+        analytics.TotalBeaconEvents.Should().Be(2);
+        analytics.TotalReadingDurationSeconds.Should().Be(50.0);
+    }
 }
