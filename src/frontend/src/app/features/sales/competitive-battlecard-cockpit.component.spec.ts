@@ -29,4 +29,24 @@ describe('CompetitiveBattlecardCockpitComponent', () => {
     expect(initialBattlecard.digest).toMatch(/^0x[0-9A-F]+/);
     expect(initialBattlecard.killPoint).toContain('0-cost migration credit');
   });
+
+  it('should allow adding new competitor and updating aggregateWinRatePct', () => {
+    const comp = new CompetitiveBattlecardCockpitComponent();
+    comp.competitors.update(list => [
+      ...list,
+      {
+        competitorId: 'COMP-SOLAR-03',
+        competitorName: 'Solaris Cloud Data',
+        marketCategory: 'Cloud Data Warehouse',
+        estimatedAverageDealSizeUsd: 450000,
+        winRateAgainstPct: 82.0,
+        threatLevel: 'LOW'
+      }
+    ]);
+    comp.aggregateWinRatePct.set(78.5);
+
+    expect(comp.competitors().length).toBe(3);
+    expect(comp.competitors()[2].competitorId).toBe('COMP-SOLAR-03');
+    expect(comp.aggregateWinRatePct()).toBe(78.5);
+  });
 });

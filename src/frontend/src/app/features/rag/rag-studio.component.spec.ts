@@ -37,4 +37,13 @@ describe('RagStudioComponent', () => {
     expect(chunks.length).toBe(1);
     expect(chunks[0].content).toBe('New enterprise documentation chunk for RAG search testing.');
   });
+
+  it('should ignore indexAndChunk when documentContent is empty', () => {
+    const initialChunks = component.retrievedChunks();
+    component.documentContent = '';
+    component.indexAndChunk();
+
+    expect(component.retrievedChunks()).toBe(initialChunks);
+    expect(component.retrievedChunks().length).toBe(1);
+  });
 });

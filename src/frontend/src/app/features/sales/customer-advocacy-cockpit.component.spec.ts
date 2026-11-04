@@ -36,4 +36,13 @@ describe('CustomerAdvocacyCockpitComponent', () => {
     expect(exhaustedAdvocate?.referenceCallsThisQuarter).toBe(exhaustedAdvocate!.maxCallsQuarterlyQuota);
     expect(exhaustedAdvocate?.advocateSatisfactionScore).toBeGreaterThanOrEqual(95.0);
   });
+
+  it('should allow updating rewardPointsTotal and activeAdvocatesCount signals', () => {
+    const comp = new CustomerAdvocacyCockpitComponent();
+    comp.rewardPointsTotal.set(22500);
+    comp.activeAdvocatesCount.set(52);
+
+    expect(comp.rewardPointsTotal()).toBe(22500);
+    expect(comp.activeAdvocatesCount()).toBe(52);
+  });
 });

@@ -28,4 +28,13 @@ describe('DealAutopsyCockpitComponent', () => {
     expect(firstPlaybook.cooldownDays).toBe(45);
     expect(firstPlaybook.recoveryStrategy).toContain('Payback Guarantee');
   });
+
+  it('should allow updating lostPipelineUsd and activePlaybooksCount signals', () => {
+    const comp = new DealAutopsyCockpitComponent();
+    comp.lostPipelineUsd.set(8500000);
+    comp.activePlaybooksCount.set(3);
+
+    expect(comp.lostPipelineUsd()).toBe(8500000);
+    expect(comp.activePlaybooksCount()).toBe(3);
+  });
 });

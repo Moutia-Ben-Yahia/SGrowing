@@ -35,4 +35,10 @@ describe('AbmTerritoryCockpitComponent', () => {
     expect(component.accounts().length).toBe(initial + 1);
     expect(component.accounts()[0].domain).toBe('snowflake.com');
   });
+
+  it('should return 0 averageSurge when accounts list is empty', () => {
+    component.accounts.set([]);
+    expect(component.averageSurge()).toBe(0);
+    expect(component.accounts().length).toBe(0);
+  });
 });

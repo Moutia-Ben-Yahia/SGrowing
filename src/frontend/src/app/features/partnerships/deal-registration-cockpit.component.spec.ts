@@ -33,4 +33,11 @@ describe('DealRegistrationCockpitComponent (Horizon 64)', () => {
     const updated = component.deals().find(d => d.dealId === pending.dealId)!;
     expect(updated.status).toBe('ApprovedLocked');
   });
+
+  it('should return 0 for ARR, locked count and commissions when deals list is empty', () => {
+    component.deals.set([]);
+    expect(component.totalArr()).toBe(0);
+    expect(component.lockedCount()).toBe(0);
+    expect(component.totalCommissions()).toBe(0);
+  });
 });

@@ -34,4 +34,13 @@ describe('ContractRedlineCockpitComponent', () => {
     expect(comp.pendingCount()).toBe(0);
     expect(comp.approvals().some(a => a.approvedByLegalCounsel.includes('Chief Legal Officer'))).toBe(true);
   });
+
+  it('should allow updating avgRiskScore and compromisesCount signals', () => {
+    const comp = new ContractRedlineCockpitComponent();
+    comp.avgRiskScore.set(28.5);
+    comp.compromisesCount.set(3);
+
+    expect(comp.avgRiskScore()).toBe(28.5);
+    expect(comp.compromisesCount()).toBe(3);
+  });
 });

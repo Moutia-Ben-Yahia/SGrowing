@@ -34,4 +34,15 @@ describe('BuyingCommitteeCockpitComponent', () => {
     expect(lastInt.expectedOutcome).toContain('Alicia Thorne');
     expect(lastInt.playbookType).toBe('ROI_CALCULATOR_SESSION');
   });
+
+  it('should allow updating consensusScore, alignedChampions, and activeBlockers signals', () => {
+    const comp = new BuyingCommitteeCockpitComponent();
+    comp.consensusScore.set(91.2);
+    comp.alignedChampions.set(4);
+    comp.activeBlockers.set(0);
+
+    expect(comp.consensusScore()).toBe(91.2);
+    expect(comp.alignedChampions()).toBe(4);
+    expect(comp.activeBlockers()).toBe(0);
+  });
 });

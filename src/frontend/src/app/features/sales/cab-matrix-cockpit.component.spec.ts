@@ -34,4 +34,23 @@ describe('CabMatrixCockpitComponent', () => {
     const coreTheme = comp.themes().find(t => t.category === 'Product Core');
     expect(coreTheme?.title).toContain('Autonomous AI Multi-Agent');
   });
+
+  it('should allow adding new strategic theme and updating alignment score', () => {
+    const comp = new CabMatrixCockpitComponent();
+    comp.themes.update(list => [
+      ...list,
+      {
+        themeId: 'THEME-003',
+        title: 'Zero-Trust Credential Mesh',
+        category: 'Security & Auth',
+        votesCount: 11,
+        totalScore: 92.0
+      }
+    ]);
+    comp.alignmentScore.set(96.8);
+
+    expect(comp.themes().length).toBe(3);
+    expect(comp.themes()[2].themeId).toBe('THEME-003');
+    expect(comp.alignmentScore()).toBe(96.8);
+  });
 });

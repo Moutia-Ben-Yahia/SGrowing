@@ -27,4 +27,13 @@ describe('DealCoachingCockpitComponent', () => {
     expect(objection.recommendedCounterTactic).toContain('deferred cash terms');
     expect(objection.evidenceProofPoint).toContain('Apex Freight');
   });
+
+  it('should allow updating totalObjectionsQuarter and winRateLiftPct signals', () => {
+    const comp = new DealCoachingCockpitComponent();
+    comp.totalObjectionsQuarter.set(168);
+    comp.winRateLiftPct.set(36.2);
+
+    expect(comp.totalObjectionsQuarter()).toBe(168);
+    expect(comp.winRateLiftPct()).toBe(36.2);
+  });
 });

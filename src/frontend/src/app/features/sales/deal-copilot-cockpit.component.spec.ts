@@ -42,4 +42,17 @@ describe('DealCopilotCockpitComponent', () => {
 
     expect(component.atRiskCount()).toBe(0);
   });
+
+  it('should return 0 metrics when deals list is empty and return correct risk badge classes', () => {
+    expect(component.getRiskBadgeClass('SevereRisk')).toBe('bg-rose-100 text-rose-800');
+    expect(component.getRiskBadgeClass('ModerateRisk')).toBe('bg-amber-100 text-amber-800');
+    expect(component.getRiskBadgeClass('Healthy')).toBe('bg-emerald-100 text-emerald-800');
+    expect(component.getRiskBadgeClass('Unknown')).toBe('bg-slate-100 text-slate-800');
+
+    component.deals.set([]);
+    expect(component.totalPipeline()).toBe(0);
+    expect(component.forecastedRevenue()).toBe(0);
+    expect(component.atRiskCount()).toBe(0);
+    expect(component.aggregateHealth()).toBe(0);
+  });
 });

@@ -29,4 +29,24 @@ describe('ContentPersonalizationCockpitComponent', () => {
 
     expect(comp.selectedCta()).toBe('Schedule Executive Architecture Review');
   });
+
+  it('should allow dynamically adding new firmographic segments and updating active rules count', () => {
+    const comp = new ContentPersonalizationCockpitComponent();
+    comp.segments.update(list => [
+      ...list,
+      {
+        segmentId: 'SEG-GOV-04',
+        name: 'Public Sector & Defense',
+        targetIndustry: 'Government',
+        employeeRange: '10,000+',
+        revenueTier: '$500M+',
+        activeAccountsCount: 95
+      }
+    ]);
+    comp.activeRulesCount.set(4);
+
+    expect(comp.segments().length).toBe(4);
+    expect(comp.activeRulesCount()).toBe(4);
+    expect(comp.segments()[3].segmentId).toBe('SEG-GOV-04');
+  });
 });
