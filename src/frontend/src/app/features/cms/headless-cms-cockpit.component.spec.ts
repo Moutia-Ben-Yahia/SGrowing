@@ -47,4 +47,9 @@ describe('HeadlessCmsCockpitComponent', () => {
     const art = component.articles().find(a => a.id === 'art_1');
     expect(art?.status).toBe('Edge Synced');
   });
+
+  it('should return 0 averageVoiceScore when articles list is empty', () => {
+    component.articles.set([]);
+    expect(component.averageVoiceScore()).toBe(0);
+  });
 });

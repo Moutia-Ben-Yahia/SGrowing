@@ -48,4 +48,12 @@ describe('WhatsAppBroadcastPacingStudioComponent', () => {
     const latest = component.suppressionList()[0];
     expect(latest.triggerKeyword).toBe('STOP');
   });
+
+  it('should toggle emergency pause state on demand', () => {
+    expect(component.isEmergencyPaused()).toBe(false);
+    component.toggleEmergencyPause();
+    expect(component.isEmergencyPaused()).toBe(true);
+    component.toggleEmergencyPause();
+    expect(component.isEmergencyPaused()).toBe(false);
+  });
 });

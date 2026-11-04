@@ -50,4 +50,16 @@ describe('TelegramBotStudioComponent', () => {
     expect(outcome?.isValid).toBe(false);
     expect(outcome?.hashesMatch).toBe(false);
   });
+
+  it('should detect expired auth_date in WebApp initData validation', () => {
+    component.activeTab.set('sandbox');
+    component.generateSandboxInitData();
+    component.expireSandboxInitData();
+
+    component.runValidation();
+    const outcome = component.validationOutcome();
+    expect(outcome).toBeTruthy();
+    expect(outcome?.isExpired).toBe(true);
+    expect(outcome?.isValid).toBe(false);
+  });
 });

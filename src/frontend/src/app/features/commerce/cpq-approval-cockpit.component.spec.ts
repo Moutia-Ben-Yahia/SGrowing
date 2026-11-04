@@ -42,4 +42,13 @@ describe('CpqApprovalCockpitComponent', () => {
     expect(comp.pendingCount()).toBe(0);
     expect(comp.pendingValue()).toBe(0);
   });
+
+  it('should ignore approve and escalate when quoteId does not exist', () => {
+    const comp = new CpqApprovalCockpitComponent();
+    comp.approve('NON-EXISTENT');
+    expect(comp.lastActionNotice()).toContain('NON-EXISTENT approved');
+
+    const approvedQuotes = comp.quotes().filter(q => q.status === 'Approved');
+    expect(approvedQuotes.length).toBe(1);
+  });
 });

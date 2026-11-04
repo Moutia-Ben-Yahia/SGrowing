@@ -51,4 +51,21 @@ describe('CommerceStudioComponent (Core Commerce Studio)', () => {
     component.triggerCartScan();
     expect(component.carts().some(c => c.id === 'cart_test' && c.status === 'RecoveryTriggered')).toBe(true);
   });
+
+  it('should allow adding new product to products catalog signal', () => {
+    component.products.update(list => [
+      ...list,
+      {
+        id: 'p4',
+        name: 'Omnichannel Voice Router Gateway',
+        sku: 'SGR-VOICE-GW',
+        type: 'Addon',
+        price: 499,
+        stock: 100,
+        isActive: true
+      }
+    ]);
+    expect(component.products().length).toBe(4);
+    expect(component.products()[3].sku).toBe('SGR-VOICE-GW');
+  });
 });

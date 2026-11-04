@@ -46,4 +46,17 @@ describe('WhatsAppGatewayCockpitComponent', () => {
     expect(component.getStatusBadge('Pairing')).toContain('text-amber-400');
     expect(component.getStatusBadge('Disconnected')).toContain('text-slate-400');
   });
+
+  it('should confirm pairing success and transition instance status to Connected', () => {
+    const inst = component.instances().find(i => i.status === 'Disconnected');
+    expect(inst).toBeDefined();
+    component.selectedInstance.set(inst!);
+    component.pairingPhone = '+216 99 111 222';
+    component.confirmPairingSuccess();
+
+    const updated = component.instances().find(i => i.id === inst!.id);
+    expect(updated?.status).toBe('Connected');
+    expect(updated?.phoneNumber).toBe('+216 99 111 222');
+    expect(component.showPairingModal()).toBe(false);
+  });
 });

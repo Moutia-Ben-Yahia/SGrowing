@@ -39,4 +39,11 @@ describe('CpqMarginCockpitComponent', () => {
     expect(yr1?.margin).toBe(78.1);
     expect(comp.auditHash()).toBe('4B8D2A1F9E3C7B5D');
   });
+
+  it('should allow updating termYears signal and verify reactivity', () => {
+    const comp = new CpqMarginCockpitComponent();
+    expect(comp.termYears()).toBe(3);
+    comp.termYears.set(5);
+    expect(comp.termYears()).toBe(5);
+  });
 });

@@ -89,4 +89,19 @@ describe('WhatsAppCompanionStudioComponent', () => {
     expect(component.activeSession()).toEqual(mockSession);
     expect(component.activeSession()?.state).toBe('Connected');
   });
+
+  it('should compute countdownProgressColor and countdownOffset accurately', () => {
+    component.secondsLeft.set(180);
+    expect(component.countdownProgressColor()).toBe('text-emerald-400');
+    expect(component.countdownOffset()).toBe(0);
+
+    component.secondsLeft.set(40);
+    expect(component.countdownProgressColor()).toBe('text-amber-400');
+
+    component.secondsLeft.set(10);
+    expect(component.countdownProgressColor()).toBe('text-rose-400');
+
+    component.secondsLeft.set(0);
+    expect(component.countdownOffset()).toBe(100);
+  });
 });

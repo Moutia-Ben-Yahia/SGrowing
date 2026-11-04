@@ -41,4 +41,17 @@ describe('CommissionSettlementCockpitComponent', () => {
     expect(comp.totalPaid()).toBe(0);
     expect(comp.totalInEscrow()).toBe(0);
   });
+
+  it('should verify rep names and commission tiers across initial records', () => {
+    const comp = new CommissionSettlementCockpitComponent();
+    const repNames = comp.records().map(r => r.repName);
+    expect(repNames).toContain('Victoria Sterling');
+    expect(repNames).toContain('Elena Rostova');
+    expect(repNames).toContain('Marcus Vance');
+
+    const tiers = comp.records().map(r => r.tier);
+    expect(tiers).toContain('SuperAccelerator');
+    expect(tiers).toContain('Accelerator');
+    expect(tiers).toContain('Standard');
+  });
 });

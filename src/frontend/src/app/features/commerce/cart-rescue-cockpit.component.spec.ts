@@ -37,4 +37,10 @@ describe('CartRescueCockpitComponent (Horizon 63)', () => {
     component.selectRescue(secondCart);
     expect(component.selectedRescue()?.rescueId).toBe(secondCart.rescueId);
   });
+
+  it('should return 0 totalGmv and 0 activeCount when rescues list is empty', () => {
+    component.rescues.set([]);
+    expect(component.totalGmv()).toBe(0);
+    expect(component.activeCount()).toBe(0);
+  });
 });

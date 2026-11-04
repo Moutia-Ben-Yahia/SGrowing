@@ -40,4 +40,15 @@ describe('FlowInteractiveCockpitComponent', () => {
     component.resetDemoSession();
     expect(component.activeScreenId()).toBe('SCREEN_LEAD_INFO');
   });
+
+  it('should verify initial form input values and allow updating companyInput and teamSizeInput', () => {
+    expect(component.companyInput).toBe('Stellar Enterprises');
+    expect(component.teamSizeInput).toBe('201-1000');
+    expect(component.selectedGoal).toBe('Autonomous Voice SDR');
+
+    component.companyInput = 'Acme Global';
+    component.teamSizeInput = '50-200';
+    expect(component.companyInput).toBe('Acme Global');
+    expect(component.teamSizeInput).toBe('50-200');
+  });
 });

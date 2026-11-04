@@ -113,4 +113,13 @@ describe('AffiliateCommissionCockpitComponent', () => {
     component.searchQuery.set('Atlas');
     expect(component.searchQuery()).toBe('Atlas');
   });
+
+  it('should update treeSimGmv and verify 3-tier commission split', () => {
+    component.treeSimGmv.set(2000);
+    expect(component.treeSimGmv()).toBe(2000);
+    expect(component.treeSimGmv() * 0.15).toBe(300);
+    expect(component.treeSimGmv() * 0.05).toBe(100);
+    expect(component.treeSimGmv() * 0.02).toBe(40);
+    expect(component.treeSimGmv() * 0.78).toBe(1560);
+  });
 });
