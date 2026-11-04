@@ -437,4 +437,145 @@ public class Customer360AttributionTests
         // True ROAS = $600 / $50 = 12.0x
         Assert.Equal(12.0m, campB.TrueRoas);
     }
+
+    [Fact]
+    public async Task GetCustomer360OverviewAsync_MissingCustomer_ThrowsKeyNotFoundException()
+    {
+        var db = CreateDbContext();
+        var service = new Customer360AttributionService(db);
+        var tenantId = Guid.NewGuid();
+        var missingId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            service.GetCustomer360OverviewAsync(tenantId, missingId));
+    }
+
+    [Fact]
+    public async Task SearchCustomersAsync_FiltersByQueryAcrossNameAndEmail()
+    {
+        var db = CreateDbContext();
+        var service = new Customer360AttributionService(db);
+        var tenantId = Guid.NewGuid();
+
+        var cust1 = new UnifiedCustomerProfile
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            PrimaryName = "Nadia Mahjoub",
+            PrimaryPhone = "+21698000111",
+            PrimaryEmail = "nadia.mahjoub@enterprise.tn",
+            Company = "Tunisia Telecom"
+        };
+
+        var cust2 = new UnifiedCustomerProfile
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            PrimaryName = "Karim Jaziri",
+            PrimaryPhone = "+21698000222",
+            PrimaryEmail = "karim@fintech.tn",
+            Company = "Maghreb Finance"
+        };
+
+        db.UnifiedCustomerProfiles.AddRange(cust1, cust2);
+        await db.SaveChangesAsync();
+
+        var searchByName = await service.SearchCustomersAsync(tenantId, "Nadia");
+        Assert.Single(searchByName);
+        Assert.Equal("Nadia Mahjoub", searchByName[0].PrimaryName);
+
+        var searchByEmailDomain = await service.SearchCustomersAsync(tenantId, "fintech.tn");
+        Assert.Single(searchByEmailDomain);
+        Assert.Equal("Karim Jaziri", searchByEmailDomain[0].PrimaryName);
+    }
+
+    [Fact]
+    public async Task SearchCustomersAsync_ClampsInvalidPageAndPageSize()
+    {
+        var db = CreateDbContext();
+        var service = new Customer360AttributionService(db);
+        var tenantId = Guid.NewGuid();
+
+        var cust = new UnifiedCustomerProfile
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            PrimaryName = "Boundary Customer",
+            PrimaryPhone = "+21698000333"
+        };
+        db.UnifiedCustomerProfiles.Add(cust);
+        await db.SaveChangesAsync();
+
+        // page < 1 clamped to 1, pageSize > 100 clamped to 20
+        var results = await service.SearchCustomersAsync(tenantId, page: -10, pageSize: 500);
+        Assert.Single(results);
+    }
+
+    [Fact]
+    public async Task CompareAttributionModelsAsync_ComputesAllFiveModelsConcurrently()
+    {
+        var db = CreateDbContext();
+        var service = new Customer360AttributionService(db);
+        var tenantId = Guid.NewGuid();
+
+        var customer = new UnifiedCustomerProfile
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            PrimaryName = "Attribution VIP Customer",
+            PrimaryPhone = "+21698000444",
+            TotalSpent = 10000m
+        };
+        db.UnifiedCustomerProfiles.Add(customer);
+        await db.SaveChangesAsync();
+
+        var t0 = DateTime.UtcNow.AddDays(-20);
+        await service.RecordTouchpointAsync(new RecordTouchpointRequest(
+            TenantId: tenantId, ContactId: customer.Id, Channel: "MetaAds", CampaignName: "Prospecting", Cost: 200m, OccurredAtUtc: t0));
+        await service.RecordTouchpointAsync(new RecordTouchpointRequest(
+            TenantId: tenantId, ContactId: customer.Id, Channel: "GoogleAds", CampaignName: "IntentSearch", Cost: 300m, OccurredAtUtc: t0.AddDays(10)));
+        await service.RecordTouchpointAsync(new RecordTouchpointRequest(
+            TenantId: tenantId, ContactId: customer.Id, Channel: "Direct", CampaignName: "DirectCheckout", Cost: 0m, OccurredAtUtc: t0.AddDays(20)));
+
+        var comparison = await service.CompareAttributionModelsAsync(tenantId, customerId: customer.Id);
+
+        Assert.NotNull(comparison);
+        Assert.Equal(tenantId, comparison.TenantId);
+        Assert.Equal(customer.Id, comparison.CustomerId);
+        Assert.Equal(3, comparison.TotalTouchpointsCount);
+        Assert.Equal(10000m, comparison.TotalRevenue);
+
+        // Verify all 5 models are calculated
+        Assert.NotEmpty(comparison.FirstTouch.Shares);
+        Assert.NotEmpty(comparison.LastTouch.Shares);
+        Assert.NotEmpty(comparison.Linear.Shares);
+        Assert.NotEmpty(comparison.UShaped.Shares);
+        Assert.NotEmpty(comparison.TimeDecay.Shares);
+    }
+
+    [Fact]
+    public async Task RecordEventAsync_PersistsTimelineEventWithMetadata()
+    {
+        var db = CreateDbContext();
+        var service = new Customer360AttributionService(db);
+        var tenantId = Guid.NewGuid();
+        var customerId = Guid.NewGuid();
+
+        const string payloadJson = "{\"browser\":\"Chrome 130\",\"os\":\"macOS 15\",\"screen\":\"retina\"}";
+
+        var evt = await service.RecordEventAsync(new RecordCustomerEventRequest(
+            TenantId: tenantId,
+            UnifiedCustomerId: customerId,
+            EventType: "WebinarAttended",
+            Summary: "Attended Autonomous Growth Webinar",
+            PayloadJson: payloadJson
+        ));
+
+        Assert.NotNull(evt);
+        Assert.Equal("WebinarAttended", evt.EventType);
+        Assert.Equal(payloadJson, evt.PayloadJson);
+
+        var timeline = await service.GetCustomerTimelineAsync(tenantId, customerId);
+        Assert.Contains(timeline, t => t.EventType == "WebinarAttended" && t.PayloadJson == payloadJson);
+    }
 }

@@ -499,4 +499,122 @@ public class MultiTouchAttributionTests
         touchpoints[1].Id.Should().NotBeEmpty();
         touchpoints[0].TimestampUtc.Should().BeBefore(touchpoints[1].TimestampUtc);
     }
+
+    [Fact]
+    public void CalculateAttribution_EmptyTouchpoints_ReturnsEmptyChannelShares()
+    {
+        var request = new AttributionCalculationRequest(
+            TenantId: "tenant_growth_01",
+            CustomerId: "cust_no_touches_xyz",
+            DealRevenue: 15000m,
+            Model: AttributionModelType.Linear
+        );
+
+        var result = _engine.CalculateAttribution(request);
+
+        result.Should().NotBeNull();
+        result.ChannelShares.Should().BeEmpty();
+        result.TotalRevenue.Should().Be(15000m);
+    }
+
+    [Fact]
+    public void CalculateAttribution_ZeroDealRevenue_ReturnsEmptyChannelShares()
+    {
+        const string tenantId = "tenant_growth_01";
+        const string customerId = "cust_zero_deal_rev";
+
+        _engine.RecordTouchpoint(new CustomerTouchpoint(
+            Id: Guid.NewGuid(),
+            TenantId: tenantId,
+            CustomerId: customerId,
+            Channel: TouchpointChannel.GoogleAds,
+            CampaignId: "cmp_free",
+            Stage: TouchpointStage.FirstDiscovery,
+            TouchCost: 50m,
+            TimestampUtc: DateTime.UtcNow
+        ));
+
+        var request = new AttributionCalculationRequest(
+            TenantId: tenantId,
+            CustomerId: customerId,
+            DealRevenue: 0m,
+            Model: AttributionModelType.FirstTouch
+        );
+
+        var result = _engine.CalculateAttribution(request);
+
+        result.Should().NotBeNull();
+        result.ChannelShares.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void CalculateAttribution_ZeroCostTouchpoint_UsesSafeCostFloorAndComputesRoasWithoutException()
+    {
+        const string tenantId = "tenant_growth_01";
+        const string customerId = "cust_zero_cost_organic";
+
+        _engine.RecordTouchpoint(new CustomerTouchpoint(
+            Id: Guid.NewGuid(),
+            TenantId: tenantId,
+            CustomerId: customerId,
+            Channel: TouchpointChannel.OrganicSearch,
+            CampaignId: "cmp_organic_unpaid",
+            Stage: TouchpointStage.FirstDiscovery,
+            TouchCost: 0m, // zero cost
+            TimestampUtc: DateTime.UtcNow
+        ));
+
+        var request = new AttributionCalculationRequest(
+            TenantId: tenantId,
+            CustomerId: customerId,
+            DealRevenue: 5000m,
+            Model: AttributionModelType.FirstTouch
+        );
+
+        var result = _engine.CalculateAttribution(request);
+
+        result.ChannelShares.Should().HaveCount(1);
+        var share = result.ChannelShares.First();
+        share.TotalCost.Should().Be(0m);
+        share.AttributedRevenue.Should().Be(5000m);
+        share.Roas.Should().Be(500000m); // 5000 / 0.01 floor = 500,000x
+    }
+
+    [Fact]
+    public void PredictCustomerLtv_HighTransactionVolume_YieldsLowChurnRiskTier()
+    {
+        var request = new PredictLtvRequest(
+            TenantId: "tenant_growth_01",
+            CustomerId: "cust_vip_loyal",
+            HistoricalRevenue: 25000m,
+            CompletedTransactions: 15,
+            FirstSeenUtc: DateTime.UtcNow.AddYears(-2)
+        );
+
+        var result = _engine.PredictCustomerLtv(request);
+
+        result.Should().NotBeNull();
+        result.ChurnProbabilityPercent.Should().BeLessThan(30.0);
+        result.RetentionRiskTier.Should().Be("Low");
+        result.Predicted12MonthLtv.Should().BeGreaterThan(request.HistoricalRevenue);
+        result.Predicted36MonthLtv.Should().BeGreaterThan(result.Predicted12MonthLtv);
+    }
+
+    [Fact]
+    public void PredictCustomerLtv_FutureFirstSeenDate_ClampsTenureGracefully()
+    {
+        var request = new PredictLtvRequest(
+            TenantId: "tenant_growth_01",
+            CustomerId: "cust_clock_skew",
+            HistoricalRevenue: 1000m,
+            CompletedTransactions: 1,
+            FirstSeenUtc: DateTime.UtcNow.AddDays(5) // Clocks slightly skewed into future
+        );
+
+        var result = _engine.PredictCustomerLtv(request);
+
+        result.Should().NotBeNull();
+        result.RetentionRiskTier.Should().Match(t => t == "Low" || t == "Medium" || t == "High");
+        result.Predicted12MonthLtv.Should().BeGreaterThanOrEqualTo(request.HistoricalRevenue);
+    }
 }
