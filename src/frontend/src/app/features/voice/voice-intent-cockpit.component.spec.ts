@@ -35,4 +35,15 @@ describe('VoiceIntentCockpitComponent', () => {
     const glasgowDialect = comp.dialects().find(d => d.dialectCode === 'EN-UK-GLASGOW');
     expect(glasgowDialect?.fastPathThresholdCutoff).toBe(0.88);
   });
+
+  it('should allow updating fastPathHitRate and p99Latency signals', () => {
+    const comp = new VoiceIntentCockpitComponent();
+    comp.fastPathHitRate.set(96.2);
+    comp.p99Latency.set(16.5);
+    comp.acousticConfidence.set(0.985);
+
+    expect(comp.fastPathHitRate()).toBe(96.2);
+    expect(comp.p99Latency()).toBe(16.5);
+    expect(comp.acousticConfidence()).toBe(0.985);
+  });
 });

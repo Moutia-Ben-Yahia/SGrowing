@@ -27,4 +27,21 @@ describe('MultilingualVoiceMeshCockpitComponent', () => {
     expect(alexProfile?.pitchBaseHz).toBe(124.0);
     expect(alexProfile?.timbreResonanceScore).toBeGreaterThan(0.98);
   });
+
+  it('should allow updating timbreSimilarityScore and adding translation session', () => {
+    const comp = new MultilingualVoiceMeshCockpitComponent();
+    comp.timbreSimilarityScore.set(0.995);
+    expect(comp.timbreSimilarityScore()).toBe(0.995);
+
+    comp.sessions.update(s => [...s, {
+      sessionId: 'TRN-SES-403',
+      sourceLanguageCode: 'es-ES',
+      targetLanguageCode: 'en-US',
+      speakerName: 'Mateo Gomez',
+      currentLatencyMs: 155.0,
+      chunksTranslated: 100,
+      streamStatus: 'STREAMING_ACTIVE'
+    }]);
+    expect(comp.sessions().length).toBe(3);
+  });
 });

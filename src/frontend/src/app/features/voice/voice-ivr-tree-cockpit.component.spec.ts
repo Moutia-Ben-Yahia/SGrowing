@@ -35,4 +35,13 @@ describe('VoiceIvrTreeCockpitComponent', () => {
     expect(component.campaigns()[0].name).toBe('Spring Product Keynote Invite');
     expect(component.campaigns()[0].targetCount).toBe(1500);
   });
+
+  it('should toggle showCampaignModal and compute default totalMinutes when campaigns list is empty', () => {
+    expect(component.showCampaignModal()).toBe(false);
+    component.showCampaignModal.set(true);
+    expect(component.showCampaignModal()).toBe(true);
+
+    component.campaigns.set([]);
+    expect(component.totalMinutes()).toBe(1420);
+  });
 });

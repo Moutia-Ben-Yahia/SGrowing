@@ -29,4 +29,20 @@ describe('SpeechStreamingMeshCockpitComponent', () => {
     expect(totalFrames).toBeGreaterThan(20000);
     expect(comp.sessions().every(s => s.currentRoundTripLatencyMs < 80.0)).toBe(true);
   });
+
+  it('should allow updating turnTakingConfidencePct and adding custom s2s session', () => {
+    const comp = new SpeechStreamingMeshCockpitComponent();
+    comp.turnTakingConfidencePct.set(98.2);
+    expect(comp.turnTakingConfidencePct()).toBe(98.2);
+
+    comp.sessions.update(s => [...s, {
+      sessionId: 'S2S-STREAM-003',
+      clientAudioCodec: 'Opus 48kHz Stereo',
+      voicePersona: 'Athena Vanguard',
+      currentRoundTripLatencyMs: 62.0,
+      framesProcessed: 5400,
+      streamStatus: 'STREAMING_ACTIVE'
+    }]);
+    expect(comp.sessions().length).toBe(3);
+  });
 });

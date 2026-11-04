@@ -32,4 +32,12 @@ describe('LiveCallCopilotCockpitComponent', () => {
     expect(component.callSummary()?.actionItems.length).toBeGreaterThanOrEqual(2);
     expect(component.callSummary()?.summary).toContain('Nexus Innovations');
   });
+
+  it('should compute averageSentiment as 0 when utterances array is empty and allow updating prospectCompany', () => {
+    component.prospectCompany.set('Acme Global Services');
+    expect(component.prospectCompany()).toBe('Acme Global Services');
+
+    component.utterances.set([]);
+    expect(component.averageSentiment()).toBe(0);
+  });
 });

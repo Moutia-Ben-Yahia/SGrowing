@@ -31,4 +31,10 @@ describe('ObjectionScoringCockpitComponent (Horizon 58)', () => {
     component.selectCall(secondCall);
     expect(component.selectedCall()?.callId).toBe(secondCall.callId);
   });
+
+  it('should compute 0 avgScore and 0 sqlRate when calls list is empty', () => {
+    component.calls.set([]);
+    expect(component.avgScore()).toBe(0);
+    expect(component.sqlRate()).toBe(0);
+  });
 });

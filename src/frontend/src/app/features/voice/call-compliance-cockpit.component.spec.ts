@@ -27,4 +27,12 @@ describe('CallComplianceCockpitComponent', () => {
     expect(updated?.status).toBe('CompliantPassed');
     expect(updated?.flaggedSnippets.length).toBe(0);
   });
+
+  it('should return 0 averageAdherence and 0 flaggedCount when audits list is empty', () => {
+    const comp = new CallComplianceCockpitComponent();
+    comp.audits.set([]);
+
+    expect(comp.averageAdherence()).toBe(0);
+    expect(comp.flaggedCount()).toBe(0);
+  });
 });

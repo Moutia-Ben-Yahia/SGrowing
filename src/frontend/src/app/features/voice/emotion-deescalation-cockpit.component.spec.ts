@@ -29,4 +29,21 @@ describe('EmotionDeescalationCockpitComponent', () => {
     expect(initialEscalation.peakFrustrationScore).toBeGreaterThan(0.9);
     expect(initialEscalation.suggestedConcessionOffer).toContain('SLA credit');
   });
+
+  it('should allow updating deescalationRatePct and adding custom escalation ticket', () => {
+    const comp = new EmotionDeescalationCockpitComponent();
+    comp.deescalationRatePct.set(95.5);
+    expect(comp.deescalationRatePct()).toBe(95.5);
+
+    comp.escalations.update(e => [...e, {
+      escalationId: 'ESC-CUSTOM',
+      callId: 'CALL-CUSTOM',
+      customerPhone: '+1-555-9999',
+      peakFrustrationScore: 0.75,
+      triggerReason: 'Billing dispute',
+      suggestedConcessionOffer: '10% discount',
+      status: 'PENDING'
+    }]);
+    expect(comp.escalations().length).toBe(2);
+  });
 });

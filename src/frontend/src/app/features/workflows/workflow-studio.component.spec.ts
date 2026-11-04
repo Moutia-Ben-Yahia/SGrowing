@@ -60,4 +60,24 @@ describe('WorkflowStudioComponent', () => {
     const lastLog = logs[logs.length - 1];
     expect(lastLog.message).toContain('Interactive test simulation executed all 4 nodes successfully');
   });
+
+  it('should allow adding custom node and updating executionLogs', () => {
+    component.nodes.update(list => [...list, {
+      id: 'n5',
+      type: 'action',
+      title: 'Webhook Dispatch',
+      subtitle: 'Post payload to external CRM webhook endpoint',
+      icon: '🔗',
+      color: 'bg-emerald-600/20 text-emerald-400',
+      active: false
+    }]);
+    expect(component.nodes().length).toBe(5);
+
+    component.executionLogs.update(logs => [{
+      time: '23:00:00',
+      message: '[Custom Log] Execution verified.',
+      color: 'text-white'
+    }, ...logs]);
+    expect(component.executionLogs()[0].message).toContain('[Custom Log]');
+  });
 });

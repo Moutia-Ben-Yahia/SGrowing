@@ -36,4 +36,13 @@ describe('TelephonyWhisperCockpitComponent', () => {
     expect(categories).toContain('TECH_SPEC');
     expect(categories).toContain('PRICING_CONCESSION');
   });
+
+  it('should allow updating avgLatency and activeCallsCount signals', () => {
+    const comp = new TelephonyWhisperCockpitComponent();
+    comp.avgLatency.set(68.5);
+    comp.activeCallsCount.set(4);
+
+    expect(comp.avgLatency()).toBe(68.5);
+    expect(comp.activeCallsCount()).toBe(4);
+  });
 });

@@ -37,4 +37,20 @@ describe('DialectSynthesisCockpitComponent', () => {
     comp.detectAndSynthesize();
     expect(comp.activeUtterance()?.adaptedText).toContain("y'all");
   });
+
+  it('should keep original transcript if selected profile has no dialect override and allow changing selectedProfile', () => {
+    const comp = new DialectSynthesisCockpitComponent();
+    comp.selectedProfile.set({
+      code: 'EN-US-STANDARD',
+      name: 'General American',
+      idioms: [],
+      pitchShift: 0,
+      cadenceMultiplier: 1.0
+    });
+    comp.callerTranscript = 'Standard statement without alterations.';
+    comp.detectAndSynthesize();
+
+    expect(comp.activeUtterance()?.adaptedText).toBe('Standard statement without alterations.');
+    expect(comp.activeUtterance()?.dialectCode).toBe('EN-US-STANDARD');
+  });
 });
