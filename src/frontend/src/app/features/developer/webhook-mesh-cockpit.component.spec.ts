@@ -43,4 +43,24 @@ describe('WebhookMeshCockpitComponent', () => {
 
     expect(component.dlqCount()).toBe(initialDlq);
   });
+
+  it('should count Failed events in dlqCount and return 0 on empty delivery logs', () => {
+    component.deliveryLogs.set([]);
+    expect(component.dlqCount()).toBe(0);
+
+    component.deliveryLogs.set([
+      {
+        id: 'del_fail_1',
+        eventId: 'evt_fail',
+        topic: 'payment.failed',
+        targetUrl: 'https://webhook.site/pay',
+        status: 'Failed',
+        httpStatus: 500,
+        attemptCount: 3,
+        durationMs: 120,
+        timestamp: new Date().toISOString()
+      }
+    ]);
+    expect(component.dlqCount()).toBe(1);
+  });
 });

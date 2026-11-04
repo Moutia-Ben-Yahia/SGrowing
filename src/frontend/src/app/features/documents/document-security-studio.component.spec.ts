@@ -39,4 +39,18 @@ describe('DocumentSecurityStudioComponent', () => {
   it('executes createShareLink without errors', () => {
     expect(() => component.createShareLink()).not.toThrow();
   });
+
+  it('should support dynamic audits updates and identify burned views', () => {
+    const burnedCountBefore = component.audits().filter(a => a.action === 'ViewedAndBurned').length;
+    expect(burnedCountBefore).toBe(2);
+
+    component.audits.update(list => [
+      { id: '4', viewer: 'compliance@sgrowing.io', ip: '10.0.0.1', action: 'ViewedAndBurned', dwell: '15s', time: 'Just now' },
+      ...list
+    ]);
+
+    expect(component.audits().length).toBe(4);
+    expect(component.audits()[0].viewer).toBe('compliance@sgrowing.io');
+    expect(component.audits().filter(a => a.action === 'ViewedAndBurned').length).toBe(3);
+  });
 });

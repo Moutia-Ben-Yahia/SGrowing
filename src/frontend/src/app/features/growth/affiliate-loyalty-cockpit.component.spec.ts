@@ -45,4 +45,14 @@ describe('AffiliateLoyaltyCockpitComponent', () => {
     expect(component.loyaltyTiers[3].tier).toBe('Platinum');
     expect(component.loyaltyTiers[3].pointsRequired).toBe(50000);
   });
+
+  it('should reset commissions to 0 when partners are cleared and close register modal on submit', () => {
+    component.showRegisterModal.set(true);
+    component.registerPartner();
+    expect(component.showRegisterModal()).toBe(false);
+
+    component.partners.set([]);
+    expect(component.totalCommissionsEarned()).toBe(0);
+    expect(component.pendingPayoutTotal()).toBe(0);
+  });
 });

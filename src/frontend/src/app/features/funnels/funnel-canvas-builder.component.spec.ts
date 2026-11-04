@@ -41,4 +41,15 @@ describe('FunnelCanvasBuilderComponent', () => {
     expect(component.exportedHtml()).toContain('funnel-root');
     expect(component.exportedHtml()).toContain('Scale Revenue');
   });
+
+  it('should reflect viewport in compiled HTML and toggle export modal visibility', () => {
+    component.selectedViewport.set('mobile');
+    component.compileAndExportHtml();
+
+    expect(component.showExportModal()).toBe(true);
+    expect(component.exportedHtml()).toContain('Compiled (mobile)');
+
+    component.showExportModal.set(false);
+    expect(component.showExportModal()).toBe(false);
+  });
 });

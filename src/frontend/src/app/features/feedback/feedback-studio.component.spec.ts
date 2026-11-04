@@ -111,4 +111,20 @@ describe('FeedbackStudioComponent', () => {
     expect(newest.feedbackText).toBe('Failed to download receipt PDF');
     expect(globalThis.alert).toHaveBeenCalled();
   });
+
+  it('should initialize fallback mock responses when ApiService returns empty array and update selectedScore', () => {
+    mockApi.getFeedbackResponses.mockReturnValue(of([]));
+    const injector = Injector.create({
+      providers: [{ provide: ApiService, useValue: mockApi }]
+    });
+
+    const emptyComp = runInInjectionContext(injector, () => new FeedbackStudioComponent());
+    emptyComp.ngOnInit();
+
+    expect(emptyComp.responses().length).toBe(2);
+    expect(emptyComp.selectedScore()).toBe(5);
+
+    emptyComp.selectedScore.set(3);
+    expect(emptyComp.selectedScore()).toBe(3);
+  });
 });

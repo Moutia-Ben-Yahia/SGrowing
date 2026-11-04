@@ -46,4 +46,13 @@ describe('InfluencerEscrowCockpitComponent', () => {
       component.contracts().reduce((sum, c) => sum + c.releasedAmount, 0)
     );
   });
+
+  it('should compute getCompletedMilestonesCount and handle empty contracts list', () => {
+    const contract = component.contracts()[0];
+    expect(component.getCompletedMilestonesCount(contract)).toBe(1);
+
+    component.contracts.set([]);
+    expect(component.totalEscrowCapital()).toBe(0);
+    expect(component.totalReleasedCapital()).toBe(0);
+  });
 });

@@ -41,4 +41,17 @@ describe('ForecastingStudioComponent', () => {
     const totalWeighted = component.stageMetrics.reduce((sum, m) => sum + m.weightedValue, 0);
     expect(totalWeighted).toBe(77500);
   });
+
+  it('should compute total commissions across statements and verify rep metrics', () => {
+    const totalCommission = component.statements().reduce((sum, s) => sum + s.calculatedCommission, 0);
+    expect(totalCommission).toBe(11500);
+
+    const reps = component.statements().map(s => s.salesRepName);
+    expect(reps).toContain('Alex Vance');
+    expect(reps).toContain('Jordan Belfort');
+
+    const draft = component.statements()[0];
+    component.approveStatement(draft);
+    expect(component.statements().every(s => s.status === 'Approved')).toBe(true);
+  });
 });

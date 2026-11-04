@@ -137,4 +137,16 @@ describe('SealingInspectorComponent', () => {
     component.closeCertificateModal();
     expect(component.showCertModal()).toBe(false);
   });
+
+  it('should trigger verifySeal when certificate is null on openCertificateModal and handle api error gracefully', () => {
+    component.certificate.set(null);
+    apiMock.verifyDocumentSeal.mockClear();
+
+    component.openCertificateModal();
+    expect(apiMock.verifyDocumentSeal).toHaveBeenCalled();
+    expect(component.showCertModal()).toBe(true);
+
+    component.closeCertificateModal();
+    expect(component.showCertModal()).toBe(false);
+  });
 });

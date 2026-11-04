@@ -33,4 +33,14 @@ describe('MailboxWarmupRadarComponent', () => {
     component.runDnsAudit();
     expect(component.dnsRecords()[0].detail).toContain('lookup limit');
   });
+
+  it('should compute averageOpenRate correctly and handle empty accounts list safely', () => {
+    expect(component.averageOpenRate()).toBeGreaterThan(0);
+
+    component.accounts.set([]);
+    expect(component.averageReputation()).toBe(0);
+    expect(component.averageOpenRate()).toBe(0);
+    expect(component.totalDailySent()).toBe(0);
+    expect(component.totalDailyTarget()).toBe(0);
+  });
 });

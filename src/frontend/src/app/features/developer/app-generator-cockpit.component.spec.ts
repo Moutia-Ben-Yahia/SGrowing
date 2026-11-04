@@ -46,4 +46,14 @@ describe('AppGeneratorCockpitComponent', () => {
 
     expect(component.apps().length).toBe(initialAppsCount);
   });
+
+  it('should reset pipeline value to 0 on empty records and close create modal on generateApp', () => {
+    component.showCreateAppModal.set(true);
+    component.newAppName = 'Custom Asset Tracker';
+    component.generateApp();
+    expect(component.showCreateAppModal()).toBe(false);
+
+    component.records.set([]);
+    expect(component.totalPipelineVal()).toBe(0);
+  });
 });

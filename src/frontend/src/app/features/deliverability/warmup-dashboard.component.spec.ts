@@ -2,7 +2,7 @@
 import '@angular/compiler';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createEnvironmentInjector, signal } from '@angular/core';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { WarmupDashboardComponent } from './warmup-dashboard.component';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -99,5 +99,17 @@ describe('WarmupDashboardComponent', () => {
 
     expect(apiServiceMock.getDnsDiagnostics).toHaveBeenCalledWith('cold-mail.io');
     expect(component.isDiagnosing()).toBe(false);
+  });
+
+  it('should ignore diagnoseDns when inspectDomain is empty and use fallback stats on sweep error', () => {
+    component.inspectDomain = '   ';
+    apiServiceMock.getDnsDiagnostics.mockClear();
+    component.diagnoseDns();
+    expect(apiServiceMock.getDnsDiagnostics).not.toHaveBeenCalled();
+
+    apiServiceMock.runSpamRescueSweep.mockReturnValue(throwError(() => new Error('API Error')));
+    component.runRescueSweep();
+    expect(component.rescueStats()?.rescuedFromSpam).toBe(6);
+    expect(component.isRescuing()).toBe(false);
   });
 });

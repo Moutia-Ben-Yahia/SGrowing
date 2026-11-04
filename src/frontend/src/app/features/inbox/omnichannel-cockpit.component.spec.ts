@@ -134,4 +134,26 @@ describe('OmnichannelCockpitComponent (Omnichannel Power Tools: MIME, Macros & S
     expect(component.slaReport()?.escalatedCount).toBe(2);
     expect(component.slaReport()?.escalations[0].escalationTier).toBe('Tier 2 (Supervisor)');
   });
+
+  it('should fallback to zero GUID when currentUser is null and selectMacro updates selectedTrigger', () => {
+    authServiceMock.currentUser.mockReturnValue(null);
+    const customMacro: CannedMacroDto = {
+      id: 'macro-custom',
+      tenantId: '00000000-0000-0000-0000-000000000000',
+      triggerKey: '/shipping_status',
+      title: 'Tracking Info',
+      category: 'Logistics',
+      templateBody: 'Order {{order.number}} is in transit.',
+      requiredVariables: ['order.number'],
+      isSystem: false
+    };
+
+    component.selectMacro(customMacro);
+    expect(component.selectedTrigger).toBe('/shipping_status');
+    expect(apiServiceMock.resolveCannedMacro).toHaveBeenCalledWith(
+      '00000000-0000-0000-0000-000000000000',
+      '/shipping_status',
+      expect.any(Object)
+    );
+  });
 });
