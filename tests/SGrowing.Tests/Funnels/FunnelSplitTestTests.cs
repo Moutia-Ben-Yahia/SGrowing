@@ -148,4 +148,76 @@ public class FunnelSplitTestTests
         var concludeResult = await service.ConcludeTestAsync(tenantId, missingFunnelRunId, "Variant A");
         concludeResult.Should().BeFalse();
     }
+
+    [Fact]
+    public async Task CreateOrGetSplitTestAsync_WhenAlreadyCreated_ReturnsExistingInstance()
+    {
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(databaseName: $"FunnelSplitTestDb_{Guid.NewGuid()}")
+            .Options;
+
+        var tenantId = Guid.NewGuid();
+        var funnelRunId = Guid.NewGuid();
+
+        using var db = new SGrowingDbContext(options);
+        var service = new FunnelSplitTestService(db);
+
+        var req1 = new CreateFunnelSplitTestRequest("Variant A", "Headline 1", 50, "Variant B", "Headline 2", 50);
+        var first = await service.CreateOrGetSplitTestAsync(tenantId, funnelRunId, req1);
+
+        var req2 = new CreateFunnelSplitTestRequest("Different Name", "Different Headline", 60, "Different B", "Different B Headline", 40);
+        var second = await service.CreateOrGetSplitTestAsync(tenantId, funnelRunId, req2);
+
+        // Second call should return the existing test without overwriting
+        second.VariantA_Name.Should().Be(first.VariantA_Name);
+        second.VariantA_Headline.Should().Be(first.VariantA_Headline);
+    }
+
+    [Fact]
+    public async Task RecordEventAsync_ConversionsForVariantA_IncrementsConversionsA()
+    {
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(databaseName: $"FunnelSplitTestDb_{Guid.NewGuid()}")
+            .Options;
+
+        var tenantId = Guid.NewGuid();
+        var funnelRunId = Guid.NewGuid();
+
+        using var db = new SGrowingDbContext(options);
+        var service = new FunnelSplitTestService(db);
+
+        var initial = await service.CreateOrGetSplitTestAsync(tenantId, funnelRunId, new CreateFunnelSplitTestRequest(null, null, 50, null, null, 50));
+        var initialConvA = initial.VariantA_Conversions;
+
+        var updated = await service.RecordEventAsync(tenantId, funnelRunId, new RecordSplitTestEventRequest("A", "conversion"));
+
+        updated.Should().NotBeNull();
+        updated!.VariantA_Conversions.Should().Be(initialConvA + 1);
+    }
+
+    [Fact]
+    public async Task CreateOrGetSplitTestAsync_MultiTenantIsolation_MaintainsSeparateSplitTests()
+    {
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(databaseName: $"FunnelSplitTestDb_{Guid.NewGuid()}")
+            .Options;
+
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+        var funnelRunId = Guid.NewGuid();
+
+        using var db = new SGrowingDbContext(options);
+        var service = new FunnelSplitTestService(db);
+
+        await service.CreateOrGetSplitTestAsync(tenantA, funnelRunId, new CreateFunnelSplitTestRequest("A1", "H1", 50, "B1", "H2", 50));
+        await service.CreateOrGetSplitTestAsync(tenantB, funnelRunId, new CreateFunnelSplitTestRequest("A2", "H3", 50, "B2", "H4", 50));
+
+        var testA = await service.GetSplitTestAsync(tenantA, funnelRunId);
+        var testB = await service.GetSplitTestAsync(tenantB, funnelRunId);
+
+        testA.Should().NotBeNull();
+        testB.Should().NotBeNull();
+        testA!.VariantA_Name.Should().Be("A1");
+        testB!.VariantA_Name.Should().Be("A2");
+    }
 }

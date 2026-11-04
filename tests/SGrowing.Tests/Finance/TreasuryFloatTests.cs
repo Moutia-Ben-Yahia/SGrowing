@@ -187,4 +187,77 @@ public class TreasuryFloatTests
             Assert.Equal("Medium (In-Transit Projection)", forecast[1].Confidence);
         }
     }
+
+    [Fact]
+    public async Task CalculateFloatValuationAsync_PersistsRecordInDatabase()
+    {
+        var db = CreateDbContext();
+        var service = new TreasuryFloatService(db);
+        var tenantId = Guid.NewGuid();
+
+        var order = CodOrder.Create(tenantId, "ORD-VAL-1", "Customer", "+21620000000", "Address", "Sousse", "Sousse", 250.0m);
+        order.Status = CodOrderStatus.Dispatched;
+        db.CodOrders.Add(order);
+        await db.SaveChangesAsync();
+
+        var valuation = await service.CalculateFloatValuationAsync(tenantId);
+
+        var persisted = await db.CourierFloatValuations.FirstOrDefaultAsync(v => v.Id == valuation.Id);
+        Assert.NotNull(persisted);
+        Assert.Equal(tenantId, persisted.TenantId);
+        Assert.Equal(7.5m, persisted.AverageDaysSalesOutstanding);
+        Assert.Equal(250.0m, persisted.InTransitCashValue);
+        Assert.Equal(243.0m, persisted.NetReceivableFloatValue);
+    }
+
+    [Fact]
+    public async Task Generate14DayCashFlowForecastAsync_WhenNoCarrierSchedulesConfigured_UsesDefaultYalidineTuesdaySchedule()
+    {
+        var db = CreateDbContext();
+        var service = new TreasuryFloatService(db);
+        var tenantId = Guid.NewGuid();
+
+        // Empty carrier schedules in db
+        var startDate = new DateTime(2026, 11, 2, 0, 0, 0, DateTimeKind.Utc); // Monday
+        var forecast = await service.Generate14DayCashFlowForecastAsync(tenantId, startDate);
+
+        Assert.NotEmpty(forecast);
+        Assert.All(forecast, f =>
+        {
+            Assert.Equal("Yalidine Express", f.CourierName);
+            Assert.Equal(DayOfWeek.Tuesday, f.ForecastDate.DayOfWeek);
+        });
+    }
+
+    [Fact]
+    public async Task Generate14DayCashFlowForecastAsync_CalculatesNetAfterContractFeeDeduction()
+    {
+        var db = CreateDbContext();
+        var service = new TreasuryFloatService(db);
+        var tenantId = Guid.NewGuid();
+
+        db.CarrierRemittanceScheduleConfigs.Add(new CarrierRemittanceScheduleConfig
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            CourierProviderId = Guid.NewGuid(),
+            CourierName = "SpeedEx Logistics",
+            Frequency = CarrierRemittanceFrequency.Weekly,
+            RemittanceDayOfWeek = DayOfWeek.Wednesday,
+            ContractFeePerParcel = 10.0m,
+            IsActive = true
+        });
+        await db.SaveChangesAsync();
+
+        var startDate = new DateTime(2026, 11, 2, 0, 0, 0, DateTimeKind.Utc); // Monday
+        var forecast = await service.Generate14DayCashFlowForecastAsync(tenantId, startDate);
+
+        Assert.NotEmpty(forecast);
+        Assert.All(forecast, f =>
+        {
+            Assert.Equal("SpeedEx Logistics", f.CourierName);
+            var expectedNet = f.ExpectedGrossCash - (f.ExpectedParcelCount * 10.0m);
+            Assert.Equal(expectedNet, f.ExpectedNetRemittance);
+        });
+    }
 }

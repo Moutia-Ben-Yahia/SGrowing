@@ -131,4 +131,52 @@ public class StreamingVoicePipelineTests
         Assert.Equal("Complex billing dispute", result.ContextHeaders["X-Transfer-Reason"]);
         Assert.Equal("1", result.ContextHeaders["X-Interruption-Count"]);
     }
+
+    [Fact]
+    public void InboundChunk_WhenCallerSpeaksWhileAgentNotSpeaking_SetsStatusToSpeechDetectedWithoutInterruption()
+    {
+        var tenantId = Guid.NewGuid();
+        var session = StreamingVoiceCallSession.Create(tenantId, "CA555", "MZ666");
+        session.SetAgentSpeaking(false);
+
+        byte[] speechBytes = new byte[160];
+        Array.Fill(speechBytes, (byte)0x00);
+        var base64Speech = Convert.ToBase64String(speechBytes);
+
+        var result = _handler.ProcessInboundAudioChunk(session, base64Speech, sequenceNumber: 1);
+
+        Assert.Equal(VadStatus.SpeechDetected, result.Status);
+        Assert.True(result.IsSpeech);
+        Assert.False(session.IsAgentSpeaking);
+        Assert.Equal(0, session.InterruptionCount);
+        Assert.Null(result.ClearBufferCommand);
+    }
+
+    [Fact]
+    public void RecordInboundFrame_AccumulatesAverageLatencyAndFrameCount()
+    {
+        var session = StreamingVoiceCallSession.Create(Guid.NewGuid(), "CA777", "MZ777");
+
+        session.RecordInboundFrame(160, 4000, true, 10.0);
+        session.RecordInboundFrame(160, 4000, true, 20.0);
+        session.RecordInboundFrame(160, 4000, true, 30.0);
+
+        Assert.Equal(3, session.TotalFramesReceived);
+        Assert.Equal(20.0, session.AverageProcessingLatencyMs);
+    }
+
+    [Fact]
+    public void TriggerWarmTransfer_MarksTransferredAndSetsEndedAtUtc()
+    {
+        var session = StreamingVoiceCallSession.Create(Guid.NewGuid(), "CA888", "MZ888");
+        session.SetAgentSpeaking(true);
+
+        session.TriggerWarmTransfer("sip:supervisor@sgrowing.voice.net", "Escalated high-value dispute");
+
+        Assert.True(session.IsTransferred);
+        Assert.Equal("sip:supervisor@sgrowing.voice.net", session.TransferTargetSipUri);
+        Assert.Equal("Escalated high-value dispute", session.TransferReason);
+        Assert.False(session.IsAgentSpeaking);
+        Assert.NotNull(session.EndedAtUtc);
+    }
 }

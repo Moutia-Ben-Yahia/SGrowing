@@ -127,4 +127,60 @@ public class SocialCommentDeflectionServiceTests
         await act.Should().ThrowAsync<ArgumentException>()
             .WithMessage("*TenantId is required*");
     }
+
+    [Fact]
+    public void Constructor_NullOutbox_ThrowsArgumentNullException()
+    {
+        var act = () => new SocialCommentDeflectionService((IOutbox)null!);
+
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("outbox");
+    }
+
+    [Fact]
+    public async Task HandlePublicCommentAsync_MultiPlatformSupport_CorrectlyPassesPlatformMetadata()
+    {
+        var outbox = new FakeOutbox();
+        var service = new SocialCommentDeflectionService(outbox);
+        var tenantId = Guid.NewGuid();
+
+        var result = await service.HandlePublicCommentAsync(
+            tenantId,
+            SocialPlatform.Threads,
+            "threads_post_77",
+            "threads_user",
+            "Can you share the link to purchase?"
+        );
+
+        result.Deflected.Should().BeTrue();
+        outbox.EnqueuedMessages.Should().ContainSingle();
+
+        var payload = outbox.EnqueuedMessages[0].Payload as SocialDirectMessageTaskPayload;
+        payload.Should().NotBeNull();
+        payload!.Platform.Should().Be(SocialPlatform.Threads);
+        payload.PlatformName.Should().Be("Threads");
+        payload.PostExternalId.Should().Be("threads_post_77");
+    }
+
+    [Fact]
+    public async Task HandlePublicCommentAsync_DbContextOverload_EnqueuesSuccessfully()
+    {
+        var outbox = new FakeOutbox();
+        var service = new SocialCommentDeflectionService(null!, outbox);
+        var tenantId = Guid.NewGuid();
+
+        var result = await service.HandlePublicCommentAsync(
+            tenantId,
+            SocialPlatform.LinkedIn,
+            "li_share_99",
+            "corp_exec",
+            "Please provide pricing for enterprise."
+        );
+
+        result.Deflected.Should().BeTrue();
+        outbox.EnqueuedMessages.Should().ContainSingle();
+        var payload = outbox.EnqueuedMessages[0].Payload as SocialDirectMessageTaskPayload;
+        payload!.Platform.Should().Be(SocialPlatform.LinkedIn);
+        payload.PlatformName.Should().Be("LinkedIn");
+    }
 }
