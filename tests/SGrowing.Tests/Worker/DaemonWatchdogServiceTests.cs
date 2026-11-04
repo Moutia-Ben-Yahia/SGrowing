@@ -132,4 +132,50 @@ public class DaemonWatchdogServiceTests
         service.MonitoredDaemonNames.Should().Contain("DurableSocialPublishingDaemon");
         service.MonitoredDaemonNames.Should().Contain("DealRottingWatchdogDaemon");
     }
+
+    [Fact]
+    public async Task DaemonHeartbeatService_GetDaemonStatusAsync_UnknownDaemon_ReturnsUnhealthyStatusWithZeroHeartbeats()
+    {
+        DaemonHeartbeatService.ResetHeartbeatsForTesting();
+        var service = new DaemonHeartbeatService();
+
+        var status = await service.GetDaemonStatusAsync("NonExistentDaemon");
+
+        status.Should().NotBeNull();
+        status.Status.Should().Be("Unhealthy");
+        status.IsAlive.Should().BeFalse();
+        status.Message.Should().Contain("No heartbeat has been recorded");
+    }
+
+    [Fact]
+    public async Task DaemonHeartbeatService_WhenElapsedBetween35And90_ReturnsDegradedStatus()
+    {
+        DaemonHeartbeatService.ResetHeartbeatsForTesting();
+        var service = new DaemonHeartbeatService();
+
+        // 50 seconds elapsed -> Degraded (between 35s and 90s)
+        DaemonHeartbeatService.SetHeartbeatForTesting("AutonomousSdrTickDaemon", DateTime.UtcNow.AddSeconds(-50));
+
+        var status = await service.GetDaemonStatusAsync("AutonomousSdrTickDaemon");
+
+        status.Should().NotBeNull();
+        status.Status.Should().Be("Degraded");
+        status.IsAlive.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task DaemonHeartbeatService_ResetHeartbeatsForTesting_ClearsAllRecordedHeartbeats()
+    {
+        var service = new DaemonHeartbeatService();
+        await service.RecordHeartbeatAsync("AutonomousSdrTickDaemon");
+
+        var beforeReset = await service.GetDaemonStatusAsync("AutonomousSdrTickDaemon");
+        beforeReset.IsAlive.Should().BeTrue();
+
+        DaemonHeartbeatService.ResetHeartbeatsForTesting();
+
+        var afterReset = await service.GetDaemonStatusAsync("AutonomousSdrTickDaemon");
+        afterReset.IsAlive.Should().BeFalse();
+        afterReset.Status.Should().Be("Unhealthy");
+    }
 }

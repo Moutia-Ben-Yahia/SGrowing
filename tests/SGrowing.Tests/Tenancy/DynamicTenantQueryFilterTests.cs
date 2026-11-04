@@ -206,4 +206,103 @@ public class DynamicTenantQueryFilterTests
             Assert.Null(found);
         }
     }
+
+    [Fact]
+    public async Task DynamicQueryFilter_FiltersUsers_ByCurrentTenant()
+    {
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        var dbOptions = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase($"SGrowing_UsersRls_{Guid.NewGuid()}")
+            .Options;
+
+        var contextA = new TenantContext();
+        contextA.SetTenant(tenantA);
+
+        await using (var seedDb = new SGrowingDbContext(dbOptions, null))
+        {
+            seedDb.Users.AddRange(
+                new User { Id = Guid.NewGuid(), TenantId = tenantA, Email = "userA@domain.com", FullName = "User A" },
+                new User { Id = Guid.NewGuid(), TenantId = tenantB, Email = "userB@domain.com", FullName = "User B" }
+            );
+            await seedDb.SaveChangesAsync();
+        }
+
+        await using (var queryDbA = new SGrowingDbContext(dbOptions, contextA))
+        {
+            var usersA = await queryDbA.Users.ToListAsync();
+            Assert.Single(usersA);
+            Assert.Equal("userA@domain.com", usersA[0].Email);
+            Assert.Equal(tenantA, usersA[0].TenantId);
+        }
+    }
+
+    [Fact]
+    public async Task DynamicQueryFilter_FiltersActivities_ByCurrentTenant()
+    {
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        var dbOptions = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase($"SGrowing_ActivitiesRls_{Guid.NewGuid()}")
+            .Options;
+
+        var contextA = new TenantContext();
+        contextA.SetTenant(tenantA);
+
+        await using (var seedDb = new SGrowingDbContext(dbOptions, null))
+        {
+            seedDb.Activities.AddRange(
+                new Activity { Id = Guid.NewGuid(), TenantId = tenantA, ContactId = Guid.NewGuid(), Type = ActivityType.Message },
+                new Activity { Id = Guid.NewGuid(), TenantId = tenantB, ContactId = Guid.NewGuid(), Type = ActivityType.Call }
+            );
+            await seedDb.SaveChangesAsync();
+        }
+
+        await using (var queryDbA = new SGrowingDbContext(dbOptions, contextA))
+        {
+            var activitiesA = await queryDbA.Activities.ToListAsync();
+            Assert.Single(activitiesA);
+            Assert.Equal(ActivityType.Message, activitiesA[0].Type);
+            Assert.Equal(tenantA, activitiesA[0].TenantId);
+        }
+    }
+
+    [Fact]
+    public async Task DynamicQueryFilter_WhenContextTenantCleared_BypassesFilterAndReturnsAll()
+    {
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        var dbOptions = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase($"SGrowing_ClearRls_{Guid.NewGuid()}")
+            .Options;
+
+        var context = new TenantContext();
+        context.SetTenant(tenantA);
+
+        await using (var seedDb = new SGrowingDbContext(dbOptions, null))
+        {
+            seedDb.Contacts.AddRange(
+                Contact.Create(tenantA, "One", "A", "one@a.com"),
+                Contact.Create(tenantB, "Two", "B", "two@b.com")
+            );
+            await seedDb.SaveChangesAsync();
+        }
+
+        await using (var queryDb = new SGrowingDbContext(dbOptions, context))
+        {
+            var firstQuery = await queryDb.Contacts.ToListAsync();
+            Assert.Single(firstQuery);
+        }
+
+        // Query with null/empty tenant context bypasses filter
+        var emptyContext = new TenantContext();
+        await using (var queryDbAll = new SGrowingDbContext(dbOptions, emptyContext))
+        {
+            var allQuery = await queryDbAll.Contacts.ToListAsync();
+            Assert.Equal(2, allQuery.Count);
+        }
+    }
 }
