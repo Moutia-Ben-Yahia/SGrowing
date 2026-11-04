@@ -106,4 +106,30 @@ public class OmniHubPresenceTests
         OmniHub.GetTenantGroup(guid).Should().Be($"tenant_{guid}");
         OmniHub.GetConversationGroup(guid).Should().Be($"conv_{guid}");
     }
+
+    [Fact]
+    public async Task JoinAndLeaveConversation_ShouldAddAndRemoveConnectionFromConversationGroup()
+    {
+        var conversationId = Guid.NewGuid();
+        var expectedGroup = $"conv_{conversationId}";
+
+        await _hub.JoinConversation(conversationId);
+        _mockGroups.Verify(g => g.AddToGroupAsync(ConnectionId, expectedGroup, default), Times.Once);
+
+        await _hub.LeaveConversation(conversationId);
+        _mockGroups.Verify(g => g.RemoveFromGroupAsync(ConnectionId, expectedGroup, default), Times.Once);
+    }
+
+    [Fact]
+    public async Task BroadcastTyping_ShouldNotifyConversationGroupWithSenderDetails()
+    {
+        var conversationId = Guid.NewGuid();
+        var expectedGroup = $"conv_{conversationId}";
+        const string senderName = "Sarah Agent";
+
+        await _hub.BroadcastTyping(conversationId, senderName, isTyping: true);
+
+        _mockClients.Verify(c => c.Group(expectedGroup), Times.Once);
+        _mockClient.Verify(c => c.OnTypingIndicator(conversationId, senderName, true), Times.Once);
+    }
 }

@@ -107,4 +107,32 @@ public class SemanticCacheTests
         Assert.Equal("SemanticVectorCache", result.Source);
         Assert.Equal(0.96, result.CosineSimilarityScore);
     }
+
+    [Fact]
+    public void QueryOrFetch_HighThreshold_MissesWhenSimilarityIsBelowThreshold()
+    {
+        // Query has partial overlap but threshold is 0.99 (strict)
+        var request = new SemanticCacheQueryRequest(
+            PromptQuery: "what are best practices for whatsapp flows v3.0 navigation?",
+            SimilarityThreshold: 0.99
+        );
+
+        var result = _engine.QueryOrFetch(request);
+        Assert.NotNull(result);
+        Assert.False(result.CacheHit);
+        Assert.Equal("UpstreamInferenceProvider", result.Source);
+    }
+
+    [Fact]
+    public void GetMetrics_AfterCacheHit_IncrementsHitsAndDollarsSaved()
+    {
+        var before = _engine.GetMetrics();
+        var request = new SemanticCacheQueryRequest("how do I configure multi-region postgresql replication on azure?", SimilarityThreshold: 0.90);
+
+        _engine.QueryOrFetch(request);
+
+        var after = _engine.GetMetrics();
+        Assert.Equal(before.TotalCacheHits + 1, after.TotalCacheHits);
+        Assert.True(after.TotalDollarsSavedUsd > before.TotalDollarsSavedUsd);
+    }
 }

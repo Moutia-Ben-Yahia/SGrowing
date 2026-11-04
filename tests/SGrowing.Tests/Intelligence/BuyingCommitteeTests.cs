@@ -86,4 +86,32 @@ public class BuyingCommitteeTests
         Assert.NotEmpty(playbooks);
         Assert.Contains(playbooks, p => p.CollateralTitle.Contains(expectedTitleSubstring));
     }
+
+    [Fact]
+    public void MapBuyingCommittee_WhenConsensusBetween50And80WithGaps_YieldsModerateProgress()
+    {
+        var members = new List<CommitteeMember>
+        {
+            new("1", "Alice", "VP Sales", "a@test.com", "link", PersonaRole.Champion, 85.0, true),
+            new("2", "Bob", "CFO", "b@test.com", "link", PersonaRole.EconomicBuyer, 80.0, true)
+        };
+
+        var request = new MapCommitteeRequest("midmarket.org", "Midmarket Org", members);
+        var result = _engine.MapBuyingCommittee(request);
+
+        // Even with high consensus (93%), missing CISO and Legal gaps keep readiness at ModerateProgress
+        Assert.Equal(DealReadiness.ModerateProgress, result.Readiness);
+        Assert.True(result.ConsensusPercentage >= 80.0);
+        Assert.Equal(2, result.IdentifiedGaps.Count);
+    }
+
+    [Fact]
+    public void GetCommitteeByDomain_IsCaseInsensitive_ReturnsCachedMap()
+    {
+        var resultUpper = _engine.GetCommitteeByDomain("ACMECORP.COM");
+
+        Assert.NotNull(resultUpper);
+        Assert.Equal("Acme Corporation", resultUpper.CompanyName);
+        Assert.Equal(3, resultUpper.Members.Count);
+    }
 }

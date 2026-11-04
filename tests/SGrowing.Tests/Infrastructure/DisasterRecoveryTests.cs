@@ -77,4 +77,35 @@ public class DisasterRecoveryTests
         Assert.False(result.Success);
         Assert.Contains("Quorum consensus lost", result.Message);
     }
+
+    [Fact]
+    public void SimulateOutage_NonExistentNode_DoesNotAffectTopology()
+    {
+        var initial = _engine.GetTopology();
+        var after = _engine.SimulateOutage(new SimulateOutageRequest("node_ghost_unknown", "Unknown failure"));
+
+        Assert.Equal(initial.ActivePrimaryNodeId, after.ActivePrimaryNodeId);
+        Assert.Equal(initial.Nodes.Count, after.Nodes.Count);
+        Assert.Equal(initial.QuorumEstablished, after.QuorumEstablished);
+    }
+
+    [Fact]
+    public void PromoteHotStandby_AzureStandby_DemotesPreviousAwsPrimaryToHotStandby()
+    {
+        var result = _engine.PromoteHotStandby("node_azure_standby");
+
+        Assert.True(result.Success);
+        Assert.Equal("node_azure_standby", result.NewPrimaryNodeId);
+        Assert.Equal("node_aws_primary", result.PreviousPrimaryNodeId);
+
+        var topology = _engine.GetTopology();
+        var formerPrimary = topology.Nodes.Find(n => n.NodeId == "node_aws_primary");
+        var newPrimary = topology.Nodes.Find(n => n.NodeId == "node_azure_standby");
+
+        Assert.NotNull(formerPrimary);
+        Assert.NotNull(newPrimary);
+        Assert.Equal(NodeRole.HotStandbySynchronous, formerPrimary.Role);
+        Assert.Equal(NodeRole.PrimaryActive, newPrimary.Role);
+        Assert.Equal(0.0, newPrimary.ReplicationLagMs);
+    }
 }
