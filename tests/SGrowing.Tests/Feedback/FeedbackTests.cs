@@ -148,4 +148,51 @@ public class FeedbackTests
         var savedContact = await db.Contacts.FindAsync(contact.Id);
         savedContact!.Tags.Count(t => t == "at-risk").Should().Be(1);
     }
+
+    [Fact]
+    public async Task SubmitFeedback_CsatScoreThree_EvaluatesToNeutralSentiment()
+    {
+        var db = CreateDbContext();
+        var notifier = new Mock<IRealtimeNotifier>();
+        var service = new FeedbackService(db, notifier.Object);
+        var tenantId = Guid.NewGuid();
+
+        var form = SurveyForm.Create(tenantId, "CSAT Regular", SurveyType.Csat, "Satisfaction?");
+        db.SurveyForms.Add(form);
+        var contact = Contact.Create(tenantId, "Barbara", "Liskov", "barbara@mit.edu");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        var res = await service.SubmitFeedbackAsync(tenantId, form.Id, contact.Id, 3, "Average service, nothing special");
+
+        res.IsSuccess.Should().BeTrue();
+        res.Value.Sentiment.Should().Be(FeedbackSentiment.Neutral);
+        res.Value.Score.Should().Be(3);
+
+        var savedContact = await db.Contacts.FindAsync(contact.Id);
+        savedContact!.Tags.Should().NotContain("at-risk");
+    }
+
+    [Fact]
+    public async Task SubmitFeedback_WithNonExistentContact_SavesResponseWithoutAtRiskCrash()
+    {
+        var db = CreateDbContext();
+        var notifier = new Mock<IRealtimeNotifier>();
+        var service = new FeedbackService(db, notifier.Object);
+        var tenantId = Guid.NewGuid();
+        var unknownContactId = Guid.NewGuid();
+
+        var form = SurveyForm.Create(tenantId, "CSAT Anonymous", SurveyType.Csat, "Satisfaction?");
+        db.SurveyForms.Add(form);
+        await db.SaveChangesAsync();
+
+        var res = await service.SubmitFeedbackAsync(tenantId, form.Id, unknownContactId, 1, "Very slow server responses");
+
+        res.IsSuccess.Should().BeTrue();
+        res.Value.Sentiment.Should().Be(FeedbackSentiment.Negative);
+
+        var saved = await db.SurveyResponses.FirstOrDefaultAsync(r => r.TenantId == tenantId && r.ContactId == unknownContactId);
+        saved.Should().NotBeNull();
+        saved!.Score.Should().Be(1);
+    }
 }

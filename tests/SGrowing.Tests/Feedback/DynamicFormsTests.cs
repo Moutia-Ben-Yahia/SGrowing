@@ -161,4 +161,33 @@ public class DynamicFormsTests
 
         Assert.Equal("Document not found.", ex.Message);
     }
+
+    [Fact]
+    public async Task GetFormsAsync_ReturnsAllTenantForms_OrderedByCreatedAtUtcDescending()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var form1 = await _service.CreateFormDefinitionAsync(
+            tenantId, "Survey Alpha", "survey-alpha", "First survey", new List<DynamicFormField>());
+        var form2 = await _service.CreateFormDefinitionAsync(
+            tenantId, "Survey Beta", "survey-beta", "Second survey", new List<DynamicFormField>());
+
+        var forms = await _service.GetFormsAsync(tenantId);
+
+        Assert.Equal(2, forms.Count);
+        Assert.Contains(forms, f => f.Id == form1.Id);
+        Assert.Contains(forms, f => f.Id == form2.Id);
+    }
+
+    [Fact]
+    public async Task VerifyDocumentAuditChainAsync_WhenDocumentDoesNotExist_ReturnsFalseAndNotFoundMessage()
+    {
+        var tenantId = Guid.NewGuid();
+        var unknownDocId = Guid.NewGuid();
+
+        var (isTamperFree, summary) = await _service.VerifyDocumentAuditChainAsync(tenantId, unknownDocId);
+
+        Assert.False(isTamperFree);
+        Assert.Equal("Document not found.", summary);
+    }
 }

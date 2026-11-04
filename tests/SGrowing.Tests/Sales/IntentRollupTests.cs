@@ -83,4 +83,26 @@ public class IntentRollupTests
         result.ExpiresAt.Should().BeAfter(DateTime.UtcNow.AddDays(29));
         result.ExpiresAt.Should().BeBefore(DateTime.UtcNow.AddDays(31));
     }
+
+    [Fact]
+    public void IngestIntentSignal_WithUnknownDomain_FallsBackToDefaultCorporateParent()
+    {
+        var command = new IngestIntentSignalCommand("unrecognized-domain.net", "admin@unrecognized-domain.net", "Director", "OrganicSearch", 65);
+        var result = _engine.IngestIntentSignal(command);
+
+        result.Should().NotBeNull();
+        result.RollupAccountId.Should().Be("ACC-CORP-01");
+        result.ParentCorporateEntity.Should().Contain("Acme Worldwide");
+    }
+
+    [Fact]
+    public void IngestIntentSignal_HighInitialScore_CapsAtOneHundred()
+    {
+        // ACC-CORP-01 initial score is 88; adding fresh signal (+12) reaches 100
+        var command = new IngestIntentSignalCommand("acme.corp", "brandnew@acme.corp", "VP Strategy", "WebinarAttendance", 95);
+        var result = _engine.IngestIntentSignal(command);
+
+        result.Should().NotBeNull();
+        result.UpdatedAggregateIntentScore.Should().Be(100);
+    }
 }

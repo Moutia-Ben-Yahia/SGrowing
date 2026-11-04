@@ -70,4 +70,35 @@ public class DealCopilotTests
         var deal = _engine.GetDeal("deal_missing_xyz");
         Assert.Null(deal);
     }
+
+    [Fact]
+    public void ExecuteIntervention_ModerateRiskDeal_AdvancesWinProbabilityByTwentyPercentAndResetsInactivity()
+    {
+        var initial = _engine.GetDeal("deal_fintech_hyper");
+        Assert.NotNull(initial);
+        Assert.Equal(60.0, initial.WinProbabilityPercent);
+        Assert.Equal(7, initial.DaysInactive);
+        Assert.Equal("ModerateRisk", initial.RiskLevel);
+
+        var req = new InterventionActionRequest("deal_fintech_hyper", "ScheduleExecutiveAlignment");
+        var result = _engine.ExecuteIntervention(req);
+
+        Assert.True(result.Success);
+        Assert.Equal(80.0, result.NewWinProbabilityPercent);
+        Assert.Contains("ScheduleExecutiveAlignment", result.ExecutionMessage);
+
+        var updated = _engine.GetDeal("deal_fintech_hyper");
+        Assert.NotNull(updated);
+        Assert.Equal(80.0, updated.WinProbabilityPercent);
+        Assert.Equal(0, updated.DaysInactive);
+        Assert.Equal("Healthy", updated.RiskLevel);
+    }
+
+    [Fact]
+    public void CalculateAggregatePipelineHealth_ComputesExactAverageAcrossPipeline()
+    {
+        var score = _engine.CalculateAggregatePipelineHealth("tenant_sales_test");
+        // (45.0 + 82.0 + 60.0) / 3 = 187 / 3 = 62.333... rounded to 1 decimal is 62.3
+        Assert.Equal(62.3, score);
+    }
 }
