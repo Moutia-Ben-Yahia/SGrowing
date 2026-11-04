@@ -47,4 +47,56 @@ public sealed class SelfHealingTests
         Assert.True(result.MttrSeconds <= 5);
         Assert.Equal("A+ Resilience", result.ResilienceGrade);
     }
+
+    [Fact]
+    public async Task GetResilienceScorecard_ReturnsMissionCriticalGradeAndMttr()
+    {
+        var scorecard = await _engine.GetResilienceScorecardAsync();
+
+        Assert.NotNull(scorecard);
+        Assert.Equal(99.994, scorecard.PlatformAvailabilityPercent);
+        Assert.Equal(4, scorecard.MeanTimeToRecoverySeconds);
+        Assert.True(scorecard.TotalRemediationsCount >= 1);
+        Assert.True(scorecard.ActiveHealthyProbesCount >= 3);
+        Assert.Equal("A+ Mission-Critical", scorecard.GlobalHealthGrade);
+    }
+
+    [Fact]
+    public async Task ExecuteChaosExperiment_LatencyInjection_AssessmentContainsCircuitBreaker()
+    {
+        var request = new ChaosExperimentRequest(
+            ExperimentType: "LatencyInjection",
+            TargetResource: "External Meta CAPI / WhatsApp Egress Gateway",
+            DurationSeconds: 20
+        );
+
+        var result = await _engine.ExecuteChaosExperimentAsync(request);
+
+        Assert.NotNull(result);
+        Assert.Equal("LatencyInjection", result.ExperimentType);
+        Assert.Contains("circuit breakers tripped", result.BlastRadiusAssessment);
+        Assert.True(result.AutomatedRecoveryTriggered);
+    }
+
+    [Fact]
+    public async Task ExecuteChaosExperiment_ConnectionExhaustion_AssessmentContainsBackpressure()
+    {
+        var request = new ChaosExperimentRequest(
+            ExperimentType: "ConnectionExhaustion",
+            TargetResource: "PostgreSQL Primary Connection Pool",
+            DurationSeconds: 10
+        );
+
+        var result = await _engine.ExecuteChaosExperimentAsync(request);
+
+        Assert.NotNull(result);
+        Assert.Equal("ConnectionExhaustion", result.ExperimentType);
+        Assert.Contains("token-bucket backpressure", result.BlastRadiusAssessment);
+    }
+
+    [Fact]
+    public async Task ExecuteChaosExperiment_NullRequest_ThrowsArgumentNullException()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(() => _engine.ExecuteChaosExperimentAsync(null!));
+    }
 }

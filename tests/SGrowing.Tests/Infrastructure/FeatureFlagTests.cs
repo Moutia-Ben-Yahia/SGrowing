@@ -66,4 +66,47 @@ public class FeatureFlagTests
         Assert.False(eval.IsEnabled);
         Assert.Equal("CircuitBreakerRollback", eval.EvaluationReason);
     }
+
+    [Fact]
+    public void EvaluateFlag_NonExistentFlag_ReturnsFlagNotFound()
+    {
+        var result = _engine.EvaluateFlag(new EvaluateFlagRequest("flag_not_found_xyz", "tenant_any"));
+
+        Assert.NotNull(result);
+        Assert.False(result.IsEnabled);
+        Assert.Equal("FlagNotFound", result.EvaluationReason);
+    }
+
+    [Fact]
+    public void EvaluateFlag_NullRequest_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => _engine.EvaluateFlag(null!));
+    }
+
+    [Fact]
+    public void AdvanceCanaryRing_NonExistentFlag_ThrowsKeyNotFoundException()
+    {
+        var req = new CanaryAdvanceRequest("flag_missing", CanaryRing.PublicGeneralAvailability);
+        Assert.Throws<KeyNotFoundException>(() => _engine.AdvanceCanaryRing(req));
+    }
+
+    [Fact]
+    public void EmergencyKill_NonExistentFlag_ThrowsKeyNotFoundException()
+    {
+        var req = new EmergencyKillRequest("flag_missing", "Test reason");
+        Assert.Throws<KeyNotFoundException>(() => _engine.EmergencyKill(req));
+    }
+
+    [Fact]
+    public void GetAllFlags_ReturnsOrderedList()
+    {
+        var flags = _engine.GetAllFlags();
+
+        Assert.NotNull(flags);
+        Assert.True(flags.Count >= 2);
+        for (int i = 0; i < flags.Count - 1; i++)
+        {
+            Assert.True(string.Compare(flags[i].FlagKey, flags[i + 1].FlagKey, StringComparison.OrdinalIgnoreCase) <= 0);
+        }
+    }
 }

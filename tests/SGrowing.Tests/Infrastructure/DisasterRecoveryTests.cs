@@ -44,4 +44,37 @@ public class DisasterRecoveryTests
         var topology = _engine.GetTopology();
         Assert.Equal("node_gcp_standby", topology.ActivePrimaryNodeId);
     }
+
+    [Fact]
+    public void PromoteHotStandby_NonExistentNode_ReturnsFailureResult()
+    {
+        var result = _engine.PromoteHotStandby("node_missing_999");
+
+        Assert.False(result.Success);
+        Assert.Contains("Target standby node not found", result.Message);
+    }
+
+    [Fact]
+    public void PromoteHotStandby_WitnessNode_ReturnsFailureResult()
+    {
+        var result = _engine.PromoteHotStandby("node_sovereign_witness");
+
+        Assert.False(result.Success);
+        Assert.Contains("Witness node cannot be promoted to Primary", result.Message);
+    }
+
+    [Fact]
+    public void PromoteHotStandby_QuorumLost_AbortsFailoverToPreventSplitBrain()
+    {
+        // 4 nodes total. To lose quorum, >= 2 nodes must fail (healthy count < 3)
+        _engine.SimulateOutage(new SimulateOutageRequest("node_aws_primary", "Datacenter flood"));
+        _engine.SimulateOutage(new SimulateOutageRequest("node_azure_standby", "Fiber cut"));
+
+        var topology = _engine.GetTopology();
+        Assert.False(topology.QuorumEstablished);
+
+        var result = _engine.PromoteHotStandby("node_gcp_standby");
+        Assert.False(result.Success);
+        Assert.Contains("Quorum consensus lost", result.Message);
+    }
 }

@@ -65,4 +65,46 @@ public class SemanticCacheTests
         Assert.True(metrics.OverallHitRatePercent > 70.0);
         Assert.True(metrics.TotalDollarsSavedUsd > 1000m);
     }
+
+    [Fact]
+    public void FlushCache_ClearsAllEntries_ReturnsCountOfFlushedItems()
+    {
+        var initialMetrics = _engine.GetMetrics();
+        Assert.True(initialMetrics.TotalCachedEntries >= 2);
+
+        var flushedCount = _engine.FlushCache(new FlushCacheRequest());
+        Assert.True(flushedCount >= 2);
+
+        var afterMetrics = _engine.GetMetrics();
+        Assert.Equal(0, afterMetrics.TotalCachedEntries);
+
+        // Previously cached query now misses
+        var request = new SemanticCacheQueryRequest("how do I configure multi-region postgresql replication on azure?");
+        var result = _engine.QueryOrFetch(request);
+        Assert.False(result.CacheHit);
+        Assert.Equal("UpstreamInferenceProvider", result.Source);
+    }
+
+    [Fact]
+    public void QueryOrFetch_NullRequest_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => _engine.QueryOrFetch(null!));
+    }
+
+    [Fact]
+    public void QueryOrFetch_PartialOverlap_HitsCacheWhenAboveThreshold()
+    {
+        // "what are the best practices for whatsapp flows v3.0 screen dag navigation?"
+        // Similar prompt with high keyword overlap
+        var request = new SemanticCacheQueryRequest(
+            PromptQuery: "what are best practices for whatsapp flows v3.0 navigation?",
+            SimilarityThreshold: 0.90
+        );
+
+        var result = _engine.QueryOrFetch(request);
+        Assert.NotNull(result);
+        Assert.True(result.CacheHit);
+        Assert.Equal("SemanticVectorCache", result.Source);
+        Assert.Equal(0.96, result.CosineSimilarityScore);
+    }
 }
