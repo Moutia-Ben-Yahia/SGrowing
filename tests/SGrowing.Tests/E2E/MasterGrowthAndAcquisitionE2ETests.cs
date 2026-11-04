@@ -281,4 +281,44 @@ public class MasterGrowthAndAcquisitionE2ETests
         var missingBookingPage = await calendarService.GetPublicBookingPageAsync(tenant.Slug, "ghost-event-type", DateTime.UtcNow);
         missingBookingPage.Should().BeNull();
     }
+
+    [Fact]
+    public async Task Master_Growth_And_Acquisition_PowerDialer_CallOutcomeLogging_And_CallbackScheduling()
+    {
+        using var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var powerDialer = new PowerDialerService(db, _outboxMock.Object);
+
+        var contact = Contact.Create(tenantId, "Moncef", "Marzouki", "moncef@republic.tn", "+21671000111");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        // 1. Log Connected Call Outcome
+        var outcome = await powerDialer.LogCallOutcomeAsync(
+            tenantId,
+            contact.Id,
+            outcome: "Connected",
+            durationSeconds: 240,
+            notes: "Lead agreed to join VIP demo on Friday"
+        );
+
+        outcome.Should().NotBeNull();
+        outcome.ContactId.Should().Be(contact.Id);
+        outcome.Outcome.Should().Be("Connected");
+        outcome.DurationSeconds.Should().Be(240);
+
+        // 2. Schedule Callback for next week
+        var callbackDate = DateTime.UtcNow.AddDays(7);
+        var callbackOutcome = await powerDialer.LogCallOutcomeAsync(
+            tenantId,
+            contact.Id,
+            outcome: "MeetingBooked",
+            durationSeconds: 45,
+            notes: "Board meeting concluded; scheduled architecture review",
+            callbackScheduledAtUtc: callbackDate
+        );
+
+        callbackOutcome.Outcome.Should().Be("MeetingBooked");
+        callbackOutcome.NextActionDescription.Should().Contain("Meeting booked");
+    }
 }

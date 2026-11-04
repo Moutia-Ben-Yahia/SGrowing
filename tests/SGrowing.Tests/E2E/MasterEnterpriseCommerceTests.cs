@@ -219,4 +219,52 @@ public class MasterEnterpriseCommerceTests
         var freshMessage = await _db.Messages.FindAsync(message.Id);
         Assert.Equal("[Personal Data Anonymized via GDPR Right to be Forgotten Request]", freshMessage!.Content);
     }
+
+    [Fact]
+    public async Task MasterEnterpriseCommerceE2E_InChatQuoteFormatting_And_OutboxEventGeneration()
+    {
+        var tenantId = Guid.NewGuid();
+        var catalog = new ProductCatalogService(_db);
+        var product = await catalog.CreateProductAsync(
+            tenantId, "Enterprise Security Shield", "sec-shield", "Zero-trust mesh", ProductType.Subscription, 1200m);
+        var variant = await catalog.AddVariantAsync(
+            tenantId, product.Id, "SEC-ENTERPRISE", "Zero-Trust Enterprise Bundle", 2400m, inventoryStock: 50);
+
+        var contact = Contact.Create(tenantId, "Arthur", "Dent", "arthur@galaxy.org", "+44123456789");
+        var deal = Deal.Create(tenantId, contact.Id, "Galaxy Cyber Deal", 2400m, DealStage.Proposal);
+        await _db.Contacts.AddAsync(contact);
+        await _db.Deals.AddAsync(deal);
+        await _db.SaveChangesAsync();
+
+        var cpq = new InChatCpqService(_db, NullLogger<InChatCpqService>.Instance);
+        var quote = await cpq.CreateQuoteAsync(
+            tenantId,
+            contact.Id,
+            new List<CreateQuoteLineItemRequest>
+            {
+                new() { ProductId = product.Id, VariantId = variant.Id, Description = variant.Name, Quantity = 2, UnitPrice = 2400m }
+            },
+            dealId: deal.Id,
+            discountPercent: 10m
+        );
+
+        Assert.Equal(4320m, quote.TotalAmount); // (2 * 2400) - 10% = 4800 - 480 = 4320
+
+        // Format in-chat proposal presentation
+        var formattedMessage = await cpq.GenerateInChatQuoteMessageAsync(tenantId, quote.Id);
+        Assert.Contains("Formal Proposal", formattedMessage);
+        Assert.Contains(quote.QuoteNumber, formattedMessage);
+        Assert.Contains("Zero-Trust Enterprise Bundle", formattedMessage);
+
+        // Accept Quote
+        var accepted = await cpq.AcceptQuoteAsync(tenantId, quote.Id);
+        Assert.Equal(QuoteStatus.Accepted, accepted.Status);
+
+        var wonDeal = await _db.Deals.FindAsync(deal.Id);
+        Assert.Equal(DealStage.Won, wonDeal!.Stage);
+
+        var outboxEvents = await _db.OutboxMessages.Where(o => o.TenantId == tenantId && o.EventType == "QuoteAcceptedEvent").ToListAsync();
+        Assert.Single(outboxEvents);
+        Assert.Contains(quote.QuoteNumber, outboxEvents[0].Payload);
+    }
 }

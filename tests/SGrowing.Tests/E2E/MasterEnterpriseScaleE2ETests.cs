@@ -232,4 +232,45 @@ public class MasterEnterpriseScaleE2ETests
         var voidNonExistent = await affiliateService.VoidEscrowOnReturnOrCancelAsync(tenantId, Guid.NewGuid(), "Cancelled");
         Assert.Null(voidNonExistent);
     }
+
+    [Fact]
+    public async Task Master_Enterprise_Scale_SecurityAuditTrail_And_RolePermissionMatrix()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var securityService = new SecurityAuditAndRbacService(db);
+
+        // 1. Initialize default system roles
+        var roles = await securityService.InitializeDefaultRolesAsync(tenantId);
+        Assert.Equal(6, roles.Count);
+
+        // 2. Evaluate RBAC permissions
+        var canAdminExport = await securityService.EvaluatePermissionAsync(tenantId, UserSystemRole.SuperAdmin, "Finance", "Export");
+        Assert.True(canAdminExport);
+
+        var canPickerApprovePayout = await securityService.EvaluatePermissionAsync(tenantId, UserSystemRole.WarehousePicker, "Finance", "ExecutePayout");
+        Assert.False(canPickerApprovePayout);
+
+        // 3. Record security audit log entry
+        var userId = Guid.NewGuid();
+        var auditEntry = await securityService.RecordAuditLogAsync(
+            tenantId,
+            userId,
+            "security.officer@sgrowing.io",
+            "SuperAdmin",
+            "ApiKeyRotated",
+            "DeveloperWebhookCredentials",
+            "key-9912",
+            "Rotated production webhook HMAC secret key due to quarterly policy",
+            "10.0.0.42"
+        );
+        Assert.NotNull(auditEntry);
+        Assert.Equal("ApiKeyRotated", auditEntry.Action);
+
+        // 4. List and verify audit trail
+        var logs = await securityService.ListAuditLogsAsync(tenantId, limit: 10);
+        Assert.Single(logs);
+        Assert.Equal("DeveloperWebhookCredentials", logs[0].Resource);
+        Assert.Equal("10.0.0.42", logs[0].IpAddress);
+    }
 }

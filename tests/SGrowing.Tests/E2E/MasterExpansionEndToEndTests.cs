@@ -237,4 +237,55 @@ public class MasterExpansionEndToEndTests
         Assert.Equal(PlanTier.Growth, defaultSub.PlanTier);
         Assert.Equal(249m, defaultSub.MonthlyPrice);
     }
+
+    [Fact]
+    public async Task Master_Expansion_CalendarRescheduling_And_CancellationLifecycle()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var hostUserId = Guid.NewGuid();
+        var calendarService = new CalendarSchedulingService(db);
+
+        // 1. Create Event Type & Host Availability
+        var eventType = await calendarService.CreateEventTypeAsync(
+            tenantId,
+            "Technical Feasibility Review",
+            "tech-review",
+            "Deep dive into high-concurrency event ingestion architecture",
+            duration: 30,
+            isRoundRobin: false,
+            color: "#10b981",
+            hosts: new List<Guid> { hostUserId }
+        );
+
+        var mondayHours = new List<DayAvailability>
+        {
+            new("Monday", "09:00", "17:00")
+        };
+        await calendarService.SetHostAvailabilityAsync(tenantId, hostUserId, "VP Engineering", "Africa/Tunis", mondayHours);
+
+        // 2. Book Initial Meeting on Monday
+        var initialTime = new DateTime(2026, 11, 9, 10, 0, 0, DateTimeKind.Utc);
+        var booking = await calendarService.BookAppointmentAsync(
+            tenantId,
+            eventType.Id,
+            "Nourchene Trabelsi",
+            "nourchene@techcorp.tn",
+            "+21629887766",
+            initialTime,
+            "Africa/Tunis",
+            "Initial discovery call"
+        );
+        Assert.Equal(CalendarBookingStatus.Scheduled, booking.Status);
+
+        // 3. Reschedule Meeting to afternoon
+        var rescheduledTime = new DateTime(2026, 11, 9, 14, 0, 0, DateTimeKind.Utc);
+        var rescheduled = await calendarService.RescheduleBookingAsync(tenantId, booking.Id, rescheduledTime);
+        Assert.Equal(rescheduledTime, rescheduled.StartTimeUtc);
+
+        // 4. Cancel Meeting
+        var cancelled = await calendarService.CancelBookingAsync(tenantId, booking.Id, "Client requested cancellation due to scheduling conflict");
+        Assert.Equal(CalendarBookingStatus.Cancelled, cancelled.Status);
+        Assert.Contains("Client requested cancellation due to scheduling conflict", cancelled.Notes);
+    }
 }

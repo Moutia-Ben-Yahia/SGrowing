@@ -203,4 +203,56 @@ public class MasterFullPlatformEndToEndTests
         var assets = await digitalService.GetDigitalAssetsAsync(tenantId);
         Assert.Empty(assets);
     }
+
+    [Fact]
+    public async Task Master_Full_Platform_FeedbackBoard_Upvoting_And_RoadmapProgression()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var feedbackService = new FeedbackBoardService(db);
+
+        // 1. Create Customer Feature Request Post
+        var post = await feedbackService.CreatePostAsync(new CreateBoardPostRequest(
+            TenantId: tenantId,
+            Title: "Multi-Carrier Courier Webhook Synchronization",
+            Description: "Real-time automated status webhooks for Yalidine, Maystro, and Aramex",
+            Category: FeedbackCategories.Integration,
+            AuthorEmail: "logistics.director@fleet.tn",
+            AuthorName: "Kais Ben Amor",
+            AccountARR: 48000m
+        ));
+        Assert.NotNull(post);
+        Assert.Equal(FeedbackStatuses.Submitted, post.Status);
+
+        // 2. Upvote post
+        var voteResult = await feedbackService.ToggleVoteAsync(tenantId, post.Id, "vp.tech@client.com");
+        Assert.True(voteResult.IsUpvoted);
+        Assert.Equal(2, voteResult.UpvoteCount);
+
+        // 3. Advance to Planned, then InProgress
+        var planned = await feedbackService.UpdatePostStatusAsync(
+            tenantId,
+            post.Id,
+            new UpdateBoardPostStatusRequest(tenantId, FeedbackStatuses.Planned, "Queued for roadmap Q4", "Q4 2026")
+        );
+        Assert.Equal(FeedbackStatuses.Planned, planned.Status);
+
+        var inProgress = await feedbackService.UpdatePostStatusAsync(
+            tenantId,
+            post.Id,
+            new UpdateBoardPostStatusRequest(tenantId, FeedbackStatuses.InProgress, "Assigned to sprint 42")
+        );
+        Assert.Equal(FeedbackStatuses.InProgress, inProgress.Status);
+
+        // 4. Advance to Completed and verify Roadmap
+        var completed = await feedbackService.UpdatePostStatusAsync(
+            tenantId,
+            post.Id,
+            new UpdateBoardPostStatusRequest(tenantId, FeedbackStatuses.Completed, "Shipped in release v2.4")
+        );
+        Assert.Equal(FeedbackStatuses.Completed, completed.Status);
+
+        var roadmap = await feedbackService.GetRoadmapAsync(tenantId);
+        Assert.Contains(roadmap.Completed, p => p.Id == post.Id);
+    }
 }

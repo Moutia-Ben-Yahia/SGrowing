@@ -226,4 +226,48 @@ public class MasterEnterpriseOperationsE2ETests
         Assert.Contains("SOLD OUT", soldOutResult.Message);
         Assert.Null(soldOutResult.OrderId);
     }
+
+    [Fact]
+    public async Task Master_E2E_Operations_Treasury14DayForecast_And_CarrierRemittanceLifecycle()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var treasuryService = new TreasuryFloatService(db);
+
+        // 1. Setup Carrier Remittance Schedule
+        var schedule = new CarrierRemittanceScheduleConfig
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            CourierName = "Aramex Maghreb",
+            ContractFeePerParcel = 6.5m,
+            RemittanceDayOfWeek = DayOfWeek.Thursday,
+            IsActive = true
+        };
+        db.CarrierRemittanceScheduleConfigs.Add(schedule);
+
+        // 2. Setup Dispatched and Delivered COD orders
+        db.CodOrders.Add(CodOrder.Create(tenantId, "ORD-COD-T1", "Samir Kallel", "+21699112233", "Avenue Habib Bourguiba", "Tunis", "Tunis", 150m));
+        var dispatchedOrder = CodOrder.Create(tenantId, "ORD-COD-T2", "Nadia Mansour", "+21622334455", "Route de Teniour", "Sfax", "Sfax", 220m);
+        dispatchedOrder.Status = CodOrderStatus.Dispatched;
+        db.CodOrders.Add(dispatchedOrder);
+
+        var deliveredOrder = CodOrder.Create(tenantId, "ORD-COD-T3", "Yassine Dridi", "+21655443322", "Khezama", "Sousse", "Sousse", 300m);
+        deliveredOrder.Status = CodOrderStatus.Delivered;
+        db.CodOrders.Add(deliveredOrder);
+        await db.SaveChangesAsync();
+
+        // 3. Generate 14-Day Forecast starting on a Monday
+        var monday = new DateTime(2026, 11, 2, 0, 0, 0, DateTimeKind.Utc);
+        var forecast = await treasuryService.Generate14DayCashFlowForecastAsync(tenantId, monday);
+
+        Assert.NotEmpty(forecast);
+        Assert.All(forecast, f =>
+        {
+            Assert.Equal("Aramex Maghreb", f.CourierName);
+            Assert.True(f.ExpectedGrossCash > 0);
+            Assert.True(f.ExpectedNetRemittance > 0);
+            Assert.NotNull(f.Confidence);
+        });
+    }
 }
