@@ -17,4 +17,13 @@ describe('ContentRepurposingCockpitComponent', () => {
     expect(comp.derivatives().length).toBe(4);
     expect(comp.derivatives().some(d => d.title.includes('TikTok / Shorts'))).toBe(true);
   });
+
+  it('validates multichannel reading duration and carousel slide progression', () => {
+    const comp = new ContentRepurposingCockpitComponent();
+    const totalReadSeconds = comp.derivatives().reduce((acc, d) => acc + d.readSeconds, 0);
+    expect(totalReadSeconds).toBe(165); // 45 + 30 + 90
+
+    expect(comp.slides().every((s, idx) => s.slideNum === idx + 1)).toBe(true);
+    expect(comp.slides()[4].header).toBe('Takeaway & Action');
+  });
 });

@@ -26,4 +26,16 @@ describe('WhatsAppBroadcastCockpitComponent', () => {
     expect(component.campaign().read).toBeGreaterThan(19000);
     expect(component.deliveredPercent()).toBeGreaterThanOrEqual(95);
   });
+
+  it('should support switching selected template and calculate 0 percent metrics in draft state', () => {
+    expect(component.deliveredPercent()).toBe(0);
+    expect(component.readPercent()).toBe(0);
+
+    const utilityTemplate = component.templates()[1];
+    expect(utilityTemplate.category).toBe('UTILITY');
+
+    component.selectedTemplate.set(utilityTemplate);
+    expect(component.selectedTemplate().name).toBe('order_dispatch_verification');
+    expect(component.selectedTemplate().buttons.length).toBe(2);
+  });
 });

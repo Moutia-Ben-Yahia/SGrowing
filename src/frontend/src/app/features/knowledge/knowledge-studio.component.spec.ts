@@ -65,4 +65,25 @@ describe('KnowledgeStudioComponent', () => {
       'How to change delivery address?'
     );
   });
+
+  it('should ignore empty search queries and invoke fallback deflection on API failure', () => {
+    mockApi.queryHelpCenter.mockClear();
+    component.searchQuery = '';
+    component.askAi();
+    expect(mockApi.queryHelpCenter).not.toHaveBeenCalled();
+
+    // Trigger error fallback path
+    mockApi.queryHelpCenter.mockReturnValue(of());
+    // Simulate error callback
+    component.searchQuery = 'How do I connect WhatsApp Meta Cloud API?';
+    mockApi.queryHelpCenter = vi.fn().mockImplementation(() => {
+      const { throwError } = require('rxjs');
+      return throwError(() => new Error('Service Unavailable'));
+    });
+
+    component.askAi();
+    expect(component.ragResult()?.deflected).toBe(true);
+    expect(component.ragResult()?.articleSlug).toBe('whatsapp-meta-setup');
+    expect(component.ragResult()?.confidenceScore).toBe(92);
+  });
 });

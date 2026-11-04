@@ -21,4 +21,17 @@ describe('ShapleyAttributionCockpitComponent', () => {
     expect(updated?.recommendedSpendShift).toBe(0);
     expect(comp.rebalanceLog()).toContain('Autopilot: Reallocated');
   });
+
+  it('handles unknown channel rebalance safely and supports downscaling over-credited channels', () => {
+    const comp = new ShapleyAttributionCockpitComponent();
+    comp.rebalance('NON-EXISTENT-CHANNEL');
+    expect(comp.rebalanceLog()).toBeNull();
+
+    // Rebalance over-credited channel
+    comp.rebalance('SocialRetargeting');
+    const retargeting = comp.channels().find(c => c.channelId === 'SocialRetargeting');
+    expect(retargeting?.currentSpend).toBe(55000); // 85000 - 30000
+    expect(retargeting?.recommendedSpendShift).toBe(0);
+    expect(comp.rebalanceLog()).toContain('Reallocated $30,000 on LinkedIn & Meta ABM Retargeting');
+  });
 });

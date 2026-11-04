@@ -19,4 +19,15 @@ describe('DisasterRecoveryCockpitComponent', () => {
     expect(comp.nodes().find(n => n.role === 'PrimaryActive')?.nodeId).toBe('node_gcp_standby');
     expect(comp.nodes().find(n => n.nodeId === 'node_aws_primary')?.role).toBe('HotStandbySynchronous');
   });
+
+  it('validates multi-cloud quorum topology and sub-25ms replication lag constraints', () => {
+    const comp = new DisasterRecoveryCockpitComponent();
+    expect(comp.nodes().every(n => n.health === 'HealthySynchronized')).toBe(true);
+    expect(comp.nodes().every(n => n.replicationLagMs < 25.0)).toBe(true);
+
+    const witness = comp.nodes().find(n => n.role === 'WitnessQuorumNode');
+    expect(witness).toBeDefined();
+    expect(witness?.provider).toBe('Sovereign VPC');
+    expect(witness?.region).toBe('eu-central-de');
+  });
 });
