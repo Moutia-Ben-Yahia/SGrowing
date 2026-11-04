@@ -31,4 +31,14 @@ describe('TopicalAuthorityCockpitComponent (Horizon 59)', () => {
     component.injectInternalLink(opp);
     expect(component.linkOpportunities()[0].isInjected).toBe(true);
   });
+
+  it('should compute overallAuthority as 0 when clusters list is empty and select cluster', () => {
+    const cluster = component.clusters()[1];
+    component.selectCluster(cluster);
+    expect(component.selectedCluster()?.clusterId).toBe(cluster.clusterId);
+
+    component.clusters.set([]);
+    expect(component.overallAuthority()).toBe(0);
+    expect(component.totalMissingTopics()).toBe(0);
+  });
 });

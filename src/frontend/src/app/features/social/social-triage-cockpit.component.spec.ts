@@ -32,4 +32,15 @@ describe('SocialTriageCockpitComponent', () => {
     component.approveAndSendReply(item);
     expect(component.queueItems().find(i => i.queueId === item.queueId)?.status).toBe('ApprovedAndSent');
   });
+
+  it('should return correct badge classes for channels and sentiments and return 0 hazards when queue is empty', () => {
+    expect(component.getChannelBadgeClass('WhatsApp')).toContain('emerald');
+    expect(component.getChannelBadgeClass('LinkedIn')).toContain('blue');
+    expect(component.getChannelBadgeClass('Instagram')).toContain('rose');
+    expect(component.getSentimentBadgeClass('SevereHazard')).toContain('rose');
+    expect(component.getSentimentBadgeClass('Positive')).toContain('emerald');
+
+    component.queueItems.set([]);
+    expect(component.hazardsCount()).toBe(0);
+  });
 });

@@ -36,4 +36,13 @@ describe('SentimentDeescalationCockpitComponent', () => {
     expect(comp.incidents()[0].customerName).toBe('Pacific Commerce Ltd');
     expect(comp.incidents()[0].riskTier).toBe('Critical');
   });
+
+  it('should return 0 metrics when incidents list is empty', () => {
+    const comp = new SentimentDeescalationCockpitComponent();
+    comp.incidents.set([]);
+
+    expect(comp.criticalCount()).toBe(0);
+    expect(comp.resolvedCount()).toBe(0);
+    expect(comp.avgSentiment()).toBe(0);
+  });
 });

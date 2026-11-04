@@ -30,4 +30,13 @@ describe('ProgrammaticSeoCockpitComponent', () => {
     expect(component.pages().length).toBe(initial + 1);
     expect(component.pages().some(p => p.industry === 'Healthcare')).toBe(true);
   });
+
+  it('should verify all backlinks have high domain authority and allow clearing indexNowMessage', () => {
+    expect(component.backlinks().every(b => b.domainAuthority >= 80)).toBe(true);
+    component.broadcastIndexNow();
+    expect(component.indexNowMessage()).not.toBe('');
+
+    component.indexNowMessage.set('');
+    expect(component.indexNowMessage()).toBe('');
+  });
 });

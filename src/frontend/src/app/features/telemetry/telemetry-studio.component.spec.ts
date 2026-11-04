@@ -97,4 +97,9 @@ describe('TelemetryStudioComponent', () => {
 
     expect(mockApi.ingestTelemetry).toHaveBeenCalled();
   });
+
+  it('should fallback to default tenant id when currentTenant is null', () => {
+    mockAuth.currentTenant.set(null);
+    expect(component.tenantId).toBe('00000000-0000-0000-0000-000000000001');
+  });
 });

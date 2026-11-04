@@ -26,4 +26,14 @@ describe('ScreenDiagnosticCockpitComponent', () => {
     expect(sess?.status).toBe('Resolved');
     expect(sess?.resolutionProgressPct).toBe(100);
   });
+
+  it('should verify highlighted elements confidence and allow updating activeSessions', () => {
+    const comp = new ScreenDiagnosticCockpitComponent();
+    expect(comp.highlightedElements().every(e => e.confidenceScore > 0.9)).toBe(true);
+
+    comp.activeSessions.set(7);
+    comp.guidanceSuccess.set(96.5);
+    expect(comp.activeSessions()).toBe(7);
+    expect(comp.guidanceSuccess()).toBe(96.5);
+  });
 });

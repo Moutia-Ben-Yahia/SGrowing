@@ -30,4 +30,13 @@ describe('CapacityPlanningCockpitComponent', () => {
     expect(comp.totalVolume()).toBeGreaterThan(initialVolume);
     expect(comp.deficitCount()).toBeGreaterThanOrEqual(1);
   });
+
+  it('should return 0 avgSla, 0 totalVolume, and 0 deficitCount when intervals are empty', () => {
+    const comp = new CapacityPlanningCockpitComponent();
+    comp.plan.update(p => ({ ...p, hourlyIntervals: [] }));
+
+    expect(comp.totalVolume()).toBe(0);
+    expect(comp.deficitCount()).toBe(0);
+    expect(comp.avgSla()).toBe(0);
+  });
 });

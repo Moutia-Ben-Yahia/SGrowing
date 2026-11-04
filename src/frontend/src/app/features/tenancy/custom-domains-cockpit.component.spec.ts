@@ -39,4 +39,15 @@ describe('CustomDomainsCockpitComponent', () => {
     component.renewSsl(target);
     expect(component.domains().find(d => d.id === target.id)?.sslStatus).toBe('Active');
   });
+
+  it('should toggle register modal and ignore empty domain submission', () => {
+    expect(component.showRegisterModal()).toBe(false);
+    component.toggleRegisterModal();
+    expect(component.showRegisterModal()).toBe(true);
+
+    const initialLen = component.domains().length;
+    component.newDomainInput = '   ';
+    component.submitRegisterDomain();
+    expect(component.domains().length).toBe(initialLen);
+  });
 });

@@ -39,4 +39,12 @@ describe('EnterpriseLicenseCockpitComponent', () => {
     expect(component.license().daysRemaining).toBe(365);
     expect(component.activationMessage()).toContain('SHA-256');
   });
+
+  it('should verify entitled modules contain core AI and voice capabilities', () => {
+    const modules = component.license().entitledModules;
+    expect(modules).toContain('AI.Swarm Coordination');
+    expect(modules).toContain('Real-Time WebRTC Voice SDR');
+    expect(modules).toContain('Executive Revenue Intelligence');
+    expect(component.license().fingerprint).toBe('NODE-01-MAC-48-2C');
+  });
 });

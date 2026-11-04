@@ -25,4 +25,15 @@ describe('AgentWhisperCockpitComponent', () => {
     const sess = comp.sessions().find(s => s.callSessionId === 'CALL-8841');
     expect(sess?.activeWhisperPrompt).toContain('Concession Approved');
   });
+
+  it('should allow updating activeCalls and adherenceRate signals', () => {
+    const comp = new AgentWhisperCockpitComponent();
+    comp.activeCalls.set(5);
+    comp.adherenceRate.set(96.8);
+    comp.winRateLift.set(31.2);
+
+    expect(comp.activeCalls()).toBe(5);
+    expect(comp.adherenceRate()).toBe(96.8);
+    expect(comp.winRateLift()).toBe(31.2);
+  });
 });

@@ -28,4 +28,15 @@ describe('AgentAssistCockpitComponent', () => {
     expect(speakers).toEqual(['Customer', 'Representative']);
     expect(comp.transcripts()[1].timeSec).toBeGreaterThan(comp.transcripts()[0].timeSec);
   });
+
+  it('should allow toggling pacingAlert and updating repTalkPercentage', () => {
+    const comp = new AgentAssistCockpitComponent();
+    expect(comp.pacingAlert()).toBe(false);
+
+    comp.pacingAlert.set(true);
+    expect(comp.pacingAlert()).toBe(true);
+
+    comp.repTalkPercentage.set(62.5);
+    expect(comp.repTalkPercentage()).toBe(62.5);
+  });
 });

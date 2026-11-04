@@ -26,4 +26,14 @@ describe('LocalizationCockpitComponent', () => {
     expect(comp.currentMessage().preservedTerms).toEqual(['SGrowing', 'SOC2 Type II', 'CAPI']);
     expect(comp.activeLatency()).toBe(168);
   });
+
+  it('should allow updating activeLatency and currentMessage custom values', () => {
+    const comp = new LocalizationCockpitComponent();
+    comp.activeLatency.set(95);
+    expect(comp.activeLatency()).toBe(95);
+
+    comp.currentMessage.update(m => ({ ...m, formality: 'Casual', politenessScore: 80.0 }));
+    expect(comp.currentMessage().formality).toBe('Casual');
+    expect(comp.currentMessage().politenessScore).toBe(80.0);
+  });
 });
