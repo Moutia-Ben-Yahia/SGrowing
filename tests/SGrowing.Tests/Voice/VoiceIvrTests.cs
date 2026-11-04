@@ -56,4 +56,69 @@ public sealed class VoiceIvrTests
         Assert.NotNull(fetched);
         Assert.Equal("Test Campaign", fetched.Name);
     }
+
+    [Fact]
+    public void SimulateCall_UnknownTreeId_ReturnsNotCompletedWithErrorLog()
+    {
+        var request = new SimulateIvrCallRequest(
+            TreeId: "tree_nonexistent_xyz",
+            CallerNumber: "+14155552671",
+            Inputs: new[] { "1" }
+        );
+
+        var result = _engine.SimulateCall(request);
+
+        Assert.NotNull(result);
+        Assert.False(result.IsCompleted);
+        Assert.Equal("none", result.FinalNodeId);
+        Assert.Contains(result.ExecutionLog, l => l.Contains("Error: Tree 'tree_nonexistent_xyz' not found."));
+    }
+
+    [Fact]
+    public void SimulateCall_RouteToSupport_ReachesVoicemailTerminalNode()
+    {
+        var request = new SimulateIvrCallRequest(
+            TreeId: "tree_enterprise_main",
+            CallerNumber: "+14155552671",
+            Inputs: new[] { "2" } // Press 2 for Support
+        );
+
+        var result = _engine.SimulateCall(request);
+
+        Assert.NotNull(result);
+        Assert.True(result.IsCompleted);
+        Assert.Equal("node_support", result.FinalNodeId);
+        Assert.Contains(result.ExecutionLog, l => l.Contains("[Terminal Action] Terminal node 'Voicemail' reached."));
+    }
+
+    [Fact]
+    public void SimulateCall_UnmappedInput_TriggersFallbackNode()
+    {
+        var request = new SimulateIvrCallRequest(
+            TreeId: "tree_enterprise_main",
+            CallerNumber: "+14155552671",
+            Inputs: new[] { "9" } // 9 is unmapped, fallback is node_support
+        );
+
+        var result = _engine.SimulateCall(request);
+
+        Assert.NotNull(result);
+        Assert.True(result.IsCompleted);
+        Assert.Equal("node_support", result.FinalNodeId);
+        Assert.Contains(result.ExecutionLog, l => l.Contains("[Fallback] Routing to fallback node"));
+    }
+
+    [Fact]
+    public void GetTree_NonExistentTreeId_ReturnsNull()
+    {
+        var tree = _engine.GetTree("missing_tree_id_999");
+        Assert.Null(tree);
+    }
+
+    [Fact]
+    public void GetBroadcast_NonExistentCampaignId_ReturnsNull()
+    {
+        var cmp = _engine.GetBroadcast("missing_campaign_id_999");
+        Assert.Null(cmp);
+    }
 }
