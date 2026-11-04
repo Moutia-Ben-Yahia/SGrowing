@@ -46,4 +46,12 @@ describe('UniversalSearchCockpitComponent', () => {
     expect(component.getEntityBadgeClass('OrderFulfillment')).toContain('text-cyan-300');
     expect(component.getEntityBadgeClass('KnowledgeArticle')).toContain('text-emerald-300');
   });
+
+  it('should return styled CSS badge classes for ContractDocument and CrmDeal and handle empty results', () => {
+    expect(component.getEntityBadgeClass('ContractDocument')).toContain('text-indigo-300');
+    expect(component.getEntityBadgeClass('CrmDeal')).toContain('text-amber-300');
+
+    component.results.set([]);
+    expect(component.filteredResults().length).toBe(0);
+  });
 });

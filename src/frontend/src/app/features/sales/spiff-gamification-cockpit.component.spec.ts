@@ -39,4 +39,15 @@ describe('SpiffGamificationCockpitComponent', () => {
     expect(comp.spiffsPaidToday()).toBe(18500);
     expect(comp.rankedRepsCount()).toBe(5);
   });
+
+  it('should support resetting campaigns and leaderboard lists to empty', () => {
+    const comp = new SpiffGamificationCockpitComponent();
+    comp.campaigns.set([]);
+    comp.leaderboard.set([]);
+    comp.activeCampaignsCount.set(0);
+
+    expect(comp.campaigns().length).toBe(0);
+    expect(comp.leaderboard().length).toBe(0);
+    expect(comp.activeCampaignsCount()).toBe(0);
+  });
 });

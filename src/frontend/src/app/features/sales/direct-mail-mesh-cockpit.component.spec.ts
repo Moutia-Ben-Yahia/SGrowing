@@ -38,4 +38,13 @@ describe('DirectMailMeshCockpitComponent', () => {
     expect(comp.deliverySuccessRatePct()).toBe(99.4);
     expect(comp.pipelineInfluenceRatePct()).toBe(48.2);
   });
+
+  it('should support resetting campaigns and dispatches signals to empty lists', () => {
+    const comp = new DirectMailMeshCockpitComponent();
+    comp.campaigns.set([]);
+    comp.dispatches.set([]);
+
+    expect(comp.campaigns().length).toBe(0);
+    expect(comp.dispatches().length).toBe(0);
+  });
 });

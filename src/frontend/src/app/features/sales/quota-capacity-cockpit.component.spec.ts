@@ -43,4 +43,15 @@ describe('QuotaCapacityCockpitComponent', () => {
     expect(updated?.headcount).toBe(10);
     expect(updated?.coverageRatio).toBe(3.6);
   });
+
+  it('should compute exact rebalance outcome with zero added headcount', () => {
+    const comp = new QuotaCapacityCockpitComponent();
+    comp.selectTerritory(comp.territories()[0]); // US East, assignedQuotaEur 28,000,000, headcount 14
+    comp.addedHeadcount = 0;
+    comp.rebalanceTerritory();
+
+    expect(comp.activeOutcome()?.newHeadcount).toBe(14);
+    expect(comp.activeOutcome()?.newAvgQuotaEur).toBe(2000000);
+    expect(comp.activeOutcome()?.newCoverage).toBe(3.6);
+  });
 });

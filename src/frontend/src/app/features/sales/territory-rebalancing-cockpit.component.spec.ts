@@ -42,4 +42,15 @@ describe('TerritoryRebalancingCockpitComponent', () => {
     expect(comp.totalAccounts()).toBe(180);
     expect(comp.efficiencyGainPct()).toBe(29.8);
   });
+
+  it('should support resetting territories and recommendations lists to empty', () => {
+    const comp = new TerritoryRebalancingCockpitComponent();
+    comp.territories.set([]);
+    comp.recommendations.set([]);
+    comp.totalAccounts.set(0);
+
+    expect(comp.territories().length).toBe(0);
+    expect(comp.recommendations().length).toBe(0);
+    expect(comp.totalAccounts()).toBe(0);
+  });
 });

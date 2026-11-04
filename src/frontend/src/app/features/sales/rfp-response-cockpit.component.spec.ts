@@ -49,4 +49,13 @@ describe('RfpResponseCockpitComponent', () => {
     expect(comp.questionnaires().length).toBe(3);
     expect(comp.questionnaires()[2].questionnaireId).toBe('RFP-FIN-903');
   });
+
+  it('should support resetting questionnaires and answers lists to empty', () => {
+    const comp = new RfpResponseCockpitComponent();
+    comp.questionnaires.set([]);
+    comp.answers.set([]);
+
+    expect(comp.questionnaires().length).toBe(0);
+    expect(comp.answers().length).toBe(0);
+  });
 });

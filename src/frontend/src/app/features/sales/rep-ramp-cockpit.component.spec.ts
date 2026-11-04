@@ -44,4 +44,14 @@ describe('RepRampCockpitComponent', () => {
     expect(updated?.dealsClosed).toBe(5);
     expect(updated?.quotaAttainmentPercentage).toBe(65.0);
   });
+
+  it('should fallback to default repId when selectedRep is null during generateGuidance', () => {
+    const comp = new RepRampCockpitComponent();
+    comp.selectedRep.set(null);
+    comp.liveTranscript = 'Hello discovery message';
+    comp.generateGuidance();
+
+    expect(comp.activeGuidance()?.repId).toBe('REP-RAMP-101');
+    expect(comp.activeGuidance()?.detectedIntent).toBe('Discovery Inquiry');
+  });
 });

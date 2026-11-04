@@ -36,4 +36,15 @@ describe('IntentRollupCockpitComponent', () => {
     expect(comp.deDupedSignals()).toBe(1850);
     expect(comp.collisionPreventionRate()).toBe(99.9);
   });
+
+  it('should support resetting accounts list and totalAccounts to zero', () => {
+    const comp = new IntentRollupCockpitComponent();
+    comp.accounts.set([]);
+    comp.totalAccounts.set(0);
+    comp.highIntentAccounts.set(0);
+
+    expect(comp.accounts().length).toBe(0);
+    expect(comp.totalAccounts()).toBe(0);
+    expect(comp.highIntentAccounts()).toBe(0);
+  });
 });

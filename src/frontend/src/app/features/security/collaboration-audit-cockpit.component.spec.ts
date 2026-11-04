@@ -40,4 +40,21 @@ describe('CollaborationAuditCockpitComponent', () => {
     expect(component.criticalCount()).toBe(0);
     expect(component.auditLogs().length).toBe(0);
   });
+
+  it('should accurately compute criticalCount when adding Info, Warning and Critical logs', () => {
+    component.auditLogs.set([]);
+    expect(component.criticalCount()).toBe(0);
+
+    component.auditLogs.set([
+      { id: '1', user: 'u1', action: 'Login', target: 'App', country: 'US', severity: 'Info', timestamp: '1m ago' },
+      { id: '2', user: 'u2', action: 'PasswordChange', target: 'User', country: 'FR', severity: 'Warning', timestamp: '2m ago' }
+    ]);
+    expect(component.criticalCount()).toBe(0);
+
+    component.auditLogs.update(logs => [
+      { id: '3', user: 'u3', action: 'BreachAttempt', target: 'Vault', country: 'XX', severity: 'Critical', timestamp: 'now' },
+      ...logs
+    ]);
+    expect(component.criticalCount()).toBe(1);
+  });
 });

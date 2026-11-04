@@ -48,4 +48,15 @@ describe('MutualActionPlanCockpitComponent', () => {
     expect(comp.plans().length).toBe(3);
     expect(comp.plans()[2].planId).toBe('MAP-CORP-03');
   });
+
+  it('should support resetting plans and milestones signals to empty lists', () => {
+    const comp = new MutualActionPlanCockpitComponent();
+    comp.plans.set([]);
+    comp.milestones.set([]);
+    comp.milestoneCompletionRatePct.set(0);
+
+    expect(comp.plans().length).toBe(0);
+    expect(comp.milestones().length).toBe(0);
+    expect(comp.milestoneCompletionRatePct()).toBe(0);
+  });
 });

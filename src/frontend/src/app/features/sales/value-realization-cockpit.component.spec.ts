@@ -47,4 +47,15 @@ describe('ValueRealizationCockpitComponent', () => {
     expect(comp.monitoredAccountsCount()).toBe(5);
     expect(comp.avgHealthScore()).toBe(98.2);
   });
+
+  it('should support resetting decks and metrics lists to empty', () => {
+    const comp = new ValueRealizationCockpitComponent();
+    comp.decks.set([]);
+    comp.metrics.set([]);
+    comp.qbrDecksCount.set(0);
+
+    expect(comp.decks().length).toBe(0);
+    expect(comp.metrics().length).toBe(0);
+    expect(comp.qbrDecksCount()).toBe(0);
+  });
 });

@@ -55,4 +55,13 @@ describe('DealCopilotCockpitComponent', () => {
     expect(component.atRiskCount()).toBe(0);
     expect(component.aggregateHealth()).toBe(0);
   });
+
+  it('should cap win probability at 95% when executing intervention on high probability deal', () => {
+    const acmeDeal = component.deals().find(d => d.dealId === 'deal_acme_retail')!;
+    expect(acmeDeal.winProbability).toBe(82);
+
+    component.executeIntervention(acmeDeal);
+    const updated = component.deals().find(d => d.dealId === 'deal_acme_retail')!;
+    expect(updated.winProbability).toBe(95);
+  });
 });
