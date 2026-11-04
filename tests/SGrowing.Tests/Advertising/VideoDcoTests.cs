@@ -45,6 +45,69 @@ public class VideoDcoTests
     }
 
     [Fact]
+    public void GenerateManifest_With_Vertical_Template_Produces_916_Frames()
+    {
+        var request = new GenerateVideoManifestRequest(
+            "TPL-VERTICAL-916",
+            "Gen-Z Summer Drop",
+            "TND",
+            89m,
+            "Offre Spéciale Aujourd'hui",
+            "Swipe Up to Buy",
+            "https://cdn.sgrowing.io/logos/brand-summer.svg"
+        );
+
+        var manifest = _engine.GenerateManifest(request);
+
+        manifest.Should().NotBeNull();
+        manifest.AspectRatio.Should().Be("9:16");
+        manifest.EstimatedRenderFrames.Should().Be(900); // 15s * 60fps
+        manifest.LayerSequences.Should().Contain("SwipeUpCTA");
+        manifest.OverlayJson.Should().Contain("89");
+    }
+
+    [Fact]
+    public void GenerateManifest_With_Square_Template_Produces_11_Frames()
+    {
+        var request = new GenerateVideoManifestRequest(
+            "TPL-SQUARE-11",
+            "B2B SaaS Growth Carousel",
+            "EUR",
+            1200m,
+            "Scale revenue with zero dev ops",
+            "Schedule Strategy Call",
+            "https://cdn.sgrowing.io/logos/brand-b2b.svg"
+        );
+
+        var manifest = _engine.GenerateManifest(request);
+
+        manifest.Should().NotBeNull();
+        manifest.AspectRatio.Should().Be("1:1");
+        manifest.EstimatedRenderFrames.Should().Be(1200); // 20s * 60fps
+        manifest.LayerSequences.Should().Contain("BookDemoButton");
+    }
+
+    [Fact]
+    public void GenerateManifest_Falls_Back_To_First_Template_When_Unknown()
+    {
+        var request = new GenerateVideoManifestRequest(
+            "UNKNOWN-TPL-ID",
+            "Fallback Test",
+            "USD",
+            100m,
+            "Headline",
+            "CTA",
+            ""
+        );
+
+        var manifest = _engine.GenerateManifest(request);
+
+        manifest.Should().NotBeNull();
+        manifest.TemplateId.Should().NotBeNullOrEmpty();
+        manifest.EstimatedRenderFrames.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
     public void RenderVariant_DispatchesJobAndEmitsReceipt()
     {
         var request = new RenderVideoVariantRequest(
@@ -58,8 +121,25 @@ public class VideoDcoTests
         receipt.Should().NotBeNull();
         receipt.JobId.Should().StartWith("JOB-");
         receipt.OutputResolution.Should().Be("4K");
-        receipt.Status.Should().Be("RENDER_COMPLETE");
-        receipt.OutputVideoUrl.Should().Contain("4k.mp4");
         receipt.CdnPurgeReceipt.Should().StartWith("PURGE-");
+        receipt.RenderDurationMs.Should().Be(1420);
+        receipt.Status.Should().Be("RENDER_COMPLETE");
+        receipt.OutputVideoUrl.Should().Contain("-4k.mp4");
+    }
+
+    [Fact]
+    public void RenderVariant_Without_Cache_Invalidation_Sets_No_Purge()
+    {
+        var request = new RenderVideoVariantRequest(
+            "MAN-DEMO-5678",
+            "1080P",
+            InvalidateCdnCache: false
+        );
+
+        var receipt = _engine.RenderVariant(request);
+
+        receipt.Should().NotBeNull();
+        receipt.CdnPurgeReceipt.Should().Be("NO_PURGE");
+        receipt.OutputVideoUrl.Should().Contain("-1080p.mp4");
     }
 }
