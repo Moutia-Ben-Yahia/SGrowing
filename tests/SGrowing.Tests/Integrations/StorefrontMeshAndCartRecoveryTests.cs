@@ -1,5 +1,8 @@
+using System;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Integrations;
@@ -34,9 +37,12 @@ public class StorefrontMeshAndCartRecoveryTests
         using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secret));
         var validHeader = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(body)));
 
-        Assert.True(ShopifyWebhookReceiver.VerifyShopifyHmac(body, secret, validHeader));
-        Assert.False(ShopifyWebhookReceiver.VerifyShopifyHmac(body, secret, "invalid_base64_sig"));
-        Assert.False(ShopifyWebhookReceiver.VerifyShopifyHmac(body + " ", secret, validHeader));
+        ShopifyWebhookReceiver.VerifyShopifyHmac(body, secret, validHeader).Should().BeTrue();
+        ShopifyWebhookReceiver.VerifyShopifyHmac(body, secret, "invalid_base64_sig").Should().BeFalse();
+        ShopifyWebhookReceiver.VerifyShopifyHmac(body + " ", secret, validHeader).Should().BeFalse();
+        ShopifyWebhookReceiver.VerifyShopifyHmac("", secret, validHeader).Should().BeFalse();
+        ShopifyWebhookReceiver.VerifyShopifyHmac(body, "", validHeader).Should().BeFalse();
+        ShopifyWebhookReceiver.VerifyShopifyHmac(body, secret, "").Should().BeFalse();
     }
 
     [Fact]
@@ -54,13 +60,13 @@ public class StorefrontMeshAndCartRecoveryTests
         }}";
 
         var result = await _receiver.ProcessWebhookAsync(tenantId, "checkouts/create", checkoutJson);
-        Assert.True(result.Success);
+        result.Success.Should().BeTrue();
 
         var cart = await _db.AbandonedCartRecords.FirstOrDefaultAsync(c => c.ExternalCartId == cartToken);
-        Assert.NotNull(cart);
-        Assert.Equal("buyer@megacorp.com", cart.CustomerEmail);
-        Assert.Equal(349.99m, cart.CartTotal);
-        Assert.Equal(AbandonedCartStatus.Detected, cart.Status);
+        cart.Should().NotBeNull();
+        cart!.CustomerEmail.Should().Be("buyer@megacorp.com");
+        cart.CartTotal.Should().Be(349.99m);
+        cart.Status.Should().Be(AbandonedCartStatus.Detected);
 
         // When order completes later
         var orderJson = $@"{{
@@ -69,11 +75,75 @@ public class StorefrontMeshAndCartRecoveryTests
         }}";
 
         var orderResult = await _receiver.ProcessWebhookAsync(tenantId, "orders/create", orderJson);
-        Assert.True(orderResult.Success);
+        orderResult.Success.Should().BeTrue();
 
         var refreshedCart = await _db.AbandonedCartRecords.FindAsync(cart.Id);
-        Assert.Equal(AbandonedCartStatus.Recovered, refreshedCart!.Status);
-        Assert.NotNull(refreshedCart.RecoveredAtUtc);
+        refreshedCart!.Status.Should().Be(AbandonedCartStatus.Recovered);
+        refreshedCart.RecoveredAtUtc.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task ProcessWebhookAsync_IgnoresCompletedCheckout_DoesNotCreateCartRecord()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var cartToken = "cart_already_paid_123";
+
+        var checkoutJson = $@"{{
+            ""id"": ""{cartToken}"",
+            ""email"": ""paid@megacorp.com"",
+            ""total_price"": ""199.00"",
+            ""abandoned_checkout_url"": ""https://shop.acme.com/checkouts/{cartToken}"",
+            ""completed_at"": ""2026-11-04T08:00:00Z""
+        }}";
+
+        // Act
+        var result = await _receiver.ProcessWebhookAsync(tenantId, "checkouts/create", checkoutJson);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        var cart = await _db.AbandonedCartRecords.FirstOrDefaultAsync(c => c.ExternalCartId == cartToken);
+        cart.Should().BeNull("completed checkouts must not be tracked as abandoned carts");
+    }
+
+    [Fact]
+    public async Task ProcessWebhookAsync_IgnoresEmptyEmail_DoesNotCreateCartRecord()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var cartToken = "cart_anonymous_999";
+
+        var checkoutJson = $@"{{
+            ""id"": ""{cartToken}"",
+            ""email"": """",
+            ""total_price"": ""99.00"",
+            ""abandoned_checkout_url"": ""https://shop.acme.com/checkouts/{cartToken}"",
+            ""completed_at"": null
+        }}";
+
+        // Act
+        var result = await _receiver.ProcessWebhookAsync(tenantId, "checkouts/create", checkoutJson);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        var cart = await _db.AbandonedCartRecords.FirstOrDefaultAsync(c => c.ExternalCartId == cartToken);
+        cart.Should().BeNull("carts without customer email cannot be contacted for recovery");
+    }
+
+    [Fact]
+    public async Task ProcessWebhookAsync_UnknownTopic_ReturnsSuccessWithIgnoredMessage()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var payload = "{\"event\":\"customer.created\"}";
+
+        // Act
+        var result = await _receiver.ProcessWebhookAsync(tenantId, "customers/create", payload);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Topic.Should().Be("customers/create");
+        result.Message.Should().Be("Ignored topic");
     }
 
     [Fact]
@@ -96,17 +166,42 @@ public class StorefrontMeshAndCartRecoveryTests
 
         var dispatched = await _recoveryService.TriggerRecoveryScanAsync(tenantId, TimeSpan.FromMinutes(60));
 
-        Assert.Single(dispatched);
-        Assert.Equal(oldCart.Id, dispatched[0].CartId);
-        Assert.Equal("charlie@acme.com", dispatched[0].CustomerEmail);
-        Assert.Contains("SAVE10", dispatched[0].FormattedMessage);
+        dispatched.Should().ContainSingle();
+        dispatched[0].CartId.Should().Be(oldCart.Id);
+        dispatched[0].CustomerEmail.Should().Be("charlie@acme.com");
+        dispatched[0].FormattedMessage.Should().Contain("SAVE10");
 
         var refreshedOld = await _db.AbandonedCartRecords.FindAsync(oldCart.Id);
-        Assert.Equal(AbandonedCartStatus.RecoveryTriggered, refreshedOld!.Status);
-        Assert.Equal(1, refreshedOld.RecoveryAttempts);
+        refreshedOld!.Status.Should().Be(AbandonedCartStatus.RecoveryTriggered);
+        refreshedOld.RecoveryAttempts.Should().Be(1);
 
         var outbox = await _db.OutboxMessages.FirstOrDefaultAsync(o => o.EventType == "AbandonedCartRecoveryDispatchedEvent");
-        Assert.NotNull(outbox);
-        Assert.Contains("charlie@acme.com", outbox.Payload);
+        outbox.Should().NotBeNull();
+        outbox!.Payload.Should().Contain("charlie@acme.com");
+    }
+
+    [Fact]
+    public async Task TriggerRecoveryScanAsync_DoesNotRedispatchAlreadyTriggeredOrRecoveredCarts()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var triggeredCart = AbandonedCartRecord.Create(
+            tenantId, Guid.NewGuid(), "cart_trig", "alice@example.com", 150m, "https://acme.com/recover/3");
+        triggeredCart.MarkRecoveryTriggered();
+        typeof(AbandonedCartRecord).GetProperty("DetectedAtUtc")!.SetValue(triggeredCart, DateTime.UtcNow.AddHours(-3));
+
+        var recoveredCart = AbandonedCartRecord.Create(
+            tenantId, Guid.NewGuid(), "cart_rec", "bob@example.com", 300m, "https://acme.com/recover/4");
+        recoveredCart.MarkRecovered();
+        typeof(AbandonedCartRecord).GetProperty("DetectedAtUtc")!.SetValue(recoveredCart, DateTime.UtcNow.AddHours(-3));
+
+        await _db.AbandonedCartRecords.AddRangeAsync(triggeredCart, recoveredCart);
+        await _db.SaveChangesAsync();
+
+        // Act
+        var dispatched = await _recoveryService.TriggerRecoveryScanAsync(tenantId, TimeSpan.FromMinutes(60));
+
+        // Assert
+        dispatched.Should().BeEmpty("only carts with status Detected should be eligible for initial recovery dispatch");
     }
 }
