@@ -296,4 +296,80 @@ public class OmnichannelSequenceTests
             foreignCadence.Should().BeNull();
         });
     }
+
+    [Fact]
+    public void ExecuteStep_WhenCadenceOrStepOrderNotFound_ReturnsActionNotDispatched()
+    {
+        var engine = new OmnichannelSequenceEngine();
+        const string tenantId = "tenant_test";
+
+        // 1. Cadence not found
+        var req1 = new ExecuteCadenceStepRequest(tenantId, "non_existent_cadence", "rec_001", 1, false, 0);
+        var res1 = engine.ExecuteStep(req1);
+        res1.ActionDispatched.Should().BeFalse();
+        res1.StatusMessage.Should().Contain("not found for tenant");
+
+        // 2. Step order not found
+        var cadence = new OmnichannelCadenceDefinition(
+            CadenceId: "cad_1",
+            Name: "Test Cadence",
+            Steps: [new CadenceStepConfig(1, ChannelType.Email, TimeSpan.Zero, TimeSpan.FromHours(2), "tpl_1")],
+            MaxWeeklyTouchpoints: 5
+        );
+        engine.RegisterCadence(tenantId, cadence);
+
+        var req2 = new ExecuteCadenceStepRequest(tenantId, "cad_1", "rec_001", 99, false, 0);
+        var res2 = engine.ExecuteStep(req2);
+        res2.ActionDispatched.Should().BeFalse();
+        res2.StatusMessage.Should().Contain("Step order 99 not found");
+    }
+
+    [Theory]
+    [InlineData(ChannelType.WhatsApp, ChannelType.Email)]
+    [InlineData(ChannelType.Email, ChannelType.Sms)]
+    [InlineData(ChannelType.Sms, ChannelType.VoiceSdr)]
+    [InlineData(ChannelType.VoiceSdr, ChannelType.VoiceSdr)]
+    public void EscalateChannel_FullEscalationLadder_FollowsDefinedHierarchy(ChannelType source, ChannelType expected)
+    {
+        var result = OmnichannelSequenceEngine.EscalateChannel(source);
+        result.Should().Be(expected);
+    }
+
+    [Fact]
+    public void GetDispatchHistory_RecordsDispatchesAndFiltersByTenantAndRecipient()
+    {
+        var timeProvider = new FixedTimeProvider(new DateTimeOffset(2026, 11, 2, 14, 0, 0, TimeSpan.Zero));
+        var engine = new OmnichannelSequenceEngine(timeProvider);
+        const string tenantId = "tenant_history";
+
+        var cadence = new OmnichannelCadenceDefinition(
+            CadenceId: "cad_hist",
+            Name: "History Test Cadence",
+            Steps:
+            [
+                new CadenceStepConfig(1, ChannelType.WhatsApp, TimeSpan.Zero, TimeSpan.FromHours(4), "tpl_wa"),
+                new CadenceStepConfig(2, ChannelType.Email, TimeSpan.Zero, TimeSpan.FromHours(4), "tpl_email")
+            ],
+            MaxWeeklyTouchpoints: 10
+        );
+        engine.RegisterCadence(tenantId, cadence);
+
+        // Recipient A: 2 dispatches
+        engine.ExecuteStep(new ExecuteCadenceStepRequest(tenantId, "cad_hist", "rec_A", 1, true, 0));
+        engine.ExecuteStep(new ExecuteCadenceStepRequest(tenantId, "cad_hist", "rec_A", 2, true, 0));
+
+        // Recipient B: 1 dispatch
+        engine.ExecuteStep(new ExecuteCadenceStepRequest(tenantId, "cad_hist", "rec_B", 1, true, 0));
+
+        var allHistory = engine.GetDispatchHistory(tenantId);
+        allHistory.Should().HaveCount(3);
+
+        var recAHistory = engine.GetDispatchHistory(tenantId, "rec_A");
+        recAHistory.Should().HaveCount(2);
+        recAHistory.Select(h => h.RecipientId).Should().AllBe("rec_A");
+
+        var recBHistory = engine.GetDispatchHistory(tenantId, "rec_B");
+        recBHistory.Should().HaveCount(1);
+        recBHistory[0].RecipientId.Should().Be("rec_B");
+    }
 }

@@ -124,4 +124,53 @@ public class VectorRagTests
         Assert.Contains("https://docs.sgrowing.com/enrichment", promptContext.GroundedContext);
         Assert.Single(promptContext.RetrievedSources);
     }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   \t\n  ")]
+    public void ChunkText_EmptyOrWhitespaceInput_ReturnsEmptyList(string? rawText)
+    {
+        var chunks = _chunkingService.ChunkText(rawText!);
+        Assert.Empty(chunks);
+    }
+
+    [Fact]
+    public async Task HybridSearch_EmptyQueryOrNoChunks_ReturnsEmptyResults()
+    {
+        var tenantId = Guid.NewGuid();
+
+        // 1. Empty query
+        var resEmptyQuery = await _ragService.HybridSearchAsync(tenantId, "   ");
+        Assert.Empty(resEmptyQuery);
+
+        // 2. No chunks in DB
+        var resNoChunks = await _ragService.HybridSearchAsync(tenantId, "Valid query but no docs");
+        Assert.Empty(resNoChunks);
+    }
+
+    [Fact]
+    public async Task IndexDocumentAsync_ReindexingExistingDocument_ReplacesPriorChunksWithoutDuplication()
+    {
+        var tenantId = Guid.NewGuid();
+        var docId = Guid.NewGuid();
+
+        // First indexing: 200 words -> multiple chunks
+        var textV1 = string.Join(" ", Enumerable.Range(1, 200).Select(i => $"word{i}"));
+        await _ragService.IndexDocumentAsync(tenantId, docId, "Doc V1", textV1);
+
+        var countV1 = await _db.DocumentChunks.CountAsync(c => c.TenantId == tenantId && c.DocumentId == docId);
+        Assert.True(countV1 >= 2);
+
+        // Second indexing: short 30 words -> exactly 1 chunk
+        var textV2 = "Short updated document content replacing all previous segments.";
+        await _ragService.IndexDocumentAsync(tenantId, docId, "Doc V2", textV2);
+
+        var countV2 = await _db.DocumentChunks.CountAsync(c => c.TenantId == tenantId && c.DocumentId == docId);
+        Assert.Equal(1, countV2);
+
+        var chunk = await _db.DocumentChunks.FirstAsync(c => c.TenantId == tenantId && c.DocumentId == docId);
+        Assert.Equal("Doc V2", chunk.DocumentTitle);
+        Assert.Equal(textV2, chunk.Content);
+    }
 }

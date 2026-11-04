@@ -181,4 +181,58 @@ public class ClickstreamBufferLoadStressTests
         await bufferService.FlushBufferBatchAsync(1);
         bufferService.GetPendingBufferCount().Should().Be(0);
     }
+
+    [Fact]
+    public async Task FlushBufferBatchAsync_WhenMultiTenantEvents_PersistsAcrossTenants()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        using var db = CreateDbContext(dbName);
+        var bufferService = new ClickstreamBufferService(db);
+
+        ClickstreamBufferService.ResetBuffer();
+
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        await bufferService.BufferEventAsync(TelemetryEvent.Create(tenantA, "sA1", "vA1", "pageview", "/a", "Desktop", "Chrome"));
+        await bufferService.BufferEventAsync(TelemetryEvent.Create(tenantB, "sB1", "vB1", "pageview", "/b", "Mobile", "Safari"));
+
+        var flushed = await bufferService.FlushBufferBatchAsync(10);
+        flushed.Should().Be(2);
+
+        var countA = await db.TelemetryEvents.CountAsync(e => e.TenantId == tenantA);
+        var countB = await db.TelemetryEvents.CountAsync(e => e.TenantId == tenantB);
+
+        countA.Should().Be(1);
+        countB.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task BufferEventAsync_HighThroughputMultiThreadedIngest_HandlesMixedDeviceTypes()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        using var db = CreateDbContext(dbName);
+        var bufferService = new ClickstreamBufferService(db);
+
+        ClickstreamBufferService.ResetBuffer();
+        var tenantId = Guid.NewGuid();
+        var devices = new[] { "Desktop", "Mobile", "Tablet", "SmartTV" };
+
+        var tasks = Enumerable.Range(0, 16).Select(i => Task.Run(async () =>
+        {
+            var device = devices[i % devices.Length];
+            var ev = TelemetryEvent.Create(tenantId, $"sess_{i}", $"vis_{i}", "interaction", $"/feature/{i}", device, "Browser");
+            await bufferService.BufferEventAsync(ev);
+        })).ToArray();
+
+        await Task.WhenAll(tasks);
+
+        bufferService.GetPendingBufferCount().Should().Be(16);
+
+        var flushed = await bufferService.FlushBufferBatchAsync(50);
+        flushed.Should().Be(16);
+
+        var count = await db.TelemetryEvents.CountAsync(e => e.TenantId == tenantId);
+        count.Should().Be(16);
+    }
 }

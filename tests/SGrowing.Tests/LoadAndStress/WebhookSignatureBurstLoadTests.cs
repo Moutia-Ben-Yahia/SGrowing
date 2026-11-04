@@ -125,4 +125,79 @@ public class WebhookSignatureBurstLoadTests
         WebhookSignatureValidator.VerifyMetaSignature(payload, secret, "sha1=abcdef").Should().BeFalse();
         WebhookSignatureValidator.VerifyMetaSignature(payload, secret, "plain_hash_without_prefix").Should().BeFalse();
     }
+
+    [Fact]
+    public void VerifyTwilioSignature_ValidAndTamperedParams_ProperlyAuthenticates()
+    {
+        const string url = "https://api.sgrowing.io/webhooks/twilio/voice";
+        const string authToken = "1234567890abcdef1234567890abcdef";
+
+        var formParams = new Dictionary<string, string>
+        {
+            ["From"] = "+15551234567",
+            ["To"] = "+15559876543",
+            ["CallSid"] = "CA1234567890"
+        };
+
+        // Compute valid signature: URL + sorted key-values signed with HMAC-SHA1
+        var sb = new StringBuilder(url);
+        foreach (var kvp in formParams.OrderBy(x => x.Key, StringComparer.Ordinal))
+        {
+            sb.Append(kvp.Key).Append(kvp.Value);
+        }
+        using var hmac = new HMACSHA1(Encoding.UTF8.GetBytes(authToken));
+        var validSignature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(sb.ToString())));
+
+        // 1. Valid signature
+        var isValid = WebhookSignatureValidator.VerifyTwilioSignature(url, formParams, authToken, validSignature);
+        isValid.Should().BeTrue();
+
+        // 2. Tampered param
+        var tamperedParams = new Dictionary<string, string>(formParams)
+        {
+            ["From"] = "+15559999999"
+        };
+        var isTamperedValid = WebhookSignatureValidator.VerifyTwilioSignature(url, tamperedParams, authToken, validSignature);
+        isTamperedValid.Should().BeFalse();
+
+        // 3. Null or empty
+        WebhookSignatureValidator.VerifyTwilioSignature("", formParams, authToken, validSignature).Should().BeFalse();
+    }
+
+    [Fact]
+    public void VerifyTelegramSecretToken_ValidAndInvalidSecrets_MatchesConstantTime()
+    {
+        const string expectedSecret = "tg_sec_token_9821_xyz";
+
+        // Valid
+        WebhookSignatureValidator.VerifyTelegramSecretToken(expectedSecret, expectedSecret).Should().BeTrue();
+
+        // Mismatched
+        WebhookSignatureValidator.VerifyTelegramSecretToken("wrong_token", expectedSecret).Should().BeFalse();
+
+        // Null / Empty
+        WebhookSignatureValidator.VerifyTelegramSecretToken(null, expectedSecret).Should().BeFalse();
+        WebhookSignatureValidator.VerifyTelegramSecretToken(expectedSecret, "").Should().BeFalse();
+    }
+
+    [Fact]
+    public void VerifyDiscordTimestampAndPayload_ExpiredOrInvalidTimestamp_RejectsReplayAttacks()
+    {
+        const string rawBody = "{\"content\":\"Hello from webhook\"}";
+        const string signature = "sig_valid_dummy";
+
+        // 1. Invalid non-numeric timestamp
+        var isInvalidNumeric = WebhookSignatureValidator.VerifyDiscordTimestampAndPayload(rawBody, "not_a_number", signature);
+        isInvalidNumeric.Should().BeFalse();
+
+        // 2. Expired timestamp (> 5 minutes ago)
+        var expiredTimestamp = DateTimeOffset.UtcNow.AddMinutes(-10).ToUnixTimeSeconds().ToString();
+        var isExpired = WebhookSignatureValidator.VerifyDiscordTimestampAndPayload(rawBody, expiredTimestamp, signature);
+        isExpired.Should().BeFalse();
+
+        // 3. Null or empty arguments
+        WebhookSignatureValidator.VerifyDiscordTimestampAndPayload("", expiredTimestamp, signature).Should().BeFalse();
+        WebhookSignatureValidator.VerifyDiscordTimestampAndPayload(rawBody, "", signature).Should().BeFalse();
+        WebhookSignatureValidator.VerifyDiscordTimestampAndPayload(rawBody, expiredTimestamp, "").Should().BeFalse();
+    }
 }
