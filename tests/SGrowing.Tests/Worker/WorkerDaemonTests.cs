@@ -102,4 +102,57 @@ public class WorkerDaemonTests
         Assert.NotNull(outboxAlert);
         Assert.Contains(expiredConv.Id.ToString(), outboxAlert.Payload);
     }
+
+    [Fact]
+    public async Task OutboxProcessorDaemon_WhenNoPendingMessages_ReturnsZero()
+    {
+        var daemon = new OutboxProcessorDaemon(
+            _serviceProvider,
+            NullLogger<OutboxProcessorDaemon>.Instance,
+            TimeSpan.FromSeconds(1));
+
+        var processedCount = await daemon.ProcessBatchAsync();
+        Assert.Equal(0, processedCount);
+    }
+
+    [Fact]
+    public async Task SlaWatchdogDaemon_WhenNoBreaches_ReturnsZero()
+    {
+        var tenantId = Guid.NewGuid();
+        var policy = SlaPolicy.Create(tenantId, "Lenient SLA", ConversationPriority.Normal, targetFirstResponseMinutes: 120, targetResolutionMinutes: 600);
+        await _db.SlaPolicies.AddAsync(policy);
+
+        var conv = Conversation.Create(tenantId, Guid.NewGuid(), Guid.NewGuid());
+        await _db.Conversations.AddAsync(conv);
+        await _db.SaveChangesAsync();
+
+        var watchdog = new SlaWatchdogDaemon(
+            _serviceProvider,
+            NullLogger<SlaWatchdogDaemon>.Instance,
+            TimeSpan.FromSeconds(1));
+
+        var breached = await watchdog.CheckSlaBreachesAsync();
+        Assert.Equal(0, breached);
+    }
+
+    [Fact]
+    public async Task SlaWatchdogDaemon_WhenAlreadyBreached_DoesNotDuplicateOutboxEvent()
+    {
+        var tenantId = Guid.NewGuid();
+        var policy = SlaPolicy.Create(tenantId, "Fast SLA", ConversationPriority.Normal, targetFirstResponseMinutes: 5, targetResolutionMinutes: 30);
+        await _db.SlaPolicies.AddAsync(policy);
+
+        var conv = Conversation.Create(tenantId, Guid.NewGuid(), Guid.NewGuid());
+        conv.IsSlaBreached = true; // Already flagged as breached
+        await _db.Conversations.AddAsync(conv);
+        await _db.SaveChangesAsync();
+
+        var watchdog = new SlaWatchdogDaemon(
+            _serviceProvider,
+            NullLogger<SlaWatchdogDaemon>.Instance,
+            TimeSpan.FromSeconds(1));
+
+        var breached = await watchdog.CheckSlaBreachesAsync();
+        Assert.Equal(0, breached);
+    }
 }

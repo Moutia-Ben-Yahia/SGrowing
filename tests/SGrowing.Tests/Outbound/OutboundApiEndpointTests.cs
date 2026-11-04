@@ -94,4 +94,70 @@ public class OutboundApiEndpointTests
         mailboxes.First().Email.Should().Be("outbound-sdr@trysgrowing.com");
         mailboxes.First().HealthScore.Should().Be(95);
     }
+
+    [Fact]
+    public async Task CreateCampaign_WithMultipleSenderPools_AssignsAllSenderPools()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var pool1 = Guid.NewGuid();
+        var pool2 = Guid.NewGuid();
+
+        var handler = new CreateCampaignHandler(db);
+        var request = new CreateCampaignRequest(
+            tenantId,
+            "Multi-Pool Outbound",
+            new List<Guid> { pool1, pool2 },
+            new List<CreateCadenceStepDto>
+            {
+                new(1, 0, OutboundChannel.Email, "Hello", "Content")
+            }
+        );
+
+        var result = await handler.HandleAsync(request);
+
+        result.IsSuccess.Should().BeTrue();
+        var campaign = await db.OutboundCampaigns.FindAsync(result.Value.Id);
+        campaign.Should().NotBeNull();
+        var poolIds = campaign!.GetSenderPoolIds();
+        poolIds.Should().HaveCount(2);
+        poolIds.Should().Contain(pool1);
+        poolIds.Should().Contain(pool2);
+    }
+
+    [Fact]
+    public async Task CreateCampaign_WhenNameMissing_ReturnsFailure()
+    {
+        var db = CreateDbContext();
+        var handler = new CreateCampaignHandler(db);
+        var request = new CreateCampaignRequest(
+            Guid.NewGuid(),
+            "  ",
+            new List<Guid>(),
+            new List<CreateCadenceStepDto> { new(1, 0, OutboundChannel.Email, "S", "B") }
+        );
+
+        var result = await handler.HandleAsync(request);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("Campaign name is required");
+    }
+
+    [Fact]
+    public async Task MailboxPoolManagement_FilterByActive_ReturnsOnlyActiveSenders()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+
+        var activeSender = SenderAccount.Create(tenantId, "active@pool.io", "Active", MailboxProvider.GoogleWorkspace, 40);
+        var inactiveSender = SenderAccount.Create(tenantId, "inactive@pool.io", "Inactive", MailboxProvider.GoogleWorkspace, 40);
+        inactiveSender.IsActive = false;
+
+        db.SenderAccounts.AddRange(activeSender, inactiveSender);
+        await db.SaveChangesAsync();
+
+        var activeList = await db.SenderAccounts.Where(s => s.TenantId == tenantId && s.IsActive).ToListAsync();
+        activeList.Should().ContainSingle();
+        activeList.First().Email.Should().Be("active@pool.io");
+    }
 }

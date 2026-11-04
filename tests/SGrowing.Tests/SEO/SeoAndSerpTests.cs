@@ -140,4 +140,66 @@ public class SeoAndSerpTests
         Assert.Equal(1, mention.CitationRank);
         Assert.Single(mentions);
     }
+
+    [Fact]
+    public async Task RunAuditAsync_WithAllHealthyPages_ProducesHighScoreAndZeroIssues()
+    {
+        using var db = CreateDbContext();
+        var service = new SeoAuditService(db);
+        var tenantId = Guid.NewGuid();
+
+        var healthyPages = new List<PageAuditInputDto>
+        {
+            new PageAuditInputDto(
+                "https://store.sgrowing.io/",
+                200,
+                "SGrowing - eCommerce and CRM Automation for High-Growth Brands",
+                "Scalable multi-channel marketing, CRM automation and WhatsApp conversational commerce.",
+                "Transform Your Direct-To-Consumer Growth",
+                true,
+                true,
+                true,
+                180
+            )
+        };
+
+        var report = await service.RunAuditAsync(tenantId, "https://store.sgrowing.io", healthyPages);
+
+        Assert.NotNull(report);
+        Assert.Equal(100, report.OverallHealthScore);
+        Assert.Equal(0, report.BrokenLinksCount);
+        Assert.Equal(0, report.MissingMetaCount);
+        Assert.Equal(0, report.MissingH1Count);
+        Assert.Equal(0, report.SlowPagesCount);
+    }
+
+    [Fact]
+    public async Task UpdateKeywordRankAsync_ThrowsInvalidOperationException_WhenKeywordMissing()
+    {
+        using var db = CreateDbContext();
+        var service = new SeoAuditService(db);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.UpdateKeywordRankAsync(Guid.NewGuid(), Guid.NewGuid(), 1));
+    }
+
+    [Fact]
+    public async Task GetAeoMentionsAsync_FiltersByTenantId()
+    {
+        using var db = CreateDbContext();
+        var service = new SeoAuditService(db);
+        var tenant1 = Guid.NewGuid();
+        var tenant2 = Guid.NewGuid();
+
+        await service.RecordAeoMentionAsync(tenant1, "Brand1", "ChatGPT", "Query", true, "Positive", "Snippet", 1);
+        await service.RecordAeoMentionAsync(tenant2, "Brand2", "Perplexity", "Query", true, "Neutral", "Snippet", 2);
+
+        var mentions1 = await service.GetAeoMentionsAsync(tenant1);
+        var mentions2 = await service.GetAeoMentionsAsync(tenant2);
+
+        Assert.Single(mentions1);
+        Assert.Single(mentions2);
+        Assert.Equal("Brand1", mentions1[0].BrandName);
+        Assert.Equal("Brand2", mentions2[0].BrandName);
+    }
 }
