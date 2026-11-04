@@ -1,4 +1,5 @@
-using System.Threading.Tasks;
+using System;
+using System.Linq;
 using SGrowing.Api.Modules.Intelligence.DeAnonymization;
 using Xunit;
 
@@ -34,6 +35,12 @@ public class DeAnonymizationTests
     }
 
     [Fact]
+    public void DeAnonymizeVisitor_ThrowsOnNullRequest()
+    {
+        Assert.Throws<ArgumentNullException>(() => _engine.DeAnonymizeVisitor(null!));
+    }
+
+    [Fact]
     public void DeAnonymizeVisitor_UnknownIp_ReturnsIspNetworkType()
     {
         // Arrange
@@ -54,12 +61,40 @@ public class DeAnonymizationTests
     }
 
     [Fact]
+    public void DeAnonymizeVisitor_NonPricingPage_CalculatesModerateIntent()
+    {
+        var request = new DeAnonymizeRequest(
+            IpAddress: "198.51.100.42", // shopify.com
+            PageUrl: "/features/general-overview",
+            TimeOnPageSeconds: 30
+        );
+
+        var result = _engine.DeAnonymizeVisitor(request);
+
+        Assert.Equal("shopify.com", result.Domain);
+        // Base 40 + non-pricing 15 = 55
+        Assert.Equal(55, result.IntentScore);
+        Assert.Equal(IntentStage.Consideration, result.IntentStage);
+        Assert.False(result.ShouldAlertAccountExec);
+    }
+
+    [Fact]
+    public void GetActiveIntentFeed_ReturnsAccountsSortedByActiveScore()
+    {
+        var feed = _engine.GetActiveIntentFeed();
+
+        Assert.NotNull(feed);
+        Assert.NotEmpty(feed);
+        Assert.True(feed.First().ActiveScore >= feed.Last().ActiveScore);
+    }
+
+    [Fact]
     public void DispatchAccountAlert_GeneratesValidAlertPreview()
     {
         // Arrange
         var request = new DispatchAlertRequest(
             Domain: "stripe.com",
-            RecipientEmail: "rep@enterprise.corp",
+            RecipientEmail: "sarah.cro@sgrowing.io",
             Channel: "Slack"
         );
 
@@ -71,5 +106,12 @@ public class DeAnonymizationTests
         Assert.True(result.Dispatched);
         Assert.StartsWith("alt_", result.AlertId);
         Assert.Contains("stripe.com", result.MessagePreview);
+        Assert.Contains("Slack", result.MessagePreview);
+    }
+
+    [Fact]
+    public void DispatchAccountAlert_ThrowsOnNullRequest()
+    {
+        Assert.Throws<ArgumentNullException>(() => _engine.DispatchAccountAlert(null!));
     }
 }

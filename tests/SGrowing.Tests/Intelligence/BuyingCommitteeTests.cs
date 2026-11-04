@@ -41,11 +41,49 @@ public class BuyingCommitteeTests
     }
 
     [Fact]
-    public void GeneratePlaybooks_ReturnsRoleSpecificGuidance()
+    public void MapBuyingCommittee_IdentifiesCriticalAndHighGaps()
     {
-        var cisoPlaybooks = _engine.GeneratePlaybooks(PersonaRole.SecurityCiso);
+        // Only Champion present (Missing EconomicBuyer, SecurityCiso, LegalProcurement)
+        var members = new List<CommitteeMember>
+        {
+            new("1", "Sarah", "Sales Lead", "s@test.com", "link", PersonaRole.Champion, 80.0, true)
+        };
 
-        Assert.NotEmpty(cisoPlaybooks);
-        Assert.Contains(cisoPlaybooks, p => p.CollateralTitle.Contains("SOC2"));
+        var result = _engine.MapBuyingCommittee(new MapCommitteeRequest("startup.com", "Startup Inc", members));
+
+        Assert.Equal(3, result.IdentifiedGaps.Count);
+        Assert.Contains(result.IdentifiedGaps, g => g.MissingRole == PersonaRole.EconomicBuyer && g.RiskLevel == "Critical");
+        Assert.Contains(result.IdentifiedGaps, g => g.MissingRole == PersonaRole.SecurityCiso && g.RiskLevel == "High");
+        Assert.Contains(result.IdentifiedGaps, g => g.MissingRole == PersonaRole.LegalProcurement && g.RiskLevel == "Medium");
+    }
+
+    [Fact]
+    public void MapBuyingCommittee_WithZeroMembers_ReturnsHighRiskIncomplete()
+    {
+        var result = _engine.MapBuyingCommittee(new MapCommitteeRequest("empty.com", "Empty Corp", new List<CommitteeMember>()));
+
+        Assert.Equal(DealReadiness.HighRiskIncomplete, result.Readiness);
+        Assert.Equal(0.0, result.ConsensusPercentage);
+    }
+
+    [Fact]
+    public void GetCommitteeByDomain_ReturnsNullForUnmappedDomain()
+    {
+        var result = _engine.GetCommitteeByDomain("unmapped-domain-99.org");
+        Assert.Null(result);
+    }
+
+    [Theory]
+    [InlineData(PersonaRole.Champion, "ROI Deck")]
+    [InlineData(PersonaRole.EconomicBuyer, "TCO")]
+    [InlineData(PersonaRole.TechnicalEvaluator, "OpenAPI")]
+    [InlineData(PersonaRole.SecurityCiso, "SOC2")]
+    [InlineData(PersonaRole.LegalProcurement, "DPA")]
+    public void GeneratePlaybooks_ReturnsRoleSpecificGuidance(PersonaRole role, string expectedTitleSubstring)
+    {
+        var playbooks = _engine.GeneratePlaybooks(role);
+
+        Assert.NotEmpty(playbooks);
+        Assert.Contains(playbooks, p => p.CollateralTitle.Contains(expectedTitleSubstring));
     }
 }
