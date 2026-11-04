@@ -89,4 +89,30 @@ public class GeoVisibilityTests
         var allBrandX = _engine.ListCitations("tenant_defaults", "BrandX");
         Assert.Equal(3, allBrandX.Count);
     }
+
+    [Fact]
+    public void ListCitations_WithNullBrand_ReturnsAllCitations()
+    {
+        var allCitations = _engine.ListCitations("tenant_test", null);
+
+        Assert.NotEmpty(allCitations);
+        Assert.True(allCitations.Count >= 4);
+    }
+
+    [Fact]
+    public void AuditQuery_WithCopilotEngine_DispatchesAndAssignsCopilotEngine()
+    {
+        var req = new AuditQueryRequest(
+            TenantId: "tenant_copilot",
+            BrandName: "CopilotBrand",
+            TargetQuery: "Copilot autonomous agent integration",
+            Engines: new List<AiAnswerEngine> { AiAnswerEngine.Copilot }
+        );
+
+        var audited = _engine.AuditQuery(req);
+
+        Assert.Single(audited);
+        Assert.Equal(AiAnswerEngine.Copilot, audited[0].Engine);
+        Assert.Equal("CopilotBrand", audited[0].BrandMentioned);
+    }
 }

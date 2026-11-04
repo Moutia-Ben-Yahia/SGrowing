@@ -74,4 +74,23 @@ public class CapacityPlanningTests
 
         simulated.TotalDailyVolume.Should().Be(original.TotalDailyVolume);
     }
+
+    [Fact]
+    public void GetPlan_IsCaseInsensitive_ReturnsTargetPlan()
+    {
+        var plan = _engine.GetPlan("CAP_PLAN_GLOBAL_SUPPORT");
+
+        plan.Should().NotBeNull();
+        plan.PlanId.Should().Be("cap_plan_global_support");
+        plan.QueueName.Should().Be("Global Omnichannel Tier-1 Support");
+    }
+
+    [Fact]
+    public void SimulateSurge_100PercentSurge_DoublesIncomingVolume()
+    {
+        var original = _engine.GetPlan("cap_plan_global_support");
+        var surged = _engine.SimulateSurge(new SimulateSurgeRequest("cap_plan_global_support", 100));
+
+        surged.TotalDailyVolume.Should().Be(original.TotalDailyVolume * 2);
+    }
 }

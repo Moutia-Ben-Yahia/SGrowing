@@ -202,4 +202,40 @@ public class SeoAndSerpTests
         Assert.Equal("Brand1", mentions1[0].BrandName);
         Assert.Equal("Brand2", mentions2[0].BrandName);
     }
+
+    [Fact]
+    public async Task GetLatestAuditAsync_WhenAuditExists_ReturnsMostRecentAuditReport()
+    {
+        using var db = CreateDbContext();
+        var service = new SeoAuditService(db);
+        var tenantId = Guid.NewGuid();
+
+        // 1. Initial audit
+        var firstReport = await service.RunAuditAsync(tenantId, "https://v1.store.com", new());
+        // 2. Second audit later
+        var secondReport = await service.RunAuditAsync(tenantId, "https://v2.store.com", new());
+
+        var latest = await service.GetLatestAuditAsync(tenantId);
+
+        Assert.NotNull(latest);
+        Assert.Equal(secondReport.Id, latest.Id);
+        Assert.Equal("https://v2.store.com", latest.TargetUrl);
+    }
+
+    [Fact]
+    public async Task ComputeGeoBrandCitabilityScoreAsync_CalculatesReadinessAndRecommendations()
+    {
+        using var db = CreateDbContext();
+        var service = new SeoAuditService(db);
+        var tenantId = Guid.NewGuid();
+
+        var report = await service.ComputeGeoBrandCitabilityScoreAsync(tenantId, "ApexRetail", "https://apexretail.tn");
+
+        Assert.NotNull(report);
+        Assert.Equal("ApexRetail", report.BrandName);
+        Assert.Equal("https://apexretail.tn", report.DomainUrl);
+        Assert.True(report.OverallScore > 0);
+        Assert.NotEmpty(report.AiEnginesEvaluated);
+        Assert.NotEmpty(report.ActionableRecommendations);
+    }
 }

@@ -120,4 +120,29 @@ public class SocialListeningSentinelServiceTests
         trends.Sum(t => t.PositiveCount).Should().Be(1);
         trends.Sum(t => t.NegativeCount).Should().Be(1);
     }
+
+    [Fact]
+    public async Task ResolveCrisisIncidentAsync_WhenIncidentDoesNotExist_ReturnsNull()
+    {
+        var nonExistentIncidentId = Guid.NewGuid();
+        var req = new ResolveCrisisIncidentRequest(_tenantId, nonExistentIncidentId, "Resolving unknown incident");
+
+        var result = await _service.ResolveCrisisIncidentAsync(req);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetSocialListeningSummaryAsync_FreshTenant_ReturnsZeroActiveIncidentsAndNormalThreatLevel()
+    {
+        var freshTenantId = Guid.NewGuid();
+
+        var summary = await _service.GetSocialListeningSummaryAsync(freshTenantId);
+
+        summary.Should().NotBeNull();
+        summary.TenantId.Should().Be(freshTenantId);
+        summary.ActiveCrisisCount.Should().Be(0);
+        summary.IsMarketingBroadcastHalted.Should().BeFalse();
+        summary.CurrentThreatLevel.Should().Be(CrisisThreatLevel.NormalGreen);
+    }
 }
