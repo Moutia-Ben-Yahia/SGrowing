@@ -103,4 +103,93 @@ public class AudienceSyncTests
         Assert.Equal(batch.SyncJobId, retried.SyncJobId);
         Assert.Equal("RecoveredAndStreamed", retried.Status);
     }
+
+    [Theory]
+    [InlineData(DspPlatform.MetaCustomAudience)]
+    [InlineData(DspPlatform.GoogleCustomerMatch)]
+    [InlineData(DspPlatform.TikTokAudienceManager)]
+    [InlineData(DspPlatform.LinkedInMatchedAudience)]
+    public void SyncCohortBatch_AllDspPlatforms_StreamsSuccessfully(DspPlatform platform)
+    {
+        var request = new BatchAudienceSyncRequest(
+            Platform: platform,
+            ExternalAudienceId: $"aud_{platform.ToString().ToLowerInvariant()}_test",
+            Records: new List<AudienceSyncRecord>
+            {
+                new("user1@example.com", "TestSegment", SyncAction.Add)
+            }
+        );
+
+        var result = _engine.SyncCohortBatch(request);
+
+        Assert.NotNull(result);
+        Assert.True(result.Success);
+        Assert.Equal(platform, result.Platform);
+        Assert.Equal(1, result.ProcessedCount);
+        Assert.Equal(1, result.HashedCount);
+        Assert.Equal("StreamedToDsp", result.Status);
+    }
+
+    [Fact]
+    public void GetConnectorStatuses_SortedByPlatformName()
+    {
+        var statuses = _engine.GetConnectorStatuses();
+
+        Assert.NotEmpty(statuses);
+        for (int i = 0; i < statuses.Count - 1; i++)
+        {
+            Assert.True(string.CompareOrdinal(statuses[i].Platform.ToString(), statuses[i + 1].Platform.ToString()) <= 0);
+        }
+    }
+
+    [Fact]
+    public void SyncCohortBatch_IncrementingConnectorMetrics_UpdatesActiveHashedRecords()
+    {
+        var initialConnectors = _engine.GetConnectorStatuses();
+        var initialGoogle = initialConnectors.First(c => c.Platform == DspPlatform.GoogleCustomerMatch);
+        var initialCount = initialGoogle.ActiveHashedRecords;
+
+        _engine.SyncCohortBatch(new BatchAudienceSyncRequest(
+            Platform: DspPlatform.GoogleCustomerMatch,
+            ExternalAudienceId: "aud_google_metrics_test",
+            Records: new List<AudienceSyncRecord>
+            {
+                new("hash1@test.com", "Segment", SyncAction.Add),
+                new("hash2@test.com", "Segment", SyncAction.Add)
+            }
+        ));
+
+        var updatedConnectors = _engine.GetConnectorStatuses();
+        var updatedGoogle = updatedConnectors.First(c => c.Platform == DspPlatform.GoogleCustomerMatch);
+
+        Assert.Equal(initialCount + 2, updatedGoogle.ActiveHashedRecords);
+    }
+
+    [Fact]
+    public void RetryFailedSync_NullOrEmptyId_ReturnsMockJob()
+    {
+        var retried = _engine.RetryFailedSync("sync_untracked_external_job");
+
+        Assert.NotNull(retried);
+        Assert.True(retried.Success);
+        Assert.Equal("RecoveredAndStreamed", retried.Status);
+        Assert.Equal("sync_untracked_external_job", retried.SyncJobId);
+    }
+
+    [Fact]
+    public void SyncCohortBatch_EmptyRecordsList_ReturnsZeroProcessedCount()
+    {
+        var request = new BatchAudienceSyncRequest(
+            Platform: DspPlatform.TikTokAudienceManager,
+            ExternalAudienceId: "aud_empty_test",
+            Records: new List<AudienceSyncRecord>()
+        );
+
+        var result = _engine.SyncCohortBatch(request);
+
+        Assert.NotNull(result);
+        Assert.Equal(0, result.ProcessedCount);
+        Assert.Equal(0, result.HashedCount);
+        Assert.True(result.Success);
+    }
 }

@@ -92,4 +92,52 @@ public class RetargetingMatrixTests
         var profile = _engine.GetProfile("completely-unknown-domain-99.org");
         Assert.Null(profile);
     }
+
+    [Fact]
+    public void EvaluateImpression_NullRequest_ThrowsNullReferenceException()
+    {
+        Assert.Throws<NullReferenceException>(() => _engine.EvaluateImpression(null!));
+    }
+
+    [Fact]
+    public void UpdateStage_NullRequest_ThrowsNullReferenceException()
+    {
+        Assert.Throws<NullReferenceException>(() => _engine.UpdateStage(null!));
+    }
+
+    [Fact]
+    public void UpdateStage_NewDomain_CreatesProfileWithSpecifiedStageAndSuppression()
+    {
+        var domain = "newlydiscovered-buyer.io";
+        var updated = _engine.UpdateStage(new UpdateBuyerStageRequest(domain, RetargetingStage.StalledProposal));
+
+        Assert.NotNull(updated);
+        Assert.Equal(domain, updated.AccountDomain);
+        Assert.Equal(RetargetingStage.StalledProposal, updated.Stage);
+        Assert.False(updated.IsSuppressed);
+    }
+
+    [Fact]
+    public void EvaluateImpression_StageDefault_SelectsIntelligentGrowthOverviewTheme()
+    {
+        var domain = "unknown-stage-lead.com";
+        // Stage that is not PricingPageEvaluator, DemoAttendee, or StalledProposal, but not suppressed
+        _engine.UpdateStage(new UpdateBuyerStageRequest(domain, (RetargetingStage)99));
+
+        var decision = _engine.EvaluateImpression(new EvaluateImpressionRequest(domain, "GoogleDSP"));
+        Assert.True(decision.ShouldServeImpression);
+        Assert.Equal("Intelligent Growth OS Overview", decision.SelectedCreativeTheme);
+    }
+
+    [Fact]
+    public void EvaluateImpression_CaseInsensitiveDomain_ResolvesSameProfile()
+    {
+        var domainUpper = "CAPPROFIT.COM";
+
+        var decision = _engine.EvaluateImpression(new EvaluateImpressionRequest(domainUpper, "Meta"));
+
+        // capprofit.com is already at cap (3/3), so upper-case query should also be rejected
+        Assert.False(decision.ShouldServeImpression);
+        Assert.Contains("Daily frequency cap reached", decision.Reason);
+    }
 }
