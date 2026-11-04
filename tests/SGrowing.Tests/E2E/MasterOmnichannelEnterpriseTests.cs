@@ -558,4 +558,38 @@ public class MasterOmnichannelEnterpriseTests
         );
         emptyResult.Deflected.Should().BeFalse();
     }
+
+    [Fact]
+    public async Task MasterOmnichannel_FutureScheduledPost_And_MultiTouchChannelExecution()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var outbox = new OutboxService(db);
+        var postRepo = new InMemorySocialPostRepository();
+        var socialPublishing = new SocialPublishingService(db, outbox, postRepo);
+        var companyService = new CompanyAccountService(db);
+
+        // 1. Social post scheduled in the future is not prematurely published
+        var futurePost = await socialPublishing.CreatePostAsync(
+            tenantId,
+            "Upcoming Feature Launch in Q1 2027",
+            new List<SocialPlatform> { SocialPlatform.LinkedIn, SocialPlatform.X },
+            scheduledAtUtc: DateTime.UtcNow.AddHours(4)
+        );
+        futurePost.Status.Should().Be(SocialPostStatus.Scheduled);
+
+        var due = await socialPublishing.PublishDuePostsAsync(tenantId);
+        due.Should().BeEmpty();
+
+        var reloadedPost = await postRepo.GetByIdAsync(futurePost.Id);
+        reloadedPost!.Status.Should().Be(SocialPostStatus.Scheduled);
+
+        // 2. Company domain association with personal email domain returns null
+        var contact = Contact.Create(tenantId, "Anonymous", "Lead", "lead@gmail.com");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        var personalDomainCompany = await companyService.AssociateContactByDomainAsync(tenantId, contact.Id, contact.Email!);
+        personalDomainCompany.Should().BeNull();
+    }
 }

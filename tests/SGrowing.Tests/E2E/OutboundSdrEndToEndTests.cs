@@ -327,4 +327,45 @@ public class OutboundSdrEndToEndTests
         var processedCount = await dispatcher.ProcessDueCadencesAsync(tenantId);
         processedCount.Should().Be(0);
     }
+
+    [Fact]
+    public async Task OutboundSdr_OutOfOfficeAutoReply_PostponesCadenceByFiveDays()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var notifier = new Mock<IRealtimeNotifier>();
+        var sentimentClassifier = new ReplySentimentClassifier();
+        var handoffService = new ProspectReplyHandoffService(db, sentimentClassifier, notifier.Object);
+
+        var sender = SenderAccount.Create(tenantId, "sales@enterprise.com", "Enterprise SDR", MailboxProvider.GoogleWorkspace);
+        db.SenderAccounts.Add(sender);
+
+        var campaign = OutboundCampaign.Create(tenantId, "Q4 Enterprise Blitz", new List<Guid> { sender.Id });
+        db.OutboundCampaigns.Add(campaign);
+
+        var contact = Contact.Create(tenantId, "Victor", "Stone", "victor@star-labs.org");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        var enrollment = ProspectEnrollment.Create(tenantId, campaign.Id, contact.Id);
+        db.ProspectEnrollments.Add(enrollment);
+
+        var conversation = Conversation.Create(tenantId, Guid.NewGuid(), contact.Id);
+        db.Conversations.Add(conversation);
+        await db.SaveChangesAsync();
+
+        // 1. Prospect returns an Out-of-Office auto-reply message
+        var autoReply = "Thank you for reaching out. I am currently out of office on annual leave until next Tuesday with limited access to email.";
+        var handoffRes = await handoffService.HandleReplyAsync(tenantId, contact.Id, conversation.Id, autoReply);
+
+        handoffRes.IsSuccess.Should().BeTrue();
+        handoffRes.Value.Sentiment.Should().Be(ReplySentiment.OutOfOffice);
+        handoffRes.Value.DealCreated.Should().BeFalse();
+
+        // 2. Enrollment remains Active, but NextRunAtUtc is delayed by 5 days
+        var reloadedEnrollment = await db.ProspectEnrollments.FindAsync(enrollment.Id);
+        reloadedEnrollment.Should().NotBeNull();
+        reloadedEnrollment!.Status.Should().Be(EnrollmentStatus.Active);
+        reloadedEnrollment.NextRunAtUtc.Should().BeAfter(DateTime.UtcNow.AddDays(4));
+    }
 }

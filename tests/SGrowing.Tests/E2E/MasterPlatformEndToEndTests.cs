@@ -344,4 +344,50 @@ public class MasterPlatformEndToEndTests
         emptyDeflection.Deflected.Should().BeFalse();
         emptyDeflection.ConfidenceScore.Should().Be(0);
     }
+
+    [Fact]
+    public async Task MasterPlatform_NegativeCsatSentiment_And_UnpublishedArticleSearchExclusion()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var notifier = new Mock<IRealtimeNotifier>();
+        var feedbackService = new FeedbackService(db, notifier.Object);
+        var ragService = new HelpCenterRagService(db);
+
+        // 1. Submit 1-star negative CSAT feedback with negative sentiment triggers
+        var surveyForm = SurveyForm.Create(tenantId, "Product Quality Audit", SurveyType.Csat, "Rate your experience");
+        db.SurveyForms.Add(surveyForm);
+
+        var contact = Contact.Create(tenantId, "James", "Monroe", "monroe@virginia.gov");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        var negativeRes = await feedbackService.SubmitFeedbackAsync(
+            tenantId,
+            surveyForm.Id,
+            contact.Id,
+            score: 1,
+            feedbackText: "The package was broken and the delivery was terrible."
+        );
+
+        negativeRes.IsSuccess.Should().BeTrue();
+        negativeRes.Value.Sentiment.Should().Be(FeedbackSentiment.Negative);
+        negativeRes.Value.Score.Should().Be(1);
+
+        // 2. Draft/Unpublished Article is never leaked in AI deflection
+        var unpublishedArticle = HelpArticle.Create(
+            tenantId,
+            Guid.NewGuid(),
+            "Internal Staff Compensation and Bonus Schemes",
+            "internal-staff-bonuses",
+            "Details regarding executive stock options and bonus pool allocations for internal employees.",
+            isPublished: false
+        );
+        db.HelpArticles.Add(unpublishedArticle);
+        await db.SaveChangesAsync();
+
+        var deflection = await ragService.GenerateAiDeflectionReplyAsync(tenantId, "What are the internal staff bonuses and stock options?");
+        deflection.Deflected.Should().BeFalse();
+        deflection.ArticleTitle.Should().BeNull();
+    }
 }

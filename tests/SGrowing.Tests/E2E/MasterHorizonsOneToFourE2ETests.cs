@@ -209,4 +209,49 @@ public class MasterHorizonsOneToFourE2ETests
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             checkoutService.ApplyUpsellOfferAsync(tenantId, "nonexistent-session-key", "UPSELL-SKU", 15m));
     }
+
+    [Fact]
+    public async Task Horizons_One_To_Four_CompetitorRadarDisparity_And_SummaryAggregation()
+    {
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+
+        var db = new SGrowingDbContext(options);
+        var tenantId = Guid.NewGuid();
+        var competitorService = new CompetitorIntelligenceService(db);
+
+        // 1. Ingest high-threat competitor advertising campaign
+        var ad = await competitorService.IngestCompetitorAdAsync(
+            tenantId,
+            competitorName: "RivalCosmetics TN",
+            platform: "Meta",
+            hookSnippet: "Get 2 Perfumes for the price of 1!",
+            offerDetails: "Buy 1 Get 1 Free on all 50ml EDP bottles",
+            estimatedDailySpend: 650m,
+            threatLevel: "High"
+        );
+        Assert.NotNull(ad);
+        Assert.Equal("High", ad.ThreatLevel);
+
+        // 2. Track price disparity where competitor undercuts by 30% (< 85% threshold)
+        var tracker = await competitorService.TrackPriceDisparityAsync(
+            tenantId,
+            sku: "PERFUME-ROYAL-OUD-50ML",
+            competitorName: "RivalCosmetics TN",
+            url: "https://rival-cosmetics.tn/perfumes/oud-royal",
+            competitorPrice: 70m,
+            ourPrice: 100m
+        );
+        Assert.NotNull(tracker);
+        Assert.Equal("BundleIncentive", tracker.RecommendedCounterAction);
+        Assert.Equal(-30.0m, tracker.PriceDifferencePercentage);
+
+        // 3. Aggregate Radar Summary
+        var summary = await competitorService.GetRadarSummaryAsync(tenantId);
+        Assert.Equal(1, summary.TotalCompetitorAdsMonitored);
+        Assert.Equal(1, summary.HighThreatCompetitorsCount);
+        Assert.Single(summary.PriceAlerts);
+        Assert.Equal("BundleIncentive", summary.PriceAlerts[0].RecommendedCounterAction);
+    }
 }

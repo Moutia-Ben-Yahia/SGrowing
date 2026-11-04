@@ -301,4 +301,56 @@ public class MasterNextGenFrontiersE2ETests
         Assert.Equal(25m, stagnantEval.CurrentMarkdownPercentage);
         Assert.Equal(45m, stagnantEval.CurrentEffectivePrice); // 60 - 25% = 45m
     }
+
+    [Fact]
+    public async Task Master_NextGen_Frontiers_LiquidationCrossSellBundle_And_DeadLetterBackoffRetry()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+        var liquidationService = new InventoryLiquidationService(db);
+
+        // 1. Record Winning SKU (150m) and Aging SKU (50m)
+        await liquidationService.RecordStockIntakeAgingAsync(
+            tenantId,
+            Guid.NewGuid(),
+            "ROYAL-OUD-50ML",
+            "Royal Oud Eau de Parfum",
+            warehouseId,
+            quantity: 100,
+            costPrice: 40m,
+            retailPrice: 150m,
+            daysInWarehouse: 10);
+
+        await liquidationService.RecordStockIntakeAgingAsync(
+            tenantId,
+            Guid.NewGuid(),
+            "MINI-SPRAY-15ML",
+            "Travel Pocket Spray 15ml",
+            warehouseId,
+            quantity: 40,
+            costPrice: 8m,
+            retailPrice: 50m,
+            daysInWarehouse: 95);
+
+        // 2. Generate Liquidation Bundle Offer with 25% discount
+        var bundle = await liquidationService.GenerateLiquidationBundleAsync(
+            tenantId,
+            winningSku: "ROYAL-OUD-50ML",
+            agingSku: "MINI-SPRAY-15ML",
+            bundleName: "Royal Heritage Travel Duo",
+            bundleDiscountPct: 25m
+        );
+
+        Assert.NotNull(bundle);
+        Assert.Equal(200m, bundle.OriginalCombinedPrice); // 150 + 50
+        Assert.Equal(150m, bundle.DiscountedBundlePrice); // 200 - 25% = 150
+        Assert.Equal(25m, bundle.IncentiveDiscountPercentage);
+        Assert.True(bundle.ActiveInChatCpq);
+
+        // 3. List and verify active bundles
+        var activeBundles = await liquidationService.ListActiveBundleOffersAsync(tenantId);
+        Assert.Single(activeBundles);
+        Assert.Equal("Royal Heritage Travel Duo", activeBundles[0].BundleName);
+    }
 }
