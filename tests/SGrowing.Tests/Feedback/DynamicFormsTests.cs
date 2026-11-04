@@ -102,4 +102,63 @@ public class DynamicFormsTests
         Assert.False(tamperDetected);
         Assert.Contains("Tamper alert", tamperSummary);
     }
+
+    [Fact]
+    public async Task CreateFormDefinition_ReturnsExisting_WhenSlugAlreadyExistsForTenant()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var first = await _service.CreateFormDefinitionAsync(
+            tenantId,
+            "Feedback Survey",
+            "feedback-survey",
+            "First description",
+            new List<DynamicFormField>()
+        );
+
+        var second = await _service.CreateFormDefinitionAsync(
+            tenantId,
+            "Feedback Survey 2",
+            "feedback-survey", // Same slug
+            "Second description",
+            new List<DynamicFormField>()
+        );
+
+        Assert.Equal(first.Id, second.Id);
+        Assert.Equal("First description", second.Description);
+    }
+
+    [Fact]
+    public async Task GetFormBySlug_ReturnsNull_WhenSlugDoesNotExist()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var found = await _service.GetFormBySlugAsync(tenantId, "ghost-slug-not-found");
+
+        Assert.Null(found);
+    }
+
+    [Fact]
+    public async Task SubmitFormAnswers_ThrowsInvalidOperationException_WhenFormNotFound()
+    {
+        var tenantId = Guid.NewGuid();
+        var unknownFormId = Guid.NewGuid();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _service.SubmitFormAnswersAsync(tenantId, unknownFormId, new Dictionary<string, string>()));
+
+        Assert.Equal("Form not found.", ex.Message);
+    }
+
+    [Fact]
+    public async Task SealDocumentCryptographically_ThrowsInvalidOperationException_WhenDocumentNotFound()
+    {
+        var tenantId = Guid.NewGuid();
+        var unknownDocId = Guid.NewGuid();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _service.SealDocumentCryptographicallyAsync(tenantId, unknownDocId, "test@test.com", "0,0,1"));
+
+        Assert.Equal("Document not found.", ex.Message);
+    }
 }
