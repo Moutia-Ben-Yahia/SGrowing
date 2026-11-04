@@ -14,6 +14,16 @@ public class AppointmentSchedulingServiceTests
         _service = new AppointmentSchedulingService();
     }
 
+    private static DateTimeOffset GetNextWeekday(DateTimeOffset fromDate)
+    {
+        var day = fromDate;
+        while (day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday)
+        {
+            day = day.AddDays(1);
+        }
+        return day;
+    }
+
     #region Host Management Tests
 
     [Fact]
@@ -156,7 +166,7 @@ public class AppointmentSchedulingServiceTests
     {
         // Arrange
         var host = (await _service.GetHostsAsync()).First(h => h.HostName == "Tariq Mansour");
-        var testDay = DateTimeOffset.UtcNow.Date.AddDays(3);
+        var testDay = GetNextWeekday(DateTimeOffset.UtcNow.Date.AddDays(1));
         var busyStart = testDay.AddHours(11);
         var busyEnd = testDay.AddHours(13);
 
@@ -189,7 +199,7 @@ public class AppointmentSchedulingServiceTests
     {
         // Arrange
         var host = (await _service.GetHostsAsync()).First(h => h.HostName == "Kenji Tanaka");
-        var testDay = DateTimeOffset.UtcNow.Date.AddDays(2);
+        var testDay = GetNextWeekday(DateTimeOffset.UtcNow.Date.AddDays(1));
         var aptStart = testDay.AddHours(10);
 
         // Book an appointment at 10:00 UTC (duration 30m, so ends 10:30 UTC)
@@ -235,11 +245,7 @@ public class AppointmentSchedulingServiceTests
     {
         // Arrange
         var host = (await _service.GetHostsAsync()).First(h => h.HostName == "Sarah Jenkins");
-        var testDay = DateTimeOffset.UtcNow.Date.AddDays(1);
-        while (testDay.DayOfWeek == DayOfWeek.Saturday || testDay.DayOfWeek == DayOfWeek.Sunday)
-        {
-            testDay = testDay.AddDays(1);
-        }
+        var testDay = GetNextWeekday(DateTimeOffset.UtcNow.Date.AddDays(1));
 
         var query = new SlotQuery(
             HostId: host.HostId,
@@ -289,7 +295,7 @@ public class AppointmentSchedulingServiceTests
     public async Task GetAvailableSlots_CorrectlyProjectsToTargetTimeZones(string targetTz)
     {
         // Arrange
-        var testDay = DateTimeOffset.UtcNow.Date.AddDays(3);
+        var testDay = GetNextWeekday(DateTimeOffset.UtcNow.Date.AddDays(1));
         var query = new SlotQuery(
             RangeStartUtc: testDay,
             RangeEndUtc: testDay.AddDays(1),
@@ -314,7 +320,7 @@ public class AppointmentSchedulingServiceTests
     public async Task GetAvailableSlots_HandlesInvalidOrUnknownTimeZoneGracefullyWithUtcFallback()
     {
         // Arrange
-        var testDay = DateTimeOffset.UtcNow.Date.AddDays(2);
+        var testDay = GetNextWeekday(DateTimeOffset.UtcNow.Date.AddDays(1));
         var query = new SlotQuery(
             RangeStartUtc: testDay,
             RangeEndUtc: testDay.AddDays(1),
@@ -342,7 +348,7 @@ public class AppointmentSchedulingServiceTests
         var hostA = hosts[0];
         var hostB = hosts[1];
 
-        var testDay = DateTimeOffset.UtcNow.Date.AddDays(3);
+        var testDay = GetNextWeekday(DateTimeOffset.UtcNow.Date.AddDays(1));
 
         var query = new SlotQuery(
             CollectiveHostIds: new List<Guid> { hostA.HostId, hostB.HostId },
