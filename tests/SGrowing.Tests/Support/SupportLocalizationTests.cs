@@ -48,4 +48,33 @@ public class SupportLocalizationTests
         Assert.NotEmpty(glossary);
         Assert.Contains(glossary, g => g.SourceTerm == "Growth OS");
     }
+
+    [Fact]
+    public void TranslateMessage_ToFrenchAndSpanish_ReturnsLocalizedGreetings()
+    {
+        var frRequest = new TranslateSupportMessageRequest("msg_fr", "en", "fr", "Hello from SGrowing", FormalityLevel.PoliteBusiness);
+        var frResult = _engine.TranslateMessage(frRequest);
+        Assert.Contains("Nous vous remercions", frResult.LocalizedText);
+
+        var esRequest = new TranslateSupportMessageRequest("msg_es", "en", "es", "Hello from SGrowing", FormalityLevel.PoliteBusiness);
+        var esResult = _engine.TranslateMessage(esRequest);
+        Assert.Contains("Gracias por comunicarse", esResult.LocalizedText);
+    }
+
+    [Fact]
+    public void TranslateMessage_FallbackLanguage_FormatsWithBrackets()
+    {
+        var itRequest = new TranslateSupportMessageRequest("msg_it", "en", "it", "Welcome to the service", FormalityLevel.CasualWarm);
+        var itResult = _engine.TranslateMessage(itRequest);
+
+        Assert.StartsWith("[Localized (IT - CasualWarm)]", itResult.LocalizedText);
+        Assert.Contains("Welcome to the service", itResult.LocalizedText);
+    }
+
+    [Fact]
+    public void GetMessageById_WhenNotFound_ReturnsNull()
+    {
+        var msg = _engine.GetMessageById("msg_unknown_123");
+        Assert.Null(msg);
+    }
 }

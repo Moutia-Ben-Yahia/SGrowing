@@ -60,4 +60,41 @@ public sealed class RfpResponseTests
         var overview = engine.GetOverview();
         Assert.Contains(overview.Questionnaires, item => item.QuestionnaireId == q.QuestionnaireId);
     }
+
+    [Fact]
+    public void GenerateAnswer_AttachesAttributionAndConfidenceCorrectly()
+    {
+        var engine = new RfpResponseEngine();
+        var request = new GenerateRfpAnswerRequest(
+            "RFP-COM-902",
+            "Explain voice latency optimizations and buffering architectures.",
+            "INFRASTRUCTURE"
+        );
+
+        var answer = engine.GenerateAnswer(request);
+
+        Assert.NotNull(answer);
+        Assert.Equal("RFP-COM-902", answer.QuestionnaireId);
+        Assert.Contains("SGrowing implements enterprise-grade compliance", answer.SynthesizedAnswer);
+        Assert.Equal(0.978, answer.SourceAttributionScore);
+        Assert.Equal("Corporate Compliance Matrix & Architecture Whitepaper 2026", answer.CanonicalSourceReference);
+    }
+
+    [Fact]
+    public void ImportQuestionnaire_InitializesZeroCompletedQuestionsAndInProgressStatus()
+    {
+        var engine = new RfpResponseEngine();
+        var request = new ImportQuestionnaireRequest(
+            "Vanguard Healthcare Network",
+            "HIPAA_SECURITY",
+            50
+        );
+
+        var q = engine.ImportQuestionnaire(request);
+
+        Assert.NotNull(q);
+        Assert.Equal(0, q.AnsweredQuestionsCount);
+        Assert.Equal(96.0, q.ConfidenceScoreAvgPct);
+        Assert.Equal("IN_PROGRESS", q.Status);
+    }
 }

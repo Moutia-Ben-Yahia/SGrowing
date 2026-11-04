@@ -46,4 +46,32 @@ public class CapacityPlanningTests
         surged.TotalDailyVolume.Should().BeGreaterThan(2000);
         surged.TotalDeficitHours.Should().BeGreaterThan(1);
     }
+
+    [Fact]
+    public void GetPlan_WithUnknownId_FallsBackToDefaultPlan()
+    {
+        var plan = _engine.GetPlan("unknown_plan_id");
+        plan.Should().NotBeNull();
+        plan.PlanId.Should().Be("cap_plan_global_support");
+    }
+
+    [Fact]
+    public void RebalanceCapacity_WithZeroOrNegativeAdditionalAgents_ClampsToAtLeastOne()
+    {
+        var originalHour14 = _engine.GetPlan("cap_plan_global_support").HourlyIntervals.First(i => i.HourOfDay == 14);
+        var rebalanced = _engine.RebalanceCapacity(new RebalanceCapacityRequest("cap_plan_global_support", 0));
+        var rebalancedHour14 = rebalanced.HourlyIntervals.First(i => i.HourOfDay == 14);
+
+        // Clamps Math.Max(1, request.AdditionalAgentsAllocated), so exactly 1 agent is added
+        rebalancedHour14.ScheduledStaffHeadcount.Should().Be(originalHour14.ScheduledStaffHeadcount + 1);
+    }
+
+    [Fact]
+    public void SimulateSurge_ZeroSurge_PreservesOriginalVolume()
+    {
+        var original = _engine.GetPlan("cap_plan_global_support");
+        var simulated = _engine.SimulateSurge(new SimulateSurgeRequest("cap_plan_global_support", 0));
+
+        simulated.TotalDailyVolume.Should().Be(original.TotalDailyVolume);
+    }
 }
