@@ -83,4 +83,13 @@ public class CallTransferMeshTests
         var updated2 = _engine.CompleteTransfer(req);
         updated2.CallerSentimentScore.Should().Be(1.0);
     }
+
+    [Fact]
+    public void GetCall_IsCaseInsensitive_ReturnsCallSession()
+    {
+        var call = _engine.GetCall("CALL_VCE_801");
+
+        call.Should().NotBeNull();
+        call!.CallId.Should().Be("call_vce_801");
+    }
 }

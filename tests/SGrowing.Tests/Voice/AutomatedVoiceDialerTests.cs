@@ -272,4 +272,18 @@ public class AutomatedVoiceDialerTests
         var updatedOrder = await db.CodOrders.FindAsync(order.Id);
         Assert.Contains("Fallback to WhatsApp", updatedOrder!.Notes);
     }
+
+    [Fact]
+    public async Task ProcessIvrCustomerResponseAsync_WhenAttemptNotFound_ThrowsInvalidOperationException()
+    {
+        var db = CreateDbContext();
+        var dialer = new AutomatedVoiceDialerService(db);
+        var tenantId = Guid.NewGuid();
+        var nonExistentAttemptId = Guid.NewGuid();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            dialer.ProcessIvrCustomerResponseAsync(tenantId, nonExistentAttemptId, "oui", null));
+
+        Assert.Equal($"Call attempt {nonExistentAttemptId} not found.", ex.Message);
+    }
 }

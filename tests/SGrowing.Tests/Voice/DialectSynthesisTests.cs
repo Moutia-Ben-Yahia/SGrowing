@@ -118,4 +118,21 @@ public class DialectSynthesisTests
         Assert.Equal(0.0, utterance.PitchModulationHz);
         Assert.Equal(1.0, utterance.CadenceMultiplier);
     }
+
+    [Fact]
+    public void SynthesizeDialect_ScottishVernacular_ReplacesColloquialPhrases()
+    {
+        var request = new SynthesizeDialectRequest(
+            CallId: "CALL-DIALECT-005",
+            TargetDialectCode: "EN-GB-SCOTTISH",
+            StandardResponseText: "yes, there is a small delay but no problem."
+        );
+
+        var utterance = _engine.SynthesizeDialect(request);
+
+        Assert.NotNull(utterance);
+        Assert.Equal("aye, there is a wee delay but nae bother.", utterance.DialectAdaptedText);
+        Assert.Equal(8.0, utterance.PitchModulationHz);
+        Assert.Equal(1.05, utterance.CadenceMultiplier);
+    }
 }

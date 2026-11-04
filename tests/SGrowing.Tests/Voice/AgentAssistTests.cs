@@ -97,4 +97,22 @@ public class AgentAssistTests
         var session = _engine.GetSessionById("call_missing_99999");
         Assert.Null(session);
     }
+
+    [Fact]
+    public void StreamChunk_WhenSessionNotFound_InitializesNewSession()
+    {
+        var request = new StreamChunkRequest(
+            "call_brand_new_999",
+            "Customer",
+            "Can you tell me more about your system?",
+            15.0
+        );
+
+        var session = _engine.StreamChunk(request);
+
+        Assert.NotNull(session);
+        Assert.Equal("call_brand_new_999", session.CallSessionId);
+        Assert.Equal("Prospective Enterprise", session.CustomerCompany);
+        Assert.Single(session.RecentTranscripts);
+    }
 }
