@@ -117,4 +117,33 @@ public sealed class CompetitiveBattlecardTests
         Assert.Equal("WON", signal.Outcome);
         Assert.StartsWith("SIG-WON-", signal.SignalId);
     }
+
+    [Fact]
+    public void GenerateBattlecard_IncrementsActiveBattlecardsCountInOverview()
+    {
+        var engine = new CompetitiveBattlecardEngine();
+        var initialOverview = engine.GetOverview();
+        Assert.Equal(0, initialOverview.ActiveBattlecardsCount);
+
+        var request = new GenerateBattlecardRequest(
+            "COMP-APEX-01",
+            "OPP-SCALE-88",
+            "Fintech",
+            400000m
+        );
+        engine.GenerateBattlecard(request);
+
+        var updatedOverview = engine.GetOverview();
+        Assert.Equal(1, updatedOverview.ActiveBattlecardsCount);
+    }
+
+    [Fact]
+    public void GetOverview_TotalProtectedPipelineValueUsd_ComputesSumOfCompetitorAverageDealSizes()
+    {
+        var engine = new CompetitiveBattlecardEngine();
+        var overview = engine.GetOverview();
+
+        // Seeded: COMP-APEX-01 (320,000) + COMP-TITAN-02 (210,000) = 530,000
+        Assert.Equal(530000.00m, overview.TotalProtectedPipelineValueUsd);
+    }
 }

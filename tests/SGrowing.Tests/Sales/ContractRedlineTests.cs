@@ -118,4 +118,37 @@ public class ContractRedlineTests
         var overview = engine.GetOverview();
         Assert.Contains(overview.RecentApprovals, a => a.ApprovalId == approval.ApprovalId);
     }
+
+    [Fact]
+    public void NegotiateClause_LimitationOfLiability_AssignsScore45AndAcceptableCompromise()
+    {
+        var engine = new ContractRedlineEngine();
+        var request = new NegotiateClauseRequest(
+            "MSA-2026-NORTHSTAR",
+            "LIMITATION_OF_LIABILITY",
+            "Super-cap of 3x annual fees for data incident indemnity"
+        );
+
+        var record = engine.NegotiateClause(request);
+
+        Assert.NotNull(record);
+        Assert.Equal(45.0, record.DeviationRiskScore);
+        Assert.Equal("ACCEPTABLE_COMPROMISE", record.RiskClassification);
+        Assert.Equal("COMPROMISE_OFFERED", record.Status);
+    }
+
+    [Fact]
+    public void ApproveDeviation_GeneratesDeterministicSha256SealPrefix()
+    {
+        var engine = new ContractRedlineEngine();
+        var clauseId = "RED-LOL-001";
+        var counsel = "General Legal Counsel";
+        var expectedHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(clauseId + counsel)))[..12];
+
+        var request = new ApproveDeviationRequest(clauseId, counsel, "Accepted business rationale");
+        var approval = engine.ApproveDeviation(request);
+
+        Assert.NotNull(approval);
+        Assert.Equal($"SEAL-SHA256-{expectedHash}", approval.CryptographicAuditSeal);
+    }
 }

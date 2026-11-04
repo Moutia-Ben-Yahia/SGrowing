@@ -199,4 +199,40 @@ public class SocialPublishingSuiteTests
             default),
             Times.Never);
     }
+
+    [Fact]
+    public void CustomizeContentForPlatform_TikTokAndThreads_FormatsAccordingly()
+    {
+        var content = "Scale your B2B revenue autonomously.";
+        var tiktok = SocialPublishingService.CustomizeContentForPlatform(content, SocialPlatform.TikTok);
+        var threads = SocialPublishingService.CustomizeContentForPlatform(content, SocialPlatform.Threads);
+
+        tiktok.Should().Contain("#TikTokGrowth #TechTok #BusinessTips");
+        threads.Should().Be(content);
+    }
+
+    [Fact]
+    public async Task PublishDuePostsAsync_WhenNoDuePosts_ReturnsEmptyAndDoesNotCallOutbox()
+    {
+        var service = new SocialPublishingService(_outboxMock.Object);
+        var tenantId = Guid.NewGuid();
+
+        // Create only future post
+        await service.CreatePostAsync(
+            tenantId,
+            "Future product drops",
+            new List<SocialPlatform> { SocialPlatform.X },
+            DateTime.UtcNow.AddDays(1)
+        );
+
+        var published = await service.PublishDuePostsAsync(tenantId);
+
+        published.Should().BeEmpty();
+        _outboxMock.Verify(o => o.EnqueueAsync(
+            It.IsAny<Guid>(),
+            It.IsAny<string>(),
+            It.IsAny<object>(),
+            default),
+            Times.Never);
+    }
 }

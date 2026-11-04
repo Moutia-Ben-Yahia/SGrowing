@@ -165,4 +165,34 @@ public class RedisStreamBrokerTests
         var messages = await broker.ReadGroupMessagesAsync(streamKey, groupName, "c1");
         Assert.Empty(messages);
     }
+
+    [Fact]
+    public void InMemoryStreamBroker_IsConnected_AlwaysReturnsTrue()
+    {
+        var broker = new InMemoryStreamBroker();
+        Assert.True(broker.IsConnected);
+    }
+
+    [Fact]
+    public async Task InMemoryStreamBroker_MultipleConsumerGroups_CanConsumeSameMessagesIndependently()
+    {
+        var broker = new InMemoryStreamBroker();
+        var tenantId = Guid.NewGuid();
+        var stream = "sgrowing:multi:group:stream";
+        var group1 = "analytics-group";
+        var group2 = "audit-group";
+
+        await broker.EnsureConsumerGroupAsync(stream, group1);
+        await broker.EnsureConsumerGroupAsync(stream, group2);
+
+        var msgId = await broker.PublishEventAsync(stream, "order.placed", "{\"total\":150}", tenantId);
+
+        var msgs1 = await broker.ReadGroupMessagesAsync(stream, group1, "worker-1", 10);
+        var msgs2 = await broker.ReadGroupMessagesAsync(stream, group2, "worker-2", 10);
+
+        Assert.Single(msgs1);
+        Assert.Single(msgs2);
+        Assert.Equal(msgId, msgs1[0].MessageId);
+        Assert.Equal(msgId, msgs2[0].MessageId);
+    }
 }
