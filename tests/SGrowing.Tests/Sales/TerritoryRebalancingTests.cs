@@ -83,4 +83,23 @@ public class TerritoryRebalancingTests
         result.EffectiveDate.Should().BeAfter(DateTime.UtcNow.AddDays(13));
         result.EffectiveDate.Should().BeBefore(DateTime.UtcNow.AddDays(15));
     }
+
+    [Fact]
+    public void GetOverview_ReturnsExpectedEfficiencyGain()
+    {
+        var overview = _engine.GetOverview();
+        overview.ProjectedEfficiencyGainPct.Should().Be(24.6);
+        overview.Recommendations.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public void ApplyRebalance_GeneratesRebalPlanPrefixAndAccountsShiftedMatchingRecommendations()
+    {
+        var command = new ApplyRebalanceCommand("SIM-CUSTOM-009", 21, "DIRECTOR_REV");
+        var result = _engine.ApplyRebalance(command);
+
+        result.RebalancePlanId.Should().StartWith("REBAL-PLAN-");
+        result.AccountsShifted.Should().Be(3);
+        result.Status.Should().Be("Scheduled");
+    }
 }

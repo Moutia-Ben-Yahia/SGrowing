@@ -78,4 +78,29 @@ public sealed class SpiffGamificationTests
         Assert.Equal(2500.0, escrow.EscrowAmountUsd); // default fallback amount
         Assert.Equal("Jane Doe", escrow.SalesRepName);
     }
+
+    [Fact]
+    public void AwardDealSpiff_WhenRemainingBudgetExhausted_ClampsRemainingToZero()
+    {
+        var campaign = _engine.CreateCampaign("Small Budget Campaign", SpiffRewardType.CashBonus, 2000.0, 3000.0);
+
+        // Award deal 1: remaining becomes 1000
+        _engine.AwardDealSpiff(campaign.CampaignId, "DEAL-1", "Rep A");
+        // Award deal 2: remaining would be 1000 - 2000 = -1000, but clamped to 0
+        _engine.AwardDealSpiff(campaign.CampaignId, "DEAL-2", "Rep B");
+
+        var overview = _engine.GetOverview();
+        var refreshed = overview.ActiveCampaigns.First(c => c.CampaignId == campaign.CampaignId);
+        Assert.Equal(0.0, refreshed.RemainingEscrowUsd);
+    }
+
+    [Fact]
+    public void GetOverview_ReportsTotalSpiffsPaidTodayAndRecentEscrows()
+    {
+        var overview = _engine.GetOverview();
+
+        Assert.Equal(12500.0, overview.TotalSpiffsPaidTodayUsd);
+        Assert.NotEmpty(overview.RecentEscrows);
+        Assert.All(overview.RecentEscrows, e => Assert.StartsWith("ESC-", e.EscrowId));
+    }
 }

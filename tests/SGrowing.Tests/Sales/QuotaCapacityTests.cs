@@ -76,4 +76,26 @@ public class QuotaCapacityTests
         Assert.Equal(20, result.NewHeadcount);
         Assert.Equal(1400000m, result.OptimizedQuotaPerRepEur);
     }
+
+    [Fact]
+    public void GetTerritory_ReturnsSpecificProfileWithAddressableMarketAndRegion()
+    {
+        var apac = _engine.GetTerritory("TERR-APAC-GROWTH");
+        Assert.NotNull(apac);
+        Assert.Equal("APAC", apac.Region);
+        Assert.Equal(95000000m, apac.TotalAddressableMarketEur);
+        Assert.Equal("WhitespaceSurge", apac.CapacityStatus);
+    }
+
+    [Fact]
+    public void RebalanceTerritory_ReducesRepBurnoutRiskIndexToLowLevel()
+    {
+        var request = new RebalanceRequest("TERR-EMEA-NORTH", 4, 3.5m);
+        var result = _engine.RebalanceTerritory(request);
+
+        Assert.NotNull(result);
+        var updated = _engine.GetTerritory("TERR-EMEA-NORTH");
+        Assert.NotNull(updated);
+        Assert.Equal(28.5m, updated.RepBurnoutRiskIndex); // Reduced from 84.6m
+    }
 }

@@ -132,4 +132,34 @@ public class CustomerAdvisoryBoardTests
         var updated = engine.GetOverview();
         Assert.Equal(initialArr + 750_000m, updated.TotalInfluencedArrUsd);
     }
+
+    [Fact]
+    public void GetOverview_CorrectlyCountsAtRiskSponsors()
+    {
+        var engine = new CustomerAdvisoryBoardEngine();
+        var overview = engine.GetOverview();
+
+        // Seeded: PAIR-002 has status "AT_RISK_STALE"
+        Assert.True(overview.AtRiskPairingsCount >= 1);
+        Assert.Contains(overview.SponsorPairings, p => p.Status == "AT_RISK_STALE");
+    }
+
+    [Fact]
+    public void VoteRoadmap_GeneratesPrefixedTenCharacterVoteIdAndPreservesFeatureName()
+    {
+        var engine = new CustomerAdvisoryBoardEngine();
+        var featureName = "Self-Healing Multi-Region Kafka Cluster";
+        var vote = engine.VoteRoadmap(new VoteRoadmapRequest(
+            featureName,
+            "Enterprise Holding Corp",
+            1,
+            5_000_000m
+        ));
+
+        Assert.NotNull(vote);
+        Assert.StartsWith("VOTE-", vote.VoteId);
+        Assert.Equal(10, vote.VoteId.Length);
+        Assert.Equal(featureName, vote.FeatureName);
+        Assert.Equal(5_000_000m, vote.AnnualContractValueWeightUsd);
+    }
 }
