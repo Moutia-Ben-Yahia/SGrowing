@@ -164,4 +164,37 @@ public class DigitalGoodsTests
         Assert.Contains(assets, a => a.Title == "Doc 1");
         Assert.Contains(assets, a => a.Title == "Doc 2");
     }
+
+    [Fact]
+    public async Task GetVariantMatrixAsync_ReturnsVariantsForBaseSku()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var options = new Dictionary<string, List<string>>
+        {
+            ["Size"] = new() { "S", "M" }
+        };
+
+        await _service.GenerateVariantMatrixAsync(tenantId, "POLO-SHIRT", 45.0m, options);
+
+        var retrieved = await _service.GetVariantMatrixAsync(tenantId, "POLO-SHIRT");
+
+        Assert.Equal(2, retrieved.Count);
+        Assert.Contains(retrieved, v => v.VariantSku == "POLO-SHIRT-S");
+        Assert.Contains(retrieved, v => v.VariantSku == "POLO-SHIRT-M");
+    }
+
+    [Fact]
+    public async Task GetLicenseKeysAsync_FiltersByTenantAndSku()
+    {
+        var tenantId = Guid.NewGuid();
+
+        await _service.GenerateLicenseKeysAsync(tenantId, "SKU-PRO-KEY", null, count: 2, seatsPerKey: 1);
+        await _service.GenerateLicenseKeysAsync(tenantId, "SKU-BASIC-KEY", null, count: 3, seatsPerKey: 1);
+
+        var proKeys = await _service.GetLicenseKeysAsync(tenantId, "SKU-PRO-KEY");
+
+        Assert.Equal(2, proKeys.Count);
+        Assert.All(proKeys, k => Assert.Equal("SKU-PRO-KEY", k.ProductSku));
+    }
 }

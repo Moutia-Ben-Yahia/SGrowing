@@ -104,4 +104,47 @@ public class CpqMarginTests
         var quote = _engine.GetQuoteById("quote_non_existent_9999");
         Assert.Null(quote);
     }
+
+    [Fact]
+    public void CalculateQuotePricing_WithRampedYears_CalculatesBlendedMultiYearMetrics()
+    {
+        var request = new QuotePricingRequest(
+            "quote_ramped_3yr",
+            "TransLogix Enterprise",
+            3,
+            150000m,
+            15.0m,
+            20000m,
+            5000m
+        );
+
+        var result = _engine.CalculateQuotePricing(request);
+
+        Assert.NotNull(result);
+        Assert.Equal(3, result.YearRamps.Count);
+        Assert.True(result.TotalContractValue > 300000m);
+        Assert.True(result.TotalGrossProfit > 200000m);
+        Assert.True(result.BlendedGrossMarginPercentage >= 75.0);
+        Assert.Equal(DiscountApprovalTier.StandardRepApproved, result.ApprovalTier);
+    }
+
+    [Fact]
+    public void CalculateQuotePricing_GeneratesDeterministicCryptographicHash()
+    {
+        var request = new QuotePricingRequest(
+            "quote_hash_verify",
+            "SecureCorp Systems",
+            2,
+            100000m,
+            12.0m,
+            15000m,
+            3000m
+        );
+
+        var result1 = _engine.CalculateQuotePricing(request);
+        var result2 = _engine.CalculateQuotePricing(request);
+
+        Assert.Equal(16, result1.CryptographicAuditHash.Length);
+        Assert.Equal(result1.CryptographicAuditHash, result2.CryptographicAuditHash);
+    }
 }

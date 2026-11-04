@@ -207,4 +207,50 @@ public class DefensiveWmsTests
         Assert.Equal(100, summaryTunis.Physical);
         Assert.Equal(40, summarySfax.Physical);
     }
+
+    [Fact]
+    public async Task DispatchStockAsync_ClampsCommittedAndPhysicalStockAtZero()
+    {
+        var db = CreateDbContext();
+        var wms = new DefensiveWmsService(db);
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+        var orderId = Guid.NewGuid();
+        var sku = "SKU-OVER-DISPATCH";
+
+        await wms.GetOrCreateInventoryAsync(tenantId, warehouseId, sku, initialPhysical: 2);
+        await wms.ReserveStockOnCheckoutAsync(tenantId, warehouseId, sku, 2, orderId);
+        await wms.CommitStockOnConfirmationAsync(tenantId, warehouseId, sku, 2, orderId);
+
+        // Dispatch 5 (more than 2 committed & physical) -> should clamp physical & committed at 0
+        await wms.DispatchStockAsync(tenantId, warehouseId, sku, 5, orderId);
+
+        var summary = await wms.GetStockSummaryAsync(tenantId, warehouseId, sku);
+        Assert.Equal(0, summary.Physical);
+        Assert.Equal(0, summary.Committed);
+        Assert.Equal(5, summary.InTransit);
+    }
+
+    [Fact]
+    public async Task ReceiveCourierReturnToQuarantineAsync_ClampsInTransitAtZero()
+    {
+        var db = CreateDbContext();
+        var wms = new DefensiveWmsService(db);
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+        var orderId = Guid.NewGuid();
+        var sku = "SKU-RETURN-CLAMP";
+
+        await wms.GetOrCreateInventoryAsync(tenantId, warehouseId, sku, initialPhysical: 10);
+        await wms.ReserveStockOnCheckoutAsync(tenantId, warehouseId, sku, 2, orderId);
+        await wms.CommitStockOnConfirmationAsync(tenantId, warehouseId, sku, 2, orderId);
+        await wms.DispatchStockAsync(tenantId, warehouseId, sku, 2, orderId);
+
+        // Return 6 to quarantine (more than 2 in transit) -> InTransit clamps to 0
+        await wms.ReceiveCourierReturnToQuarantineAsync(tenantId, warehouseId, sku, 6, orderId);
+
+        var summary = await wms.GetStockSummaryAsync(tenantId, warehouseId, sku);
+        Assert.Equal(0, summary.InTransit);
+        Assert.Equal(6, summary.QuarantineReturned);
+    }
 }

@@ -158,4 +158,50 @@ public class ExternalStoreAndSheetsTests
         Assert.Equal("ORD-NO-CONFIG", row[1]);
         Assert.Equal(65m, row[6]);
     }
+
+    [Fact]
+    public async Task IngestExternalStoreOrderAsync_CreatesExternalStoreSyncRecordInDatabase()
+    {
+        var db = CreateDbContext();
+        var service = new ExternalStoreAndSheetsService(db);
+        var tenantId = Guid.NewGuid();
+
+        var payload = """
+        {
+            "id": 554433,
+            "name": "#WOO-7788",
+            "total_price": "210.00"
+        }
+        """;
+
+        var order = await service.IngestExternalStoreOrderAsync(tenantId, ExternalStorePlatform.WooCommerce, payload);
+
+        var syncRec = await db.ExternalStoreSyncRecords.FirstOrDefaultAsync(s => s.SGrowingOrderId == order.Id);
+        Assert.NotNull(syncRec);
+        Assert.Equal(ExternalStorePlatform.WooCommerce, syncRec.Platform);
+        Assert.Equal("554433", syncRec.ExternalOrderId);
+        Assert.Equal("#WOO-7788", syncRec.ExternalOrderNumber);
+        Assert.Equal(StoreSyncDirection.InboundOrderCreated, syncRec.SyncDirection);
+        Assert.Equal("Success", syncRec.Status);
+    }
+
+    [Fact]
+    public async Task PushFulfillmentUpdateAsync_CreatesOutboundSyncRecordWithCourierDetails()
+    {
+        var db = CreateDbContext();
+        var service = new ExternalStoreAndSheetsService(db);
+        var tenantId = Guid.NewGuid();
+
+        var order = CodOrder.Create(tenantId, "ORD-FULFILL-TEST", "Sonia Trabelsi", "+21622114455", "Address", "Tunis", "Centre", 90m);
+        db.CodOrders.Add(order);
+        await db.SaveChangesAsync();
+
+        var syncRecord = await service.PushFulfillmentUpdateAsync(tenantId, order.Id, "Yalidine", "YAL-TRACK-1122");
+
+        Assert.NotNull(syncRecord);
+        Assert.Equal(StoreSyncDirection.OutboundFulfillmentPushed, syncRecord.SyncDirection);
+        Assert.Equal("Success", syncRecord.Status);
+        Assert.Contains("Yalidine", syncRecord.PayloadJson);
+        Assert.Contains("YAL-TRACK-1122", syncRecord.PayloadJson);
+    }
 }
