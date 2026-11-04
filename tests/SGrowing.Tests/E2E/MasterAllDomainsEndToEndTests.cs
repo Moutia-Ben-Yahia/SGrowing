@@ -109,4 +109,48 @@ public class MasterAllDomainsEndToEndTests
         var auditLogsCount = await db.SecurityAuditLogEntries.CountAsync(a => a.TenantId == tenantId);
         Assert.True(auditLogsCount >= 1);
     }
+
+    [Fact]
+    public async Task MasterAllDomains_CreatorEscrowAndWmsStockRelease_HandlesCancellationsAndInvalidCodes()
+    {
+        using var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+        var warehouseId = Guid.NewGuid();
+
+        // 1. Invalid referral code attribution returns null
+        var creatorService = new CreatorAffiliateService(db);
+        var invalidLedger = await creatorService.AttributeOrderCommissionAsync(
+            tenantId,
+            "BOGUS_INVALID_CODE_99",
+            Guid.NewGuid(),
+            "TRACK-999",
+            100m
+        );
+        Assert.Null(invalidLedger);
+
+        // 2. Clear escrow on non-existent order returns null
+        var nonExistentClear = await creatorService.ClearEscrowOnDeliveryAsync(tenantId, Guid.NewGuid());
+        Assert.Null(nonExistentClear);
+
+        // 3. WMS stock reservation and cancellation restock lifecycle
+        var wmsService = new DefensiveWmsService(db);
+        var initialPhysical = 50;
+        await wmsService.GetOrCreateInventoryAsync(tenantId, warehouseId, "SKU-TEST-01", initialPhysical);
+
+        var orderId = Guid.NewGuid();
+        await wmsService.ReserveStockOnCheckoutAsync(tenantId, warehouseId, "SKU-TEST-01", 10, orderId);
+
+        var summaryAfterReserve = await wmsService.GetStockSummaryAsync(tenantId, warehouseId, "SKU-TEST-01");
+        Assert.Equal(50, summaryAfterReserve.Physical);
+        Assert.Equal(10, summaryAfterReserve.Reserved);
+        Assert.Equal(40, summaryAfterReserve.Available);
+
+        // Order cancelled -> stock released
+        await wmsService.ReleaseStockOnCancellationAsync(tenantId, warehouseId, "SKU-TEST-01", 10, orderId);
+
+        var summaryAfterRelease = await wmsService.GetStockSummaryAsync(tenantId, warehouseId, "SKU-TEST-01");
+        Assert.Equal(50, summaryAfterRelease.Physical);
+        Assert.Equal(0, summaryAfterRelease.Reserved);
+        Assert.Equal(50, summaryAfterRelease.Available);
+    }
 }

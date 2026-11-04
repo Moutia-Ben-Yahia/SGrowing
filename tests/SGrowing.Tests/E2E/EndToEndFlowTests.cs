@@ -117,4 +117,94 @@ public class EndToEndFlowTests
         statusResult.IsSuccess.Should().BeTrue();
         statusResult.Value.Status.Should().Be(ConversationStatus.Resolved);
     }
+
+    [Fact]
+    public async Task CompleteCustomerLifecycle_WhenCustomerFollowsUpAfterResolution_CreatesNewOpenConversation()
+    {
+        var db = CreateDbContext();
+        var outbox = new OutboxService(db);
+        var ingressService = new ChannelIngressService(db, outbox);
+        var waAdapter = new WhatsAppCloudAdapter();
+
+        var tenantId = Guid.NewGuid();
+        var inboxId = Guid.NewGuid();
+
+        // 1. Initial message arrives and conversation is created & resolved
+        var payload1 = """
+        {
+          "object": "whatsapp_business_account",
+          "entry": [{
+            "id": "ACCOUNT_123",
+            "changes": [{
+              "value": {
+                "messaging_product": "whatsapp",
+                "contacts": [{ "profile": { "name": "Julius Caesar" }, "wa_id": "3906999888" }],
+                "messages": [{
+                  "from": "3906999888",
+                  "id": "wamid.STEP1",
+                  "timestamp": "1729881000",
+                  "text": { "body": "Hello, do you support international shipping?" },
+                  "type": "text"
+                }]
+              },
+              "field": "messages"
+            }]
+          }]
+        }
+        """;
+
+        var parsed1 = waAdapter.ParseInboundWebhook(tenantId, payload1);
+        var ingest1 = await ingressService.IngestAsync(inboxId, parsed1!);
+        ingest1.IsSuccess.Should().BeTrue();
+
+        var conv1 = await db.Conversations.FirstOrDefaultAsync(c => c.TenantId == tenantId);
+        conv1.Should().NotBeNull();
+
+        // Agent resolves conv1
+        var statusHandler = new ChangeStatusHandler(db);
+        var resolveRes = await statusHandler.HandleAsync(new ChangeStatusRequest(tenantId, conv1!.Id, ConversationStatus.Resolved));
+        resolveRes.IsSuccess.Should().BeTrue();
+
+        // 2. Customer follows up with a new message after resolution
+        var payload2 = """
+        {
+          "object": "whatsapp_business_account",
+          "entry": [{
+            "id": "ACCOUNT_123",
+            "changes": [{
+              "value": {
+                "messaging_product": "whatsapp",
+                "contacts": [{ "profile": { "name": "Julius Caesar" }, "wa_id": "3906999888" }],
+                "messages": [{
+                  "from": "3906999888",
+                  "id": "wamid.STEP2",
+                  "timestamp": "1729882000",
+                  "text": { "body": "Also, can I pay via cash on delivery in Rome?" },
+                  "type": "text"
+                }]
+              },
+              "field": "messages"
+            }]
+          }]
+        }
+        """;
+
+        var parsed2 = waAdapter.ParseInboundWebhook(tenantId, payload2);
+        var ingest2 = await ingressService.IngestAsync(inboxId, parsed2!);
+        ingest2.IsSuccess.Should().BeTrue();
+
+        // 3. Verify that a new Open conversation was created
+        var allConversations = await db.Conversations
+            .Where(c => c.TenantId == tenantId)
+            .OrderBy(c => c.CreatedAtUtc)
+            .ToListAsync();
+
+        allConversations.Should().HaveCount(2);
+        allConversations[0].Id.Should().Be(conv1.Id);
+        allConversations[0].Status.Should().Be(ConversationStatus.Resolved);
+
+        allConversations[1].Id.Should().NotBe(conv1.Id);
+        allConversations[1].Status.Should().Be(ConversationStatus.Open);
+        allConversations[1].ContactId.Should().Be(allConversations[0].ContactId);
+    }
 }

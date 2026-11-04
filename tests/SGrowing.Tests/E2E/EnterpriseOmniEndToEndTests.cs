@@ -250,4 +250,63 @@ public class EnterpriseOmniEndToEndTests
         timeline.Conversations.Should().HaveCount(2); // conv + staleConv
         timeline.Deals.Should().HaveCount(2);         // existing deal + won deal from checkout
     }
+
+    [Fact]
+    public async Task MasterEnterpriseLifecycle_CrossTenantIsolation_PreventsUnauthorizedAccessAndTampering()
+    {
+        var db = CreateDbContext();
+        var notifier = new Mock<IRealtimeNotifier>();
+        var identityResolver = new IdentityResolverService(db);
+        var checkoutService = new CheckoutLinkService(db, notifier.Object);
+        var slaService = new SlaMonitoringService(db, notifier.Object);
+
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        // 1. Create Contact & Conversation in Tenant A
+        var contactRes = await identityResolver.ResolveOrCreateContactAsync(
+            tenantA,
+            email: "alice@tenanta.com",
+            phone: "+15551112233",
+            firstName: "Alice",
+            lastName: "Smith"
+        );
+        contactRes.IsSuccess.Should().BeTrue();
+        var contactA = contactRes.Value;
+
+        var convA = Conversation.Create(tenantA, Guid.NewGuid(), contactA.Id);
+        db.Conversations.Add(convA);
+
+        // 2. Create Active Checkout Link in Tenant A
+        var checkoutRes = await checkoutService.CreateCheckoutLinkAsync(
+            tenantA,
+            contactA.Id,
+            convA.Id,
+            "Tenant A Product",
+            200m,
+            "USD"
+        );
+        checkoutRes.IsSuccess.Should().BeTrue();
+        var linkA = checkoutRes.Value;
+
+        await db.SaveChangesAsync();
+
+        // 3. Tenant B attempts to mark Tenant A's checkout link as paid -> fails!
+        var hackPay = await checkoutService.MarkPaidAsync(tenantB, linkA.Id);
+        hackPay.IsSuccess.Should().BeFalse();
+        hackPay.Error.Should().Contain("not found");
+
+        // Verify linkA remains Active
+        var freshLink = await db.CheckoutLinks.FindAsync(linkA.Id);
+        freshLink!.Status.Should().Be(CheckoutStatus.Active);
+
+        // 4. Tenant B attempts to query Tenant A's customer timeline -> fails!
+        var timelineHack = await identityResolver.GetUnifiedCustomerTimelineAsync(tenantB, contactA.Id);
+        timelineHack.IsSuccess.Should().BeFalse();
+        timelineHack.Error.Should().Be("Contact not found.");
+
+        // 5. Tenant B running SLA checks does not affect Tenant A
+        var breachedB = await slaService.EvaluateSlaBreachesAsync(tenantB);
+        breachedB.Should().Be(0);
+    }
 }

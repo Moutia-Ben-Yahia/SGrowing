@@ -162,4 +162,32 @@ public class EnterpriseHorizonTests
         var closedDeal = await verifyDb.Deals.FindAsync(deal.Id);
         Assert.Equal(DealStage.Won, closedDeal!.Stage);
     }
+
+    [Fact]
+    public async Task MasterEnterpriseE2E_FaultInjection_ValidatesTamperedSignaturesAndInvalidContractTokens()
+    {
+        var tenantId = Guid.NewGuid();
+
+        // 1. Webhook Signature Tamper Verification
+        var appSecret = "secret_key_live_99";
+        var validPayload = "{\"event\":\"invoice.payment_failed\"}";
+        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(appSecret));
+        var validSig = "sha256=" + Convert.ToHexString(hmac.ComputeHash(Encoding.UTF8.GetBytes(validPayload))).ToLowerInvariant();
+
+        // Valid signature passes
+        Assert.True(WebhookSignatureValidator.VerifyMetaSignature(validPayload, appSecret, validSig));
+
+        // Tampered signature fails
+        var tamperedSig = validSig.Substring(0, validSig.Length - 4) + "beef";
+        Assert.False(WebhookSignatureValidator.VerifyMetaSignature(validPayload, appSecret, tamperedSig));
+
+        // Tampered payload fails
+        var tamperedPayload = "{\"event\":\"invoice.payment_succeeded\"}";
+        Assert.False(WebhookSignatureValidator.VerifyMetaSignature(tamperedPayload, appSecret, validSig));
+
+        // 2. Contract Signing Invalid Token Rejection
+        var contractService = new ContractSigningService(_db, NullLogger<ContractSigningService>.Instance);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            contractService.CompleteSigningAsync("nonexistent_tampered_token_999", "Intruder"));
+    }
 }
