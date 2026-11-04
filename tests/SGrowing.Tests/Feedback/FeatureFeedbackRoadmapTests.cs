@@ -156,4 +156,29 @@ public class FeatureFeedbackRoadmapTests
         Assert.Equal("Under Review Feature", board.OpenIdeas[0].Title);
         Assert.Equal(FeedbackStatus.UnderReview, board.OpenIdeas[0].Status);
     }
+
+    [Fact]
+    public async Task GetRoadmapBoard_WhenPostIsClosed_ExcludesFromAllActiveColumns()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var post = await _service.CreatePostAsync(tenantId, "Deprecated Feature", "Will not do", category: "Core", authorEmail: "product@corp.com");
+        
+        // Act - Mark closed
+        await _service.UpdatePostStatusAsync(tenantId, post.Id, FeedbackStatus.Closed);
+        var board = await _service.GetRoadmapBoardAsync(tenantId);
+
+        // Assert - Closed posts must not appear in any active board lane
+        Assert.Empty(board.OpenIdeas);
+        Assert.Empty(board.PlannedFeatures);
+        Assert.Empty(board.InProgressFeatures);
+        Assert.Empty(board.CompletedFeatures);
+
+        _outboxMock.Verify(o => o.EnqueueAsync(
+            tenantId,
+            "Feedback.StatusChanged",
+            It.IsAny<object>(),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
 }

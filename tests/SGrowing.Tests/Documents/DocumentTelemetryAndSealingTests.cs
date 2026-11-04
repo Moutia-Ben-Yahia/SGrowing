@@ -257,4 +257,28 @@ public class DocumentTelemetryAndSealingTests
         // Changing bytes inside covered range DOES alter the hash
         Assert.NotEqual(hashA, hashC);
     }
+
+    [Fact]
+    public async Task RecordPageDwellTime_WhenViewerIpAndEmailOmitted_AppliesSanitizationDefaults()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var documentId = Guid.NewGuid();
+
+        // Act - Call with empty string IP and null email
+        var record = await _sealingService.RecordPageDwellTimeAsync(
+            tenantId,
+            documentId,
+            pageNumber: 1,
+            secondsDwell: 0.2, // Clamps to minimum 1 second
+            viewerIp: "",
+            viewerEmail: null
+        );
+
+        // Assert
+        Assert.NotNull(record);
+        Assert.Equal("127.0.0.1", record.ViewerIp);
+        Assert.Equal("viewer-127-0-0-1@secure-view.sgrowing.io", record.ViewerEmail);
+        Assert.Equal(1, record.DwellTimeSeconds);
+    }
 }

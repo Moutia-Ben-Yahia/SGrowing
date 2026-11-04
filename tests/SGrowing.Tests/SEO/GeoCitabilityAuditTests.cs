@@ -187,4 +187,18 @@ public class GeoCitabilityAuditTests
         latest.Should().NotBeNull();
         latest!.Id.Should().Be(report.Id);
     }
+
+    [Fact]
+    public async Task UpdateKeywordRankAsync_WhenKeywordNotFound_ThrowsInvalidOperationException()
+    {
+        using var db = CreateDbContext();
+        var service = new SeoAuditService(db);
+        var tenantId = Guid.NewGuid();
+        var unknownKeywordId = Guid.NewGuid();
+
+        var act = () => service.UpdateKeywordRankAsync(tenantId, unknownKeywordId, newRank: 1);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage($"Tracked keyword {unknownKeywordId} not found for tenant {tenantId}.");
+    }
 }

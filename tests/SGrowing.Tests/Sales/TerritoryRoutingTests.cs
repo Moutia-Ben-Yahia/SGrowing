@@ -96,4 +96,19 @@ public class TerritoryRoutingTests
         Assert.Throws<KeyNotFoundException>(() =>
             _engine.AssignAccountToOptimalRep(new AssignAccountRequest("acc_nonexistent_999")));
     }
+
+    [Fact]
+    public void IngestSurgeSignal_WhenSurgePushesScoreBeyond100_ClampsScoreTo100()
+    {
+        // acc_stripe starts at 96.0; adding weight 15.0 exceeds 100.0
+        var updated = _engine.IngestSurgeSignal(new IngestSurgeEventRequest(
+            Domain: "stripe.com",
+            SignalSource: "PricingPageSurge",
+            IntentWeight: 15.0,
+            TopicKey: "enterprise-licensing"
+        ));
+
+        Assert.NotNull(updated);
+        Assert.Equal(100.0, updated.IntentSurgeScore);
+    }
 }
