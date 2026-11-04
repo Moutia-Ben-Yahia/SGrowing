@@ -223,4 +223,119 @@ public class FirmographicsTests
         retrieved!.CompanyName.Should().Be("Acme Corp (Custom Enterprise Tier)");
         retrieved.EmployeeCount.Should().Be(3000);
     }
+
+    [Fact]
+    public void DeanonymizeIp_NullOrEmptyIp_ReturnsInvalidFormatResult()
+    {
+        var requestEmpty = new DeanonymizeIpRequest(
+            TenantId: "tenant_growth_09",
+            IpAddress: "",
+            VisitedPage: "/pricing"
+        );
+        var requestInvalid = new DeanonymizeIpRequest(
+            TenantId: "tenant_growth_09",
+            IpAddress: "999.999.999.999",
+            VisitedPage: "/pricing"
+        );
+
+        var resultEmpty = _engine.DeanonymizeIp(requestEmpty);
+        var resultInvalid = _engine.DeanonymizeIp(requestInvalid);
+
+        resultEmpty.MatchFound.Should().BeFalse();
+        resultEmpty.AlertDetails.Should().Contain("Invalid or missing IP address format");
+        resultInvalid.MatchFound.Should().BeFalse();
+        resultInvalid.AlertDetails.Should().Contain("Invalid or missing IP address format");
+    }
+
+    [Fact]
+    public void DeanonymizeIp_EnterpriseOnNonHighIntentPage_DoesNotTriggerHighIntentAlert()
+    {
+        // Acme Corp visiting a documentation/blog page
+        var request = new DeanonymizeIpRequest(
+            TenantId: "tenant_growth_10",
+            IpAddress: "198.51.100.25", // Acme Corp seeded IP
+            VisitedPage: "/blog/scale-architecture"
+        );
+
+        var result = _engine.DeanonymizeIp(request);
+
+        result.MatchFound.Should().BeTrue();
+        result.IcpFit.Should().NotBeNull();
+        result.IcpFit!.FitTier.Should().Be("Tier_A");
+        result.TriggeredSalesAlert.Should().BeFalse(); // Not high intent page
+        result.AlertDetails.Should().Contain("Standard nurturing assigned");
+    }
+
+    [Fact]
+    public void DeanonymizeIp_MegacorpEnterpriseFinance_AchievesTierAWithComposite100()
+    {
+        // Megacorp: Finance, 45000 employees, $5B+
+        var request = new DeanonymizeIpRequest(
+            TenantId: "tenant_growth_11",
+            IpAddress: "12.145.20.50",
+            VisitedPage: "/checkout"
+        );
+
+        var result = _engine.DeanonymizeIp(request);
+
+        result.MatchFound.Should().BeTrue();
+        result.Company.Should().NotBeNull();
+        result.Company!.CompanyName.Should().Be("Megacorp");
+        result.IcpFit.Should().NotBeNull();
+        result.IcpFit!.CompositeScore.Should().Be(100);
+        result.IcpFit.FitTier.Should().Be("Tier_A");
+        result.TriggeredSalesAlert.Should().BeTrue();
+        result.AlertDetails.Should().Contain("[HIGH INTENT SALES ALERT]");
+    }
+
+    [Fact]
+    public void DeanonymizeIp_TenantCustomIpRange_MatchesCustomTenantCompany()
+    {
+        var tenantId = "tenant_custom_subnet_12";
+        var customCompany = new FirmographicCompanyProfile(
+            Domain: "biovance.eu",
+            CompanyName: "Biovance Pharma",
+            Industry: "Healthcare",
+            EmployeeCount: 8200,
+            RevenueRange: "$500M - $1B",
+            HeadquartersCity: "Basel",
+            HeadquartersCountry: "Switzerland",
+            TechStack: new List<string> { "Kubernetes", "Kafka", "PostgreSQL" }
+        );
+
+        _engine.RegisterCompanyProfile(tenantId, customCompany, new List<string> { "185.120.44.0/24" });
+
+        var request = new DeanonymizeIpRequest(
+            TenantId: tenantId,
+            IpAddress: "185.120.44.15",
+            VisitedPage: "/demo"
+        );
+
+        var result = _engine.DeanonymizeIp(request);
+
+        result.MatchFound.Should().BeTrue();
+        result.Company.Should().NotBeNull();
+        result.Company!.CompanyName.Should().Be("Biovance Pharma");
+        result.Company.Domain.Should().Be("biovance.eu");
+        result.TriggeredSalesAlert.Should().BeTrue();
+    }
+
+    [Fact]
+    public void RegisterTenantIcpRules_NullRules_ResetsToEmptyListSafely()
+    {
+        var tenantId = "tenant_growth_13";
+        _engine.RegisterTenantIcpRules(tenantId, null!);
+
+        // Should fall back to default ICP rules safely without throwing
+        var request = new DeanonymizeIpRequest(
+            TenantId: tenantId,
+            IpAddress: "198.51.100.25",
+            VisitedPage: "/pricing"
+        );
+
+        var result = _engine.DeanonymizeIp(request);
+        result.MatchFound.Should().BeTrue();
+        result.IcpFit.Should().NotBeNull();
+        result.IcpFit!.FitTier.Should().Be("Tier_A");
+    }
 }

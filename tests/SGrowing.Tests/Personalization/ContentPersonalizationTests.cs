@@ -122,4 +122,95 @@ public class ContentPersonalizationTests
         receipt.AttributedValueUsd.Should().Be(50000m);
         receipt.ConversionType.Should().Be("DemoScheduled");
     }
+
+    [Fact]
+    public void EvaluatePagePersonalization_WithNullDomain_FallsBackToEnterpriseVisitorsText()
+    {
+        var request = new EvaluatePersonalizationRequest(
+            VisitorIp: "10.10.10.1",
+            VisitorDomain: null,
+            Industry: "Financial Services",
+            EstimatedEmployees: 2500,
+            IntentKeywords: new[] { "SOC2", "Audit" },
+            RequestedUrl: "/enterprise"
+        );
+
+        var result = _engine.EvaluatePagePersonalization(request);
+
+        result.Should().NotBeNull();
+        result.TailoredSubheadline.Should().Contain("enterprise visitors");
+        result.CallToActionUrl.Should().Be($"/get-started?segment=SEG-ENT-01&ip=10.10.10.1");
+    }
+
+    [Fact]
+    public void EvaluatePagePersonalization_TechnologySegment_SelectsSaaSProofLogosAndScaleHero()
+    {
+        var request = new EvaluatePersonalizationRequest(
+            VisitorIp: "192.168.1.50",
+            VisitorDomain: "fastsaas.io",
+            Industry: "Technology",
+            EstimatedEmployees: 400,
+            IntentKeywords: new[] { "API", "Developer" },
+            RequestedUrl: "/pricing"
+        );
+
+        var result = _engine.EvaluatePagePersonalization(request);
+
+        result.Should().NotBeNull();
+        result.MatchedSegmentId.Should().Be("SEG-SAS-03");
+        result.TailoredHeroHeadline.Should().Contain("Scale from Seed to $100M ARR");
+        result.TailoredCustomerProofLogos.Should().Contain(new[] { "Linear", "Vercel", "Datadog", "Ramp" });
+    }
+
+    [Fact]
+    public void EvaluatePagePersonalization_Boundary500Employees_AssignsGrowthScaleTier()
+    {
+        var request = new EvaluatePersonalizationRequest(
+            VisitorIp: "172.16.0.10",
+            VisitorDomain: "midmarket.org",
+            Industry: "Healthcare",
+            EstimatedEmployees: 500, // Exactly 500 -> Growth Scale Tier (rule: > 500 is Enterprise)
+            IntentKeywords: new[] { "Health" },
+            RequestedUrl: "/solutions/healthcare"
+        );
+
+        var result = _engine.EvaluatePagePersonalization(request);
+
+        result.Should().NotBeNull();
+        result.TailoredPricingTier.Should().Be("Growth Scale Tier");
+    }
+
+    [Fact]
+    public void EvaluatePagePersonalization_Boundary501Employees_AssignsEnterpriseSovereignCustomTier()
+    {
+        var request = new EvaluatePersonalizationRequest(
+            VisitorIp: "172.16.0.11",
+            VisitorDomain: "enterpriseplus.org",
+            Industry: "Healthcare",
+            EstimatedEmployees: 501, // 501 -> Enterprise Sovereign Custom
+            IntentKeywords: new[] { "Health" },
+            RequestedUrl: "/solutions/healthcare"
+        );
+
+        var result = _engine.EvaluatePagePersonalization(request);
+
+        result.Should().NotBeNull();
+        result.TailoredPricingTier.Should().Be("Enterprise Sovereign Custom");
+    }
+
+    [Fact]
+    public void RecordConversion_MultipleConversions_TracksDistinctReceiptsAndPreservesAttributedValues()
+    {
+        var req1 = new RecordConversionRequest("DEC-A1", "RULE-SAS-03", "TrialStarted", 1200m);
+        var req2 = new RecordConversionRequest("DEC-B2", "RULE-HLT-02", "ContractSigned", 180000m);
+
+        var receipt1 = _engine.RecordConversion(req1);
+        var receipt2 = _engine.RecordConversion(req2);
+
+        receipt1.ReceiptId.Should().NotBe(receipt2.ReceiptId);
+        receipt1.AttributedValueUsd.Should().Be(1200m);
+        receipt2.AttributedValueUsd.Should().Be(180000m);
+        receipt1.ConversionType.Should().Be("TrialStarted");
+        receipt2.ConversionType.Should().Be("ContractSigned");
+    }
 }
