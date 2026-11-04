@@ -164,4 +164,44 @@ public class DocumentTrackingAndSigningTests
         var validAccess = await _service.VerifyPasscodeAsync(tenantId, envelope.Id, "ALPHA99");
         Assert.True(validAccess);
     }
+
+    [Fact]
+    public async Task SubmitSignatureAsync_UnassignedSigner_ThrowsInvalidOperationException()
+    {
+        var tenantId = Guid.NewGuid();
+        var envelope = await _service.CreateEnvelopeAsync(tenantId, "NDA Agreement", "https://cdn.sgrowing.io/nda.pdf", "NDA Terms");
+        await _service.AddSignerAsync(tenantId, envelope.Id, "Legit Signer", "legit@corp.com", SignerRole.Signer, 1);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _service.SubmitSignatureAsync(tenantId, envelope.Id, "intruder@hacker.io", "sig", "1.1.1.1"));
+
+        Assert.Contains("not assigned to this envelope", ex.Message);
+    }
+
+    [Fact]
+    public async Task SubmitSignatureAsync_AlreadySignedSigner_ThrowsInvalidOperationException()
+    {
+        var tenantId = Guid.NewGuid();
+        var envelope = await _service.CreateEnvelopeAsync(tenantId, "Partnership Agreement", "https://cdn.sgrowing.io/partner.pdf", "Partnership Terms");
+        await _service.AddSignerAsync(tenantId, envelope.Id, "Partner Lead", "lead@partner.com", SignerRole.Signer, 1);
+
+        // Sign once
+        await _service.SubmitSignatureAsync(tenantId, envelope.Id, "lead@partner.com", "sig1", "127.0.0.1");
+
+        // Attempt to sign second time
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            _service.SubmitSignatureAsync(tenantId, envelope.Id, "lead@partner.com", "sig2", "127.0.0.1"));
+
+        Assert.Contains("already completed their signature", ex.Message);
+    }
+
+    [Fact]
+    public async Task AddSignerAsync_NonExistentEnvelope_ThrowsKeyNotFoundException()
+    {
+        var tenantId = Guid.NewGuid();
+        var missingEnvelopeId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _service.AddSignerAsync(tenantId, missingEnvelopeId, "Ghost", "ghost@corp.com", SignerRole.Signer, 1));
+    }
 }

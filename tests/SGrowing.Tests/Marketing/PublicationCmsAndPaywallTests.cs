@@ -153,4 +153,56 @@ public class PublicationCmsAndPaywallTests
             It.IsAny<object>(),
             It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task PublishArticleAsync_WhenNotFound_ThrowsKeyNotFoundException()
+    {
+        var tenantId = Guid.NewGuid();
+        var nonExistentId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            _service.PublishArticleAsync(tenantId, nonExistentId));
+    }
+
+    [Fact]
+    public async Task RenderArticleForReaderAsync_IncrementsViewCountOnEachAccess()
+    {
+        var tenantId = Guid.NewGuid();
+        var article = await _service.CreateArticleAsync(tenantId, "Analytics Playbook", "analytics-playbook", "Summary", "<p>Content</p>");
+        await _service.PublishArticleAsync(tenantId, article.Id);
+
+        var view1 = await _service.RenderArticleForReaderAsync(tenantId, "analytics-playbook", isReaderMember: true);
+        var view2 = await _service.RenderArticleForReaderAsync(tenantId, "analytics-playbook", isReaderMember: true);
+
+        Assert.NotNull(view1);
+        Assert.NotNull(view2);
+        Assert.Equal(1, view1.ViewCount);
+        Assert.Equal(2, view2.ViewCount);
+    }
+
+    [Fact]
+    public async Task GetArticlesAsync_FiltersByStatusAndTenantId()
+    {
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        var draftA = await _service.CreateArticleAsync(tenantA, "Draft A", "draft-a", "Exc", "<p>Draft</p>");
+        var pubA = await _service.CreateArticleAsync(tenantA, "Published A", "pub-a", "Exc", "<p>Pub</p>");
+        await _service.PublishArticleAsync(tenantA, pubA.Id);
+
+        var draftB = await _service.CreateArticleAsync(tenantB, "Draft B", "draft-b", "Exc", "<p>Draft B</p>");
+
+        var tenantADrafts = await _service.GetArticlesAsync(tenantA, PublicationArticleStatus.Draft);
+        var tenantAPublished = await _service.GetArticlesAsync(tenantA, PublicationArticleStatus.Published);
+        var tenantBDrafts = await _service.GetArticlesAsync(tenantB, PublicationArticleStatus.Draft);
+
+        Assert.Single(tenantADrafts);
+        Assert.Equal(draftA.Id, tenantADrafts[0].Id);
+
+        Assert.Single(tenantAPublished);
+        Assert.Equal(pubA.Id, tenantAPublished[0].Id);
+
+        Assert.Single(tenantBDrafts);
+        Assert.Equal(draftB.Id, tenantBDrafts[0].Id);
+    }
 }

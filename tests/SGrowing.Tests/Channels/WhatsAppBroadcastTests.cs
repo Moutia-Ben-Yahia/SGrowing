@@ -160,4 +160,104 @@ public class WhatsAppBroadcastTests
         res.Value.RecipientsMatched.Should().Be(1);
         res.Value.SentCount.Should().Be(1);
     }
+
+    [Fact]
+    public async Task DispatchBroadcast_ZeroMatchingContacts_ReturnsSuccessWithZeroSent()
+    {
+        var db = CreateDbContext();
+        var outbox = new OutboxService(db);
+        var service = new BroadcastDispatcherService(db, outbox);
+        var tenantId = Guid.NewGuid();
+
+        var template = WhatsAppTemplate.Create(
+            tenantId,
+            "zero_audience_template",
+            WhatsAppTemplateCategory.Marketing,
+            "Hello {{1}}"
+        );
+        db.WhatsAppTemplates.Add(template);
+
+        var campaign = BroadcastCampaign.Create(tenantId, "Empty Audience Campaign", template.Id, "nonexistent_tag");
+        db.BroadcastCampaigns.Add(campaign);
+        await db.SaveChangesAsync();
+
+        var res = await service.DispatchBroadcastAsync(tenantId, campaign.Id);
+
+        res.IsSuccess.Should().BeTrue();
+        res.Value.RecipientsMatched.Should().Be(0);
+        res.Value.SentCount.Should().Be(0);
+
+        var updated = await db.BroadcastCampaigns.FindAsync(campaign.Id);
+        updated!.Status.Should().Be(BroadcastStatus.Completed);
+        updated.SentCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task DispatchBroadcast_TenantIsolation_ExcludesContactsFromOtherTenants()
+    {
+        var db = CreateDbContext();
+        var outbox = new OutboxService(db);
+        var service = new BroadcastDispatcherService(db, outbox);
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        var templateA = WhatsAppTemplate.Create(tenantA, "template_a", WhatsAppTemplateCategory.Marketing, "Hello {{1}}");
+        db.WhatsAppTemplates.Add(templateA);
+
+        var contactA = Contact.Create(tenantA, "Contact", "A", "a@corp.com", "+12025550101");
+        contactA.Tags.Add("target");
+
+        // Contact B has same tag but belongs to Tenant B
+        var contactB = Contact.Create(tenantB, "Contact", "B", "b@corp.com", "+12025550102");
+        contactB.Tags.Add("target");
+
+        db.Contacts.AddRange(contactA, contactB);
+
+        var campaignA = BroadcastCampaign.Create(tenantA, "Campaign A", templateA.Id, "target");
+        db.BroadcastCampaigns.Add(campaignA);
+        await db.SaveChangesAsync();
+
+        var res = await service.DispatchBroadcastAsync(tenantA, campaignA.Id);
+
+        res.IsSuccess.Should().BeTrue();
+        res.Value.RecipientsMatched.Should().Be(1);
+        res.Value.SentCount.Should().Be(1);
+
+        var outboxMessages = await db.OutboxMessages.Where(m => m.TenantId == tenantA).ToListAsync();
+        outboxMessages.Should().ContainSingle();
+        outboxMessages[0].Payload.Should().Contain("12025550101");
+        outboxMessages[0].Payload.Should().NotContain("12025550102");
+    }
+
+    [Fact]
+    public async Task DispatchBroadcast_RendersFirstAndLastNamesInTemplate()
+    {
+        var db = CreateDbContext();
+        var outbox = new OutboxService(db);
+        var service = new BroadcastDispatcherService(db, outbox);
+        var tenantId = Guid.NewGuid();
+
+        var template = WhatsAppTemplate.Create(
+            tenantId,
+            "personalized_greeting",
+            WhatsAppTemplateCategory.Utility,
+            "Dear {{1}} {{2}}, your invoice is ready."
+        );
+        db.WhatsAppTemplates.Add(template);
+
+        var contact = Contact.Create(tenantId, "Tony", "Stark", "tony@stark.com", "+12025550199");
+        contact.Tags.Add("invoicing");
+        db.Contacts.Add(contact);
+
+        var campaign = BroadcastCampaign.Create(tenantId, "Billing Notice", template.Id, "invoicing");
+        db.BroadcastCampaigns.Add(campaign);
+        await db.SaveChangesAsync();
+
+        var res = await service.DispatchBroadcastAsync(tenantId, campaign.Id);
+
+        res.IsSuccess.Should().BeTrue();
+        var msg = await db.OutboxMessages.FirstOrDefaultAsync(m => m.TenantId == tenantId);
+        msg.Should().NotBeNull();
+        msg!.Payload.Should().Contain("Dear Tony Stark, your invoice is ready.");
+    }
 }

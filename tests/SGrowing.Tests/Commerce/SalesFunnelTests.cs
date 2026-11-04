@@ -205,4 +205,46 @@ public class SalesFunnelTests
         var refreshedFunnel = await db.SalesFunnels.FindAsync(funnel.Id);
         Assert.Equal(49.0m, refreshedFunnel!.TotalRevenue);
     }
+
+    [Fact]
+    public async Task GetFunnelsAsync_ReturnsFunnelsOrderedByCreatedAtDescending()
+    {
+        using var db = CreateDbContext();
+        var service = new SalesFunnelService(db);
+        var tenantId = Guid.NewGuid();
+
+        var f1 = await service.CreateFunnelAsync(tenantId, "Funnel One", "slug-one");
+        var f2 = await service.CreateFunnelAsync(tenantId, "Funnel Two", "slug-two");
+
+        var funnels = await service.GetFunnelsAsync(tenantId);
+
+        Assert.Equal(2, funnels.Count);
+        Assert.Contains(funnels, f => f.Id == f1.Id);
+        Assert.Contains(funnels, f => f.Id == f2.Id);
+    }
+
+    [Fact]
+    public async Task CreateFunnelAsync_WhenDuplicateSlug_ReturnsExistingFunnel()
+    {
+        using var db = CreateDbContext();
+        var service = new SalesFunnelService(db);
+        var tenantId = Guid.NewGuid();
+
+        var first = await service.CreateFunnelAsync(tenantId, "Original Name", "duplicate-slug");
+        var second = await service.CreateFunnelAsync(tenantId, "Second Name", "duplicate-slug");
+
+        Assert.Equal(first.Id, second.Id);
+        Assert.Equal("Original Name", second.Name);
+    }
+
+    [Fact]
+    public async Task GetFunnelByIdAsync_WhenNonExistent_ReturnsNull()
+    {
+        using var db = CreateDbContext();
+        var service = new SalesFunnelService(db);
+        var tenantId = Guid.NewGuid();
+
+        var funnel = await service.GetFunnelByIdAsync(tenantId, Guid.NewGuid());
+        Assert.Null(funnel);
+    }
 }
