@@ -56,4 +56,61 @@ public class SpeechStreamingMeshTests
         receipt.Status.Should().Be("AUDIO_PLAYBACK_DAMPENED_INSTANT");
         receipt.CutoffLatencyMs.Should().BeLessThan(50.0);
     }
+
+    [Fact]
+    public void ProcessAudioChunk_IncrementsSessionFramesProcessed()
+    {
+        var sessionBefore = _engine.GetOverview().ActiveSessions.First(s => s.SessionId == "S2S-STREAM-902");
+        var initialFrames = sessionBefore.FramesProcessed;
+
+        var request = new ProcessAudioChunkRequest(
+            "S2S-STREAM-902",
+            "T1BVUzQ4a0JBU0U2NENIVU5LRk9STUFUPT0=",
+            201,
+            false
+        );
+
+        var result = _engine.ProcessAudioChunk(request);
+
+        result.Should().NotBeNull();
+        result.SessionId.Should().Be("S2S-STREAM-902");
+
+        var sessionAfter = _engine.GetOverview().ActiveSessions.First(s => s.SessionId == "S2S-STREAM-902");
+        sessionAfter.FramesProcessed.Should().Be(initialFrames + 1);
+    }
+
+    [Fact]
+    public void ProcessAudioChunk_UnknownSession_FallsBackToFirstSession()
+    {
+        var request = new ProcessAudioChunkRequest(
+            "SESSION-NONEXISTENT-777",
+            "T1BVUzQ4a0JBU0U2NENIVU5LRk9STUFUPT0=",
+            1,
+            true
+        );
+
+        var result = _engine.ProcessAudioChunk(request);
+
+        result.Should().NotBeNull();
+        result.SessionId.Should().NotBeNullOrEmpty();
+        result.SynthesizedAudioChunkBase64.Should().NotBeNullOrEmpty();
+        result.EmotionTone.Should().Be("CONFIDENT_COLLABORATIVE");
+    }
+
+    [Fact]
+    public void TriggerBargeIn_MultipleInvocations_RecordsReceiptsWithCorrectStatusAndCutoff()
+    {
+        var req1 = new TriggerBargeInRequest("S2S-STREAM-901", -22.0, "00:00:15.100");
+        var req2 = new TriggerBargeInRequest("S2S-STREAM-902", -19.5, "00:00:28.350");
+
+        var receipt1 = _engine.TriggerBargeIn(req1);
+        var receipt2 = _engine.TriggerBargeIn(req2);
+
+        receipt1.SessionId.Should().Be("S2S-STREAM-901");
+        receipt2.SessionId.Should().Be("S2S-STREAM-902");
+        receipt1.Status.Should().Be("AUDIO_PLAYBACK_DAMPENED_INSTANT");
+        receipt2.Status.Should().Be("AUDIO_PLAYBACK_DAMPENED_INSTANT");
+        receipt1.CutoffLatencyMs.Should().Be(38.5);
+        receipt2.CutoffLatencyMs.Should().Be(38.5);
+    }
 }

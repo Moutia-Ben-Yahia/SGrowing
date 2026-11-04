@@ -53,4 +53,69 @@ public class DialectSynthesisTests
         Assert.Contains("nae bother", utterance.DialectAdaptedText);
         Assert.True(utterance.SynthesisLatencyMs <= 45); // Sub-45ms real-time target
     }
+
+    [Fact]
+    public void GetProfile_KnownAndUnknownCodes_ReturnsExpected()
+    {
+        var aus = _engine.GetProfile("EN-AU-SYDNEY");
+        Assert.NotNull(aus);
+        Assert.Equal("Australian Colloquial", aus.DialectName);
+        Assert.Equal(15.0, aus.PitchBaselineOffsetHz);
+        Assert.Contains("g'day", aus.CharacteristicIdioms);
+
+        var unknown = _engine.GetProfile("NON_EXISTENT_CODE");
+        Assert.Null(unknown);
+    }
+
+    [Fact]
+    public void DetectDialect_StandardEnglish_ReturnsStandardProfile()
+    {
+        var request = new DetectDialectRequest(
+            CallId: "CALL-DIALECT-STD",
+            CallerRawTranscript: "Good morning, I would like to inquire about enterprise licensing options.",
+            DetectedPitchHz: 120.0,
+            DetectedCadenceRate: 1.0
+        );
+
+        var result = _engine.DetectDialect(request);
+
+        Assert.NotNull(result);
+        Assert.Equal("EN-US-STANDARD", result.DetectedDialectCode);
+        Assert.Equal(70, result.ConfidenceScore);
+        Assert.Empty(result.ExtractedVernacularTokens);
+    }
+
+    [Fact]
+    public void SynthesizeDialect_SouthernVernacular_ReplacesColloquialPhrases()
+    {
+        var request = new SynthesizeDialectRequest(
+            CallId: "CALL-DIALECT-003",
+            TargetDialectCode: "EN-US-SOUTH",
+            StandardResponseText: "hello, do you all think this enterprise model fits?"
+        );
+
+        var utterance = _engine.SynthesizeDialect(request);
+
+        Assert.NotNull(utterance);
+        Assert.Equal("howdy, do y'all reckon this enterprise model fits?", utterance.DialectAdaptedText);
+        Assert.Equal(-12.5, utterance.PitchModulationHz);
+        Assert.Equal(0.92, utterance.CadenceMultiplier);
+    }
+
+    [Fact]
+    public void SynthesizeDialect_UnknownDialect_PreservesOriginalTextWithDefaultAcoustics()
+    {
+        var request = new SynthesizeDialectRequest(
+            CallId: "CALL-DIALECT-004",
+            TargetDialectCode: "UNKNOWN-CODE",
+            StandardResponseText: "This text should remain unaltered."
+        );
+
+        var utterance = _engine.SynthesizeDialect(request);
+
+        Assert.NotNull(utterance);
+        Assert.Equal("This text should remain unaltered.", utterance.DialectAdaptedText);
+        Assert.Equal(0.0, utterance.PitchModulationHz);
+        Assert.Equal(1.0, utterance.CadenceMultiplier);
+    }
 }
