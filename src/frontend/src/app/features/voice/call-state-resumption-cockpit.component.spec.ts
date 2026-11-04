@@ -18,4 +18,14 @@ describe('CallStateResumptionCockpitComponent', () => {
     expect(comp.resumptions()[0].disconnectReason).toContain('SIP_BYE_UNEXPECTED');
     expect(comp.resumptions()[0].generatedAcousticGreeting).toContain('Helena');
   });
+
+  it('should enforce sub-5s reconnect latency and retain customer dialog context', () => {
+    const comp = new CallStateResumptionCockpitComponent();
+    expect(comp.resumptions().every(r => r.reconnectLatencySeconds < 5.0)).toBe(true);
+
+    const firstSnapshot = comp.snapshots()[0];
+    expect(firstSnapshot.turnCounter).toBe(14);
+    expect(firstSnapshot.currentContractPhase).toBe('COMMERCIAL_PROPOSAL_REVIEW');
+    expect(firstSnapshot.dialogGoalTopic).toBe('Security Architecture');
+  });
 });

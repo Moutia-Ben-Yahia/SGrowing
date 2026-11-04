@@ -18,4 +18,14 @@ describe('AgentAssistCockpitComponent', () => {
     expect(comp.battlecards().length).toBe(2);
     expect(comp.battlecards().some(b => b.competitor === 'Salesforce')).toBe(true);
   });
+
+  it('validates discovery talk-to-listen pacing and transcript turn sequence', () => {
+    const comp = new AgentAssistCockpitComponent();
+    expect(comp.repTalkPercentage()).toBeLessThan(55.0);
+    expect(100 - comp.repTalkPercentage()).toBeGreaterThan(55.0);
+
+    const speakers = comp.transcripts().map(t => t.speaker);
+    expect(speakers).toEqual(['Customer', 'Representative']);
+    expect(comp.transcripts()[1].timeSec).toBeGreaterThan(comp.transcripts()[0].timeSec);
+  });
 });

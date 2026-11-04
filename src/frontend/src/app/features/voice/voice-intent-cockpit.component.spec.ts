@@ -23,4 +23,16 @@ describe('VoiceIntentCockpitComponent', () => {
     expect(comp.predictions()[2].fastPathRouted).toBe(true);
     expect(comp.predictions()[2].dialectCode).toBe('EN-AU-SYDNEY');
   });
+
+  it('should verify sub-20ms inference latency and regional dialect acoustic normalization feature counts', () => {
+    const comp = new VoiceIntentCockpitComponent();
+    expect(comp.predictions().every(p => p.inferenceLatencyMs < 20.0)).toBe(true);
+    expect(comp.dialects().every(d => d.acousticFeatureCount === 128)).toBe(true);
+
+    const texasDialect = comp.dialects().find(d => d.dialectCode === 'EN-TX-AUSTIN');
+    expect(texasDialect?.fastPathThresholdCutoff).toBe(0.85);
+
+    const glasgowDialect = comp.dialects().find(d => d.dialectCode === 'EN-UK-GLASGOW');
+    expect(glasgowDialect?.fastPathThresholdCutoff).toBe(0.88);
+  });
 });

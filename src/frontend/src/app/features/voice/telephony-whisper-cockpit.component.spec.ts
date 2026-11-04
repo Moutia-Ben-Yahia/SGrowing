@@ -24,4 +24,16 @@ describe('TelephonyWhisperCockpitComponent', () => {
     expect(comp.takeoverCount()).toBe(1);
     expect(comp.sessions()[0].activeSupervisionMode).toBe('FULL_TAKEOVER');
   });
+
+  it('should verify clean compliance state and dual-channel prompt acknowledgement tracking', () => {
+    const comp = new TelephonyWhisperCockpitComponent();
+    expect(comp.sessions().every(s => s.complianceStatus === 'CLEAN')).toBe(true);
+
+    const acknowledgedWhispers = comp.whispers().filter(w => w.agentAcknowledged);
+    expect(acknowledgedWhispers.length).toBe(2);
+
+    const categories = comp.whispers().map(w => w.contextCategory);
+    expect(categories).toContain('TECH_SPEC');
+    expect(categories).toContain('PRICING_CONCESSION');
+  });
 });

@@ -21,4 +21,20 @@ describe('DialectSynthesisCockpitComponent', () => {
     expect(comp.activeUtterance()?.adaptedText).toContain('nae bother');
     expect(comp.activeUtterance()?.latencyMs).toBeLessThanOrEqual(45);
   });
+
+  it('should adapt to Singapore and US Southern vernacular with correct cultural idioms', () => {
+    const comp = new DialectSynthesisCockpitComponent();
+    const singlish = comp.profiles().find(p => p.code === 'EN-SG-SINGLISH');
+    expect(singlish).toBeDefined();
+
+    comp.selectProfile(singlish!);
+    comp.detectAndSynthesize();
+    expect(comp.activeUtterance()?.adaptedText).toContain('can lah');
+    expect(comp.activeUtterance()?.adaptedText).toContain('steady no issue lah');
+
+    const southern = comp.profiles().find(p => p.code === 'EN-US-SOUTH');
+    comp.selectProfile(southern!);
+    comp.detectAndSynthesize();
+    expect(comp.activeUtterance()?.adaptedText).toContain("y'all");
+  });
 });

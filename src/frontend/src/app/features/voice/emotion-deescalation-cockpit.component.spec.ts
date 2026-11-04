@@ -17,4 +17,16 @@ describe('EmotionDeescalationCockpitComponent', () => {
     expect(comp.escalations().length).toBe(2);
     expect(comp.escalations()[0].status).toBe('SUPERVISOR_ACCEPTED');
   });
+
+  it('should categorize live acoustic telemetry and high-stress frustration thresholds', () => {
+    const comp = new EmotionDeescalationCockpitComponent();
+    const calmCall = comp.calls().find(c => c.detectedEmotion === 'CALM_COLLABORATIVE');
+    expect(calmCall).toBeDefined();
+    expect(calmCall?.frustrationScore).toBeLessThan(0.3);
+    expect(calmCall?.speechVelocityWordsPerMin).toBeGreaterThan(120);
+
+    const initialEscalation = comp.escalations()[0];
+    expect(initialEscalation.peakFrustrationScore).toBeGreaterThan(0.9);
+    expect(initialEscalation.suggestedConcessionOffer).toContain('SLA credit');
+  });
 });
