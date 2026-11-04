@@ -150,4 +150,35 @@ public class OutboundWebhookDispatcherServiceTests
 
         dispatched.Should().Be(0);
     }
+
+    [Fact]
+    public async Task DispatchOutboundWebhooksAsync_MultipleSubscriptionsMatch_DispatchesToAll()
+    {
+        using var db = CreateDbContext();
+        var service = new OutboundWebhookDispatcherService(db);
+        var tenantId = Guid.NewGuid();
+
+        var sub1 = WebhookSubscription.Create(tenantId, "https://partner1.com/hook", "secret1", "invoice.paid");
+        var sub2 = WebhookSubscription.Create(tenantId, "https://partner2.com/hook", "secret2", "invoice.paid");
+        db.WebhookSubscriptions.AddRange(sub1, sub2);
+        await db.SaveChangesAsync();
+
+        var dispatched = await service.DispatchOutboundWebhooksAsync(tenantId, "invoice.paid", "{\"amount\":150.0}");
+
+        dispatched.Should().Be(2);
+        var logs = await db.WebhookDeliveryLogs.Where(l => l.EventType == "invoice.paid").ToListAsync();
+        logs.Count.Should().Be(2);
+    }
+
+    [Fact]
+    public void ComputeHmacSignature_DifferentSecretOrPayload_ProducesDistinctSignatures()
+    {
+        var sig1 = OutboundWebhookDispatcherService.ComputeHmacSignature("payload-A", "secret-1");
+        var sig2 = OutboundWebhookDispatcherService.ComputeHmacSignature("payload-A", "secret-2");
+        var sig3 = OutboundWebhookDispatcherService.ComputeHmacSignature("payload-B", "secret-1");
+
+        sig1.Should().NotBe(sig2);
+        sig1.Should().NotBe(sig3);
+        sig2.Should().NotBe(sig3);
+    }
 }

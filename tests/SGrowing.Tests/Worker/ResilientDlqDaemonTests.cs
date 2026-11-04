@@ -155,4 +155,45 @@ public class ResilientDlqDaemonTests
 
         processed.Should().Be(0);
     }
+
+    [Fact]
+    public async Task ProcessEligibleRetriesAsync_MultipleEligibleLogs_RetriesAllAndIncrementsCounters()
+    {
+        using var db = CreateDbContext();
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        var log1 = WorkflowDeadLetterLog.Create(tenantA, Guid.NewGuid(), Guid.NewGuid(), "node-1", "HttpAction", "{}", "Timeout");
+        log1.RetryCount = 0;
+        log1.FailedAtUtc = DateTime.UtcNow.AddMinutes(-5);
+
+        var log2 = WorkflowDeadLetterLog.Create(tenantB, Guid.NewGuid(), Guid.NewGuid(), "node-2", "EmailAction", "{}", "500 Internal Error");
+        log2.RetryCount = 1;
+        log2.FailedAtUtc = DateTime.UtcNow.AddMinutes(-10);
+
+        db.WorkflowDeadLetterLogs.AddRange(log1, log2);
+        await db.SaveChangesAsync();
+
+        var processed = await ResilientDlqDaemon.ProcessEligibleRetriesAsync(db);
+
+        processed.Should().Be(2);
+
+        var updated1 = await db.WorkflowDeadLetterLogs.FindAsync(log1.Id);
+        updated1!.RetryCount.Should().Be(1);
+
+        var updated2 = await db.WorkflowDeadLetterLogs.FindAsync(log2.Id);
+        updated2!.RetryCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task ProcessEligibleRetriesAsync_WhenCancellationTokenCancelled_ThrowsOperationCanceledException()
+    {
+        using var db = CreateDbContext();
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var act = async () => await ResilientDlqDaemon.ProcessEligibleRetriesAsync(db, cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
 }

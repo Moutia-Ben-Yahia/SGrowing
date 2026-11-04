@@ -282,4 +282,76 @@ public class RedisStreamConsumerDaemonTests
         count.Should().Be(1);
         mockBroker.Verify(b => b.AcknowledgeAsync("sgrowing:stream:outbox", "sgrowing-worker-group", "msg-005"), Times.Once);
     }
+
+    [Fact]
+    public async Task ProcessStreamBatchAsync_WhenSmsDispatcherFails_RecordsDeadLetterAndStillAcknowledges()
+    {
+        var mockSms = new Mock<ITwilioSmsDispatcher>();
+        mockSms
+            .Setup(s => s.SendSmsAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SmsDispatchResult(false, null, "Carrier network timeout"));
+
+        var (provider, _) = CreateServiceProvider(smsDispatcher: mockSms.Object);
+        var tenantId = Guid.NewGuid();
+        var payload = JsonSerializer.Serialize(new
+        {
+            recipientPhone = "+15559998888",
+            body = "SMS failure test"
+        });
+
+        var envelope = new StreamMessageEnvelope(
+            "msg-sms-fail",
+            "sgrowing:stream:outbox",
+            "SmsMessageSendRequested",
+            tenantId,
+            payload,
+            DateTime.UtcNow);
+
+        var mockBroker = new Mock<IRedisStreamBroker>();
+        mockBroker
+            .Setup(b => b.ReadGroupMessagesAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
+            .ReturnsAsync(new List<StreamMessageEnvelope> { envelope });
+
+        var mockLogger = new Mock<ILogger<RedisStreamConsumerDaemon>>();
+        var daemon = new RedisStreamConsumerDaemon(provider, mockLogger.Object);
+
+        var count = await daemon.ProcessStreamBatchAsync(mockBroker.Object);
+
+        count.Should().Be(1);
+
+        using (var db = GetDbContext(provider))
+        {
+            var dlq = await db.WorkflowDeadLetterLogs.FirstOrDefaultAsync(l => l.FailedNodeId == "msg-sms-fail");
+            dlq.Should().NotBeNull();
+            dlq!.TenantId.Should().Be(tenantId);
+            dlq.ErrorMessage.Should().Contain("Carrier network timeout");
+            dlq.FailedNodeType.Should().Be("SmsMessageSendRequested");
+        }
+
+        mockBroker.Verify(b => b.AcknowledgeAsync("sgrowing:stream:outbox", "sgrowing-worker-group", "msg-sms-fail"), Times.Once);
+    }
+
+    [Fact]
+    public async Task ProcessStreamBatchAsync_MultipleEnvelopesInBatch_ProcessesAndAcknowledgesAll()
+    {
+        var (provider, _) = CreateServiceProvider();
+        var tenantId = Guid.NewGuid();
+
+        var env1 = new StreamMessageEnvelope("msg-batch-1", "sgrowing:stream:outbox", "GenericEvent1", tenantId, "{}", DateTime.UtcNow);
+        var env2 = new StreamMessageEnvelope("msg-batch-2", "sgrowing:stream:outbox", "GenericEvent2", tenantId, "{}", DateTime.UtcNow);
+
+        var mockBroker = new Mock<IRedisStreamBroker>();
+        mockBroker
+            .Setup(b => b.ReadGroupMessagesAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
+            .ReturnsAsync(new List<StreamMessageEnvelope> { env1, env2 });
+
+        var mockLogger = new Mock<ILogger<RedisStreamConsumerDaemon>>();
+        var daemon = new RedisStreamConsumerDaemon(provider, mockLogger.Object);
+
+        var count = await daemon.ProcessStreamBatchAsync(mockBroker.Object);
+
+        count.Should().Be(2);
+        mockBroker.Verify(b => b.AcknowledgeAsync("sgrowing:stream:outbox", "sgrowing-worker-group", "msg-batch-1"), Times.Once);
+        mockBroker.Verify(b => b.AcknowledgeAsync("sgrowing:stream:outbox", "sgrowing-worker-group", "msg-batch-2"), Times.Once);
+    }
 }

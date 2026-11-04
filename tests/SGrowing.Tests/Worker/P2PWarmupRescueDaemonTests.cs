@@ -158,4 +158,60 @@ public class P2PWarmupRescueDaemonTests
 
         processed.Should().Be(20);
     }
+
+    [Fact]
+    public async Task ProcessWarmupAndRescueAsync_MultipleTenants_MaintainsTenantIdInWarmupRecords()
+    {
+        using var db = CreateDbContext();
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        var senderA = new SenderAccount
+        {
+            TenantId = tenantA,
+            Email = "repA@companyA.tn",
+            DisplayName = "Rep A",
+            IsActive = true,
+            WarmupEnabled = true,
+            DailyQuota = 50,
+            SentTodayCount = 2
+        };
+        var senderB = new SenderAccount
+        {
+            TenantId = tenantB,
+            Email = "repB@companyB.tn",
+            DisplayName = "Rep B",
+            IsActive = true,
+            WarmupEnabled = true,
+            DailyQuota = 50,
+            SentTodayCount = 5
+        };
+
+        db.SenderAccounts.AddRange(senderA, senderB);
+        await db.SaveChangesAsync();
+
+        var processed = await P2PWarmupRescueDaemon.ProcessWarmupAndRescueAsync(db);
+
+        processed.Should().Be(2);
+
+        var recordsA = await db.WarmupRecords.Where(w => w.TenantId == tenantA).ToListAsync();
+        recordsA.Should().NotBeEmpty();
+        recordsA.All(r => r.SenderAccountId == senderA.Id).Should().BeTrue();
+
+        var recordsB = await db.WarmupRecords.Where(w => w.TenantId == tenantB).ToListAsync();
+        recordsB.Should().NotBeEmpty();
+        recordsB.All(r => r.SenderAccountId == senderB.Id).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ProcessWarmupAndRescueAsync_WhenCancelled_ThrowsOperationCanceledException()
+    {
+        using var db = CreateDbContext();
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var act = async () => await P2PWarmupRescueDaemon.ProcessWarmupAndRescueAsync(db, cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
 }
