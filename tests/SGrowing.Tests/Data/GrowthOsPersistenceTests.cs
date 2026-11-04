@@ -262,4 +262,113 @@ public class GrowthOsPersistenceTests
         saved.StepsJson.Should().Contain("tokensUsed");
         saved.StepsJson.Should().Contain("COD-9821");
     }
+
+    [Fact]
+    public async Task IdentityLinkEntity_ShouldMapToCustomerDataSchema_AndPersistLinkGraph()
+    {
+        using var context = CreateDbContext();
+
+        var entityType = context.Model.FindEntityType(typeof(IdentityLinkEntity));
+        entityType.Should().NotBeNull();
+        entityType!.GetSchema().Should().Be("customer_data");
+        entityType.GetTableName().Should().Be("identity_links");
+
+        entityType.FindProperty(nameof(IdentityLinkEntity.SourceIdentifierJson))?.FindAnnotation("Relational:ColumnType")?.Value?.ToString().Should().Be("jsonb");
+        entityType.FindProperty(nameof(IdentityLinkEntity.TargetIdentifierJson))?.FindAnnotation("Relational:ColumnType")?.Value?.ToString().Should().Be("jsonb");
+
+        var link = new IdentityLinkEntity
+        {
+            Id = Guid.NewGuid(),
+            TenantId = "tenant_alpha_01",
+            SourceIdentifierJson = "{\"type\":\"cookie\",\"value\":\"ck_anon_982\"}",
+            TargetIdentifierJson = "{\"type\":\"phone\",\"value\":\"+21698765432\"}",
+            ConfidenceScore = 0.98,
+            MatchReason = "WhatsApp click-to-chat parameter match",
+            CreatedAtUtc = DateTime.UtcNow
+        };
+
+        context.IdentityLinks.Add(link);
+        await context.SaveChangesAsync();
+
+        var retrieved = await context.IdentityLinks.FindAsync(link.Id);
+        retrieved.Should().NotBeNull();
+        retrieved!.TenantId.Should().Be("tenant_alpha_01");
+        retrieved.ConfidenceScore.Should().Be(0.98);
+        retrieved.MatchReason.Should().Be("WhatsApp click-to-chat parameter match");
+        retrieved.SourceIdentifierJson.Should().Contain("ck_anon_982");
+        retrieved.TargetIdentifierJson.Should().Contain("+21698765432");
+    }
+
+    [Fact]
+    public async Task VisitorSessionEntity_ShouldMapToCustomerDataSchema_AndPersistUtmTracking()
+    {
+        using var context = CreateDbContext();
+
+        var entityType = context.Model.FindEntityType(typeof(VisitorSessionEntity));
+        entityType.Should().NotBeNull();
+        entityType!.GetSchema().Should().Be("customer_data");
+        entityType.GetTableName().Should().Be("visitor_sessions");
+
+        var sessionIndex = entityType.GetIndexes()
+            .FirstOrDefault(idx => idx.Properties.Select(p => p.Name)
+                .SequenceEqual(new[] { "TenantId", "AnonymousId" }));
+        sessionIndex.Should().NotBeNull();
+
+        var session = new VisitorSessionEntity
+        {
+            SessionId = "sess_web_78129",
+            TenantId = "tenant_alpha_01",
+            AnonymousId = "anon_visitor_007",
+            StartedAtUtc = DateTime.UtcNow.AddMinutes(-25),
+            EndedAtUtc = DateTime.UtcNow,
+            PageViewsJson = "[{\"path\":\"/landing\",\"dwellSec\":45},{\"path\":\"/pricing\",\"dwellSec\":120}]",
+            UtmParametersJson = "{\"utm_source\":\"facebook\",\"utm_campaign\":\"q4_scale\",\"utm_medium\":\"cpc\"}"
+        };
+
+        context.VisitorSessionEntities.Add(session);
+        await context.SaveChangesAsync();
+
+        var retrieved = await context.VisitorSessionEntities.FindAsync(session.SessionId);
+        retrieved.Should().NotBeNull();
+        retrieved!.AnonymousId.Should().Be("anon_visitor_007");
+        retrieved.UtmParametersJson.Should().Contain("q4_scale");
+        retrieved.PageViewsJson.Should().Contain("/pricing");
+    }
+
+    [Fact]
+    public async Task CampaignRoasSnapshotEntity_ShouldMapToAdvertisingSchema_AndPreservePrecision()
+    {
+        using var context = CreateDbContext();
+
+        var entityType = context.Model.FindEntityType(typeof(CampaignRoasSnapshotEntity));
+        entityType.Should().NotBeNull();
+        entityType!.GetSchema().Should().Be("advertising");
+        entityType.GetTableName().Should().Be("campaign_roas_snapshots");
+
+        var snapshot = new CampaignRoasSnapshotEntity
+        {
+            Id = Guid.NewGuid(),
+            CampaignId = "cmp_meta_retargeting_q4",
+            TenantId = "tenant_alpha_01",
+            Platform = "MetaAds",
+            Spend = 1450.7500m,
+            Revenue = 5820.2500m,
+            CurrentRoas = 4.01m,
+            RecommendedSpend = 1800.00m,
+            Action = "ScaleBudget",
+            RecordedAtUtc = DateTime.UtcNow
+        };
+
+        context.CampaignRoasSnapshots.Add(snapshot);
+        await context.SaveChangesAsync();
+
+        var retrieved = await context.CampaignRoasSnapshots.FindAsync(snapshot.Id);
+        retrieved.Should().NotBeNull();
+        retrieved!.CampaignId.Should().Be("cmp_meta_retargeting_q4");
+        retrieved.Platform.Should().Be("MetaAds");
+        retrieved.Spend.Should().Be(1450.7500m);
+        retrieved.Revenue.Should().Be(5820.2500m);
+        retrieved.CurrentRoas.Should().Be(4.01m);
+        retrieved.Action.Should().Be("ScaleBudget");
+    }
 }

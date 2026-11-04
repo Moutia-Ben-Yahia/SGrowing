@@ -198,4 +198,82 @@ public class AutonomousAgentExecutionTests
         failedMission = await _db.AgentMissions.FirstAsync(m => m.Id == mission.Id);
         failedMission.Status.Should().Be(AgentMissionStatus.Failed);
     }
+
+    [Fact]
+    public async Task ExecuteMissionStep_WhenInAutoApproveMode_ExecutesSensitiveToolsWithoutPausing()
+    {
+        var tenantId = Guid.NewGuid();
+
+        // 1. Create mission with Auto-Approve autonomy mode
+        var mission = await _service.CreateMissionAsync(
+            tenantId,
+            "Autonomous Outreach Campaign",
+            "Auto pipeline execution",
+            "Auto-Approve",
+            100.0m);
+
+        // Step 0 executed on creation (crm_search_leads)
+        // Step 1: deliverability test
+        var step1Result = await _service.ExecuteMissionStepAsync(mission.Id);
+        step1Result.Should().BeTrue();
+
+        // Step 2: outbound_send_spintax_campaign (sensitive, but autonomy is Auto-Approve!)
+        var step2Result = await _service.ExecuteMissionStepAsync(mission.Id);
+        step2Result.Should().BeTrue(); // Does NOT pause!
+
+        var updated = await _db.AgentMissions.Include(m => m.Steps).FirstAsync(m => m.Id == mission.Id);
+        updated.Status.Should().Be(AgentMissionStatus.Running);
+        updated.Steps[2].Status.Should().Be(AgentMissionStepStatus.Completed);
+    }
+
+    [Fact]
+    public async Task ApproveMissionStep_WhenMissionOrStepNotFound_ReturnsFalse()
+    {
+        var tenantId = Guid.NewGuid();
+        var mission = await _service.CreateMissionAsync(
+            tenantId,
+            "Approval Guard Test",
+            "Target goal",
+            "Human-in-the-Loop",
+            50.0m);
+
+        // Non-existent mission
+        var res1 = await _service.ApproveMissionStepAsync(Guid.NewGuid(), Guid.NewGuid(), "Admin");
+        res1.Should().BeFalse();
+
+        // Existing mission, non-existent step
+        var res2 = await _service.ApproveMissionStepAsync(mission.Id, Guid.NewGuid(), "Admin");
+        res2.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ProcessActiveMissionsAsync_WhenActiveMissionsExist_ExecutesPendingStepsInBatch()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var mission1 = await _service.CreateMissionAsync(
+            tenantId,
+            "Batch Mission 1",
+            "Goal 1",
+            "Auto-Approve",
+            50.0m);
+
+        var mission2 = await _service.CreateMissionAsync(
+            tenantId,
+            "Batch Mission 2",
+            "Goal 2",
+            "Auto-Approve",
+            50.0m);
+
+        // Both missions are in Running status after creation step 0
+        var processed = await _service.ProcessActiveMissionsAsync();
+
+        processed.Should().Be(2);
+
+        var updated1 = await _db.AgentMissions.Include(m => m.Steps).FirstAsync(m => m.Id == mission1.Id);
+        var updated2 = await _db.AgentMissions.Include(m => m.Steps).FirstAsync(m => m.Id == mission2.Id);
+
+        updated1.Steps[1].Status.Should().Be(AgentMissionStepStatus.Completed);
+        updated2.Steps[1].Status.Should().Be(AgentMissionStepStatus.Completed);
+    }
 }

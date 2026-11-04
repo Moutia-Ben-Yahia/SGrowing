@@ -140,4 +140,69 @@ public class AiAgentAndBiTests
         Assert.Contains("quota attainment", quotaResponse.AnswerSummary.ToLower());
         Assert.True(quotaResponse.KeyMetrics.ContainsKey("QuotaAttainmentPercent"));
     }
+
+    [Fact]
+    public async Task ExecuteTool_AnalyzeFunnelDropoff_CalculatesConversionAndDropoffRates()
+    {
+        var tenantId = Guid.NewGuid();
+        await _orchestratorService.AllocateBudgetAsync(tenantId, tokenLimit: 100_000, maxCostUsd: 10.0m);
+
+        // Seed 10 pageviews and 1 purchase
+        for (int i = 0; i < 10; i++)
+        {
+            _db.TelemetryEvents.Add(new TelemetryEvent
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                EventName = "pageview",
+                TimestampUtc = DateTime.UtcNow
+            });
+        }
+        _db.TelemetryEvents.Add(new TelemetryEvent
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            EventName = "purchase",
+            TimestampUtc = DateTime.UtcNow
+        });
+        await _db.SaveChangesAsync();
+
+        var result = await _orchestratorService.ExecuteToolAsync(
+            tenantId,
+            "AnalyticsAgent",
+            "AnalyzeFunnelDropoff",
+            "{}");
+
+        Assert.True(result.IsSuccess);
+        Assert.Contains("\"ConversionRate\":10", result.OutputJson);
+        Assert.Contains("\"TotalPageviews\":10", result.OutputJson);
+        Assert.Contains("\"TotalPurchases\":1", result.OutputJson);
+    }
+
+    [Fact]
+    public async Task ConversationalBi_AnswersCourierAndCarrierShippingQueries()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var response = await _biService.AskBiQuestionAsync(tenantId, "What is our courier delivery and COD settlement success rate?");
+
+        Assert.NotNull(response);
+        Assert.Contains("delivery success rate", response.AnswerSummary.ToLower());
+        Assert.True(response.KeyMetrics.ContainsKey("SuccessfulDeliveryRatePercent"));
+        Assert.NotEmpty(response.SuggestedFollowupQuestions);
+    }
+
+    [Fact]
+    public async Task ConversationalBi_GeneralFallbackQuery_ReturnsPlatformOverview()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var response = await _biService.AskBiQuestionAsync(tenantId, "What can you do for our business?");
+
+        Assert.NotNull(response);
+        Assert.Contains("sovereign analytics engine active", response.AnswerSummary.ToLower());
+        Assert.Equal("Operational", response.KeyMetrics["PlatformStatus"]);
+        Assert.Equal(0.95, response.ConfidenceScore);
+        Assert.NotEmpty(response.SuggestedFollowupQuestions);
+    }
 }
