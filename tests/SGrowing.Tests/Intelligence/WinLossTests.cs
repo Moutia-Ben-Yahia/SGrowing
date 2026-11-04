@@ -93,4 +93,35 @@ public class WinLossTests
         Assert.True(all.Count >= 2);
         Assert.True(all.First().AnalyzedAtUtc >= all.Last().AnalyzedAtUtc);
     }
+
+    [Fact]
+    public void AnalyzeDeal_WonAgainstCompetitor_CapturesCompetitorWeaknessTactic()
+    {
+        var request = new AnalyzeDealRequest(
+            "deal_won_enterprise_99",
+            "Apex Logistics",
+            300000m,
+            DealOutcome.WonClosed,
+            "Customer loved our native real-time sync and transparent pricing. Replaced bloated vendor.",
+            "LegacyVendor"
+        );
+
+        var result = _engine.AnalyzeDeal(request);
+
+        Assert.NotNull(result);
+        Assert.Equal(DealOutcome.WonClosed, result.Outcome);
+        Assert.Single(result.CompetitorInsights);
+        Assert.Equal("LegacyVendor", result.CompetitorInsights[0].CompetitorName);
+        Assert.Contains("suffered from slow voice latency", result.CompetitorInsights[0].ObservedTactic);
+    }
+
+    [Fact]
+    public void GetPostMortemByDealId_IsCaseInsensitive_ReturnsPostMortem()
+    {
+        var pm = _engine.GetPostMortemByDealId("DEAL_OMEGA_401");
+
+        Assert.NotNull(pm);
+        Assert.Equal("Omega FinTech Corp", pm.CompanyName);
+        Assert.Equal(DealOutcome.LostToCompetitor, pm.Outcome);
+    }
 }

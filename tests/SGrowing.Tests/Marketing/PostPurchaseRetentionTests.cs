@@ -216,4 +216,61 @@ public class PostPurchaseRetentionTests
         Assert.Contains("Vous nous manquez, Ali", winBackTriggers[0].MessageText);
         Assert.Contains("winback_card", winBackTriggers[0].WhatsAppCardJson);
     }
+
+    [Fact]
+    public async Task ProcessDueReplenishmentRemindersAsync_WhenNoRemindersAreDue_ReturnsEmptyList()
+    {
+        var db = CreateDbContext();
+        var service = new PostPurchaseRetentionService(db);
+        var tenantId = Guid.NewGuid();
+
+        // Add schedule due in 30 days
+        var futureSchedule = new ReplenishmentSchedule
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            OrderId = Guid.NewGuid(),
+            CustomerPhone = "+21622334455",
+            CustomerName = "Future Customer",
+            Sku = "PERFUME-50ML",
+            ProductName = "Prestige Fragrance",
+            ScheduledReminderUtc = DateTime.UtcNow.AddDays(30),
+            IsTriggered = false
+        };
+        db.ReplenishmentSchedules.Add(futureSchedule);
+        await db.SaveChangesAsync();
+
+        // Check as of current time
+        var results = await service.ProcessDueReplenishmentRemindersAsync(tenantId, DateTime.UtcNow);
+
+        Assert.Empty(results);
+        var inDb = await db.ReplenishmentSchedules.FindAsync(futureSchedule.Id);
+        Assert.False(inDb!.IsTriggered);
+    }
+
+    [Fact]
+    public async Task RecordSurveyResponseAsync_NeutralRating3_IsNotPromoterAndIssuesNoDiscount()
+    {
+        var db = CreateDbContext();
+        var service = new PostPurchaseRetentionService(db);
+        var tenantId = Guid.NewGuid();
+
+        var survey = new PostPurchaseSurvey
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            OrderId = Guid.NewGuid(),
+            CustomerPhone = "+21655443322",
+            CustomerName = "Neutral User",
+            SentAtUtc = DateTime.UtcNow
+        };
+        db.PostPurchaseSurveys.Add(survey);
+        await db.SaveChangesAsync();
+
+        var rated = await service.RecordSurveyResponseAsync(tenantId, survey.Id, rating: 3, notes: "Correct, sans plus.");
+
+        Assert.Equal(3, rated.Rating);
+        Assert.False(rated.IsPromoter);
+        Assert.Null(rated.DiscountCodeIssued);
+    }
 }

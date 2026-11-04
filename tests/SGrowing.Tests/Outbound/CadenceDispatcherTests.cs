@@ -258,4 +258,65 @@ public class CadenceDispatcherTests
         senderB.SentTodayCount.Should().Be(0); // Tenant B untainted!
         enrollB.CurrentStepNumber.Should().Be(1);
     }
+
+    [Fact]
+    public async Task ProcessDueCadences_WhenNoEnrollmentsDue_ReturnsZero()
+    {
+        var db = CreateDbContext();
+        var outbox = new OutboxService(db);
+        var mailboxService = new MailboxService(db);
+        var aiSdr = new AiSdrService();
+        var tenantId = Guid.NewGuid();
+
+        var sender = SenderAccount.Create(tenantId, "sdr@domain.com", "SDR", MailboxProvider.GoogleWorkspace, 50);
+        db.SenderAccounts.Add(sender);
+        var campaign = OutboundCampaign.Create(tenantId, "Future Campaign", new List<Guid> { sender.Id });
+        db.OutboundCampaigns.Add(campaign);
+        var step = CadenceStep.Create(tenantId, campaign.Id, 1, 0, OutboundChannel.Email, "Subject", "Body");
+        db.CadenceSteps.Add(step);
+        var contact = Contact.Create(tenantId, "Arthur", "Curry", "arthur@atlantis.gov");
+        db.Contacts.Add(contact);
+
+        var enrollment = ProspectEnrollment.Create(tenantId, campaign.Id, contact.Id);
+        enrollment.NextRunAtUtc = DateTime.UtcNow.AddDays(2); // In the future!
+        db.ProspectEnrollments.Add(enrollment);
+        await db.SaveChangesAsync();
+
+        var dispatcher = new CadenceDispatcherService(db, mailboxService, aiSdr, outbox);
+        var processed = await dispatcher.ProcessDueCadencesAsync(tenantId);
+
+        processed.Should().Be(0);
+        sender.SentTodayCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ProcessDueCadences_WhenEnrollmentStatusIsRepliedOrBounced_DoesNotProcess()
+    {
+        var db = CreateDbContext();
+        var outbox = new OutboxService(db);
+        var mailboxService = new MailboxService(db);
+        var aiSdr = new AiSdrService();
+        var tenantId = Guid.NewGuid();
+
+        var sender = SenderAccount.Create(tenantId, "sdr@domain.com", "SDR", MailboxProvider.GoogleWorkspace, 50);
+        db.SenderAccounts.Add(sender);
+        var campaign = OutboundCampaign.Create(tenantId, "Active Campaign", new List<Guid> { sender.Id });
+        db.OutboundCampaigns.Add(campaign);
+        var step = CadenceStep.Create(tenantId, campaign.Id, 1, 0, OutboundChannel.Email, "Subject", "Body");
+        db.CadenceSteps.Add(step);
+        var contact = Contact.Create(tenantId, "Barry", "Allen", "barry@centralcity.gov");
+        db.Contacts.Add(contact);
+
+        var enrollment = ProspectEnrollment.Create(tenantId, campaign.Id, contact.Id);
+        enrollment.Status = EnrollmentStatus.Replied; // Prospect already replied!
+        enrollment.NextRunAtUtc = DateTime.UtcNow.AddMinutes(-10);
+        db.ProspectEnrollments.Add(enrollment);
+        await db.SaveChangesAsync();
+
+        var dispatcher = new CadenceDispatcherService(db, mailboxService, aiSdr, outbox);
+        var processed = await dispatcher.ProcessDueCadencesAsync(tenantId);
+
+        processed.Should().Be(0);
+        sender.SentTodayCount.Should().Be(0);
+    }
 }

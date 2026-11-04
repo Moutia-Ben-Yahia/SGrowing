@@ -190,4 +190,38 @@ public class CompetitorIntelligenceTests
         Assert.Equal(350m, ad.EstimatedDailySpend);
         Assert.True(ad.IsActive);
     }
+
+    [Fact]
+    public async Task GetRadarSummaryAsync_EmptyTenant_ReturnsZeroCountsAndEmptyCollections()
+    {
+        var emptyTenantId = Guid.NewGuid();
+
+        var summary = await _service.GetRadarSummaryAsync(emptyTenantId);
+
+        Assert.NotNull(summary);
+        Assert.Equal(0, summary.TotalCompetitorAdsMonitored);
+        Assert.Equal(0, summary.HighThreatCompetitorsCount);
+        Assert.Equal(0, summary.SkusWithPriceDeficit);
+        Assert.Empty(summary.PriceAlerts);
+        Assert.Empty(summary.ActiveCompetitorCampaigns);
+    }
+
+    [Fact]
+    public async Task TrackPriceDisparityAsync_ZeroOurPrice_SetsPriceDifferencePercentageToZero()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var tracker = await _service.TrackPriceDisparityAsync(
+            tenantId,
+            "SKU-FREE-SAMPLE",
+            "SampleRival",
+            "https://samplerival.tn",
+            competitorPrice: 10m,
+            ourPrice: 0m
+        );
+
+        Assert.NotNull(tracker);
+        Assert.Equal(0m, tracker.PriceDifferencePercentage);
+        Assert.Equal("MaintainPrice", tracker.RecommendedCounterAction);
+    }
 }
