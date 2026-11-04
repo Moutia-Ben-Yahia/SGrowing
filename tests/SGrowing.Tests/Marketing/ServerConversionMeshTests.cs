@@ -67,4 +67,103 @@ public class ServerConversionMeshTests
         var recent = await mesh.GetRecentConversionsAsync(tenantId);
         Assert.Equal(2, recent.Count);
     }
+
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData("", "")]
+    [InlineData("   ", "")]
+    public void HashSha256_Should_Return_Empty_On_Null_Or_Whitespace(string? input, string expected)
+    {
+        var result = ServerConversionMeshService.HashSha256(input);
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void HashSha256_Should_Normalize_Case_And_Whitespace_Deterministically()
+    {
+        var hashed1 = ServerConversionMeshService.HashSha256("  User.Test@Domain.COM ");
+        var hashed2 = ServerConversionMeshService.HashSha256("user.test@domain.com");
+
+        Assert.Equal(64, hashed1.Length);
+        Assert.Equal(hashed1, hashed2);
+    }
+
+    [Fact]
+    public void CalculateEventMatchQualityScore_Should_Return_Zero_For_Empty_Event()
+    {
+        var db = CreateDbContext();
+        var mesh = new ServerConversionMeshService(db);
+        var ev = new ServerConversionEvent();
+
+        var score = mesh.CalculateEventMatchQualityScore(ev);
+
+        Assert.Equal(0.0, score);
+    }
+
+    [Fact]
+    public void CalculateEventMatchQualityScore_Should_Calculate_Partial_Scores_Accurately()
+    {
+        var db = CreateDbContext();
+        var mesh = new ServerConversionMeshService(db);
+
+        var phoneOnly = new ServerConversionEvent { HashedPhone = "abc" };
+        Assert.Equal(3.5, mesh.CalculateEventMatchQualityScore(phoneOnly));
+
+        var emailOnly = new ServerConversionEvent { HashedEmail = "def" };
+        Assert.Equal(2.5, mesh.CalculateEventMatchQualityScore(emailOnly));
+
+        var cookiesOnly = new ServerConversionEvent { Fbp = "fbp.1", Fbc = "fbc.1" };
+        Assert.Equal(2.5, mesh.CalculateEventMatchQualityScore(cookiesOnly)); // 1.5 + 1.0
+
+        var networkOnly = new ServerConversionEvent { ClientUserAgent = "curl", ClientIpAddress = "127.0.0.1" };
+        Assert.Equal(1.0, mesh.CalculateEventMatchQualityScore(networkOnly)); // 0.5 + 0.5
+    }
+
+    [Fact]
+    public async Task TrackConversionAsync_Should_Respect_Custom_EventId_And_Uppercase_Currency()
+    {
+        var db = CreateDbContext();
+        var mesh = new ServerConversionMeshService(db);
+        var tenantId = Guid.NewGuid();
+        var customEventId = "ORDER_ORD_998877_WEB";
+
+        var ev = await mesh.TrackConversionAsync(
+            tenantId,
+            AdPlatform.TikTokEvents,
+            ConversionEventType.InitiateCheckout,
+            valueAmount: 250.50m,
+            currency: "eur",
+            eventId: customEventId,
+            customDataJson: "{\"cart_size\":3}"
+        );
+
+        Assert.Equal(customEventId, ev.EventId);
+        Assert.Equal("EUR", ev.Currency);
+        Assert.Equal("{\"cart_size\":3}", ev.CustomDataJson);
+        Assert.Contains("fbtrace_id", ev.ApiResponseJson);
+    }
+
+    [Fact]
+    public async Task GetRecentConversionsAsync_Should_Enforce_Limit_And_Tenant_Isolation()
+    {
+        var db = CreateDbContext();
+        var mesh = new ServerConversionMeshService(db);
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        for (int i = 0; i < 5; i++)
+        {
+            await mesh.TrackConversionAsync(tenantA, AdPlatform.GoogleAdsOffline, ConversionEventType.AddToCart, i * 10, "USD");
+        }
+
+        await mesh.TrackConversionAsync(tenantB, AdPlatform.TikTokEvents, ConversionEventType.Lead, 0, "USD");
+
+        var recentA = await mesh.GetRecentConversionsAsync(tenantA, limit: 3);
+        Assert.Equal(3, recentA.Count);
+        Assert.All(recentA, e => Assert.Equal(tenantA, e.TenantId));
+
+        var recentB = await mesh.GetRecentConversionsAsync(tenantB, limit: 10);
+        Assert.Single(recentB);
+        Assert.Equal(tenantB, recentB[0].TenantId);
+    }
 }
