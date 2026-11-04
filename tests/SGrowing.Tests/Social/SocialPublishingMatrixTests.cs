@@ -286,4 +286,71 @@ public class SocialPublishingMatrixTests
         hooks.Should().Contain(h => h.Angle == "Story");
         hooks.Should().OnlyContain(h => h.EstimatedViralityScore >= 80.0);
     }
+
+    [Fact]
+    public void ValidatePostContent_ExceedsLimitByOne_FlagsInvalidAndNegativeRemaining()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new SocialPublishingEngineService(db);
+
+        var content = new string('Z', 281); // 1 over X limit
+        var result = service.ValidatePostContent(SocialPlatform.X, content);
+
+        result.IsValid.Should().BeFalse();
+        result.RemainingCharacters.Should().Be(-1);
+        result.ActualLength.Should().Be(281);
+    }
+
+    [Fact]
+    public async Task AuditConnectedAccountsTokenHealthAsync_EmptyAccounts_ReturnsCleanReport()
+    {
+        using var db = CreateInMemoryDb();
+        var service = new SocialPublishingEngineService(db);
+        var tenantId = Guid.NewGuid();
+
+        var report = await service.AuditConnectedAccountsTokenHealthAsync(tenantId);
+
+        report.TenantId.Should().Be(tenantId);
+        report.TotalAccountsAudited.Should().Be(0);
+        report.ExpiringOrRequiredRefreshCount.Should().Be(0);
+        report.HealthyAccountsCount.Should().Be(0);
+        report.Accounts.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task DurableSocialPublishingDaemon_AuditTokenExpirationHealthAsync_MultipleExpiringAccounts_QueuesOutboxAlertForEach()
+    {
+        using var db = CreateInMemoryDb();
+        var tenantId = Guid.NewGuid();
+
+        var expiring1 = SocialAccount.Create(
+            tenantId,
+            SocialPlatform.X,
+            "@handle1",
+            "x_1",
+            "token_1",
+            isActive: true,
+            tokenExpiresAtUtc: DateTime.UtcNow.AddDays(1)
+        );
+        var expiring2 = SocialAccount.Create(
+            tenantId,
+            SocialPlatform.Instagram,
+            "@handle2",
+            "ig_2",
+            "token_2",
+            isActive: true,
+            tokenExpiresAtUtc: DateTime.UtcNow.AddHours(12)
+        );
+
+        db.SocialAccounts.AddRange(expiring1, expiring2);
+        await db.SaveChangesAsync();
+
+        var flagged = await DurableSocialPublishingDaemon.AuditTokenExpirationHealthAsync(db);
+
+        flagged.Should().Be(2);
+
+        var outbox = await db.OutboxMessages.Where(m => m.TenantId == tenantId).ToListAsync();
+        outbox.Should().HaveCount(2);
+        outbox.Should().OnlyContain(m => m.EventType == "SocialAccount.TokenExpirationImminent");
+    }
 }

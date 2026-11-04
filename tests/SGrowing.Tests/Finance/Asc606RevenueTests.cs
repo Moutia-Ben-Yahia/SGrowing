@@ -38,4 +38,55 @@ public class Asc606RevenueTests
         updated.DeferredRevenueLiabilityUsd.Should().Be(90000m);
         updated.Tranches.Count(t => t.IsRecognized).Should().Be(3);
     }
+
+    [Fact]
+    public void RecognizeNextMonth_ThrowsKeyNotFoundException_WhenScheduleDoesNotExist()
+    {
+        var request = new RecognizeNextMonthRequest("non_existent_schedule_999");
+        var act = () => _engine.RecognizeNextMonth(request);
+
+        act.Should().Throw<KeyNotFoundException>()
+            .WithMessage("*non_existent_schedule_999*");
+    }
+
+    [Fact]
+    public void RecognizeNextMonth_FullyRecognized_IsIdempotentAndDoesNotExceedTotalValue()
+    {
+        var scheduleId = "asc606_sched_301";
+
+        // Recognize all remaining 10 months (months 3 through 12)
+        RevenueContractSchedule last = null!;
+        for (int i = 0; i < 10; i++)
+        {
+            last = _engine.RecognizeNextMonth(new RecognizeNextMonthRequest(scheduleId));
+        }
+
+        last.CumulativeRecognizedUsd.Should().Be(120000m);
+        last.DeferredRevenueLiabilityUsd.Should().Be(0m);
+        last.Tranches.Should().OnlyContain(t => t.IsRecognized);
+
+        // 13th call: Already fully recognized, should return existing schedule idempotently
+        var idempotent = _engine.RecognizeNextMonth(new RecognizeNextMonthRequest(scheduleId));
+        idempotent.CumulativeRecognizedUsd.Should().Be(120000m);
+        idempotent.DeferredRevenueLiabilityUsd.Should().Be(0m);
+    }
+
+    [Fact]
+    public void GetSchedule_ExistingAndNonExistent_ReturnsExpected()
+    {
+        var existing = _engine.GetSchedule("asc606_sched_301");
+        existing.Should().NotBeNull();
+        existing!.CustomerName.Should().Be("Acme Global Enterprise");
+
+        var missing = _engine.GetSchedule("non_existent_schedule");
+        missing.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetSchedules_OrderById_ReturnsAllSchedules()
+    {
+        var schedules = _engine.GetSchedules();
+        schedules.Should().NotBeEmpty();
+        schedules.Should().BeInAscendingOrder(s => s.ScheduleId);
+    }
 }
