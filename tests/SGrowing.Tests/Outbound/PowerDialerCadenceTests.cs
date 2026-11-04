@@ -190,4 +190,105 @@ public class PowerDialerCadenceTests
         var act = async () => await service.LogCallOutcomeAsync(tenantId, Guid.NewGuid(), "LeftVoicemail", 10);
         await act.Should().ThrowAsync<KeyNotFoundException>();
     }
+
+    [Fact]
+    public async Task LogCallOutcomeAsync_WithCallbackScheduled_PersistsActivityAndEnqueuesOutboxEvent()
+    {
+        // Arrange
+        using var db = CreateDbContext();
+        var service = new PowerDialerService(db, _outboxMock.Object);
+        var tenantId = Guid.NewGuid();
+
+        var contact = Contact.Create(tenantId, "Karim", "Zouari", "karim@telecom.tn", "+21699887766");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        var callbackTime = DateTime.UtcNow.AddDays(2);
+
+        // Act
+        var result = await service.LogCallOutcomeAsync(
+            tenantId,
+            contact.Id,
+            "CallbackRequested",
+            durationSeconds: 65,
+            notes: "Prospect busy, requested callback on Wednesday afternoon.",
+            callbackScheduledAtUtc: callbackTime
+        );
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Outcome.Should().Be("CallbackRequested");
+        result.DurationSeconds.Should().Be(65);
+        result.NextActionDescription.Should().Be("Call logged. Follow-up task created.");
+
+        var activity = await db.Activities.FirstOrDefaultAsync(a => a.TenantId == tenantId && a.ContactId == contact.Id);
+        activity.Should().NotBeNull();
+        activity!.PayloadJson.Should().Contain("CallbackRequested");
+        activity.PayloadJson.Should().Contain("Wednesday afternoon");
+    }
+
+    [Fact]
+    public async Task GetDialerQueueAsync_WhenMultipleTouchpointsExist_OrdersByScheduledAtUtc()
+    {
+        // Arrange
+        using var db = CreateDbContext();
+        var service = new PowerDialerService(db, _outboxMock.Object);
+        var tenantId = Guid.NewGuid();
+
+        var c1 = Contact.Create(tenantId, "Amira", "Driss", "amira@driss.tn", "+21620112233");
+        var c2 = Contact.Create(tenantId, "Bilel", "Gharbi", "bilel@gharbi.tn", "+21620223344");
+        db.Contacts.AddRange(c1, c2);
+
+        var earlier = new TouchpointExecution
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            ContactId = c2.Id,
+            TouchpointId = Guid.NewGuid(),
+            Channel = TouchpointChannel.VoiceCall,
+            ScheduledAtUtc = DateTime.UtcNow.AddMinutes(-30),
+            Status = "Pending"
+        };
+
+        var later = new TouchpointExecution
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            ContactId = c1.Id,
+            TouchpointId = Guid.NewGuid(),
+            Channel = TouchpointChannel.VoiceCall,
+            ScheduledAtUtc = DateTime.UtcNow.AddMinutes(-5),
+            Status = "Pending"
+        };
+
+        db.Set<TouchpointExecution>().AddRange(later, earlier);
+        await db.SaveChangesAsync();
+
+        // Act
+        var queue = await service.GetDialerQueueAsync(tenantId);
+
+        // Assert
+        queue.Should().HaveCount(2);
+        queue[0].ContactId.Should().Be(c2.Id);
+        queue[1].ContactId.Should().Be(c1.Id);
+    }
+
+    [Fact]
+    public async Task LogCallOutcomeAsync_DefaultUnknownOutcome_SetsDefaultNextActionDescription()
+    {
+        // Arrange
+        using var db = CreateDbContext();
+        var service = new PowerDialerService(db, _outboxMock.Object);
+        var tenantId = Guid.NewGuid();
+
+        var contact = Contact.Create(tenantId, "Samir", "Belhadj", "samir@trade.tn", "+21622331100");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        // Act
+        var result = await service.LogCallOutcomeAsync(tenantId, contact.Id, "BadNumber", 5);
+
+        // Assert
+        result.NextActionDescription.Should().Be("Call logged. Follow-up task created.");
+    }
 }

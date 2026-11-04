@@ -160,4 +160,68 @@ public class OutboundApiEndpointTests
         activeList.Should().ContainSingle();
         activeList.First().Email.Should().Be("active@pool.io");
     }
+
+    [Fact]
+    public async Task CreateCampaign_WhenStepsEmpty_ReturnsFailure()
+    {
+        var db = CreateDbContext();
+        var handler = new CreateCampaignHandler(db);
+        var request = new CreateCampaignRequest(
+            Guid.NewGuid(),
+            "Empty Steps Campaign",
+            new List<Guid>(),
+            new List<CreateCadenceStepDto>()
+        );
+
+        var result = await handler.HandleAsync(request);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("Campaign must contain at least one step");
+    }
+
+    [Fact]
+    public async Task EnrollProspects_WhenCampaignNotFound_ReturnsFailure()
+    {
+        var db = CreateDbContext();
+        var handler = new EnrollProspectsHandler(db);
+        var request = new EnrollProspectsRequest(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            new List<Guid> { Guid.NewGuid() }
+        );
+
+        var result = await handler.HandleAsync(request);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain("Campaign not found");
+    }
+
+    [Fact]
+    public async Task EnrollProspects_WhenAlreadyEnrolled_DeduplicatesAndEnrollsOnlyOnce()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+
+        var campaign = OutboundCampaign.Create(tenantId, "Dedupe Campaign", new List<Guid>());
+        db.OutboundCampaigns.Add(campaign);
+
+        var contact = Contact.Create(tenantId, "Salma", "Masmoudi", "salma@agro.tn");
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+
+        var handler = new EnrollProspectsHandler(db);
+        var firstEnroll = await handler.HandleAsync(new EnrollProspectsRequest(tenantId, campaign.Id, new List<Guid> { contact.Id }));
+        firstEnroll.IsSuccess.Should().BeTrue();
+        firstEnroll.Value.EnrolledCount.Should().Be(1);
+
+        // Attempt second enrollment with same contact
+        var secondEnroll = await handler.HandleAsync(new EnrollProspectsRequest(tenantId, campaign.Id, new List<Guid> { contact.Id }));
+        secondEnroll.IsSuccess.Should().BeTrue();
+        secondEnroll.Value.EnrolledCount.Should().Be(0);
+
+        var totalEnrollments = await db.ProspectEnrollments
+            .Where(e => e.TenantId == tenantId && e.CampaignId == campaign.Id && e.ContactId == contact.Id)
+            .CountAsync();
+        totalEnrollments.Should().Be(1);
+    }
 }

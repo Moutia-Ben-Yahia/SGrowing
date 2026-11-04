@@ -89,4 +89,49 @@ public class AiSdrPersonalizationTests
 
         rendered.Should().Be("Hello Steve Rogers at your company!");
     }
+
+    [Fact]
+    public async Task GeneratePersonalization_WithCustomRole_GeneratesCompletePayload()
+    {
+        var service = new AiSdrService();
+        var input = new SdrPersonalizationInput(
+            FirstName: "Natasha",
+            LastName: "Romanoff",
+            Company: "Red Room Intelligence",
+            Industry: "Cybersecurity",
+            Role: "Chief Security Officer"
+        );
+
+        var output = await service.GeneratePersonalizationAsync(input);
+
+        output.Should().NotBeNull();
+        output.Icebreaker.Should().Contain("Red Room Intelligence");
+        output.Icebreaker.Should().Contain("Cybersecurity");
+        output.ProblemStatement.Should().Contain("Cybersecurity leaders struggle");
+        output.CallToAction.Should().Contain("10-minute demo");
+    }
+
+    [Fact]
+    public void RenderTemplate_WithoutPlaceholders_ReturnsOriginalText()
+    {
+        var service = new AiSdrService();
+        var contact = Contact.Create(Guid.NewGuid(), "Bruce", "Banner", "bruce@gamma.org");
+        var rawText = "This email has no placeholders at all and should remain strictly untouched.";
+
+        var rendered = service.RenderTemplate(rawText, contact, null, null);
+
+        rendered.Should().Be(rawText);
+    }
+
+    [Fact]
+    public void RenderTemplate_MultipleOccurrencesOfSamePlaceholder_ReplacesAll()
+    {
+        var service = new AiSdrService();
+        var contact = Contact.Create(Guid.NewGuid(), "Clint", "Barton", "clint@shield.gov");
+        var template = "Hey {{first_name}}, is {{first_name}} available? We value {{first_name}}'s time.";
+
+        var rendered = service.RenderTemplate(template, contact, null, null);
+
+        rendered.Should().Be("Hey Clint, is Clint available? We value Clint's time.");
+    }
 }
