@@ -262,4 +262,18 @@ public class CreatorAffiliateTests
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.GetCreatorSummaryAsync(tenantId, unknownCreatorId));
     }
+
+    [Fact]
+    public async Task AttributeOrderCommission_ReturnsNull_WhenReferralCodeNotFoundOrInactive()
+    {
+        var db = CreateDbContext();
+        var service = new CreatorAffiliateService(db);
+        var tenantId = Guid.NewGuid();
+
+        var missingResult = await service.AttributeOrderCommissionAsync(tenantId, "UNKNOWN_CODE", Guid.NewGuid(), "TRK-00", 250m);
+        Assert.Null(missingResult);
+
+        var unknownOrderEscrow = await service.ClearEscrowOnDeliveryAsync(tenantId, Guid.NewGuid());
+        Assert.Null(unknownOrderEscrow);
+    }
 }

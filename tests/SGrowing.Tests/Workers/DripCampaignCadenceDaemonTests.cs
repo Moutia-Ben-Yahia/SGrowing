@@ -258,4 +258,72 @@ public class DripCampaignCadenceDaemonTests
         var refreshedMaxed = await db.MailboxWarmupCadences.FindAsync(maxedWarmup.Id);
         Assert.Equal(20, refreshedMaxed!.CurrentDailyVolume);
     }
+
+    [Fact]
+    public async Task ProcessDueCadencesAsync_WhenNoCadenceStepsExist_MarksEnrollmentCompleted()
+    {
+        using var db = CreateContext();
+        var tenantId = Guid.NewGuid();
+        var cadenceId = Guid.NewGuid();
+
+        var enrollment = new SalesCadenceLeadEnrollment
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            CadenceId = cadenceId,
+            LeadName = "Alex Mercer",
+            Email = "alex@prototype.org",
+            CurrentStepNumber = 10, // No step 11 exists
+            State = CadenceEnrollmentState.Active,
+            NextExecutionAtUtc = DateTime.UtcNow.AddMinutes(-5)
+        };
+        db.SalesCadenceLeadEnrollments.Add(enrollment);
+        await db.SaveChangesAsync();
+
+        var processed = await DripCampaignCadenceDaemon.ProcessDueCadencesAsync(db);
+
+        Assert.Equal(1, processed);
+        var inDb = await db.SalesCadenceLeadEnrollments.FindAsync(enrollment.Id);
+        Assert.NotNull(inDb);
+        Assert.Equal(CadenceEnrollmentState.Completed, inDb.State);
+    }
+
+    [Fact]
+    public async Task ProcessDueCadencesAsync_WhenMultiTenantCadences_ProcessesBothTenantsIndependently()
+    {
+        using var db = CreateContext();
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        var warmupA = new MailboxWarmupCadence
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantA,
+            SenderEmail = "senderA@tenantA.com",
+            CurrentDailyVolume = 0,
+            DailyTargetLimit = 10,
+            IsActive = true
+        };
+        var warmupB = new MailboxWarmupCadence
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantB,
+            SenderEmail = "senderB@tenantB.com",
+            CurrentDailyVolume = 1,
+            DailyTargetLimit = 10,
+            IsActive = true
+        };
+        db.MailboxWarmupCadences.AddRange(warmupA, warmupB);
+        await db.SaveChangesAsync();
+
+        var processed = await DripCampaignCadenceDaemon.ProcessDueCadencesAsync(db);
+
+        Assert.Equal(2, processed);
+
+        var logA = await db.WarmupExchangeLogs.FirstOrDefaultAsync(l => l.TenantId == tenantA);
+        var logB = await db.WarmupExchangeLogs.FirstOrDefaultAsync(l => l.TenantId == tenantB);
+
+        Assert.NotNull(logA);
+        Assert.NotNull(logB);
+    }
 }

@@ -290,4 +290,29 @@ public class LegacySocialPublishingTests
         var outboxB = await db.OutboxMessages.Where(m => m.TenantId == tenantB).ToListAsync();
         outboxB.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task CreatePostAsync_WithNullScheduledTime_CreatesDraftPostAndIsNotPublishedBySweeper()
+    {
+        var db = CreateDbContext();
+        var outbox = new OutboxService(db);
+        var service = new SocialPublishingService(db, outbox);
+        var tenantId = Guid.NewGuid();
+
+        var draftPost = await service.CreatePostAsync(
+            tenantId,
+            "Unscheduled draft marketing post",
+            new List<SocialPlatform> { SocialPlatform.X },
+            scheduledAtUtc: null
+        );
+
+        draftPost.Status.Should().Be(SocialPostStatus.Draft);
+        draftPost.ScheduledAtUtc.Should().BeNull();
+
+        var published = await service.PublishDuePostsAsync(tenantId);
+        published.Should().BeEmpty();
+
+        var inDb = await service.Repository.GetByIdAsync(draftPost.Id);
+        inDb!.Status.Should().Be(SocialPostStatus.Draft);
+    }
 }

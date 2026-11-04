@@ -130,4 +130,20 @@ public class InAppEngagementServiceTests
         var banners = await _service.EvaluateActiveBannersAsync(tenantId, "/home", "ANY_CUSTOM_SEGMENT");
         Assert.Contains(banners, b => b.BannerId == universalBanner.BannerId);
     }
+
+    [Fact]
+    public async Task EvaluateActiveBannersAsync_WhenNoBannersExist_SeedsDefaultWarmupBanner()
+    {
+        var freshEngine = new InAppEngagementService();
+        var tenantId = Guid.NewGuid();
+
+        var banners = await freshEngine.EvaluateActiveBannersAsync(tenantId, "/dashboard", "NON_EXISTENT_SEGMENT");
+
+        Assert.NotEmpty(banners);
+        var seeded = banners.First();
+        Assert.Equal("New Feature: P2P Mailbox Warmup", seeded.Title);
+        Assert.Equal("TopBar", seeded.BannerType);
+        Assert.Equal("ALL", seeded.AudienceSegment);
+        Assert.True(seeded.IsDismissible);
+    }
 }
