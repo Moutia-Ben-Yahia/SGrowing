@@ -27,4 +27,13 @@ describe('IntentRollupCockpitComponent', () => {
     const acc = comp.accounts().find(a => a.accountId === 'ACC-CORP-02');
     expect(acc?.outreachLocked).toBe(true);
   });
+
+  it('should allow updating deDupedSignals and collisionPreventionRate signals', () => {
+    const comp = new IntentRollupCockpitComponent();
+    comp.deDupedSignals.set(1850);
+    comp.collisionPreventionRate.set(99.9);
+
+    expect(comp.deDupedSignals()).toBe(1850);
+    expect(comp.collisionPreventionRate()).toBe(99.9);
+  });
 });

@@ -38,4 +38,13 @@ describe('ValueRealizationCockpitComponent', () => {
     expect(cycleTime).toBeDefined();
     expect(cycleTime?.realizationMultiplier).toBe(4.8);
   });
+
+  it('should allow updating monitoredAccountsCount and avgHealthScore signals', () => {
+    const comp = new ValueRealizationCockpitComponent();
+    comp.monitoredAccountsCount.set(5);
+    comp.avgHealthScore.set(98.2);
+
+    expect(comp.monitoredAccountsCount()).toBe(5);
+    expect(comp.avgHealthScore()).toBe(98.2);
+  });
 });

@@ -34,4 +34,12 @@ describe('GeoVisibilityCockpitComponent', () => {
     expect(component.citations().length).toBe(initialCount);
     expect(component.newAuditQuery).toBe('   ');
   });
+
+  it('should allow updating geoScore and somvPercent signals', () => {
+    component.geoScore.set(94);
+    component.somvPercent.set(52.8);
+
+    expect(component.geoScore()).toBe(94);
+    expect(component.somvPercent()).toBe(52.8);
+  });
 });

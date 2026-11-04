@@ -30,4 +30,17 @@ describe('QuotaCapacityCockpitComponent', () => {
     comp.rebalanceTerritory();
     expect(comp.activeOutcome()).toBeNull();
   });
+
+  it('should update territory status to Balanced and adjust coverageRatio upon rebalancing', () => {
+    const comp = new QuotaCapacityCockpitComponent();
+    const north = comp.territories()[1];
+    comp.selectTerritory(north);
+    comp.addedHeadcount = 2;
+    comp.rebalanceTerritory();
+
+    const updated = comp.territories().find(t => t.territoryId === 'TERR-EMEA-NORTH');
+    expect(updated?.status).toBe('Balanced');
+    expect(updated?.headcount).toBe(10);
+    expect(updated?.coverageRatio).toBe(3.6);
+  });
 });

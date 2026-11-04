@@ -31,4 +31,23 @@ describe('ComplianceVaultCockpitComponent', () => {
 
     expect(component.verificationMessage()).toContain('100% tamper-evident');
   });
+
+  it('should allow adding new audit leaf to the ledger and updating root hash', () => {
+    const initialLeaves = component.auditLeaves().length;
+    component.auditLeaves.update(list => [
+      ...list,
+      {
+        id: 'l4',
+        action: 'POLICY_REVISION_COMMITTED',
+        actor: 'compliance_officer',
+        tenant: 'org_enterprise_root',
+        hash: '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+        time: '12:20:00'
+      }
+    ]);
+    component.merkleRootHash.set('abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd');
+
+    expect(component.auditLeaves().length).toBe(initialLeaves + 1);
+    expect(component.merkleRootHash()).toBe('abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd');
+  });
 });

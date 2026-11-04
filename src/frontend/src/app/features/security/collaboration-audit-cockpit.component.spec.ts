@@ -34,4 +34,10 @@ describe('CollaborationAuditCockpitComponent', () => {
     expect(component.auditLogs()[0].action).toBe('UserSessionsTerminated');
     expect(component.auditLogs()[0].severity).toBe('Critical');
   });
+
+  it('should return 0 criticalCount when auditLogs list is empty', () => {
+    component.auditLogs.set([]);
+    expect(component.criticalCount()).toBe(0);
+    expect(component.auditLogs().length).toBe(0);
+  });
 });

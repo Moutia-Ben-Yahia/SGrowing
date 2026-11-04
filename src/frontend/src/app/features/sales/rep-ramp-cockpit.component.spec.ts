@@ -35,4 +35,13 @@ describe('RepRampCockpitComponent', () => {
     expect(comp.activeGuidance()?.confidenceScore).toBe(88);
     expect(comp.activeGuidance()?.microCoachingTip).toContain('executive business impact');
   });
+
+  it('should allow updating rep metrics and competencies', () => {
+    const comp = new RepRampCockpitComponent();
+    comp.reps.update(list => list.map(r => r.repId === 'REP-RAMP-101' ? { ...r, dealsClosed: 5, quotaAttainmentPercentage: 65.0 } : r));
+
+    const updated = comp.reps().find(r => r.repId === 'REP-RAMP-101');
+    expect(updated?.dealsClosed).toBe(5);
+    expect(updated?.quotaAttainmentPercentage).toBe(65.0);
+  });
 });

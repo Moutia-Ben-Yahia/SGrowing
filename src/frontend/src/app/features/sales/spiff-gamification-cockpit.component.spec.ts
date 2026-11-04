@@ -30,4 +30,13 @@ describe('SpiffGamificationCockpitComponent', () => {
     const totalDeals = comp.leaderboard().reduce((sum, r) => sum + r.dealsClosed, 0);
     expect(totalDeals).toBe(14); // 8 + 6
   });
+
+  it('should allow updating spiffsPaidToday and rankedRepsCount signals', () => {
+    const comp = new SpiffGamificationCockpitComponent();
+    comp.spiffsPaidToday.set(18500);
+    comp.rankedRepsCount.set(5);
+
+    expect(comp.spiffsPaidToday()).toBe(18500);
+    expect(comp.rankedRepsCount()).toBe(5);
+  });
 });

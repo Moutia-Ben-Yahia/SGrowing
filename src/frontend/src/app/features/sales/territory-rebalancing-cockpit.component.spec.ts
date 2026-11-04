@@ -33,4 +33,13 @@ describe('TerritoryRebalancingCockpitComponent', () => {
     expect(totalPipeline).toBe(14700000); // 4.85M + 2.9M + 5.1M + 1.85M
     expect(comp.efficiencyGainPct()).toBe(24.6);
   });
+
+  it('should allow updating totalAccounts and efficiencyGainPct signals', () => {
+    const comp = new TerritoryRebalancingCockpitComponent();
+    comp.totalAccounts.set(180);
+    comp.efficiencyGainPct.set(29.8);
+
+    expect(comp.totalAccounts()).toBe(180);
+    expect(comp.efficiencyGainPct()).toBe(29.8);
+  });
 });

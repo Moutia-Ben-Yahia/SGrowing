@@ -29,4 +29,13 @@ describe('DirectMailMeshCockpitComponent', () => {
     const hasFedEx = comp.dispatches().some(d => d.carrier.includes('FedEx'));
     expect(hasFedEx).toBe(true);
   });
+
+  it('should allow updating deliverySuccessRatePct and pipelineInfluenceRatePct signals', () => {
+    const comp = new DirectMailMeshCockpitComponent();
+    comp.deliverySuccessRatePct.set(99.4);
+    comp.pipelineInfluenceRatePct.set(48.2);
+
+    expect(comp.deliverySuccessRatePct()).toBe(99.4);
+    expect(comp.pipelineInfluenceRatePct()).toBe(48.2);
+  });
 });

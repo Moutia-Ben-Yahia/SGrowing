@@ -30,4 +30,23 @@ describe('RfpResponseCockpitComponent', () => {
     expect(initialAnswer.canonicalSourceReference).toContain('ISO/IEC 27001');
     expect(initialAnswer.synthesizedAnswer).toContain('AES-256-GCM');
   });
+
+  it('should allow adding new questionnaire to the list', () => {
+    const comp = new RfpResponseCockpitComponent();
+    comp.questionnaires.update(list => [
+      ...list,
+      {
+        questionnaireId: 'RFP-FIN-903',
+        enterpriseAccountName: 'Helios Sovereign Wealth Fund',
+        questionnaireType: 'FINANCIAL_COMPLIANCE',
+        totalQuestionsCount: 50,
+        answeredQuestionsCount: 50,
+        confidenceScoreAvgPct: 98.2,
+        status: 'COMPLETED'
+      }
+    ]);
+
+    expect(comp.questionnaires().length).toBe(3);
+    expect(comp.questionnaires()[2].questionnaireId).toBe('RFP-FIN-903');
+  });
 });

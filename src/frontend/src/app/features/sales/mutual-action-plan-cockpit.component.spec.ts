@@ -25,4 +25,27 @@ describe('MutualActionPlanCockpitComponent', () => {
     expect(totalPipelineUsd).toBe(730000); // 450,000 + 280,000
     expect(comp.plans().every(p => p.status === 'ON_TRACK_TO_CLOSE')).toBe(true);
   });
+
+  it('should allow updating milestoneCompletionRatePct and adding custom plans', () => {
+    const comp = new MutualActionPlanCockpitComponent();
+    comp.milestoneCompletionRatePct.set(88.5);
+    comp.plans.update(list => [
+      ...list,
+      {
+        planId: 'MAP-CORP-03',
+        accountName: 'Nordic Bank AB',
+        opportunityId: 'OPP-BANK-101',
+        dealValueUsd: 520000,
+        executiveBuyerChampion: 'Lars Lindqvist',
+        targetGoLiveDate: '2026-12-31',
+        totalMilestonesCount: 6,
+        completedMilestonesCount: 4,
+        status: 'ON_TRACK_TO_CLOSE'
+      }
+    ]);
+
+    expect(comp.milestoneCompletionRatePct()).toBe(88.5);
+    expect(comp.plans().length).toBe(3);
+    expect(comp.plans()[2].planId).toBe('MAP-CORP-03');
+  });
 });
