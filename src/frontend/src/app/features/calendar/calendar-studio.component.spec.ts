@@ -119,4 +119,14 @@ describe('CalendarStudioComponent', () => {
     component.closePreviewModal();
     expect(component.isPreviewModalOpen()).toBe(false);
   });
+
+  it('should compute nextHostIndex and publicBookingLink accurately', () => {
+    expect(component.nextHostIndex()).toBe(-1);
+    component.hosts.set([
+      { hostUserId: 'h1', hostName: 'Host 1', weight: 1.0, assignedMeetingsCount: 5, score: 5.0 },
+      { hostUserId: 'h2', hostName: 'Host 2', weight: 2.0, assignedMeetingsCount: 4, score: 2.0 }
+    ]);
+    expect(component.nextHostIndex()).toBe(1);
+    expect(component.publicBookingLink()).toContain('sgrowing.io/book/sgrowing-tn');
+  });
 });

@@ -42,4 +42,11 @@ describe('SubscriptionDunningStudioComponent', () => {
     expect(component.pastDueInvoices().length).toBe(initialPastDueCount);
     expect(component.recoveredTotal()).toBe(initialRecoveredTotal);
   });
+
+  it('should verify tax rules list and region labels', () => {
+    const rules = component.taxRules();
+    expect(rules.length).toBe(4);
+    expect(rules.some(r => r.region.includes('European Union'))).toBe(true);
+    expect(rules.some(r => r.region.includes('United States'))).toBe(true);
+  });
 });

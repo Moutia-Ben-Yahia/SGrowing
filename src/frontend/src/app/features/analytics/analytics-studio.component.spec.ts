@@ -51,4 +51,13 @@ describe('AnalyticsStudioComponent', () => {
     component.simulatePayoutBatch();
     expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('Affiliate Escrow Payout'));
   });
+
+  it('should verify working capital float and ad spend optimizer metrics', () => {
+    expect(component.inTransitFloat()).toBe(12450);
+    expect(component.deliveredFloat()).toBe(18600);
+    expect(component.netReceivable()).toBe(29230);
+    expect(component.dso()).toBe(7.8);
+    expect(component.standardPixelRoas()).toBe(4.2);
+    expect(component.realDeliveredRoas()).toBe(2.15);
+  });
 });

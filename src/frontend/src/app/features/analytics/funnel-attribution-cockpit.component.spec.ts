@@ -64,4 +64,18 @@ describe('FunnelAttributionCockpitComponent', () => {
     expect(journey[0].stage).toBe('Discovery');
     expect(journey[3].stage).toBe('Closing');
   });
+
+  it('should compute correct currentModelDescription for each attribution model', () => {
+    component.selectedModel.set('TimeDecay');
+    expect(component.currentModelDescription()).toContain('half-life exponential decay');
+
+    component.selectedModel.set('FirstTouch');
+    expect(component.currentModelDescription()).toContain('initial discovery touchpoint');
+
+    component.selectedModel.set('LastTouch');
+    expect(component.currentModelDescription()).toContain('final touchpoint');
+
+    component.selectedModel.set('Linear');
+    expect(component.currentModelDescription()).toContain('equal distribution');
+  });
 });

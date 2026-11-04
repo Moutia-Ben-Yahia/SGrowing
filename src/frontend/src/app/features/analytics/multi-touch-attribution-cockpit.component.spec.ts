@@ -43,4 +43,11 @@ describe('MultiTouchAttributionCockpitComponent', () => {
     expect(component.getModelLabel('WShaped')).toContain('W-Shaped');
     expect(component.getModelLabel('TimeDecay')).toContain('Time-Decay');
   });
+
+  it('should recalculate blendedRoas when totalSpend is updated', () => {
+    component.totalSpend.set(49000);
+    expect(component.blendedRoas()).toBe(5.0);
+    component.totalSpend.set(0);
+    expect(component.blendedRoas()).toBe(245000);
+  });
 });

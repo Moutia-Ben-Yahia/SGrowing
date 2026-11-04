@@ -40,4 +40,12 @@ describe('AttributionShapleyCockpitComponent', () => {
     const search = comp.channelScores().find(c => c.channel === 'PaidSearchAd');
     expect(search?.action).toBe('Maintain');
   });
+
+  it('should allow modifying dealValue signal and updating channel scores dynamically', () => {
+    const comp = new AttributionShapleyCockpitComponent();
+    comp.dealValue.set(250000);
+    expect(comp.dealValue()).toBe(250000);
+    comp.channelScores.set([]);
+    expect(comp.channelScores().length).toBe(0);
+  });
 });

@@ -51,4 +51,19 @@ describe('DataCleanRoomCockpitComponent', () => {
     expect(result?.privacyPreservingRoas).toBe(6.15);
     expect(result?.queryId).toBe('query_zk_784a9c');
   });
+
+  it('should allow dynamically adding participants and updating status', () => {
+    component.participants.update(list => [
+      ...list,
+      {
+        participantId: 'part_retail_partner',
+        organizationName: 'OmniRetail Alliance',
+        role: 'DataPartner',
+        cryptographicSaltId: 'salt_retail_sha256',
+        status: 'Active'
+      }
+    ]);
+    expect(component.participants().length).toBe(3);
+    expect(component.participants()[2].participantId).toBe('part_retail_partner');
+  });
 });

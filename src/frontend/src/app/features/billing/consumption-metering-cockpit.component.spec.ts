@@ -46,4 +46,11 @@ describe('ConsumptionMeteringCockpitComponent', () => {
     expect(comp.projectedOverages()).toBe(0);
     expect(comp.projectedInvoiceTotal()).toBe(comp.profile().baseFeeMonthlyUsd);
   });
+
+  it('should toggle autoUpgradeEnabled in profile', () => {
+    const comp = new ConsumptionMeteringCockpitComponent();
+    expect(comp.profile().autoUpgradeEnabled).toBe(true);
+    comp.profile.update(p => ({ ...p, autoUpgradeEnabled: false }));
+    expect(comp.profile().autoUpgradeEnabled).toBe(false);
+  });
 });

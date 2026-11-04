@@ -96,4 +96,9 @@ describe('BillingStudioComponent', () => {
     }));
     expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('Stripe Checkout Session initialized'));
   });
+
+  it('should fallback to default tenant ID when auth service returns null tenant', () => {
+    mockAuth.currentTenant.set(null);
+    expect(component.tenantId).toBe('00000000-0000-0000-0000-000000000001');
+  });
 });

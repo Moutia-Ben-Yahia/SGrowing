@@ -49,4 +49,16 @@ describe('TaxComplianceCockpitComponent', () => {
     expect(component.taxAmount()).toBe(Math.round(2000 * 0.788 * 0.20 * 100) / 100);
     expect(component.taxDirective()).toBe('STANDARD-VAT-GB');
   });
+
+  it('should calculate totalAmount correctly as convertedAmount + taxAmount', () => {
+    component.amountBase = 1000;
+    component.selectedCurrency = 'USD';
+    component.customerCountry = 'US';
+    component.isB2B = false;
+
+    expect(component.convertedAmount()).toBe(1000);
+    expect(component.taxRate()).toBe(8.5);
+    expect(component.taxAmount()).toBe(85);
+    expect(component.totalAmount()).toBe(1085);
+  });
 });

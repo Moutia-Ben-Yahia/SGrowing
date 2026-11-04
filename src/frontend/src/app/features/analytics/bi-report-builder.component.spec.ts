@@ -44,4 +44,13 @@ describe('BiReportBuilderComponent', () => {
     expect(component.probTarget()).toBe(45.2);
     expect(component.targetArr()).toBe(13_000_000);
   });
+
+  it('should allow modifying pivotRows and savedReports signals', () => {
+    component.pivotRows.update(rows => [
+      ...rows,
+      { dimension: 'Organic Search', subDimension: '2026-Q3', metricValue: 1200000, secondaryValue: 95.0, formattedMetric: '$1.20M' }
+    ]);
+    expect(component.pivotRows().length).toBe(4);
+    expect(component.pivotRows()[3].dimension).toBe('Organic Search');
+  });
 });

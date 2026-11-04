@@ -37,4 +37,16 @@ describe('ExecutiveRevenueCockpitComponent', () => {
     expect(component.getRemainingCols(4).length).toBe(2);
     expect(component.getRemainingCols(6).length).toBe(0);
   });
+
+  it('should allow modifying arr, mrr, nrr and grr signals', () => {
+    component.arr.set(2000000);
+    component.mrr.set(166667);
+    component.nrr.set(125.0);
+    component.grr.set(97.5);
+
+    expect(component.arr()).toBe(2000000);
+    expect(component.mrr()).toBe(166667);
+    expect(component.nrr()).toBe(125.0);
+    expect(component.grr()).toBe(97.5);
+  });
 });
