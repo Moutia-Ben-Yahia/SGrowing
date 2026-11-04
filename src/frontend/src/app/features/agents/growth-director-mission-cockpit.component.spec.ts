@@ -45,4 +45,13 @@ describe('GrowthDirectorMissionCockpitComponent (Domain J3 Supervised Autonomous
     expect(component.tasks().every(t => t.status === 'Executed')).toBe(true);
     expect(component.auditTrail()[0]).toContain('HITL Review approved by Operator');
   });
+
+  it('should reset mission status and record audit log on decomposeMission call', () => {
+    component.approveAndExecute();
+    expect(component.missionStatus()).toBe('Executed');
+
+    component.decomposeMission();
+    expect(component.missionStatus()).toBe('PendingApproval');
+    expect(component.auditTrail()[0]).toContain('Decomposed mission for target: 100 Qualified Leads');
+  });
 });

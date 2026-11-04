@@ -34,4 +34,14 @@ describe('KnowledgeGraphCockpitComponent', () => {
     expect(component.entities().length).toBe(initialEntCount + 1);
     expect(component.entities()[initialEntCount].name).toBe('Neural DSP Module');
   });
+
+  it('should ignore ingest when newEntityName is empty and close modal', () => {
+    const initialEntCount = component.entities().length;
+    component.showIngestModal.set(true);
+    component.newEntityName = '';
+    component.ingestKnowledge();
+
+    expect(component.entities().length).toBe(initialEntCount);
+    expect(component.showIngestModal()).toBe(true);
+  });
 });

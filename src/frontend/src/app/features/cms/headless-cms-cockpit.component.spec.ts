@@ -35,4 +35,16 @@ describe('HeadlessCmsCockpitComponent', () => {
     expect(component.articles().length).toBe(initial + 1);
     expect(component.articles()[0].slug).toBe('zero-trust-whitepaper');
   });
+
+  it('should penalize brand voice score when text includes unsupported guarantee language', () => {
+    component.sampleTextToAudit = 'We guarantee 100% pipeline conversions without any effort.';
+    component.auditText();
+
+    expect(component.auditResult()?.score).toBe(60.0);
+    expect(component.auditResult()?.readingLevel).toBe('Grade 11 (Executive Brief)');
+
+    component.triggerEdgeRevalidation('art_1');
+    const art = component.articles().find(a => a.id === 'art_1');
+    expect(art?.status).toBe('Edge Synced');
+  });
 });

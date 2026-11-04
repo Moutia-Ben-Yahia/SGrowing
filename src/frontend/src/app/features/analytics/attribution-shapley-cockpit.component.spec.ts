@@ -31,4 +31,13 @@ describe('AttributionShapleyCockpitComponent', () => {
     expect(nonAttributed?.shapleyPct).toBe(0.0);
     expect(nonAttributed?.revenue).toBe(0);
   });
+
+  it('updates actions of high-leverage channels to Scaled when rebalancing', () => {
+    const comp = new AttributionShapleyCockpitComponent();
+    comp.rebalanceMarketingBudget();
+    const demo = comp.channelScores().find(c => c.channel === 'ExecutiveDemo');
+    expect(demo?.action).toBe('Scaled (+25% Spend)');
+    const search = comp.channelScores().find(c => c.channel === 'PaidSearchAd');
+    expect(search?.action).toBe('Maintain');
+  });
 });

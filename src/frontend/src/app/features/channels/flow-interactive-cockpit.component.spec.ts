@@ -31,4 +31,13 @@ describe('FlowInteractiveCockpitComponent', () => {
     component.submitFlow();
     expect(component.activeScreenId()).toBe('SUCCESS_SCREEN');
   });
+
+  it('should reset active screen back to SCREEN_LEAD_INFO on resetDemoSession', () => {
+    component.goToNextScreen();
+    component.submitFlow();
+    expect(component.activeScreenId()).toBe('SUCCESS_SCREEN');
+
+    component.resetDemoSession();
+    expect(component.activeScreenId()).toBe('SCREEN_LEAD_INFO');
+  });
 });

@@ -37,4 +37,16 @@ describe('TaxComplianceCockpitComponent', () => {
     expect(component.taxRate()).toBe(19);
     expect(component.taxAmount()).toBeGreaterThan(0);
   });
+
+  it('should calculate converted amount and UK VAT correctly for GBP', () => {
+    component.amountBase = 2000;
+    component.selectedCurrency = 'GBP';
+    component.customerCountry = 'GB';
+    component.isB2B = false;
+
+    expect(component.convertedAmount()).toBe(2000 * 0.788);
+    expect(component.taxRate()).toBe(20);
+    expect(component.taxAmount()).toBe(Math.round(2000 * 0.788 * 0.20 * 100) / 100);
+    expect(component.taxDirective()).toBe('STANDARD-VAT-GB');
+  });
 });

@@ -32,4 +32,14 @@ describe('SubscriptionDunningStudioComponent', () => {
     expect(recovered?.dunningAttempts).toBe(2);
     expect(component.recoveredTotal()).toBe(4799);
   });
+
+  it('should ignore retryInvoicePayment when invoice id does not match', () => {
+    const initialPastDueCount = component.pastDueInvoices().length;
+    const initialRecoveredTotal = component.recoveredTotal();
+
+    component.retryInvoicePayment('inv_non_existent');
+
+    expect(component.pastDueInvoices().length).toBe(initialPastDueCount);
+    expect(component.recoveredTotal()).toBe(initialRecoveredTotal);
+  });
 });

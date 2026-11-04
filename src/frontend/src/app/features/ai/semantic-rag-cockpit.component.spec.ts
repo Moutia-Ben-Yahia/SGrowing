@@ -34,4 +34,12 @@ describe('SemanticRagCockpitComponent', () => {
     expect(component.chunks()[0].title).toBe('API Webhook Security');
     expect(component.showIngestModal()).toBe(false);
   });
+
+  it('should ignore executeSearch when query is empty string or only whitespace', () => {
+    const initialAnswer = component.groundedAnswer();
+    component.searchQuery = '   ';
+    component.executeSearch();
+
+    expect(component.groundedAnswer()).toBe(initialAnswer);
+  });
 });

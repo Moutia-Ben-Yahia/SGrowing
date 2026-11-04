@@ -34,4 +34,14 @@ describe('BiReportBuilderComponent', () => {
     expect(component.simP90Arr()).toBe(Math.round(14_000_000 * 1.2));
     expect(component.probTarget()).toBe(78.5);
   });
+
+  it('should lower probability target when target ARR exceeds P50 projection', () => {
+    component.growthMean = 10;
+    component.targetArrInput = 13_000_000;
+    component.runMonteCarloSimulation();
+
+    expect(component.simP50Arr()).toBe(11_000_000);
+    expect(component.probTarget()).toBe(45.2);
+    expect(component.targetArr()).toBe(13_000_000);
+  });
 });

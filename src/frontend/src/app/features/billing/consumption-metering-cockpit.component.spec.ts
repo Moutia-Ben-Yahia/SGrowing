@@ -36,4 +36,14 @@ describe('ConsumptionMeteringCockpitComponent', () => {
     expect(comp.projectedOverages()).toBe(0);
     expect(comp.projectedInvoiceTotal()).toBe(999);
   });
+
+  it('should return 0 burn rate when metric quotaLimit is zero or metrics are empty', () => {
+    const comp = new ConsumptionMeteringCockpitComponent();
+    expect(comp.getBurnPercent({ metricName: 'Test', consumedUnits: 100, quotaLimit: 0, unitCostUsd: 1, unitLabel: 'calls' })).toBe(0);
+
+    comp.profile.set({ ...comp.profile(), metrics: [] });
+    expect(comp.highestBurnRate()).toBe(0);
+    expect(comp.projectedOverages()).toBe(0);
+    expect(comp.projectedInvoiceTotal()).toBe(comp.profile().baseFeeMonthlyUsd);
+  });
 });

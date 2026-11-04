@@ -27,4 +27,14 @@ describe('ExecutiveRevenueCockpitComponent', () => {
     expect(component.cohortRows.length).toBe(6);
     expect(component.cohortRows[0].retention[0]).toBe(100);
   });
+
+  it('should return correct retention color styles and remaining cols padding', () => {
+    expect(component.getRetentionColor(98)).toContain('bg-emerald-100');
+    expect(component.getRetentionColor(92)).toContain('bg-emerald-50');
+    expect(component.getRetentionColor(87)).toContain('bg-amber-50');
+    expect(component.getRetentionColor(80)).toContain('bg-rose-50');
+
+    expect(component.getRemainingCols(4).length).toBe(2);
+    expect(component.getRemainingCols(6).length).toBe(0);
+  });
 });

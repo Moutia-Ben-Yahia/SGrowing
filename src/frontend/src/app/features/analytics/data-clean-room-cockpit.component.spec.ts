@@ -43,4 +43,12 @@ describe('DataCleanRoomCockpitComponent', () => {
     component.datasets.set([]);
     expect(component.totalIdentities()).toBe(0);
   });
+
+  it('should initialize with default query result containing positive attributed revenue and ROAS', () => {
+    const result = component.queryResult();
+    expect(result).not.toBeNull();
+    expect(result?.attributedRevenue).toBe(922768);
+    expect(result?.privacyPreservingRoas).toBe(6.15);
+    expect(result?.queryId).toBe('query_zk_784a9c');
+  });
 });
