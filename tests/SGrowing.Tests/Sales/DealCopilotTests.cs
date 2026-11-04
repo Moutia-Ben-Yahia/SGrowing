@@ -40,4 +40,34 @@ public class DealCopilotTests
         var score = _engine.CalculateAggregatePipelineHealth("tenant_sales_test");
         Assert.True(score > 50.0);
     }
+
+    [Fact]
+    public void ExecuteIntervention_WhenDealNotFound_ThrowsKeyNotFoundException()
+    {
+        var req = new InterventionActionRequest("deal_nonexistent_999", "DraftReengagementEmail");
+        Assert.Throws<KeyNotFoundException>(() => _engine.ExecuteIntervention(req));
+    }
+
+    [Fact]
+    public void ExecuteIntervention_HighInitialProbability_CapsAt95Percent()
+    {
+        var req = new InterventionActionRequest("deal_acme_retail", "TransmitPKCS7Packet");
+        var result = _engine.ExecuteIntervention(req);
+
+        Assert.True(result.Success);
+        Assert.Equal(95.0, result.NewWinProbabilityPercent);
+
+        var deal = _engine.GetDeal("deal_acme_retail");
+        Assert.NotNull(deal);
+        Assert.Equal(95.0, deal.WinProbabilityPercent);
+        Assert.Equal(0, deal.DaysInactive);
+        Assert.Equal("Healthy", deal.RiskLevel);
+    }
+
+    [Fact]
+    public void GetDeal_NonExistentDeal_ReturnsNull()
+    {
+        var deal = _engine.GetDeal("deal_missing_xyz");
+        Assert.Null(deal);
+    }
 }

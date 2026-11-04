@@ -68,5 +68,50 @@ public class CustomerAdvocacyTests
 
         Assert.NotNull(updated);
         Assert.Equal("COMPLETED", updated.ReferenceCallStatus);
+
+        var overview = engine.GetOverview();
+        var adv = overview.TopAdvocates.FirstOrDefault(a => a.AdvocateId == match.MatchedAdvocateId);
+        Assert.NotNull(adv);
+        Assert.Equal(2, adv.ReferenceCallsThisQuarter);
+        Assert.Equal("QUOTA_REACHED", adv.Status);
+        Assert.Equal(1750, adv.RewardPointsBalance);
+    }
+
+    [Fact]
+    public void MatchReference_UnmatchedVertical_FallsBackToAvailableAdvocateOrTemp()
+    {
+        var engine = new CustomerAdvocacyEngine();
+        var request = new MatchReferenceRequest(
+            "HealthBio Genetics",
+            "MID_MARKET",
+            "HEALTHCARE",
+            850
+        );
+
+        var match = engine.MatchReference(request);
+
+        Assert.NotNull(match);
+        Assert.Equal("HEALTHCARE", match.TargetIndustryVertical);
+        Assert.Equal("SCHEDULED", match.ReferenceCallStatus);
+        Assert.NotEmpty(match.MatchedAdvocateId);
+    }
+
+    [Fact]
+    public void RecordCall_NonExistentMatchId_CreatesDefaultFallbackRecord()
+    {
+        var engine = new CustomerAdvocacyEngine();
+        var recordRequest = new RecordReferenceCallRequest(
+            "REF-UNKNOWN-999",
+            "NO_SHOW",
+            0,
+            1
+        );
+
+        var record = engine.RecordCall(recordRequest);
+
+        Assert.NotNull(record);
+        Assert.Equal("REF-UNKNOWN-999", record.MatchId);
+        Assert.Equal("NO_SHOW", record.ReferenceCallStatus);
+        Assert.Equal("Generic Prospect", record.ProspectCompanyName);
     }
 }

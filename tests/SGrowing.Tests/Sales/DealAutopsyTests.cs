@@ -47,4 +47,65 @@ public sealed class DealAutopsyTests
         Assert.Contains("Sovereign Cluster Attestation", playbook.RecommendedRecoveryStrategy);
         Assert.True(playbook.ProbabilityOfPipelineRevival >= 0.60);
     }
+
+    [Fact]
+    public void AnalyzeLostDeal_CompetitorIncumbent_IdentifiesCompetitorDisplacement()
+    {
+        var record = _engine.AnalyzeLostDeal(
+            "OPP-TEST-002",
+            "MegaBank International",
+            480000.0,
+            "Marcus Vance",
+            "Customer renewed 3-year contract with existing Salesforce and HubSpot vendor stack."
+        );
+
+        Assert.NotNull(record);
+        Assert.Equal(LossReasonCategory.CompetitorDisplacement, record.PrimaryLossCategory);
+        Assert.Contains(record.DetectedSignals, s => s.FactorName == "Incumbent Vendor Lock-in");
+    }
+
+    [Fact]
+    public void AnalyzeLostDeal_SecurityAndLegal_IdentifiesSecurityBlocker()
+    {
+        var record = _engine.AnalyzeLostDeal(
+            "OPP-TEST-003",
+            "HealthNet Shield",
+            320000.0,
+            "Sarah Jenkins",
+            "Legal and compliance team refused public cloud multi-tenancy due to strict HIPAA data sovereignty."
+        );
+
+        Assert.NotNull(record);
+        Assert.Equal(LossReasonCategory.SecurityAndComplianceBlocker, record.PrimaryLossCategory);
+        Assert.Contains(record.DetectedSignals, s => s.FactorName == "InfoSec & Compliance Roadblock");
+    }
+
+    [Fact]
+    public void AnalyzeLostDeal_VagueStagnation_FallsBackToBudgetFreezeOrNoDecision()
+    {
+        var record = _engine.AnalyzeLostDeal(
+            "OPP-TEST-004",
+            "Starlight Media Group",
+            95000.0,
+            "Alexandra Hayes",
+            "Internal reorganization occurred and communications went dark with no decision made."
+        );
+
+        Assert.NotNull(record);
+        Assert.Equal(LossReasonCategory.BudgetFreezeOrNoDecision, record.PrimaryLossCategory);
+        Assert.Contains(record.DetectedSignals, s => s.FactorName == "Project Indefinitely Shelved");
+    }
+
+    [Theory]
+    [InlineData(LossReasonCategory.CompetitorDisplacement, "Competitive Replacement Matrix")]
+    [InlineData(LossReasonCategory.PricingAndTcoMisalignment, "Consumption-Based Tier")]
+    [InlineData(LossReasonCategory.ChampionDepartureOrReorg, "Executive Sponsor CAB Invitation")]
+    public void GenerateRecoveryPlaybook_ProducesAppropriateRecoveryStrategy(LossReasonCategory category, string expectedFragment)
+    {
+        var playbook = _engine.GenerateRecoveryPlaybook("OPP-THEORY-01", category);
+
+        Assert.NotNull(playbook);
+        Assert.Contains(expectedFragment, playbook.RecommendedRecoveryStrategy);
+        Assert.Equal(60, playbook.ReEngagementCooldownDays);
+    }
 }
