@@ -131,4 +131,29 @@ describe('ChurnRetentionStudioComponent (RFM Segmentation & Churn Prevention Stu
     expect(mockHttp.post).toHaveBeenCalled();
     expect(component.activeDrawer()).toBeNull();
   });
+
+  it('should open conversion modal and record campaign conversion', () => {
+    const mockCampaign = {
+      id: 'winback-1',
+      tenantId: 'tenant-1',
+      customerId: 'cust-101',
+      customerName: 'Karim Jaziri',
+      customerEmail: 'karim@jazirigroup.tn',
+      playbookType: 'VipDiscountOffer' as const,
+      channel: 'WhatsApp' as const,
+      status: 'Dispatched' as const,
+      offerDetails: '20% off',
+      dispatchedAtUtc: new Date().toISOString(),
+      expiresAtUtc: new Date().toISOString()
+    };
+
+    component.openRecordConversionModal(mockCampaign);
+    expect(component.activeDrawer()).toBe('recordConversion');
+    expect(component.selectedCampaignForConversion()).toEqual(mockCampaign);
+
+    component.conversionOrderAmount = 1850;
+    component.submitRecordConversion();
+    expect(mockHttp.post).toHaveBeenCalled();
+    expect(component.activeDrawer()).toBeNull();
+  });
 });

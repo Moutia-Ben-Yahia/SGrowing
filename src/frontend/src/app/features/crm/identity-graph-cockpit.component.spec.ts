@@ -66,4 +66,18 @@ describe('IdentityGraphCockpitComponent (Domain B3 CDP Identity Resolution)', ()
     expect(component.totalProfiles()).toBe(initialProfiles);
     expect(component.identityNodes().length).toBe(4);
   });
+
+  it('should compute traitsList correctly and assign appropriate confidence for DeviceId and PhoneNumber', () => {
+    const traits = component.traitsList();
+    expect(traits.length).toBe(6);
+    expect(traits.some(t => t.key === 'Company' && t.value === 'Megacorp Global Ltd')).toBe(true);
+
+    component.newAnonId = 'cookie_mobile_dev';
+    component.newIdType = 'DeviceId';
+    component.newIdValue = 'fp_device_9921';
+    component.stitchIdentity();
+
+    const deviceNode = component.identityNodes().find(n => n.value === 'fp_device_9921');
+    expect(deviceNode?.confidence).toBe(0.85);
+  });
 });

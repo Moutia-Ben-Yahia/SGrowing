@@ -42,6 +42,17 @@ describe('ReplenishmentCockpitComponent', () => {
     );
   });
 
+  it('should compute criticalDepletionsCount and handle empty recommendations', () => {
+    expect(component.criticalDepletionsCount()).toBe(1);
+    component.recommendations.set([]);
+    expect(component.criticalDepletionsCount()).toBe(0);
+    expect(component.totalStagedCost()).toBe(0);
+
+    component.stagedPo.set(null);
+    expect(() => component.dispatchPoToSupplier()).not.toThrow();
+    expect(component.stagedPo()).toBeNull();
+  });
+
   function AssertContains(actual: string, expected: string): void {
     expect(actual.includes(expected)).toBe(true);
   }

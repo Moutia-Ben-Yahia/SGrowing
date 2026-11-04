@@ -36,4 +36,15 @@ describe('ContentRepurposingCockpitComponent', () => {
     const newsletter = comp.derivatives().find(d => d.channel === 'Newsletter');
     expect(newsletter?.hashtags).toContain('#ExecutiveBriefing');
   });
+
+  it('should handle clearing derivatives and recalculate total reading seconds', () => {
+    const comp = new ContentRepurposingCockpitComponent();
+    comp.derivatives.set([]);
+    expect(comp.derivatives().length).toBe(0);
+
+    comp.generateShortVideoScript();
+    expect(comp.derivatives().length).toBe(1);
+    expect(comp.derivatives()[0].readSeconds).toBe(60);
+    expect(comp.derivatives()[0].channel).toBe('SlideCarousel');
+  });
 });

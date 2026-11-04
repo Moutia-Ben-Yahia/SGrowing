@@ -34,4 +34,33 @@ describe('ConversationHierarchyStudioComponent', () => {
       component.openMergeModal();
     }).not.toThrow();
   });
+
+  it('should support hierarchy ticket node structures and allow idempotent modal triggers', () => {
+    const rootNode: import('./conversation-hierarchy-studio.component').HierarchyTicketNode = {
+      id: 'TK-8012',
+      title: 'Damaged Commercial Shipment & Invoice Dispute',
+      status: 'Open',
+      relationship: 'Parent',
+      messagesCount: 14,
+      isBlocking: true,
+      children: [
+        {
+          id: 'TK-8013',
+          title: 'Warehouse Replacement Dispatch',
+          status: 'Open',
+          relationship: 'Child',
+          messagesCount: 4,
+          isBlocking: true,
+          children: []
+        }
+      ]
+    };
+
+    expect(rootNode.children.length).toBe(1);
+    expect(rootNode.children[0].isBlocking).toBe(true);
+
+    component.openSplitModal();
+    component.openMergeModal();
+    expect(component).toBeTruthy();
+  });
 });

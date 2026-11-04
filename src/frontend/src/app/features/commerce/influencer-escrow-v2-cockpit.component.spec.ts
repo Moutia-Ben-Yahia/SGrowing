@@ -38,4 +38,13 @@ describe('InfluencerEscrowV2CockpitComponent', () => {
     expect(comp.totalGmv()).toBe(0);
     expect(comp.totalEscrowLocked()).toBe(0);
   });
+
+  it('should update selectedCampaign status when the selected campaign escrow is released', () => {
+    const comp = new InfluencerEscrowV2CockpitComponent();
+    expect(comp.selectedCampaign()?.campaignId).toBe('escrow_camp_01');
+    expect(comp.selectedCampaign()?.status).toBe('LockedInEscrow');
+
+    comp.releaseEscrow('escrow_camp_01');
+    expect(comp.selectedCampaign()?.status).toBe('MilestoneReleased');
+  });
 });

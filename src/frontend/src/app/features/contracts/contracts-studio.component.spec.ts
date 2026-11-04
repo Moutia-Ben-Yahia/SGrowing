@@ -58,4 +58,23 @@ describe('ContractsStudioComponent', () => {
     expect(target.signedPdfUrl).toContain('_signed.pdf');
     expect(component.signedValue()).toBeGreaterThan(0);
   });
+
+  it('should not save draft when title or signerName is missing and handle empty contracts', () => {
+    component.newContract = {
+      title: '',
+      contractType: 'NDA',
+      signerName: '',
+      signerEmail: '',
+      contractValue: 1000
+    };
+    const countBefore = component.contracts().length;
+    component.saveDraft();
+    expect(component.contracts().length).toBe(countBefore);
+
+    component.contracts.set([]);
+    component.refreshMetrics();
+    expect(component.totalValue()).toBe(0);
+    expect(component.signedValue()).toBe(0);
+    expect(component.pendingCount()).toBe(0);
+  });
 });

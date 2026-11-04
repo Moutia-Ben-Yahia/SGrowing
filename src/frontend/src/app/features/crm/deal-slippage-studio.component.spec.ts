@@ -41,4 +41,27 @@ describe('DealSlippageStudioComponent (Twenty-Style Opportunity Stage-Gate & Dea
     expect(component.weightedAmount()).toBe(0);
     expect(component.blockedCount()).toBe(0);
   });
+
+  it('should update pipeline, at-risk amount and blockedCount when adding a critical stalled deal', () => {
+    component.deals.update(deals => [
+      ...deals,
+      {
+        id: 'd-4',
+        title: 'Global API Expansion',
+        account: 'Apex Telecom',
+        amount: 80000,
+        stage: 'ProposalQuote',
+        rep: 'Marcus Vance',
+        daysInStage: 45,
+        slippageScore: 90,
+        risk: 'CriticalStalled',
+        missingGates: ['MarginThresholdMet', 'ExecutiveSponsorMissing']
+      }
+    ]);
+
+    expect(component.deals().length).toBe(4);
+    expect(component.totalPipeline()).toBe(425000 + 80000);
+    expect(component.atRiskAmount()).toBe(140000 + 80000);
+    expect(component.blockedCount()).toBe(3);
+  });
 });

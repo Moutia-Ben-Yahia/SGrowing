@@ -48,4 +48,15 @@ describe('ChurnRescueCockpitComponent', () => {
     component.selectAccount(second);
     expect(component.selectedAccount()?.accountId).toBe(second.accountId);
   });
+
+  it('should handle empty accounts and null selectedAccount gracefully', () => {
+    component.selectedAccount.set(null);
+    const prevAgreement = component.renewalAgreement();
+    component.generateRenewalAgreement();
+    expect(component.renewalAgreement()).toEqual(prevAgreement);
+
+    component.accounts.set([]);
+    expect(component.totalArrAtRisk()).toBe(0);
+    expect(component.highRiskCount()).toBe(0);
+  });
 });

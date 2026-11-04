@@ -110,4 +110,18 @@ describe('DeliverabilityStudioComponent', () => {
     expect(component.warmup()?.spamRescueCount).toBe(4);
     expect(apiServiceMock.getWarmupLogs).toHaveBeenCalledWith('warmup-101', 'tenant-test-123');
   });
+
+  it('should fallback to default tenant ID when auth tenant is null and handle null warmup gracefully', () => {
+    authServiceMock.currentTenant.set(null);
+    expect(component.tenantId).toBe('00000000-0000-0000-0000-000000000001');
+
+    component.checkDns();
+    expect(apiServiceMock.checkDomainDns).toHaveBeenCalledWith({
+      tenantId: '00000000-0000-0000-0000-000000000001',
+      domainName: 'mail.sgrowing.io'
+    });
+
+    component.warmup.set(null);
+    expect(() => component.simulateStep()).not.toThrow();
+  });
 });

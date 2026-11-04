@@ -41,4 +41,11 @@ describe('FraudFirewallCockpitComponent', () => {
     expect(component.blockRate()).toBe(25);
     expect(component.challengeCount()).toBe(2);
   });
+
+  it('should handle empty evaluations gracefully and calculate zero stats', () => {
+    component.evaluations.set([]);
+    expect(component.blockRate()).toBe(0);
+    expect(component.challengeCount()).toBe(0);
+    expect(component.avgRiskScore()).toBe(0);
+  });
 });
