@@ -265,6 +265,58 @@ public sealed class DynamicYieldManagementTests
         state.Status.Should().Be(AuctionLotStatus.Canceled);
     }
 
+    [Fact]
+    public void SpotCapacityAuctioneer_CreateAuctionLot_InvalidPriceOrDecrements_ThrowsArgumentException()
+    {
+        // Starting price <= floor price
+        var act1 = () => _auctioneer.CreateAuctionLot(new CreateSpotAuctionRequest(
+            CapacityType.PalletStorageBay, 1, StartingPriceDzd: 1000m, MinimumFloorPriceDzd: 1000m, DecrementDzd: 100m, DecayIntervalSeconds: 60, DurationMinutes: 10
+        ));
+        act1.Should().Throw<ArgumentException>().WithMessage("*Starting price must be strictly greater than minimum floor price*");
+
+        // Decrement <= 0
+        var act2 = () => _auctioneer.CreateAuctionLot(new CreateSpotAuctionRequest(
+            CapacityType.PalletStorageBay, 1, StartingPriceDzd: 2000m, MinimumFloorPriceDzd: 1000m, DecrementDzd: 0m, DecayIntervalSeconds: 60, DurationMinutes: 10
+        ));
+        act2.Should().Throw<ArgumentException>().WithMessage("*Price decrement must be positive*");
+
+        // Decay interval <= 0
+        var act3 = () => _auctioneer.CreateAuctionLot(new CreateSpotAuctionRequest(
+            CapacityType.PalletStorageBay, 1, StartingPriceDzd: 2000m, MinimumFloorPriceDzd: 1000m, DecrementDzd: 100m, DecayIntervalSeconds: 0, DurationMinutes: 10
+        ));
+        act3.Should().Throw<ArgumentException>().WithMessage("*Decay interval must be positive*");
+    }
+
+    [Fact]
+    public void SpotCapacityAuctioneer_GetCurrentLotState_MissingLot_ThrowsKeyNotFoundException()
+    {
+        var act = () => _auctioneer.GetCurrentLotState("NON_EXISTENT_LOT_999");
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*not found*");
+    }
+
+    [Fact]
+    public void SpotCapacityAuctioneer_CancelLot_MissingLot_ReturnsFalse()
+    {
+        var result = _auctioneer.CancelLot("NON_EXISTENT_LOT_888");
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void SpotCapacityAuctioneer_ExpiredLot_CannotBeBidOn()
+    {
+        var lot = _auctioneer.CreateAuctionLot(new CreateSpotAuctionRequest(
+            CapacityType.ExpressDeliverySlot, 1, StartingPriceDzd: 10000m, MinimumFloorPriceDzd: 5000m, DecrementDzd: 1000m, DecayIntervalSeconds: 60, DurationMinutes: 5
+        ));
+
+        // Evaluate after expiration
+        var pastExpiry = lot.AuctionExpiresAtUtc.AddMinutes(1);
+        var expiredState = _auctioneer.GetCurrentLotState(lot.LotId, pastExpiry);
+        expiredState.Status.Should().Be(AuctionLotStatus.ExpiredFloorReached);
+
+        var act = () => _auctioneer.SubmitBid(new SubmitAuctionBidRequest(lot.LotId, "LATE-BIDDER"), pastExpiry);
+        act.Should().Throw<InvalidOperationException>().WithMessage("*Cannot bid on auction lot*");
+    }
+
     #endregion
 
     #region Dependency Injection Tests
