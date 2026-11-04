@@ -59,4 +59,62 @@ public sealed class CompetitiveBattlecardTests
         var overview = engine.GetOverview();
         Assert.Contains(overview.RecentSignals, s => s.SignalId == signal.SignalId);
     }
+
+    [Fact]
+    public void GenerateBattlecard_UnknownCompetitor_FallsBackToGenericPositioning()
+    {
+        var engine = new CompetitiveBattlecardEngine();
+        var request = new GenerateBattlecardRequest(
+            "COMP-UNKNOWN-99",
+            "OPP-GEN-101",
+            "Healthcare Systems",
+            180000.00m
+        );
+
+        var battlecard = engine.GenerateBattlecard(request);
+
+        Assert.NotNull(battlecard);
+        Assert.Contains("Unknown Competitor", battlecard.ExecutiveSummary);
+        Assert.Contains(battlecard.ObjectionHandlingPlaybook, p => p.Contains("Unknown Competitor"));
+        Assert.StartsWith("0x", battlecard.CryptographicProofDigest);
+    }
+
+    [Fact]
+    public void SubmitWinLossSignal_LostDeal_DecreasesAggregateWinRate()
+    {
+        var engine = new CompetitiveBattlecardEngine();
+        // Seeded state has 2 WON signals (100% win rate)
+        var initialOverview = engine.GetOverview();
+        Assert.Equal(100.0, initialOverview.AggregateWinRatePct);
+
+        var lostRequest = new SubmitWinLossSignalRequest(
+            "COMP-APEX-01",
+            "LOST",
+            250000.00m,
+            "Buyer renewed incumbent contract due to internal budget freezes"
+        );
+        engine.SubmitWinLossSignal(lostRequest);
+
+        var updatedOverview = engine.GetOverview();
+        // 2 wins out of 3 signals = 66.7%
+        Assert.Equal(66.7, Math.Round(updatedOverview.AggregateWinRatePct, 1));
+        Assert.Equal(3, updatedOverview.RecentSignals.Count);
+    }
+
+    [Fact]
+    public void SubmitWinLossSignal_NormalizesOutcomeToUppercase()
+    {
+        var engine = new CompetitiveBattlecardEngine();
+        var request = new SubmitWinLossSignalRequest(
+            "COMP-APEX-01",
+            "won",
+            120000.00m,
+            "Lower TCO demonstrated"
+        );
+
+        var signal = engine.SubmitWinLossSignal(request);
+
+        Assert.Equal("WON", signal.Outcome);
+        Assert.StartsWith("SIG-WON-", signal.SignalId);
+    }
 }

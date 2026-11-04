@@ -72,4 +72,64 @@ public class CustomerAdvisoryBoardTests
         Assert.Equal(initialVotesCount + 1, updatedOverview.RecentRoadmapVotes.Count);
         Assert.Contains(updatedOverview.RecentRoadmapVotes, v => v.VoteId == vote.VoteId);
     }
+
+    [Fact]
+    public void AlignSponsor_SetsPerfectInitialHealthScoreAndZeroDaysSinceTouchpoint()
+    {
+        var engine = new CustomerAdvisoryBoardEngine();
+        var request = new AlignSponsorRequest(
+            "Omega Logistics Global",
+            "Katarina Rostov",
+            "Chief Executive Officer",
+            "Alexander Vance",
+            "CEO"
+        );
+
+        var pairing = engine.AlignSponsor(request);
+
+        Assert.NotNull(pairing);
+        Assert.Equal(0, pairing.DaysSinceLastTouchpoint);
+        Assert.Equal(100.0, pairing.EngagementHealthScore);
+        Assert.Equal("STRONGLY_ALIGNED", pairing.Status);
+    }
+
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(-5, 1)]
+    [InlineData(8, 5)]
+    [InlineData(3, 3)]
+    public void VoteRoadmap_PriorityRankClampedBetweenOneAndFive(int inputRank, int expectedClampedRank)
+    {
+        var engine = new CustomerAdvisoryBoardEngine();
+        var request = new VoteRoadmapRequest(
+            "Real-Time Deepfake Detection Engine",
+            "Omega Logistics Global",
+            inputRank,
+            1_500_000m
+        );
+
+        var vote = engine.VoteRoadmap(request);
+
+        Assert.NotNull(vote);
+        Assert.Equal(expectedClampedRank, vote.PriorityRank);
+    }
+
+    [Fact]
+    public void GetOverview_RecalculatesInfluencedArrSumAccurately()
+    {
+        var engine = new CustomerAdvisoryBoardEngine();
+        var initial = engine.GetOverview();
+        var initialArr = initial.TotalInfluencedArrUsd;
+
+        var req = new VoteRoadmapRequest(
+            "Autonomous CAPI Signal Verification",
+            "Alpha Retail Holdings",
+            2,
+            750_000m
+        );
+        engine.VoteRoadmap(req);
+
+        var updated = engine.GetOverview();
+        Assert.Equal(initialArr + 750_000m, updated.TotalInfluencedArrUsd);
+    }
 }

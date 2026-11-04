@@ -67,4 +67,71 @@ public class BuyingCommitteeTests
         var overview = engine.GetOverview();
         Assert.Contains(overview.Interventions, i => i.InterventionId == intervention.InterventionId);
     }
+
+    [Fact]
+    public void AddStakeholder_UndecidedSentiment_AssignsUndecidedStatus()
+    {
+        var engine = new BuyingCommitteeGraphEngine();
+        var request = new AddStakeholderRequest(
+            "ACC-NORTHSTAR",
+            "Evan Wright",
+            "Senior IT Director",
+            "TECHNICAL_EVALUATOR",
+            0.6,
+            0.1, // Between -0.2 and 0.3 -> UNDECIDED
+            "Infrastructure IT"
+        );
+
+        var member = engine.AddStakeholder(request);
+
+        Assert.NotNull(member);
+        Assert.Equal("UNDECIDED", member.CurrentStatus);
+        Assert.Equal(0.1, member.SentimentScore);
+    }
+
+    [Fact]
+    public void AddStakeholder_ClampsInfluenceWeightAndSentimentScore()
+    {
+        var engine = new BuyingCommitteeGraphEngine();
+        var request = new AddStakeholderRequest(
+            "ACC-NORTHSTAR",
+            "Overly Powerful Executive",
+            "Board Member",
+            "ECONOMIC_BUYER",
+            5.0,  // Clamp to 1.0
+            -2.5, // Clamp to -1.0
+            "Board of Directors"
+        );
+
+        var member = engine.AddStakeholder(request);
+
+        Assert.NotNull(member);
+        Assert.Equal(1.0, member.InfluenceWeight);
+        Assert.Equal(-1.0, member.SentimentScore);
+        Assert.Equal("BLOCKED", member.CurrentStatus);
+    }
+
+    [Fact]
+    public void GetOverview_AddingChampion_IncreasesConsensusScoreAndAlignedCount()
+    {
+        var engine = new BuyingCommitteeGraphEngine();
+        var initialOverview = engine.GetOverview("ACC-NORTHSTAR");
+
+        var request = new AddStakeholderRequest(
+            "ACC-NORTHSTAR",
+            "Rachel Green",
+            "VP Business Transformation",
+            "CHAMPION",
+            1.0,
+            1.0,
+            "Digital Innovation"
+        );
+
+        engine.AddStakeholder(request);
+
+        var updatedOverview = engine.GetOverview("ACC-NORTHSTAR");
+        Assert.Equal(initialOverview.TotalStakeholdersCount + 1, updatedOverview.TotalStakeholdersCount);
+        Assert.Equal(initialOverview.AlignedChampionsCount + 1, updatedOverview.AlignedChampionsCount);
+        Assert.True(updatedOverview.CoalitionConsensusScore >= initialOverview.CoalitionConsensusScore);
+    }
 }

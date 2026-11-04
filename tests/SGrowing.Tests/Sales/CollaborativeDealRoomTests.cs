@@ -68,4 +68,56 @@ public sealed class CollaborativeDealRoomTests
         Assert.True(completedMs.IsCompleted);
         Assert.Equal(receipt.CryptographicSignoffDigest, completedMs.CompletionDigest);
     }
+
+    [Fact]
+    public void CreateDealRoom_MultipleRooms_TracksTotalInfluencedDealValue()
+    {
+        var engine = new CollaborativeDealRoomEngine();
+        var initialOverview = engine.GetOverview();
+        var initialValue = initialOverview.TotalInfluencedDealValueUsd;
+
+        var req1 = new CreateDealRoomRequest(
+            "Fintech Dynamics Global",
+            "OPP-FIN-100",
+            300_000.00m,
+            "Dr. Marcus Brody",
+            "Samantha Hayes",
+            DateTime.UtcNow.AddDays(45)
+        );
+        var req2 = new CreateDealRoomRequest(
+            "CloudScale BioTech",
+            "OPP-BIO-200",
+            450_000.00m,
+            "Sarah Jenkins",
+            "Samantha Hayes",
+            DateTime.UtcNow.AddDays(90)
+        );
+
+        engine.CreateDealRoom(req1);
+        engine.CreateDealRoom(req2);
+
+        var updatedOverview = engine.GetOverview();
+        Assert.Equal(initialOverview.ActiveRoomsCount + 2, updatedOverview.ActiveRoomsCount);
+        Assert.Equal(initialValue + 750_000.00m, updatedOverview.TotalInfluencedDealValueUsd);
+    }
+
+    [Fact]
+    public void CompleteMilestone_NonExistentMilestone_GeneratesReceiptWithoutThrowing()
+    {
+        var engine = new CollaborativeDealRoomEngine();
+        var request = new CompleteDealRoomMilestoneRequest(
+            "MLS-NONEXISTENT-999",
+            "ROOM-CORP-01",
+            "legal.approver@acmeww.com",
+            "External Buyer Counsel"
+        );
+
+        var receipt = engine.CompleteMilestone(request);
+
+        Assert.NotNull(receipt);
+        Assert.Equal("MLS-NONEXISTENT-999", receipt.MilestoneId);
+        Assert.Equal("ROOM-CORP-01", receipt.RoomId);
+        Assert.StartsWith("0x", receipt.CryptographicSignoffDigest);
+        Assert.Equal(1, receipt.RemainingMilestones);
+    }
 }
