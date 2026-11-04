@@ -357,4 +357,36 @@ public class RoundRobinSchedulingTests
         statB.AssignedMeetingsCount.Should().Be(1);
         statB.Score.Should().Be(0.67); // 1 / 1.5 = 0.67
     }
+
+    [Fact]
+    public async Task GetHostAvailabilityAsync_WhenScheduleNotConfigured_ReturnsNull()
+    {
+        using var db = CreateDbContext();
+        var service = new CalendarSchedulingService(db);
+        var tenantId = Guid.NewGuid();
+        var randomHost = Guid.NewGuid();
+
+        var availability = await service.GetHostAvailabilityAsync(tenantId, randomHost);
+
+        availability.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SetHostAvailabilityAsync_WhenCalledMultipleTimes_UpdatesExistingSchedule()
+    {
+        using var db = CreateDbContext();
+        var service = new CalendarSchedulingService(db);
+        var tenantId = Guid.NewGuid();
+        var hostId = Guid.NewGuid();
+
+        await service.SetHostAvailabilityAsync(tenantId, hostId, "Mounir Initial", "UTC", new List<DayAvailability>(), weight: 1.0);
+        await service.SetHostAvailabilityAsync(tenantId, hostId, "Mounir Updated", "Africa/Tunis", new List<DayAvailability>(), weight: 3.5);
+
+        var retrieved = await service.GetHostAvailabilityAsync(tenantId, hostId);
+
+        retrieved.Should().NotBeNull();
+        retrieved!.HostName.Should().Be("Mounir Updated");
+        retrieved.TimeZone.Should().Be("Africa/Tunis");
+        retrieved.Weight.Should().Be(3.5);
+    }
 }

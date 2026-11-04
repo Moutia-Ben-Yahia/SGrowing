@@ -280,4 +280,58 @@ public class LiveCommerceOverlayTests
         Assert.False(plentiful.IsUrgentAlert);
         Assert.Equal(15, plentiful.RemainingUnits);
     }
+
+    [Fact]
+    public async Task GetLiveOverlayStockFeedAsync_WhenSessionHasNoActiveDeals_ReturnsEmptyList()
+    {
+        var db = CreateDbContext();
+        var service = new LiveCommerceOverlayService(db);
+        var tenantId = Guid.NewGuid();
+
+        var session = LiveStreamSession.Create(tenantId, "Empty Deals Session", LiveStreamPlatform.TikTokLive, "TT-EMPTY-01");
+        db.LiveStreamSessions.Add(session);
+        await db.SaveChangesAsync();
+
+        var feed = await service.GetLiveOverlayStockFeedAsync(tenantId, session.Id);
+
+        Assert.Empty(feed);
+    }
+
+    [Fact]
+    public async Task ProcessLiveCommentAsync_MultipleOrders_DecrementsRemainingQuantityConsistently()
+    {
+        var db = CreateDbContext();
+        var service = new LiveCommerceOverlayService(db);
+        var tenantId = Guid.NewGuid();
+
+        var session = LiveStreamSession.Create(tenantId, "Flash Sale Night", LiveStreamPlatform.TikTokLive, "TT-MULTI-01");
+        db.LiveStreamSessions.Add(session);
+
+        var deal = new LiveFlashDeal
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            SessionId = session.Id,
+            Sku = "SKU-DUAL-FLASH",
+            ProductName = "Dual Flash Item",
+            TriggerKeyword = "CMD",
+            FlashPrice = 50m,
+            OriginalPrice = 100m,
+            MaxQuantity = 5,
+            SoldQuantity = 0,
+            IsActive = true
+        };
+        db.LiveFlashDeals.Add(deal);
+        await db.SaveChangesAsync();
+
+        var res1 = await service.ProcessLiveCommentAsync(tenantId, session.Id, "buyer1", "CMD 1");
+        var res2 = await service.ProcessLiveCommentAsync(tenantId, session.Id, "buyer2", "CMD 2");
+
+        Assert.True(res1.Success);
+        Assert.True(res2.Success);
+        Assert.Equal(2, deal.SoldQuantity);
+        Assert.Equal(3, deal.RemainingQuantity);
+        Assert.Equal(2, session.TotalOrdersGenerated);
+        Assert.Equal(2, session.TotalCommentsProcessed);
+    }
 }

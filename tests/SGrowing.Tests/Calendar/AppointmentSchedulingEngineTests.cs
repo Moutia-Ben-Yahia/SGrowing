@@ -278,4 +278,37 @@ public class AppointmentSchedulingEngineTests
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*scheduling conflict*");
     }
+
+    [Fact]
+    public async Task CancelBookingAsync_WhenBookingDoesNotExist_ThrowsKeyNotFoundException()
+    {
+        using var db = CreateDbContext();
+        var service = new CalendarSchedulingService(db);
+        var tenantId = Guid.NewGuid();
+        var nonExistentBookingId = Guid.NewGuid();
+
+        var act = async () => await service.CancelBookingAsync(tenantId, nonExistentBookingId, "No reason");
+
+        await act.Should().ThrowAsync<KeyNotFoundException>()
+            .WithMessage($"*Booking {nonExistentBookingId} not found.*");
+    }
+
+    [Fact]
+    public async Task GetEventTypesAsync_ReturnsOnlyTenantEventTypesOrderedByDuration()
+    {
+        using var db = CreateDbContext();
+        var service = new CalendarSchedulingService(db);
+        var tenantId1 = Guid.NewGuid();
+        var tenantId2 = Guid.NewGuid();
+
+        await service.CreateEventTypeAsync(tenantId1, "Long Audit", "long-audit", duration: 60);
+        await service.CreateEventTypeAsync(tenantId1, "Quick Sync", "quick-sync", duration: 15);
+        await service.CreateEventTypeAsync(tenantId2, "Foreign Tenant Event", "foreign-event", duration: 30);
+
+        var tenant1Events = await service.GetEventTypesAsync(tenantId1);
+
+        tenant1Events.Should().HaveCount(2);
+        tenant1Events[0].DurationMinutes.Should().Be(15);
+        tenant1Events[1].DurationMinutes.Should().Be(60);
+    }
 }

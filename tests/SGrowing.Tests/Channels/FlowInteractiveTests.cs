@@ -103,4 +103,52 @@ public sealed class FlowInteractiveTests
         Assert.True(analytics.FunnelCompletionRatePercent > 0);
         Assert.Equal("SCREEN_USE_CASE", analytics.HighestDropOffScreen);
     }
+
+    [Fact]
+    public async Task ProcessDataExchange_WithUnknownScreenId_FallsBackToFirstScreen()
+    {
+        var request = new FlowDataExchangeRequest(
+            FlowId: "flow_vip_booking_v3",
+            ScreenId: "NON_EXISTENT_SCREEN_ID",
+            Action: "data_exchange",
+            DataPayload: new Dictionary<string, string>
+            {
+                ["company_name"] = "Fallback Enterprises"
+            }
+        );
+
+        var response = await _engine.ProcessDataExchangeAsync(request);
+
+        Assert.NotNull(response);
+        // Falls back to SCREEN_LEAD_INFO, leading to SCREEN_USE_CASE
+        Assert.Equal("SCREEN_LEAD_INFO", response.ScreenId);
+        Assert.Equal("SCREEN_USE_CASE", response.NextScreenId);
+        Assert.Equal("lead_info_saved", response.DataPayload["step_completed"]);
+    }
+
+    [Fact]
+    public async Task ProcessDataExchange_TerminalScreen_AddsSessionAndIncrementsCompletedCount()
+    {
+        var initialAnalytics = await _engine.GetAnalyticsAsync();
+        var initialCompleted = initialAnalytics.TotalCompletedSessions;
+
+        var request = new FlowDataExchangeRequest(
+            FlowId: "flow_vip_booking_v3",
+            ScreenId: "SCREEN_USE_CASE",
+            Action: "submit",
+            DataPayload: new Dictionary<string, string>
+            {
+                ["primary_goal"] = "High-Throughput WhatsApp Engine",
+                ["phone"] = "+21699887766"
+            }
+        );
+
+        var response = await _engine.ProcessDataExchangeAsync(request);
+
+        Assert.NotNull(response);
+        Assert.Equal("SUCCESS_SCREEN", response.NextScreenId);
+
+        var updatedAnalytics = await _engine.GetAnalyticsAsync();
+        Assert.Equal(initialCompleted + 1, updatedAnalytics.TotalCompletedSessions);
+    }
 }
