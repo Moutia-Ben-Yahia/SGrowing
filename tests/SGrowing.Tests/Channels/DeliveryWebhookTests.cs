@@ -365,4 +365,51 @@ public class DeliveryWebhookTests
         Assert.NotNull(updatedMsg);
         Assert.Equal(DeliveryStatus.Delivered, updatedMsg.DeliveryStatus);
     }
+
+    [Fact]
+    public async Task HandleWhatsAppDeliveryWebhook_ReadStatus_UpdatesMessageToRead()
+    {
+        using var db = CreateDbContext();
+        var c360 = new Customer360AttributionService(db);
+        var tenantId = Guid.NewGuid();
+        var convId = Guid.NewGuid();
+
+        var msg = Message.Create(
+            tenantId: tenantId,
+            conversationId: convId,
+            senderType: MessageSenderType.Bot,
+            content: "Please find your quotation attached.",
+            externalMessageId: "wamid.READ_999",
+            deliveryStatus: DeliveryStatus.Delivered
+        );
+        db.Messages.Add(msg);
+        await db.SaveChangesAsync();
+
+        var waPayload = new
+        {
+            id = "wamid.READ_999",
+            status = "read",
+            recipient_id = "+21698765432"
+        };
+
+        var httpContext = new DefaultHttpContext();
+        var jsonBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(waPayload));
+        httpContext.Request.Body = new MemoryStream(jsonBytes);
+        httpContext.Request.ContentType = "application/json";
+
+        var result = await DeliveryWebhookEndpoints.HandleWhatsAppDeliveryWebhook(
+            httpContext.Request,
+            tenantId,
+            null,
+            c360,
+            db,
+            CancellationToken.None
+        );
+
+        Assert.NotNull(result);
+
+        var updatedMsg = await db.Messages.FindAsync(msg.Id);
+        Assert.NotNull(updatedMsg);
+        Assert.Equal(DeliveryStatus.Read, updatedMsg.DeliveryStatus);
+    }
 }

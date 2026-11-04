@@ -136,4 +136,23 @@ public class CartRescueTests
         var request = new DispatchCartNudgeRequest("non_existent_rescue_id", "Email");
         Assert.Throws<KeyNotFoundException>(() => _engine.DispatchNudge(request));
     }
+
+    [Fact]
+    public void EvaluateCart_EmptyItemsList_EvaluatesWithZeroTotalAndDefaultMargin()
+    {
+        var request = new EvaluateCartRescueRequest(
+            CartId: "cart_empty_01",
+            CustomerEmail: "empty@example.com",
+            CustomerPhone: "+1234567890",
+            Items: new List<CartItem>(),
+            MinutesSinceAbandonment: 10
+        );
+
+        var result = _engine.EvaluateCart(request);
+
+        Assert.NotNull(result);
+        Assert.Equal(0.00m, result.TotalCartValue);
+        Assert.Equal(IncentiveStrategy.ZeroDiscountValueNudge, result.RecommendedIncentive);
+        Assert.Equal(0.00m, result.ExpectedGrossProfitLift);
+    }
 }

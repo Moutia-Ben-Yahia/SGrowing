@@ -175,4 +175,21 @@ public class WorkflowExecutionTests
         var act2 = () => _engine.ReplayStep(new ReplayStepRequest("tenant_err", exec.ExecutionId, "step_ghost"));
         act2.Should().Throw<KeyNotFoundException>().WithMessage("*Step 'step_ghost' not found*");
     }
+
+    [Fact]
+    public void GetExecution_WhenExistsAndNonExistent_ReturnsExpected()
+    {
+        var tenant = "tenant_exec_get";
+        var wf = new WorkflowDefinition("wf_get_test", tenant, "Get Test", "Desc", true, new(), DateTime.UtcNow);
+        _engine.RegisterWorkflow(wf);
+
+        var triggered = _engine.TriggerWorkflow(new TriggerWorkflowRequest(tenant, "wf_get_test", new()));
+
+        var found = _engine.GetExecution(tenant, triggered.ExecutionId);
+        found.Should().NotBeNull();
+        found!.ExecutionId.Should().Be(triggered.ExecutionId);
+
+        var missing = _engine.GetExecution(tenant, "exec_not_found");
+        missing.Should().BeNull();
+    }
 }

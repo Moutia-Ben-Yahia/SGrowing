@@ -188,4 +188,46 @@ public class ChannelAdapterTests
 
         result.Should().BeNull();
     }
+
+    [Fact]
+    public void WhatsAppCloudAdapter_WithImageMessage_ParsesCaptionAndMediaUrl()
+    {
+        var tenantId = Guid.NewGuid();
+        var adapter = new WhatsAppCloudAdapter();
+
+        var metaJson = """
+        {
+          "object": "whatsapp_business_account",
+          "entry": [{
+            "id": "WHATSAPP_ACCOUNT_ID",
+            "changes": [{
+              "value": {
+                "messaging_product": "whatsapp",
+                "contacts": [{ "profile": { "name": "Sarah Connor" }, "wa_id": "15551234567" }],
+                "messages": [{
+                  "from": "15551234567",
+                  "id": "wamid.IMG9988",
+                  "timestamp": "1729880000",
+                  "type": "image",
+                  "image": {
+                    "id": "media_blob_456",
+                    "caption": "Payment receipt screenshot"
+                  }
+                }]
+              },
+              "field": "messages"
+            }]
+          }]
+        }
+        """;
+
+        var result = adapter.ParseInboundWebhook(tenantId, metaJson);
+
+        result.Should().NotBeNull();
+        result!.ChannelType.Should().Be("whatsapp_cloud");
+        result.ContentType.Should().Be("image");
+        result.Content.Should().Be("Payment receipt screenshot");
+        result.MediaUrl.Should().Be("wa-media://media_blob_456");
+        result.SenderName.Should().Be("Sarah Connor");
+    }
 }
