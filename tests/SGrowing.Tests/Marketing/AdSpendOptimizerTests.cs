@@ -273,4 +273,76 @@ public class AdSpendOptimizerTests
         Assert.Equal(tenantA, logsForA[0].TenantId);
         Assert.Equal("ADSET-A1", logsForA[0].AdSetId);
     }
+
+    [Fact]
+    public async Task EvaluateAndApplyRulesAsync_WhenSampleOrdersLessThanFive_DoesNotTriggerKillswitch()
+    {
+        var db = CreateDbContext();
+        var service = new AdSpendOptimizerService(db);
+        var tenantId = Guid.NewGuid();
+
+        await service.ConfigureRuleAsync(tenantId, new AdOptimizationRule
+        {
+            TenantId = tenantId,
+            Platform = AdPlatformType.Meta,
+            MinSpendThreshold = 50m,
+            MinDeliveryRateCutoff = 60.0m
+        });
+
+        // Create only 3 orders (all returned, so delivery rate is 0%, but sample < 5)
+        var orderIds = new List<Guid>();
+        for (int i = 0; i < 3; i++)
+        {
+            var ord = CodOrder.Create(tenantId, $"ORD-SMALL-{i}", $"Customer {i}", "+21611112222", "Street", "Tunis", "Tunis", 50m);
+            ord.Status = CodOrderStatus.Returned;
+            db.CodOrders.Add(ord);
+            orderIds.Add(ord.Id);
+        }
+        await db.SaveChangesAsync();
+
+        var metric = await service.CalculateDeliveredRoasAsync(
+            tenantId,
+            AdPlatformType.Meta,
+            "ADSET-SMALL-SAMPLE",
+            "Small Sample Test",
+            DateTime.UtcNow.Date,
+            adSpend: 100m,
+            orderIds);
+
+        var log = await service.EvaluateAndApplyRulesAsync(tenantId, metric.Id, currentDailyBudget: 80m);
+
+        Assert.Equal(AdOptimizationAction.NoAction, log.Action);
+        Assert.Null(log.NewDailyBudget);
+        Assert.Equal("Performance within acceptable thresholds.", log.Reason);
+    }
+
+    [Fact]
+    public async Task IngestAdSpendAsync_PersistsRecordAndPreservesPlatformAttributes()
+    {
+        var db = CreateDbContext();
+        var service = new AdSpendOptimizerService(db);
+        var tenantId = Guid.NewGuid();
+
+        var record = new CampaignAdSpendRecord
+        {
+            TenantId = tenantId,
+            Platform = AdPlatformType.Snapchat,
+            CampaignId = "CMP-SNAP-99",
+            CampaignName = "Gen-Z Promo",
+            AdSetId = "ADSET-SNAP-01",
+            AdSetName = "Stories Placement",
+            SpendAmount = 250.75m,
+            DateUtc = DateTime.UtcNow.Date
+        };
+
+        var saved = await service.IngestAdSpendAsync(tenantId, record);
+
+        Assert.NotNull(saved);
+        Assert.Equal(tenantId, saved.TenantId);
+        Assert.Equal(AdPlatformType.Snapchat, saved.Platform);
+        Assert.Equal(250.75m, saved.SpendAmount);
+
+        var count = await db.CampaignAdSpendRecords.CountAsync(r => r.TenantId == tenantId);
+        Assert.Equal(1, count);
+    }
 }

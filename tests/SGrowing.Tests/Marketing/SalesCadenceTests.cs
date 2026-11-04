@@ -154,4 +154,37 @@ public class SalesCadenceTests
         Assert.Single(tasksB);
         Assert.Equal("Lead B", tasksB[0].LeadName);
     }
+
+    [Fact]
+    public async Task HandleProspectReplyAsync_WhenNoEnrollmentMatches_ReturnsFalse()
+    {
+        var db = CreateDbContext();
+        var engine = new SalesCadenceEngine(db);
+        var tenantId = Guid.NewGuid();
+
+        var handled = await engine.HandleProspectReplyAsync(tenantId, "unknown@nobody.com", "Email", "Please unsubscribe me");
+        Assert.False(handled);
+    }
+
+    [Fact]
+    public async Task ProcessDueCadenceStepsAsync_WhenLinkedInTaskChannel_CreatesSdrTaskWithLinkedInType()
+    {
+        var db = CreateDbContext();
+        var engine = new SalesCadenceEngine(db);
+        var tenantId = Guid.NewGuid();
+
+        var cadence = await engine.CreateCadenceAsync(tenantId, "Social Selling", "LinkedIn connect", "B2B Executives");
+        await engine.AddCadenceStepAsync(cadence.Id, 1, 0, CadenceChannel.LinkedInTask, null, "Connect with CEO on LinkedIn");
+
+        var enrollment = await engine.EnrollLeadAsync(tenantId, cadence.Id, "Yassine Mansour", "yassine@fintech.tn", "+21655667788", "Fintech TN");
+
+        var processed = await engine.ProcessDueCadenceStepsAsync(tenantId);
+        Assert.Equal(1, processed);
+
+        var tasks = await engine.GetPendingSdrTasksAsync(tenantId);
+        Assert.Single(tasks);
+        Assert.Equal("LinkedInTask", tasks[0].TaskType);
+        Assert.Equal("Yassine Mansour", tasks[0].LeadName);
+        Assert.Equal("Connect with CEO on LinkedIn", tasks[0].Instruction);
+    }
 }

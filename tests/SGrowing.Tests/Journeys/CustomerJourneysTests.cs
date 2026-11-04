@@ -199,4 +199,51 @@ public class CustomerJourneysTests
         updatedEnrollment.Status.Should().Be(JourneyEnrollmentStatus.Active);
         updatedEnrollment.NextExecutionAtUtc.Should().BeAfter(DateTime.UtcNow.AddMinutes(60));
     }
+
+    [Fact]
+    public async Task ProcessDueSteps_WhenNoDueEnrollments_ReturnsZero()
+    {
+        var db = CreateDbContext();
+        var outbox = new OutboxService(db);
+        var service = new JourneyExecutionService(db, outbox);
+        var tenantId = Guid.NewGuid();
+
+        var processed = await service.ProcessDueStepsAsync(tenantId);
+        processed.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ProcessDueSteps_EnforcesTenantIsolation_OnlyProcessesSpecifiedTenant()
+    {
+        var db = CreateDbContext();
+        var outbox = new OutboxService(db);
+        var service = new JourneyExecutionService(db, outbox);
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        var contactA = Contact.Create(tenantA, "Alice", "Smith", "alice@tenant-a.com");
+        var contactB = Contact.Create(tenantB, "Bob", "Jones", "bob@tenant-b.com");
+        db.Contacts.AddRange(contactA, contactB);
+
+        var journeyA = CustomerJourney.Create(tenantA, "Journey A", "event.a");
+        var journeyB = CustomerJourney.Create(tenantB, "Journey B", "event.b");
+        db.CustomerJourneys.AddRange(journeyA, journeyB);
+        await db.SaveChangesAsync();
+
+        var stepA = JourneyStep.Create(tenantA, journeyA.Id, 1, JourneyStepType.SendEmail, "Body A");
+        var stepB = JourneyStep.Create(tenantB, journeyB.Id, 1, JourneyStepType.SendEmail, "Body B");
+        db.JourneySteps.AddRange(stepA, stepB);
+
+        var enrollA = JourneyEnrollment.Create(tenantA, journeyA.Id, contactA.Id);
+        var enrollB = JourneyEnrollment.Create(tenantB, journeyB.Id, contactB.Id);
+        db.JourneyEnrollments.AddRange(enrollA, enrollB);
+        await db.SaveChangesAsync();
+
+        var processedA = await service.ProcessDueStepsAsync(tenantA);
+        processedA.Should().Be(1);
+
+        var refreshedEnrollB = await db.JourneyEnrollments.FindAsync(enrollB.Id);
+        refreshedEnrollB!.Status.Should().Be(JourneyEnrollmentStatus.Active);
+        refreshedEnrollB.CurrentStepOrder.Should().Be(1);
+    }
 }

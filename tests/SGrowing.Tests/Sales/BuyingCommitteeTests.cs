@@ -134,4 +134,47 @@ public class BuyingCommitteeTests
         Assert.Equal(initialOverview.AlignedChampionsCount + 1, updatedOverview.AlignedChampionsCount);
         Assert.True(updatedOverview.CoalitionConsensusScore >= initialOverview.CoalitionConsensusScore);
     }
+
+    [Fact]
+    public void AddStakeholder_LowerInfluenceWeightBound_ClampsToZeroPointOne()
+    {
+        var engine = new BuyingCommitteeGraphEngine();
+        var request = new AddStakeholderRequest(
+            "ACC-NORTHSTAR",
+            "Junior Intern",
+            "Intern",
+            "INFLUENCER",
+            0.01, // Below 0.1 minimum
+            0.5,
+            "Marketing"
+        );
+
+        var member = engine.AddStakeholder(request);
+
+        Assert.NotNull(member);
+        Assert.Equal(0.1, member.InfluenceWeight);
+        Assert.Equal("ALIGNED", member.CurrentStatus);
+    }
+
+    [Fact]
+    public void TriggerIntervention_WithCustomExecutiveAndPlaybook_ConfiguresTargetAndDueDates()
+    {
+        var engine = new BuyingCommitteeGraphEngine();
+        var request = new TriggerInterventionRequest(
+            "ACC-ENTERPRISE",
+            "STK-001",
+            "SECURITY_ARCHITECTURE_AUDIT",
+            "Chief Information Security Officer"
+        );
+
+        var intervention = engine.TriggerIntervention(request);
+
+        Assert.NotNull(intervention);
+        Assert.StartsWith("INT-", intervention.InterventionId);
+        Assert.Equal("STK-001", intervention.TargetStakeholderId);
+        Assert.Equal("SECURITY_ARCHITECTURE_AUDIT", intervention.PlaybookType);
+        Assert.Equal("Chief Information Security Officer", intervention.AssignedExecutive);
+        Assert.Equal("PENDING", intervention.Status);
+        Assert.True(intervention.ScheduledDate > DateTime.UtcNow.AddDays(2));
+    }
 }
