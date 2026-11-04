@@ -41,4 +41,10 @@ describe('SyntheticDataStudioComponent (Differential Privacy & Data Masking Stud
     expect(component.getClassificationBadge('SensitiveAttribute')).toContain('text-cyan-300');
     expect(component.getClassificationBadge('NonSensitive')).toContain('text-slate-400');
   });
+
+  it('should compute zero direct and dp counts when columns list is empty', () => {
+    component.columns.set([]);
+    expect(component.directCount()).toBe(0);
+    expect(component.dpCount()).toBe(0);
+  });
 });

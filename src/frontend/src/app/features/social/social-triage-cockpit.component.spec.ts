@@ -43,4 +43,13 @@ describe('SocialTriageCockpitComponent', () => {
     component.queueItems.set([]);
     expect(component.hazardsCount()).toBe(0);
   });
+
+  it('should select an item and return fallback classes for unknown channel or sentiment', () => {
+    const second = component.queueItems()[1];
+    component.selectItem(second);
+    expect(component.selectedItem()?.queueId).toBe(second.queueId);
+
+    expect(component.getChannelBadgeClass('Twitter')).toBe('bg-slate-700 text-slate-300');
+    expect(component.getSentimentBadgeClass('Neutral')).toBe('bg-slate-800 text-slate-300 border-slate-700');
+  });
 });

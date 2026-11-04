@@ -42,4 +42,12 @@ describe('GeoVisibilityCockpitComponent', () => {
     expect(component.geoScore()).toBe(94);
     expect(component.somvPercent()).toBe(52.8);
   });
+
+  it('should toggle showAuditModal signal when opening and closing audit dialog', () => {
+    expect(component.showAuditModal()).toBe(false);
+    component.showAuditModal.set(true);
+    expect(component.showAuditModal()).toBe(true);
+    component.showAuditModal.set(false);
+    expect(component.showAuditModal()).toBe(false);
+  });
 });

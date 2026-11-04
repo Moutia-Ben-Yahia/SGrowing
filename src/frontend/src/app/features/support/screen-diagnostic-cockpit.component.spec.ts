@@ -36,4 +36,26 @@ describe('ScreenDiagnosticCockpitComponent', () => {
     expect(comp.activeSessions()).toBe(7);
     expect(comp.guidanceSuccess()).toBe(96.5);
   });
+
+  it('should allow modifying sessions and highlightedElements lists', () => {
+    const comp = new ScreenDiagnosticCockpitComponent();
+    comp.sessions.set([]);
+    comp.highlightedElements.set([]);
+    expect(comp.sessions().length).toBe(0);
+    expect(comp.highlightedElements().length).toBe(0);
+
+    comp.sessions.set([
+      {
+        sessionId: 'SESS-TEST-01',
+        customerId: 'CUST-NEW-01',
+        activeUrl: 'https://example.com/test',
+        issueCategory: 'Testing',
+        detectedStickingPoint: 'Test point',
+        resolutionProgressPct: 50,
+        status: 'Active'
+      }
+    ]);
+    expect(comp.sessions().length).toBe(1);
+    expect(comp.sessions()[0].customerId).toBe('CUST-NEW-01');
+  });
 });

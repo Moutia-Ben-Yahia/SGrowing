@@ -41,4 +41,12 @@ describe('TopicalAuthorityCockpitComponent (Horizon 59)', () => {
     expect(component.overallAuthority()).toBe(0);
     expect(component.totalMissingTopics()).toBe(0);
   });
+
+  it('should ignore injectInternalLink when opportunityId does not match and support clearing opportunities', () => {
+    component.injectInternalLink({ opportunityId: 'non_existent_id' } as any);
+    expect(component.linkOpportunities().every(o => !o.isInjected)).toBe(true);
+
+    component.linkOpportunities.set([]);
+    expect(component.linkOpportunities().length).toBe(0);
+  });
 });

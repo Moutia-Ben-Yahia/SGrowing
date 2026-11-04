@@ -187,4 +187,15 @@ describe('SeoCrawlerStudioComponent', () => {
     );
     expect(component.showTrackModal()).toBe(false);
   });
+
+  it('should switch studio navigation tabs and update activeTab signal', () => {
+    component.activeTab.set('pages');
+    expect(component.activeTab()).toBe('pages');
+
+    component.activeTab.set('serp');
+    expect(component.activeTab()).toBe('serp');
+
+    component.activeTab.set('crawler');
+    expect(component.activeTab()).toBe('crawler');
+  });
 });

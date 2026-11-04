@@ -55,4 +55,12 @@ describe('SocialListeningStudioComponent', () => {
     expect(component.getSentimentBadge('Positive')).toContain('text-emerald-400');
     expect(component.getSentimentBadge('SevereHostile')).toContain('text-rose-300');
   });
+
+  it('should return 0 negativeRatio when mentions list is empty and handle HighAlertOrange threat', () => {
+    component.mentions.set([]);
+    expect(component.negativeRatio()).toBe(0);
+
+    component.currentThreat.set('HighAlertOrange');
+    expect(component.getThreatBannerClass()).toContain('border-amber-600/50');
+  });
 });

@@ -39,4 +39,11 @@ describe('SecretVaultMeshCockpitComponent', () => {
     const zeroized = comp.secrets().find(s => s.secretId === 'sec_stripe_live_04');
     expect(zeroized?.phase).toBe('ZeroizedPurged');
   });
+
+  it('should return 0 averageAge when there are no active primary secrets', () => {
+    const comp = new SecretVaultMeshCockpitComponent();
+    comp.secrets.set([]);
+    expect(comp.averageAge()).toBe(0);
+    expect(comp.activeSecretsCount()).toBe(0);
+  });
 });

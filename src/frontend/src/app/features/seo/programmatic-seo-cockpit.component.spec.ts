@@ -39,4 +39,12 @@ describe('ProgrammaticSeoCockpitComponent', () => {
     component.indexNowMessage.set('');
     expect(component.indexNowMessage()).toBe('');
   });
+
+  it('should support resetting pages and backlinks signals to empty lists', () => {
+    component.pages.set([]);
+    component.backlinks.set([]);
+
+    expect(component.pages().length).toBe(0);
+    expect(component.backlinks().length).toBe(0);
+  });
 });

@@ -50,4 +50,11 @@ describe('ComplianceVaultCockpitComponent', () => {
     expect(component.auditLeaves().length).toBe(initialLeaves + 1);
     expect(component.merkleRootHash()).toBe('abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd');
   });
+
+  it('should redact phone numbers and update redactedTokensCount to 3', () => {
+    component.rawPayload = 'Call +1-415-555-0144 regarding customer ticket.';
+    component.executeRedaction();
+    expect(component.redactedResult()).toContain('[REDACTED_PHONE_0199]');
+    expect(component.redactedTokensCount()).toBe(3);
+  });
 });

@@ -36,4 +36,23 @@ describe('LocalizationCockpitComponent', () => {
     expect(comp.currentMessage().formality).toBe('Casual');
     expect(comp.currentMessage().politenessScore).toBe(80.0);
   });
+
+  it('should reset currentMessage to original English-German formal state', () => {
+    const comp = new LocalizationCockpitComponent();
+    comp.translateToJapaneseKeigo();
+    expect(comp.currentMessage().targetLang).toBe('ja');
+
+    comp.currentMessage.set({
+      id: 'msg_support_401',
+      sourceLang: 'en',
+      targetLang: 'de',
+      originalText: 'Original text',
+      localizedText: 'Lokalisierter Text',
+      formality: 'FormalExecutive',
+      politenessScore: 98.5,
+      preservedTerms: ['SGrowing']
+    });
+    expect(comp.currentMessage().targetLang).toBe('de');
+    expect(comp.currentMessage().politenessScore).toBe(98.5);
+  });
 });

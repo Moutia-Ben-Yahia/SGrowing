@@ -39,4 +39,16 @@ describe('CapacityPlanningCockpitComponent', () => {
     expect(comp.deficitCount()).toBe(0);
     expect(comp.avgSla()).toBe(0);
   });
+
+  it('should allow updating plan queueName and aiDeflectionRatePct', () => {
+    const comp = new CapacityPlanningCockpitComponent();
+    comp.plan.update(p => ({
+      ...p,
+      queueName: 'VIP Tier-1 Priority Support',
+      aiDeflectionRatePct: 45.0
+    }));
+
+    expect(comp.plan().queueName).toBe('VIP Tier-1 Priority Support');
+    expect(comp.plan().aiDeflectionRatePct).toBe(45.0);
+  });
 });
