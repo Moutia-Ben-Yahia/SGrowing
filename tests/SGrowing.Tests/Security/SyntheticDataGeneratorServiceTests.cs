@@ -90,4 +90,50 @@ public class SyntheticDataGeneratorServiceTests
         var rules = await _service.InspectAndRecommendRulesAsync(new List<string>());
         rules.Should().BeEmpty();
     }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public async Task GenerateSyntheticDatasetAsync_ShouldThrow_WhenTableNameIsEmptyOrWhitespace(string? invalidTableName)
+    {
+        var rules = new List<ColumnSchemaRule>
+        {
+            new("Id", DataClassification.NonSensitive, SynthesisStrategy.DeterministicHash)
+        };
+
+        var req = new GenerateSyntheticDatasetRequest(_tenantId, invalidTableName!, 10, rules);
+        var act = () => _service.GenerateSyntheticDatasetAsync(req);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Fact]
+    public async Task GenerateSyntheticDatasetAsync_ShouldThrow_WhenColumnRulesIsEmpty()
+    {
+        var req = new GenerateSyntheticDatasetRequest(_tenantId, "ValidTable", 10, new List<ColumnSchemaRule>());
+        var act = () => _service.GenerateSyntheticDatasetAsync(req);
+
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Fact]
+    public async Task GenerateSyntheticDatasetAsync_WithConstantRedactedAndDeterministicHash_AppliesRulesProperly()
+    {
+        var rules = new List<ColumnSchemaRule>
+        {
+            new("SecretNote", DataClassification.SensitiveAttribute, SynthesisStrategy.ConstantRedacted),
+            new("RecordCode", DataClassification.NonSensitive, SynthesisStrategy.DeterministicHash)
+        };
+
+        var req = new GenerateSyntheticDatasetRequest(_tenantId, "SecureLog", 5, rules);
+        var result = await _service.GenerateSyntheticDatasetAsync(req);
+
+        result.Should().NotBeNull();
+        result.RowCount.Should().Be(5);
+        result.SampleRecords.Should().HaveCount(5);
+        var sample = result.SampleRecords[0];
+        sample["SecretNote"]!.ToString().Should().Be("[REDACTED]");
+        sample["RecordCode"]!.ToString()!.Should().HaveLength(16);
+    }
 }

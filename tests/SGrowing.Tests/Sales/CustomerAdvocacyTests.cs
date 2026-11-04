@@ -114,4 +114,46 @@ public class CustomerAdvocacyTests
         Assert.Equal("NO_SHOW", record.ReferenceCallStatus);
         Assert.Equal("Generic Prospect", record.ProspectCompanyName);
     }
+
+    [Fact]
+    public void MatchReference_WithHighFatigueAdvocates_SelectsNextAvailableAdvocate()
+    {
+        var engine = new CustomerAdvocacyEngine();
+
+        // Match first call to exhaust advocate quota
+        var m1 = engine.MatchReference(new MatchReferenceRequest("Enterprise 1", "ENTERPRISE", "FINTECH", 5000));
+        engine.RecordCall(new RecordReferenceCallRequest(m1.MatchId, "COMPLETED", 45, 5));
+
+        // Now ADV-001 has reached quota (was 1/2, now 2/2 -> QUOTA_REACHED)
+        // Next match should fallback to temporary advocate or available one
+        var m2 = engine.MatchReference(new MatchReferenceRequest("Enterprise 2", "ENTERPRISE", "FINTECH", 6000));
+
+        Assert.NotNull(m2);
+        Assert.NotEqual(m1.MatchId, m2.MatchId);
+        Assert.Equal("SCHEDULED", m2.ReferenceCallStatus);
+    }
+
+    [Fact]
+    public void RecordCall_WhenOutcomeCancelled_UpdatesMatchStatusWithoutCrashing()
+    {
+        var engine = new CustomerAdvocacyEngine();
+        var match = engine.MatchReference(new MatchReferenceRequest("Prospect Cancel Co", "MID_MARKET", "FINTECH", 200));
+
+        var updated = engine.RecordCall(new RecordReferenceCallRequest(match.MatchId, "CANCELLED_BY_PROSPECT", 0, 0));
+
+        Assert.NotNull(updated);
+        Assert.Equal("CANCELLED_BY_PROSPECT", updated.ReferenceCallStatus);
+    }
+
+    [Fact]
+    public void GetOverview_IncludesSeededAdvocatesAndMatches()
+    {
+        var engine = new CustomerAdvocacyEngine();
+        var overview = engine.GetOverview();
+
+        Assert.True(overview.TotalActiveAdvocatesCount >= 47);
+        Assert.Contains(overview.TopAdvocates, a => a.AdvocateId == "ADV-001");
+        Assert.Contains(overview.TopAdvocates, a => a.AdvocateId == "ADV-002");
+        Assert.Contains(overview.RecentMatches, m => m.MatchId == "REF-MATCH-001");
+    }
 }

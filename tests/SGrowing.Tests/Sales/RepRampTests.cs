@@ -76,4 +76,55 @@ public class RepRampTests
         var notFound = _engine.GetProfile("REP-NON-EXISTENT");
         Assert.Null(notFound);
     }
+
+    [Fact]
+    public void GenerateShadowGuidance_DetectsCompetitiveEvaluationIntent()
+    {
+        var request = new ShadowCallGuidanceRequest(
+            RepId: "REP-RAMP-101",
+            CallId: "CALL-COMP-002",
+            CustomerPersona: "VP Engineering",
+            LiveTranscriptSegment: "We are currently evaluating an alternative competitor vendor.",
+            CurrentTopic: "Architecture & Latency"
+        );
+
+        var guidance = _engine.GenerateShadowGuidance(request);
+
+        Assert.NotNull(guidance);
+        Assert.Equal("Competitive Evaluation", guidance.DetectedIntent);
+        Assert.Contains("competitor", guidance.MissedCue, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("battlecard", guidance.MicroCoachingTip, StringComparison.OrdinalIgnoreCase);
+        Assert.True(guidance.ConfidenceScore >= 90);
+    }
+
+    [Fact]
+    public void GenerateShadowGuidance_DetectsUrgencyAndTimingStallIntent()
+    {
+        var request = new ShadowCallGuidanceRequest(
+            RepId: "REP-RAMP-102",
+            CallId: "CALL-STALL-003",
+            CustomerPersona: "Director of Ops",
+            LiveTranscriptSegment: "The timing is tough right now, maybe we can delay this until next quarter.",
+            CurrentTopic: "Project Scheduling"
+        );
+
+        var guidance = _engine.GenerateShadowGuidance(request);
+
+        Assert.NotNull(guidance);
+        Assert.Equal("Urgency & Timing Stall", guidance.DetectedIntent);
+        Assert.Contains("delaying 90 days", guidance.RecommendedWhisperPrompt, StringComparison.OrdinalIgnoreCase);
+        Assert.True(guidance.ConfidenceScore >= 90);
+    }
+
+    [Fact]
+    public void GetRampTrajectory_WithUnknownRep_InitializesSensibleDefaults()
+    {
+        var trajectory = _engine.GetRampTrajectory("REP-GHOST-999");
+
+        Assert.NotNull(trajectory);
+        Assert.Equal("REP-GHOST-999", trajectory.RepId);
+        Assert.Equal(2, trajectory.CurrentWeeks);
+        Assert.True(trajectory.ProjectedWeeksToFullQuota > 0);
+        Assert.NotEmpty(trajectory.RecommendedCurriculumModules);
+    }
 }

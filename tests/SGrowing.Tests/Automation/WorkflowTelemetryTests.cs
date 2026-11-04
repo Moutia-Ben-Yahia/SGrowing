@@ -207,4 +207,83 @@ public class WorkflowTelemetryTests
         telemetry!.Status.Should().Be("BlockedByFilter");
         telemetry.Steps.Should().HaveCount(2); // Trigger + Filter
     }
+
+    [Fact]
+    public void ValidateDag_WithNonExistentTriggerNode_ReturnsValidationError()
+    {
+        var workflow = new WorkflowDefinition(
+            WorkflowId: "wf_missing_trigger",
+            Name: "Broken Trigger Flow",
+            TriggerNodeId: "missing_trigger_id",
+            Nodes: new List<WorkflowNode>
+            {
+                new("node_email", "Email", WorkflowNodeType.ActionEmail),
+                new("node_end", "End", WorkflowNodeType.Terminate)
+            },
+            Edges: new List<WorkflowEdge>
+            {
+                new("node_email", "node_end")
+            }
+        );
+
+        var result = _engine.ValidateDag(workflow);
+
+        result.IsValid.Should().BeFalse();
+        result.ValidationErrors.Should().Contain(e => e.Contains("Trigger node 'missing_trigger_id' does not exist"));
+    }
+
+    [Fact]
+    public void ValidateDag_WithDisconnectedOrUnreachableNodes_DetectsUnreachableNodeIds()
+    {
+        var workflow = new WorkflowDefinition(
+            WorkflowId: "wf_unreachable_node",
+            Name: "Dangling Island Node Flow",
+            TriggerNodeId: "node_start",
+            Nodes: new List<WorkflowNode>
+            {
+                new("node_start", "Start", WorkflowNodeType.Trigger),
+                new("node_main_step", "Send Email", WorkflowNodeType.ActionEmail),
+                new("node_isolated", "Orphaned Action", WorkflowNodeType.ActionWebhook)
+            },
+            Edges: new List<WorkflowEdge>
+            {
+                new("node_start", "node_main_step")
+            }
+        );
+
+        var result = _engine.ValidateDag(workflow);
+
+        result.IsValid.Should().BeTrue();
+        result.UnreachableNodeIds.Should().Contain("node_isolated");
+        result.UnreachableNodeIds.Should().NotContain("node_main_step");
+    }
+
+    [Fact]
+    public void SimulateWorkflow_WithInvalidDag_ReturnsValidationFailureWithoutExecution()
+    {
+        var invalidWorkflow = new WorkflowDefinition(
+            WorkflowId: "wf_invalid_sim",
+            Name: "Broken Simulation Target",
+            TriggerNodeId: "n1",
+            Nodes: new List<WorkflowNode>
+            {
+                new("n1", "Trigger", WorkflowNodeType.Trigger),
+                new("n2", "Step", WorkflowNodeType.ActionEmail)
+            },
+            Edges: new List<WorkflowEdge>
+            {
+                new("n1", "n2"),
+                new("n2", "n1") // cycle
+            }
+        );
+
+        var context = new SimulationContactContext("cont_sim_err", "err@domain.com", 20, "US", false, 0m);
+        var request = new WorkflowSimulationRequest("tenant_err_01", invalidWorkflow, context);
+
+        var result = _engine.SimulateWorkflow(request);
+
+        result.CompletedSuccessfully.Should().BeFalse();
+        result.TotalStepsExecuted.Should().Be(0);
+        result.FinalStatus.Should().Contain("ValidationFailed");
+    }
 }
