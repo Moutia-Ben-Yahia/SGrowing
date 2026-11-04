@@ -30,4 +30,12 @@ describe('DisasterRecoveryCockpitComponent', () => {
     expect(witness?.provider).toBe('Sovereign VPC');
     expect(witness?.region).toBe('eu-central-de');
   });
+
+  it('should verify replication lag on AWS node changes from 0 to positive after failover', () => {
+    const comp = new DisasterRecoveryCockpitComponent();
+    expect(comp.nodes().find(n => n.nodeId === 'node_aws_primary')?.replicationLagMs).toBe(0.0);
+    comp.executeFailoverToGcp();
+    expect(comp.nodes().find(n => n.nodeId === 'node_aws_primary')?.replicationLagMs).toBe(15.1);
+    expect(comp.nodes().find(n => n.nodeId === 'node_gcp_standby')?.replicationLagMs).toBe(0.0);
+  });
 });

@@ -36,4 +36,11 @@ describe('WebhookMeshCockpitComponent', () => {
     expect(replayed?.httpStatus).toBe(200);
     expect(component.dlqCount()).toBe(0);
   });
+
+  it('should ignore replayEvent when delivery log id is not found', () => {
+    const initialDlq = component.dlqCount();
+    component.replayEvent('non_existent_log');
+
+    expect(component.dlqCount()).toBe(initialDlq);
+  });
 });

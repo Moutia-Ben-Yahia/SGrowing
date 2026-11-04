@@ -32,4 +32,10 @@ describe('SemanticCacheCockpitComponent (Horizon 65)', () => {
     expect(component.entries().length).toBe(0);
     expect(component.queryResult()?.isHit).toBe(false);
   });
+
+  it('should increment dollarsSaved on testSemanticQuery invocation', () => {
+    const initialSaved = component.dollarsSaved();
+    component.testSemanticQuery();
+    expect(component.dollarsSaved()).toBeCloseTo(initialSaved + 0.16, 2);
+  });
 });

@@ -37,4 +37,13 @@ describe('InfluencerEscrowCockpitComponent', () => {
     expect(updated?.remainingAmount).toBe(0);
     expect(updated?.status).toBe('Completed');
   });
+
+  it('should select a contract and calculate totalReleasedCapital properly', () => {
+    const first = component.contracts()[0];
+    component.selectContract(first);
+    expect(component.selectedContract()?.contractId).toBe(first.contractId);
+    expect(component.totalReleasedCapital()).toBe(
+      component.contracts().reduce((sum, c) => sum + c.releasedAmount, 0)
+    );
+  });
 });

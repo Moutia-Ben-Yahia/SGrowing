@@ -34,4 +34,11 @@ describe('ForecastingStudioComponent', () => {
     const proposal = component.stageMetrics.find(m => m.stageName === 'Proposal')!;
     expect(proposal.weightedValue).toBe(proposal.totalValue * (proposal.probabilityPercent / 100));
   });
+
+  it('should sum total pipeline across all forecasting stages', () => {
+    const totalPipeline = component.stageMetrics.reduce((sum, m) => sum + m.totalValue, 0);
+    expect(totalPipeline).toBe(125000);
+    const totalWeighted = component.stageMetrics.reduce((sum, m) => sum + m.weightedValue, 0);
+    expect(totalWeighted).toBe(77500);
+  });
 });

@@ -30,4 +30,14 @@ describe('SelfHealingMeshCockpitComponent', () => {
     expect(result?.resilienceGrade).toBe('A+ Resilience');
     expect(result?.blastRadius).toContain('ConnectionExhaustion');
   });
+
+  it('should verify probe properties and initial chaosResult', () => {
+    const pgProbe = component.probes().find(p => p.probeId === 'prb_pg_primary');
+    expect(pgProbe?.resourceType).toBe('DatabasePool');
+    expect(pgProbe?.status).toBe('Healthy');
+
+    const result = component.chaosResult();
+    expect(result?.resilienceGrade).toBe('A+ Resilience');
+    expect(result?.blastRadius).toContain('network partition');
+  });
 });

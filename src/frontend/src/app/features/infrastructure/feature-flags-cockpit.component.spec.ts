@@ -31,4 +31,11 @@ describe('FeatureFlagsCockpitComponent (Horizon 60)', () => {
     expect(component.selectedFlag()?.circuitBreakerTripped).toBe(true);
     expect(component.selectedFlag()?.rolloutPercentage).toBe(0);
   });
+
+  it('should select a feature flag and verify whitelistedTenants', () => {
+    const second = component.flags()[1];
+    component.selectFlag(second);
+    expect(component.selectedFlag()?.flagKey).toBe('zk_differential_privacy_cleanroom');
+    expect(component.selectedFlag()?.whitelistedTenants).toContain('org_enterprise_vip');
+  });
 });

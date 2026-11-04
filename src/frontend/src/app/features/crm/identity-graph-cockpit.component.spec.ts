@@ -56,4 +56,14 @@ describe('IdentityGraphCockpitComponent (Domain B3 CDP Identity Resolution)', ()
     expect(component.totalProfiles()).toBe(1420);
     expect(component.activeProfileId()).toBe('prof_c0a80199_canonical');
   });
+
+  it('should ignore stitchIdentity when inputs are missing', () => {
+    const initialProfiles = component.totalProfiles();
+    component.newAnonId = '';
+    component.newIdValue = '';
+    component.stitchIdentity();
+
+    expect(component.totalProfiles()).toBe(initialProfiles);
+    expect(component.identityNodes().length).toBe(4);
+  });
 });

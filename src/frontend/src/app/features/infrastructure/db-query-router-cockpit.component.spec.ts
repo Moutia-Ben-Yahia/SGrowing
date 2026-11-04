@@ -26,4 +26,15 @@ describe('DbQueryRouterCockpitComponent', () => {
     expect(node?.nodeStatus).toBe('Draining');
     expect(node?.activeConnectionsCount).toBe(0);
   });
+
+  it('should verify primary node properties and initial lagging replica', () => {
+    const comp = new DbQueryRouterCockpitComponent();
+    const primary = comp.replicas().find(r => r.replicaId === 'DB-PRIMARY-IAD');
+    expect(primary?.replicationLagMs).toBe(0);
+    expect(primary?.nodeStatus).toBe('Healthy_InPool');
+
+    const gru = comp.replicas().find(r => r.replicaId === 'DB-REPLICA-GRU');
+    expect(gru?.replicationLagMs).toBe(125);
+    expect(gru?.nodeStatus).toBe('Lagging_Degraded');
+  });
 });

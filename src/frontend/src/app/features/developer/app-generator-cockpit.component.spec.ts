@@ -38,4 +38,12 @@ describe('AppGeneratorCockpitComponent', () => {
     expect(component.records()[0].company).toBe('Snowflake Inc');
     expect(component.totalPipelineVal()).toBe(initialPipeline + 240000);
   });
+
+  it('should ignore generateApp when newAppName is empty string', () => {
+    const initialAppsCount = component.apps().length;
+    component.newAppName = '';
+    component.generateApp();
+
+    expect(component.apps().length).toBe(initialAppsCount);
+  });
 });

@@ -37,4 +37,12 @@ describe('AffiliateLoyaltyCockpitComponent', () => {
     expect(component.partners().length).toBe(initial + 1);
     expect(component.partners()[0].code).toBe('INFLUENCE25');
   });
+
+  it('should verify loyalty tiers hierarchy and default points thresholds', () => {
+    expect(component.loyaltyTiers.length).toBe(4);
+    expect(component.loyaltyTiers[0].tier).toBe('Bronze');
+    expect(component.loyaltyTiers[0].pointsRequired).toBe(0);
+    expect(component.loyaltyTiers[3].tier).toBe('Platinum');
+    expect(component.loyaltyTiers[3].pointsRequired).toBe(50000);
+  });
 });

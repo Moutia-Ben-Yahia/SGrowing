@@ -36,4 +36,9 @@ describe('AppMarketplaceCockpitComponent', () => {
     component.uninstallApp('app_shopify_commerce');
     expect(component.isInstalled('app_shopify_commerce')).toBe(false);
   });
+
+  it('should return app name or fallback to appId via getAppName', () => {
+    expect(component.getAppName('app_hubspot_sync')).toBe('HubSpot Two-Way CRM Connector');
+    expect(component.getAppName('unknown_app_id')).toBe('unknown_app_id');
+  });
 });
