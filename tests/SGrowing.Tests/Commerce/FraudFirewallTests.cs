@@ -113,4 +113,26 @@ public sealed class FraudFirewallTests
         Assert.Contains(rules, r => r.Id == "rule_high_value");
         Assert.Contains(rules, r => r.Id == "rule_ip_velocity");
     }
+
+    [Fact]
+    public void EvaluateTransaction_ModerateRisk_RequiresChallenge3DS()
+    {
+        var request = new EvaluateTransactionRequest(
+            TransactionId: "txn_challenge_3ds",
+            AmountUsd: 6000m, // High value: 25 pts
+            Currency: "USD",
+            CustomerEmail: "buyer@legit.com", // Normal email
+            IpAddress: "10.0.0.5", // Normal IP
+            CardCountry: "US", // Geo mismatch: 35 pts
+            BillingCountry: "FR",
+            DeviceFingerprint: "fp_challenge"
+        );
+
+        var eval = _engine.EvaluateTransaction(request);
+
+        Assert.NotNull(eval);
+        Assert.Equal(60, eval.RiskScore);
+        Assert.Equal("Challenge3DS", eval.Decision);
+        Assert.Equal(2, eval.TriggeredRules.Count);
+    }
 }

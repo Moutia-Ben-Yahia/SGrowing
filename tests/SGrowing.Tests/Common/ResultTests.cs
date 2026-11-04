@@ -91,4 +91,15 @@ public class ResultTests
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("Cannot access Value of a failure Result: Invalid operation occurred");
     }
+
+    [Fact]
+    public void GenericResult_WithNullReferencePayload_AllowsNullValueOnSuccess()
+    {
+        var result = Result<string?>.Success(null);
+
+        result.IsSuccess.Should().BeTrue();
+        result.IsFailure.Should().BeFalse();
+        result.Value.Should().BeNull();
+        result.Error.Should().BeNull();
+    }
 }

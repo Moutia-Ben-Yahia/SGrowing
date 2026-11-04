@@ -133,4 +133,19 @@ public class DistributedMemoryLockServiceTests
         handle2.Should().NotBeNull();
         handle2!.IsAcquired.Should().BeTrue();
     }
+
+    [Fact]
+    public async Task ReleaseLockAsync_And_IsLockedAsync_WithEmptyKey_ReturnsFalse()
+    {
+        var lockService = new DistributedMemoryLockService();
+
+        var releasedEmpty = await lockService.ReleaseLockAsync("", "token");
+        releasedEmpty.Should().BeFalse();
+
+        var releasedEmptyToken = await lockService.ReleaseLockAsync("valid:key", "");
+        releasedEmptyToken.Should().BeFalse();
+
+        var isLockedEmpty = await lockService.IsLockedAsync("");
+        isLockedEmpty.Should().BeFalse();
+    }
 }

@@ -155,4 +155,14 @@ public class StripeWebhookSignatureTests
         result.OrderId.Should().Be("QT-SEC-001");
         result.AmountReceived.Should().Be(250m);
     }
+
+    [Fact]
+    public void VerifyStripeSignature_WithEmptySecret_ReturnsFalse()
+    {
+        var payload = "{\"id\":\"evt_123\"}";
+        var header = "t=12345,v1=abcde";
+
+        StripePaymentWebhookHandler.VerifyStripeSignature(payload, header, "").Should().BeFalse();
+        StripePaymentWebhookHandler.VerifyStripeSignature(payload, header, "   ").Should().BeFalse();
+    }
 }
