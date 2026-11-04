@@ -165,4 +165,43 @@ public class TenantUsageAndEntitlementsTests
         Assert.False(checkBlock.Allowed);
         Assert.Contains("Quota exceeded", checkBlock.Message);
     }
+
+    [Fact]
+    public async Task CheckEntitlementAsync_AiTokens_EnforcesWarningAndBlockThresholds()
+    {
+        var tenantId = Guid.NewGuid();
+
+        // Setup Starter tier: 500,000 AI tokens included
+        var starter = FeatureEntitlement.CreateDefault(tenantId, PlanTier.Starter);
+        starter.MonthlyIncludedAiTokens = 500_000;
+        await _db.FeatureEntitlements.AddAsync(starter);
+        await _db.SaveChangesAsync();
+
+        // 1. Record 420,000 tokens (84% of quota) -> warning flagged
+        await _metering.RecordUsageAsync(tenantId, UsageMetricType.AiTokens, 420_000);
+        var checkWarn = await _metering.CheckEntitlementAsync(tenantId, UsageMetricType.AiTokens, 0);
+        Assert.True(checkWarn.Allowed);
+        Assert.True(checkWarn.RequiresOverageWarning);
+
+        // 2. Request 100,000 additional tokens (520,000 total > 500,000) -> blocked
+        var checkBlock = await _metering.CheckEntitlementAsync(tenantId, UsageMetricType.AiTokens, 100_000);
+        Assert.False(checkBlock.Allowed);
+        Assert.Contains("Quota exceeded", checkBlock.Message);
+    }
+
+    [Fact]
+    public async Task RecordUsageAsync_MultipleTenants_IsolatesUsageAggregationsByTenant()
+    {
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        await _metering.RecordUsageAsync(tenantA, UsageMetricType.VoiceMinutes, 30);
+        await _metering.RecordUsageAsync(tenantB, UsageMetricType.VoiceMinutes, 75);
+
+        var summaryA = await _metering.GetUsageSummaryAsync(tenantA);
+        var summaryB = await _metering.GetUsageSummaryAsync(tenantB);
+
+        Assert.Equal(30, summaryA.UsedVoiceMinutes);
+        Assert.Equal(75, summaryB.UsedVoiceMinutes);
+    }
 }

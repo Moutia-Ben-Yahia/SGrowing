@@ -147,5 +147,44 @@ public class TenantRebillingAndSnapshotTests
         inDb.Should().NotBeNull();
     }
 
+    [Fact]
+    public async Task GetSnapshotAsync_WhenSnapshotExists_ReturnsSnapshotRecord_AndNullWhenMissing()
+    {
+        using var db = CreateDbContext();
+        var service = new TenantSnapshotService(db);
+        var tenantId = Guid.NewGuid();
+
+        var missing = await service.GetSnapshotAsync(Guid.NewGuid());
+        missing.Should().BeNull();
+
+        var created = await service.CreateSnapshotAsync(tenantId, "Dental Clinic Pack", "Healthcare", "Dental blueprints");
+        var retrieved = await service.GetSnapshotAsync(created.Id);
+
+        retrieved.Should().NotBeNull();
+        retrieved!.Id.Should().Be(created.Id);
+        retrieved.SnapshotName.Should().Be("Dental Clinic Pack");
+    }
+
+    [Fact]
+    public async Task ListSnapshotsAsync_FiltersByTenantId_AndReturnsOrderedSnapshots()
+    {
+        using var db = CreateDbContext();
+        var service = new TenantSnapshotService(db);
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        await service.CreateSnapshotAsync(tenantA, "Snap A1", "Retail");
+        await service.CreateSnapshotAsync(tenantA, "Snap A2", "Retail");
+        await service.CreateSnapshotAsync(tenantB, "Snap B1", "Hospitality");
+
+        var listA = await service.ListSnapshotsAsync(tenantA);
+        listA.Should().HaveCount(2);
+        listA.Should().OnlyContain(s => s.TenantId == tenantA);
+
+        var listB = await service.ListSnapshotsAsync(tenantB);
+        listB.Should().HaveCount(1);
+        listB[0].SnapshotName.Should().Be("Snap B1");
+    }
+
     #endregion
 }

@@ -119,6 +119,40 @@ public class TenantRlsConnectionInterceptorTests
         var act = () => interceptor.ConnectionOpened(failingConnection, null!);
         act.Should().NotThrow();
     }
+
+    [Fact]
+    public async Task ConnectionOpenedAsync_WithoutTenant_ExecutesSetLocalEmptyStringAsync()
+    {
+        // Arrange
+        var mockTenantContext = new Mock<ITenantContext>();
+        mockTenantContext.Setup(t => t.HasTenant).Returns(false);
+
+        var interceptor = new TenantRlsConnectionInterceptor(mockTenantContext.Object);
+        var fakeConnection = new FakeNpgsqlConnection();
+
+        // Act
+        await interceptor.ConnectionOpenedAsync(fakeConnection, null!);
+
+        // Assert
+        fakeConnection.ExecutedCommands.Should().ContainSingle();
+        fakeConnection.ExecutedCommands[0].Should().Be("SET LOCAL app.current_tenant_id = '';");
+    }
+
+    [Fact]
+    public async Task ConnectionOpenedAsync_WhenCommandThrows_SwallowsExceptionDefensively()
+    {
+        // Arrange
+        var mockTenantContext = new Mock<ITenantContext>();
+        mockTenantContext.Setup(t => t.HasTenant).Returns(true);
+        mockTenantContext.Setup(t => t.TenantId).Returns(Guid.NewGuid());
+
+        var interceptor = new TenantRlsConnectionInterceptor(mockTenantContext.Object);
+        var failingConnection = new FakeNpgsqlConnection(throwOnExecute: true);
+
+        // Act & Assert (should not throw)
+        var act = async () => await interceptor.ConnectionOpenedAsync(failingConnection, null!);
+        await act.Should().NotThrowAsync();
+    }
 }
 
 // =============================================================================

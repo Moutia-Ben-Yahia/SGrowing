@@ -77,4 +77,30 @@ public class SupportLocalizationTests
         var msg = _engine.GetMessageById("msg_unknown_123");
         Assert.Null(msg);
     }
+
+    [Fact]
+    public void TranslateMessage_ToGerman_DifferentiatesExecutiveVsCasualFormality()
+    {
+        var execReq = new TranslateSupportMessageRequest("msg_de_exec", "en", "de", "Thank you for contacting support", FormalityLevel.FormalExecutive);
+        var execRes = _engine.TranslateMessage(execReq);
+
+        Assert.Contains("Vielen Dank für Ihre Kontaktaufnahme", execRes.LocalizedText);
+        Assert.Equal(98.5, execRes.NuanceAudit.PolitenessIndex);
+
+        var casualReq = new TranslateSupportMessageRequest("msg_de_cas", "en", "de", "Thank you for contacting support", FormalityLevel.CasualWarm);
+        var casualRes = _engine.TranslateMessage(casualReq);
+
+        Assert.Contains("Danke, dass du den SGrowing Support kontaktiert hast", casualRes.LocalizedText);
+        Assert.Equal(89.0, casualRes.NuanceAudit.PolitenessIndex);
+    }
+
+    [Fact]
+    public void GetMessageById_IsCaseInsensitive_ReturnsCachedMessage()
+    {
+        var msg = _engine.GetMessageById("MSG_SUPPORT_401");
+
+        Assert.NotNull(msg);
+        Assert.Equal("de", msg.TargetLanguage);
+        Assert.Equal("en", msg.SourceLanguage);
+    }
 }
