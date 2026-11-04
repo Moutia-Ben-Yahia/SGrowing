@@ -99,4 +99,20 @@ public sealed class SelfHealingTests
     {
         await Assert.ThrowsAsync<ArgumentNullException>(() => _engine.ExecuteChaosExperimentAsync(null!));
     }
+
+    [Fact]
+    public async Task ExecuteChaosExperiment_IncrementsTotalRemediationCountInScorecard()
+    {
+        var initial = await _engine.GetResilienceScorecardAsync();
+
+        var request = new ChaosExperimentRequest(
+            ExperimentType: "ReplicaPartition",
+            TargetResource: "PostgreSQL Primary Connection Pool",
+            DurationSeconds: 5
+        );
+        await _engine.ExecuteChaosExperimentAsync(request);
+
+        var updated = await _engine.GetResilienceScorecardAsync();
+        Assert.Equal(initial.TotalRemediationsCount + 1, updated.TotalRemediationsCount);
+    }
 }

@@ -204,4 +204,25 @@ public class StorefrontMeshAndCartRecoveryTests
         // Assert
         dispatched.Should().BeEmpty("only carts with status Detected should be eligible for initial recovery dispatch");
     }
+
+    [Fact]
+    public async Task TriggerRecoveryScanAsync_EnforcesTenantIsolation()
+    {
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+
+        var cartA = AbandonedCartRecord.Create(
+            tenantA, Guid.NewGuid(), "cart_a", "alice@tenanta.com", 200m, "https://tenanta.com/rec");
+        typeof(AbandonedCartRecord).GetProperty("DetectedAtUtc")!.SetValue(cartA, DateTime.UtcNow.AddHours(-2));
+
+        await _db.AbandonedCartRecords.AddAsync(cartA);
+        await _db.SaveChangesAsync();
+
+        // Scan executed for Tenant B
+        var dispatchedB = await _recoveryService.TriggerRecoveryScanAsync(tenantB, TimeSpan.FromMinutes(60));
+        dispatchedB.Should().BeEmpty();
+
+        var inDbA = await _db.AbandonedCartRecords.FindAsync(cartA.Id);
+        inDbA!.Status.Should().Be(AbandonedCartStatus.Detected);
+    }
 }

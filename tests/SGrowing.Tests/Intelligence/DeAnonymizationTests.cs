@@ -114,4 +114,19 @@ public class DeAnonymizationTests
     {
         Assert.Throws<ArgumentNullException>(() => _engine.DispatchAccountAlert(null!));
     }
+
+    [Fact]
+    public void DeAnonymizeVisitor_KnownCorporateIp_UpdatesAccountInActiveFeed()
+    {
+        var request = new DeAnonymizeRequest(
+            IpAddress: "198.51.100.24",
+            PageUrl: "/enterprise/pricing",
+            TimeOnPageSeconds: 120
+        );
+
+        var result = _engine.DeAnonymizeVisitor(request);
+        var feed = _engine.GetActiveIntentFeed();
+
+        Assert.Contains(feed, a => a.Domain == result.Domain && a.Stage == IntentStage.ReadyToBuy);
+    }
 }

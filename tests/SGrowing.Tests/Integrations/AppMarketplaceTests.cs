@@ -107,4 +107,12 @@ public class AppMarketplaceTests
         Assert.NotNull(retrieved);
         Assert.Equal("Custom ClickHouse Analytics Extension", retrieved.Name);
     }
+
+    [Fact]
+    public void UninstallApp_WhenNotInstalled_ReturnsFalse()
+    {
+        var uninstallReq = new UninstallAppRequest("tenant_random", "app_not_installed");
+        var result = _engine.UninstallApp(uninstallReq);
+        Assert.False(result);
+    }
 }
