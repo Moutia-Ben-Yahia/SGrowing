@@ -333,4 +333,68 @@ public sealed class DynamicYieldManagementTests
     }
 
     #endregion
+
+    #region Boundary & Error Handling Tests
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void CalculateProtectionLevels_NullOrWhitespacePoolId_ThrowsArgumentException(string? poolId)
+    {
+        var act = () => _yieldEngine.CalculateProtectionLevels(poolId!);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void CalculateProtectionLevels_NonExistentPool_ThrowsKeyNotFoundException()
+    {
+        var act = () => _yieldEngine.CalculateProtectionLevels("NON-EXISTENT-POOL-999");
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*not found*");
+    }
+
+    [Fact]
+    public void RegisterResourcePool_NullPool_ThrowsArgumentNullException()
+    {
+        var act = () => _yieldEngine.RegisterResourcePool(null!);
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void EvaluateBooking_NullRequest_ThrowsArgumentNullException()
+    {
+        var act = () => _yieldEngine.EvaluateBooking(null!);
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void EvaluateBooking_NonExistentPool_ThrowsKeyNotFoundException()
+    {
+        var request = new EvaluateBookingRequest("POOL-UNKNOWN-404", FareClassTier.Y_FullFarePremium, RequestedUnits: 1);
+        var act = () => _yieldEngine.EvaluateBooking(request);
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*not found*");
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-5)]
+    public void EvaluateBooking_NegativeOrZeroRequestedUnits_ThrowsArgumentException(int units)
+    {
+        var pool = CreateSampleFlightPool("POOL-ZERO-TEST-01");
+        var request = new EvaluateBookingRequest(pool.PoolId, FareClassTier.Y_FullFarePremium, units);
+        var act = () => _yieldEngine.EvaluateBooking(request);
+        act.Should().Throw<ArgumentException>().WithMessage("*Requested units must be positive*");
+    }
+
+    [Fact]
+    public void EvaluateBooking_UnconfiguredFareClassTier_ThrowsInvalidOperationException()
+    {
+        var pool = CreateSampleFlightPool("POOL-UNCONFIG-TEST-02");
+        // Sample pool only configures Y, M, and B. Tier Q is unconfigured.
+        var request = new EvaluateBookingRequest(pool.PoolId, FareClassTier.Q_LastMinuteSuperSaver, RequestedUnits: 1);
+        var act = () => _yieldEngine.EvaluateBooking(request);
+        act.Should().Throw<InvalidOperationException>().WithMessage("*not configured*");
+    }
+
+    #endregion
 }

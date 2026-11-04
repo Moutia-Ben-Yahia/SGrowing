@@ -422,4 +422,90 @@ public class CashflowForecastingServiceTests
         projection.First().IsDeficit.Should().BeTrue();
         projection.First().DeficitGap.Should().BeGreaterThan(0m);
     }
+
+    [Fact]
+    public void CalculateWorkingCapitalMetrics_ZeroSalesAndCogs_ReturnsZeroDsoDpoDio()
+    {
+        var service = new CashflowForecastingService();
+        var metrics = service.CalculateWorkingCapitalMetrics(
+            receivables: 10000m,
+            payables: 5000m,
+            inventory: 8000m,
+            creditSales: 0m,
+            cogs: 0m,
+            courierFloat: 2000m,
+            overdueReceivables: 1000m,
+            cashReserve: 15000m
+        );
+
+        metrics.DSO.Should().Be(0m);
+        metrics.DPO.Should().Be(0m);
+        metrics.DIO.Should().Be(0m);
+        metrics.CashConversionCycle.Should().Be(0m);
+        metrics.WorkingCapitalFloat.Should().Be(2000m);
+    }
+
+    [Fact]
+    public void CalculateWeibullClearanceSchedule_NegativeAmount_ReturnsAllZeroExpectedAmounts()
+    {
+        var service = new CashflowForecastingService();
+        var schedule = service.CalculateWeibullClearanceSchedule(-5000m, 5.0, 7);
+
+        schedule.Should().HaveCount(7);
+        schedule.All(s => s.ExpectedAmount == 0m).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task RecordAdjustment_NegativeAmount_IsClassifiedAsOutflowInProjection()
+    {
+        var service = new CashflowForecastingService();
+        var tenantId = Guid.NewGuid();
+        var targetDate = DateTime.UtcNow.Date.AddDays(5);
+
+        var reqOutflow = new RecordAdjustmentRequestDto(
+            TenantId: tenantId,
+            DateUtc: targetDate,
+            Amount: -7500.0m,
+            Category: "OneTimeFine",
+            Description: "Regulatory penalty adjustment"
+        );
+
+        var adj = await service.RecordAdjustmentAsync(reqOutflow);
+        adj.Amount.Should().Be(-7500.0m);
+
+        var projection = await service.GenerateProjectionAsync(tenantId, 30);
+        var targetPoint = projection.FirstOrDefault(p => p.Date.Date == targetDate.Date);
+        targetPoint.Should().NotBeNull();
+        targetPoint!.OutflowOther.Should().BeGreaterThanOrEqualTo(7500.0m);
+    }
+
+    [Fact]
+    public async Task GetAdjustments_NonExistentTenant_ReturnsEmptyList()
+    {
+        var service = new CashflowForecastingService();
+        var tenantId = Guid.NewGuid();
+
+        var adjustments = await service.GetAdjustmentsAsync(tenantId);
+        adjustments.Should().NotBeNull();
+        adjustments.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SimulateFactoringAdvance_ZeroAdvance_ReturnsZeroFeeAndZeroAdvance()
+    {
+        var service = new CashflowForecastingService();
+        var tenantId = Guid.NewGuid();
+        var req = new FactoringSimulationRequestDto(
+            TenantId: tenantId,
+            AdvanceAmount: 0m,
+            DiscountFeePercentage: 3.0m
+        );
+
+        var result = await service.SimulateFactoringAdvanceAsync(req);
+
+        result.RequestedAdvance.Should().Be(0m);
+        result.FactoringFeeAmount.Should().Be(0m);
+        result.NetCashInflowImmediate.Should().Be(0m);
+        result.DeficitDaysEliminated.Should().Be(0);
+    }
 }

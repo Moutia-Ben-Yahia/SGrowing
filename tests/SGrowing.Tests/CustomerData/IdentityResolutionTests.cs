@@ -235,4 +235,81 @@ public class IdentityResolutionTests
         sessions.Should().NotBeNull();
         sessions.Should().Contain(s => s.SessionId == sessId);
     }
+
+    [Fact]
+    public void StitchIdentity_WithCrmContactId_AssignsConfidence1()
+    {
+        var request = new StitchIdentityRequest(
+            TenantId: "tenant_crm_test",
+            AnonymousId: "anon_crm_visitor_1",
+            KnownIdentifier: new IdentityIdentifier(IdentityType.CrmContactId, "crm_lead_9941")
+        );
+
+        var result = _engine.StitchIdentity(request);
+
+        result.Success.Should().BeTrue();
+        result.OverallConfidence.Should().Be(1.0);
+    }
+
+    [Fact]
+    public void StitchIdentity_WithDeviceId_AssignsConfidence85()
+    {
+        var request = new StitchIdentityRequest(
+            TenantId: "tenant_device_test",
+            AnonymousId: "anon_dev_visitor_2",
+            KnownIdentifier: new IdentityIdentifier(IdentityType.DeviceId, "dev_uuid_a8392f")
+        );
+
+        var result = _engine.StitchIdentity(request);
+
+        result.Success.Should().BeTrue();
+        result.OverallConfidence.Should().Be(0.85);
+    }
+
+    [Fact]
+    public void StitchIdentity_WithCustomIdentifier_AssignsConfidence75()
+    {
+        var request = new StitchIdentityRequest(
+            TenantId: "tenant_custom_test",
+            AnonymousId: "anon_custom_visitor_3",
+            KnownIdentifier: new IdentityIdentifier(IdentityType.AnonymousCookie, "second_cookie_val")
+        );
+
+        var result = _engine.StitchIdentity(request);
+
+        result.Success.Should().BeTrue();
+        result.OverallConfidence.Should().Be(0.75);
+    }
+
+    [Fact]
+    public void StitchIdentity_MultipleSessionsForSameAnonymousId_AccumulatesAllSessions()
+    {
+        var tenantId = "tenant_multi_sess";
+        var anonId = "anon_visitor_accumulate";
+
+        var stitch1 = _engine.StitchIdentity(new StitchIdentityRequest(
+            TenantId: tenantId,
+            AnonymousId: anonId,
+            KnownIdentifier: new IdentityIdentifier(IdentityType.Email, "multi.session@example.org"),
+            SessionId: "session_alpha"
+        ));
+
+        var stitch2 = _engine.StitchIdentity(new StitchIdentityRequest(
+            TenantId: tenantId,
+            AnonymousId: anonId,
+            KnownIdentifier: new IdentityIdentifier(IdentityType.Email, "multi.session@example.org"),
+            SessionId: "session_beta"
+        ));
+
+        stitch1.CanonicalProfileId.Should().Be(stitch2.CanonicalProfileId);
+        stitch2.MergedSessionIds.Should().Contain(new[] { "session_alpha", "session_beta" });
+    }
+
+    [Fact]
+    public void GetSessionsForProfile_NonExistentProfile_ReturnsEmptyList()
+    {
+        var sessions = _engine.GetSessionsForProfile("tenant_empty_test", "prof_nonexistent_000");
+        sessions.Should().NotBeNull();
+        sessions.Should().BeEmpty();
+    }
 }
