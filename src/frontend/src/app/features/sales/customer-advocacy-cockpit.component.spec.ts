@@ -23,4 +23,17 @@ describe('CustomerAdvocacyCockpitComponent', () => {
     expect(comp.matches()[initialMatches].prospectCompanyName).toBe('Starlight Media Network');
     expect(comp.matches()[initialMatches].referenceCallStatus).toBe('SCHEDULED');
   });
+
+  it('should enforce quarterly call quotas to prevent reference champion fatigue', () => {
+    const comp = new CustomerAdvocacyCockpitComponent();
+    const availableAdvocate = comp.advocates().find(a => a.status === 'AVAILABLE');
+    const exhaustedAdvocate = comp.advocates().find(a => a.status === 'QUOTA_REACHED');
+
+    expect(availableAdvocate).toBeDefined();
+    expect(availableAdvocate?.referenceCallsThisQuarter).toBeLessThan(availableAdvocate!.maxCallsQuarterlyQuota);
+
+    expect(exhaustedAdvocate).toBeDefined();
+    expect(exhaustedAdvocate?.referenceCallsThisQuarter).toBe(exhaustedAdvocate!.maxCallsQuarterlyQuota);
+    expect(exhaustedAdvocate?.advocateSatisfactionScore).toBeGreaterThanOrEqual(95.0);
+  });
 });

@@ -18,4 +18,15 @@ describe('CompetitiveBattlecardCockpitComponent', () => {
     expect(comp.battlecards()[0].competitorName).toBe('Titanium Marketing Cloud');
     expect(comp.battlecards()[0].killPoint).toContain('identity stitching');
   });
+
+  it('should evaluate competitor threat levels, deal sizes, and cryptographic battlecard digests', () => {
+    const comp = new CompetitiveBattlecardCockpitComponent();
+    const highThreat = comp.competitors().find(c => c.threatLevel === 'HIGH');
+    expect(highThreat?.competitorName).toBe('ApexCloud Legacy CRM');
+    expect(highThreat?.estimatedAverageDealSizeUsd).toBe(320000);
+
+    const initialBattlecard = comp.battlecards()[0];
+    expect(initialBattlecard.digest).toMatch(/^0x[0-9A-F]+/);
+    expect(initialBattlecard.killPoint).toContain('0-cost migration credit');
+  });
 });

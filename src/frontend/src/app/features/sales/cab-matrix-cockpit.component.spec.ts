@@ -23,4 +23,15 @@ describe('CabMatrixCockpitComponent', () => {
     expect(comp.pairings()[initialPairings].status).toBe('ACTIVE_ALIGNED');
     expect(comp.pairings()[initialPairings].enterpriseAccount).toBe('Nordic Retail Group');
   });
+
+  it('should verify high executive alignment scores and strategic co-innovation themes', () => {
+    const comp = new CabMatrixCockpitComponent();
+    expect(comp.pairings().every(p => p.alignmentScore > 90.0)).toBe(true);
+
+    const totalVotes = comp.themes().reduce((sum, t) => sum + t.votesCount, 0);
+    expect(totalVotes).toBe(14); // 8 + 6
+
+    const coreTheme = comp.themes().find(t => t.category === 'Product Core');
+    expect(coreTheme?.title).toContain('Autonomous AI Multi-Agent');
+  });
 });

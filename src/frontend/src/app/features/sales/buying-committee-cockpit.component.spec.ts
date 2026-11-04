@@ -21,4 +21,17 @@ describe('BuyingCommitteeCockpitComponent', () => {
     expect(comp.interventions()[initialCount].targetStakeholderId).toBe('STK-001');
     expect(comp.interventions()[initialCount].status).toBe('SCHEDULED');
   });
+
+  it('should identify skeptical procurement blockers and generate targeted ROI sessions', () => {
+    const comp = new BuyingCommitteeCockpitComponent();
+    const blocker = comp.stakeholders().find(s => s.buyingRole === 'PROCUREMENT_BLOCKER');
+    expect(blocker).toBeDefined();
+    expect(blocker?.sentimentScore).toBeLessThan(0);
+    expect(blocker?.department).toBe('Global Sourcing');
+
+    comp.triggerIntervention(blocker!);
+    const lastInt = comp.interventions()[comp.interventions().length - 1];
+    expect(lastInt.expectedOutcome).toContain('Alicia Thorne');
+    expect(lastInt.playbookType).toBe('ROI_CALCULATOR_SESSION');
+  });
 });

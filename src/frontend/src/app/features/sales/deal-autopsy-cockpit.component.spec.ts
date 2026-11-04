@@ -18,4 +18,14 @@ describe('DealAutopsyCockpitComponent', () => {
     expect(comp.autopsies().length).toBe(initialCount + 1);
     expect(comp.autopsies()[comp.autopsies().length - 1].accountName).toBe('OmniHealth BioSystems');
   });
+
+  it('should categorize deal loss friction clusters and evaluate pipeline revival probability', () => {
+    const comp = new DealAutopsyCockpitComponent();
+    expect(comp.autopsies().every(a => a.confidenceScore > 0.90)).toBe(true);
+
+    const firstPlaybook = comp.playbooks()[0];
+    expect(firstPlaybook.revivalProbability).toBeGreaterThan(0.5);
+    expect(firstPlaybook.cooldownDays).toBe(45);
+    expect(firstPlaybook.recoveryStrategy).toContain('Payback Guarantee');
+  });
 });

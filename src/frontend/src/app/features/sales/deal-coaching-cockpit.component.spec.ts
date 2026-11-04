@@ -18,4 +18,13 @@ describe('DealCoachingCockpitComponent', () => {
     expect(comp.sessions().length).toBe(initialCount + 1);
     expect(comp.sessions()[comp.sessions().length - 1].accountName).toBe('Starlight Financial Systems');
   });
+
+  it('should verify acoustic objection counter-tactics and evidence proof points', () => {
+    const comp = new DealCoachingCockpitComponent();
+    const objection = comp.objections()[0];
+    expect(objection.category).toBe('PricingAndBudget');
+    expect(objection.confidenceScore).toBe(0.96);
+    expect(objection.recommendedCounterTactic).toContain('deferred cash terms');
+    expect(objection.evidenceProofPoint).toContain('Apex Freight');
+  });
 });

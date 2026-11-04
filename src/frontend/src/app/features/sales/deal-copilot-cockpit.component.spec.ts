@@ -29,4 +29,17 @@ describe('DealCopilotCockpitComponent', () => {
     expect(updated.daysInactive).toBe(0);
     expect(component.actionToast()).toContain('Successfully dispatched AI intervention');
   });
+
+  it('should calculate total pipeline and resolve all at-risk deals via autonomous AI intervention', () => {
+    expect(component.totalPipeline()).toBe(599000); // 185000 + 320000 + 94000
+    expect(component.atRiskCount()).toBe(2);
+
+    const moderateDeal = component.deals().find(d => d.riskLevel === 'ModerateRisk')!;
+    component.executeIntervention(moderateDeal);
+
+    const severeDeal = component.deals().find(d => d.riskLevel === 'SevereRisk')!;
+    component.executeIntervention(severeDeal);
+
+    expect(component.atRiskCount()).toBe(0);
+  });
 });
