@@ -260,4 +260,25 @@ public class MasterGrowthAndAcquisitionE2ETests
         report.CitabilityRatePercent.Should().BeGreaterThan(0);
         report.ActionableRecommendations.Should().NotBeEmpty();
     }
+
+    [Fact]
+    public async Task Master_Growth_And_Acquisition_PowerDialer_And_EventType_ValidationFailures()
+    {
+        using var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+
+        // 1. Power dialer queue on clean tenant returns empty list
+        var powerDialer = new PowerDialerService(db, _outboxMock.Object);
+        var queue = await powerDialer.GetDialerQueueAsync(tenantId);
+        queue.Should().BeEmpty();
+
+        // 2. Calendar booking page query for nonexistent event type returns null
+        var tenant = new SGrowing.Core.Entities.Tenant { Name = "Dialer Tenant", Slug = "dialer-slug" };
+        db.Tenants.Add(tenant);
+        await db.SaveChangesAsync();
+
+        var calendarService = new CalendarSchedulingService(db);
+        var missingBookingPage = await calendarService.GetPublicBookingPageAsync(tenant.Slug, "ghost-event-type", DateTime.UtcNow);
+        missingBookingPage.Should().BeNull();
+    }
 }

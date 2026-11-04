@@ -175,4 +175,32 @@ public class MasterFullPlatformEndToEndTests
         Assert.False(isTamperFree);
         Assert.Equal("Document not found.", auditSummary);
     }
+
+    [Fact]
+    public async Task Master_Full_Platform_WebhookRetry_And_SubmissionValidationFailures()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+
+        // 1. Developer Webhooks: Retrying nonexistent delivery log safely returns null
+        var devService = new DeveloperWebhookService(db);
+        var retryResult = await devService.RetryDeliveryAsync(tenantId, Guid.NewGuid());
+        Assert.Null(retryResult);
+
+        // 2. Dynamic Forms: Submitting answers for missing form throws InvalidOperationException
+        var formService = new DynamicFormService(db);
+        var missingFormId = Guid.NewGuid();
+        var answers = new Dictionary<string, string> { ["email"] = "test@user.tn" };
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            formService.SubmitFormAnswersAsync(tenantId, missingFormId, answers));
+
+        // 3. Dynamic Forms: Querying unpublished or nonexistent slug returns null
+        var formBySlug = await formService.GetFormBySlugAsync(tenantId, "nonexistent-slug-404");
+        Assert.Null(formBySlug);
+
+        // 4. Digital Goods: Listing assets on clean tenant returns empty list
+        var digitalService = new DigitalGoodsService(db);
+        var assets = await digitalService.GetDigitalAssetsAsync(tenantId);
+        Assert.Empty(assets);
+    }
 }

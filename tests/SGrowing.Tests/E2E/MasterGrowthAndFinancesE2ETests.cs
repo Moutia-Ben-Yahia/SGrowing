@@ -124,4 +124,45 @@ public class MasterGrowthAndFinancesE2ETests
         var phoneScore = conversionMesh.CalculateEventMatchQualityScore(phoneOnlyConversion);
         Assert.Equal(3.5, phoneScore);
     }
+
+    [Fact]
+    public async Task Master_EndToEnd_ConversionMesh_EmailOnlyMatchScore_And_StoreConnectionFailures()
+    {
+        var db = CreateDbContext();
+        var conversionMesh = new ServerConversionMeshService(db);
+        var storeService = new ExternalStoreAndSheetsService(db);
+        var tenantId = Guid.NewGuid();
+
+        // 1. Conversion event with email only yields exactly 2.5 EMQ score
+        var emailOnlyConversion = await conversionMesh.TrackConversionAsync(
+            tenantId,
+            AdPlatform.MetaCapi,
+            ConversionEventType.Lead,
+            valueAmount: 0m,
+            currency: "TND",
+            email: "director@tech.tn"
+        );
+
+        var emailScore = conversionMesh.CalculateEventMatchQualityScore(emailOnlyConversion);
+        Assert.Equal(2.5, emailScore);
+
+        // 2. Conversion with email, firstName, and city yields 3.0 EMQ
+        var enrichedConversion = await conversionMesh.TrackConversionAsync(
+            tenantId,
+            AdPlatform.TikTokEvents,
+            ConversionEventType.Purchase,
+            valueAmount: 180m,
+            currency: "TND",
+            email: "director@tech.tn",
+            firstName: "Sami",
+            city: "Tunis"
+        );
+
+        var enrichedScore = conversionMesh.CalculateEventMatchQualityScore(enrichedConversion);
+        Assert.Equal(3.0, enrichedScore);
+
+        // 3. Pushing fulfillment update for non-existent order throws InvalidOperationException
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            storeService.PushFulfillmentUpdateAsync(tenantId, Guid.NewGuid(), "Yalidine", "TRK-999"));
+    }
 }

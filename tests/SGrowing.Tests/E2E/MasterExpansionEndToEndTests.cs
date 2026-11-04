@@ -210,4 +210,31 @@ public class MasterExpansionEndToEndTests
                 "UTC"
             ));
     }
+
+    [Fact]
+    public async Task Master_Expansion_TelemetryPulse_And_WarmupSimulationFailures()
+    {
+        var db = CreateDbContext();
+        var tenantId = Guid.NewGuid();
+
+        // 1. Product Telemetry: Querying fresh tenant with no traffic returns zero counters
+        var telemetryService = new ProductTelemetryService(db);
+        var pulse = await telemetryService.GetLiveSummaryAsync(tenantId, windowMinutes: 30);
+        Assert.Equal(0, pulse.ActiveVisitorsCount);
+        Assert.Equal(0, pulse.ActiveSessionsCount);
+        Assert.Empty(pulse.TopActivePages);
+        Assert.Empty(pulse.TopCountries);
+
+        // 2. Deliverability Warmup: Simulating step on nonexistent cadence throws InvalidOperationException
+        var deliverabilityService = new EmailDeliverabilityService(db);
+        var missingCadenceId = Guid.NewGuid();
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            deliverabilityService.SimulateWarmupStepAsync(tenantId, missingCadenceId));
+
+        // 3. SaaS Billing: Inspecting default subscription on unseeded tenant initializes Growth tier
+        var billingService = new SaasBillingService(db);
+        var defaultSub = await billingService.GetSubscriptionDetailsAsync(tenantId);
+        Assert.Equal(PlanTier.Growth, defaultSub.PlanTier);
+        Assert.Equal(249m, defaultSub.MonthlyPrice);
+    }
 }
