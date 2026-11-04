@@ -115,4 +115,92 @@ public class ContentFactoryTests
         Assert.Equal("fr-FR", job.TargetLocale);
         Assert.Equal(0, job.TranslatedBlocksCount);
     }
+
+    [Fact]
+    public void EvaluateBrandVoice_ShortTextUnderTenWords_DeductsFifteenPoints()
+    {
+        var request = new EvaluateVoiceRequest(
+            Content: "Brief revenue update note.", // 4 words
+            TargetTone: "Professional"
+        );
+
+        var eval = _engine.EvaluateBrandVoice(request);
+
+        Assert.NotNull(eval);
+        // Base 95 - 15 (short text) = 80.0
+        Assert.Equal(80.0, eval.ComplianceScore);
+        Assert.Equal("Grade 8 (Accessible Overview)", eval.ReadingLevel);
+    }
+
+    [Fact]
+    public void EvaluateBrandVoice_ExclamationPoint_DeductsTwoPoints()
+    {
+        var request = new EvaluateVoiceRequest(
+            Content: "Autonomous revenue acceleration architecture with deterministic SLA guarantees and SOC2 compliance!",
+            TargetTone: "Professional"
+        );
+
+        var eval = _engine.EvaluateBrandVoice(request);
+
+        Assert.NotNull(eval);
+        // Base 95 - 2 (exclamation point) = 93.0
+        Assert.Equal(93.0, eval.ComplianceScore);
+    }
+
+    [Fact]
+    public void EvaluateBrandVoice_ReadingLevel_ReturnsGrade11ForLongerContent()
+    {
+        var request = new EvaluateVoiceRequest(
+            Content: "Our enterprise platform provides reverse IP firmographics, predictive lead enrichment, autonomous multi-turn voice SDR capabilities, and real-time webhook mesh verification.",
+            TargetTone: "Executive"
+        );
+
+        var eval = _engine.EvaluateBrandVoice(request);
+
+        Assert.NotNull(eval);
+        Assert.Equal("Grade 11 (Executive Brief)", eval.ReadingLevel);
+        Assert.Contains("Enterprise Precision", eval.ToneAdherence);
+    }
+
+    [Fact]
+    public void EvaluateBrandVoice_MultipleBannedPhrases_CumulativelyDeductsScore()
+    {
+        var request = new EvaluateVoiceRequest(
+            Content: "Experience guaranteed riches and our miracle growth hack your way method for overnight success today in modern business!",
+            TargetTone: "Casual"
+        );
+
+        var eval = _engine.EvaluateBrandVoice(request);
+
+        Assert.NotNull(eval);
+        Assert.True(eval.BannedPhrasesFound.Count >= 3);
+        Assert.True(eval.ComplianceScore <= 20.0);
+        Assert.NotEmpty(eval.Suggestions);
+    }
+
+    [Fact]
+    public void CreateArticle_PersistsToArticleDictionary_AllowsSubsequentRetrievalByGeneratedId()
+    {
+        var request = new CreateArticleRequest(
+            Slug: "autonomous-growth-playbook",
+            Title: "Autonomous Growth Playbook 2026",
+            Description: "Field guide to building deterministic revenue operations using agent swarms.",
+            Author: "Operations Guild",
+            Blocks: new List<ContentBlock>
+            {
+                new("blk_intro", "Text", "Introduction", new Dictionary<string, string> { { "body", "Welcome." } }, 0)
+            },
+            Locale: "en-US"
+        );
+
+        var created = _engine.CreateOrUpdateArticle(request);
+        Assert.NotNull(created);
+        Assert.StartsWith("art_", created.ArticleId);
+
+        var retrieved = _engine.GetArticle(created.ArticleId);
+        Assert.NotNull(retrieved);
+        Assert.Equal("autonomous-growth-playbook", retrieved.Slug);
+        Assert.Equal("Operations Guild", retrieved.Author);
+        Assert.Equal("Published", retrieved.Status);
+    }
 }

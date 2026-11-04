@@ -83,4 +83,81 @@ public class ContentRepurposingTests
         var derivative = _engine.GetDerivativeById("deriv_non_existent_123");
         Assert.Null(derivative);
     }
+
+    [Fact]
+    public void DecomposeContent_WithShortVideoScript_GeneratesScriptWith60sReadingDuration()
+    {
+        var request = new DecomposeContentRequest(
+            "asset_video_test",
+            "Autonomous Agents in Practice",
+            "Demo of agentic workflows",
+            new List<ContentChannel> { ContentChannel.ShortVideoScript }
+        );
+
+        var manifest = _engine.DecomposeContent(request);
+
+        Assert.NotNull(manifest);
+        Assert.Single(manifest.Derivatives);
+        var deriv = manifest.Derivatives[0];
+        Assert.Equal(ContentChannel.ShortVideoScript, deriv.Channel);
+        Assert.Equal(60, deriv.EstimatedReadSeconds);
+        Assert.Contains("[Hook]", deriv.FormattedBody);
+    }
+
+    [Fact]
+    public void DecomposeContent_UpdatesExistingManifest_WhenCalledWithSameSourceAssetId()
+    {
+        var assetId = "asset_repurpose_idempotent";
+        var req1 = new DecomposeContentRequest(
+            assetId,
+            "Initial Title",
+            "Initial body content",
+            new List<ContentChannel> { ContentChannel.LinkedInPost }
+        );
+        var req2 = new DecomposeContentRequest(
+            assetId,
+            "Updated Title",
+            "Updated body content with new data",
+            new List<ContentChannel> { ContentChannel.LinkedInPost, ContentChannel.XTwitterThread }
+        );
+
+        var manifest1 = _engine.DecomposeContent(req1);
+        Assert.Equal("Initial Title", manifest1.SourceTitle);
+        Assert.Single(manifest1.Derivatives);
+
+        var manifest2 = _engine.DecomposeContent(req2);
+        Assert.Equal("Updated Title", manifest2.SourceTitle);
+        Assert.Equal(2, manifest2.Derivatives.Count);
+
+        var fetched = _engine.GetManifestByAssetId(assetId);
+        Assert.NotNull(fetched);
+        Assert.Equal("Updated Title", fetched.SourceTitle);
+    }
+
+    [Fact]
+    public void DecomposeContent_KeyProofPoints_ContainsCoreMetrics()
+    {
+        var request = new DecomposeContentRequest(
+            "asset_metrics_test",
+            "Metrics Report",
+            "Detailed report on conversion rate and sales pipeline",
+            new List<ContentChannel> { ContentChannel.LinkedInPost }
+        );
+
+        var manifest = _engine.DecomposeContent(request);
+
+        Assert.NotNull(manifest.KeyProofPoints);
+        Assert.Equal(3, manifest.KeyProofPoints.Count);
+        Assert.Contains(manifest.KeyProofPoints, t => t.Contains("8.4%"));
+        Assert.Contains(manifest.KeyProofPoints, t => t.Contains("buying committee"));
+    }
+
+    [Fact]
+    public void GetDerivativeById_CaseInsensitiveMatch_FindsDerivative()
+    {
+        var derivative = _engine.GetDerivativeById("DERIV_ASSET_WEBINAR_101_LI");
+
+        Assert.NotNull(derivative);
+        Assert.Equal(ContentChannel.LinkedInPost, derivative.Channel);
+    }
 }

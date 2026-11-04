@@ -95,4 +95,52 @@ public class SocialProofTests
         Assert.True(result.IncludedTestimonialsCount >= 2);
         Assert.Contains("data-theme=\"LightMinimal\"", result.EmbedWidgetHtml);
     }
+
+    [Fact]
+    public void RequestTestimonial_WithSpecialCharactersInCompanyName_UrlEncodesProperly()
+    {
+        var request = new RequestTestimonialPayload(
+            CustomerEmail: "finance@acme-corp.co.uk",
+            CustomerName: "John Smith",
+            CompanyName: "Acme & Sons (Logistics) Ltd.",
+            TriggerMilestone: "Contract_Renewal"
+        );
+
+        var result = _engine.RequestTestimonial(request);
+
+        Assert.NotNull(result);
+        Assert.Contains($"client={Uri.EscapeDataString(request.CompanyName)}", result.MagicRecordingUrl);
+        Assert.True(result.EmailDispatched);
+    }
+
+    [Fact]
+    public void PublishWallOfLove_CalculatesAggregateRatingSnippetAccurately()
+    {
+        var request = new PublishWallOfLoveRequest(
+            ApprovedTestimonialIds: new List<string> { "tst_video_01" },
+            Theme: "DarkEnterprise"
+        );
+
+        var result = _engine.PublishWallOfLove(request);
+
+        Assert.NotNull(result);
+        Assert.Equal(1, result.IncludedTestimonialsCount);
+        Assert.Contains("\"reviewCount\": \"1\"", result.SchemaJsonLdSnippet);
+        Assert.Contains("\"ratingValue\": \"4.95\"", result.SchemaJsonLdSnippet);
+    }
+
+    [Fact]
+    public void ApproveTestimonial_SetsIsApprovedTrueAndMaintainsOtherProperties()
+    {
+        var original = _engine.GetAllTestimonials().First(t => t.TestimonialId == "tst_text_02");
+
+        var approved = _engine.ApproveTestimonial("tst_text_02");
+
+        Assert.NotNull(approved);
+        Assert.True(approved.IsApprovedForWallOfLove);
+        Assert.Equal(original.CustomerName, approved.CustomerName);
+        Assert.Equal(original.CompanyName, approved.CompanyName);
+        Assert.Equal(original.StarRating, approved.StarRating);
+        Assert.Equal(original.SentimentScore, approved.SentimentScore);
+    }
 }
