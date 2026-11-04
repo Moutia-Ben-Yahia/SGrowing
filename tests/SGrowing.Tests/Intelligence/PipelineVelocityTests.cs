@@ -21,6 +21,7 @@ public class PipelineVelocityTests
         overview.DailyVelocityRate.Should().BeGreaterThan(0);
         overview.Stages.Should().HaveCount(5);
         overview.Stages.Should().Contain(s => s.StageId == "stg_security" && s.IsBottleneck);
+        overview.Stages.Should().BeInAscendingOrder(s => s.StageId);
     }
 
     [Fact]
@@ -47,5 +48,19 @@ public class PipelineVelocityTests
 
         action.Should().Throw<KeyNotFoundException>()
             .WithMessage("*not found*");
+    }
+
+    [Fact]
+    public void AccelerateStage_MultipleTimes_CompressesDwellDaysTowardsBenchmark()
+    {
+        var stageId = "stg_demo"; // Initial dwell 16.5, benchmark 12.0
+        var req = new AccelerateStageRequest(stageId, "InteractivePreRecordedSandbox");
+
+        // Accelerate twice
+        _engine.AccelerateStage(req);
+        var finalResult = _engine.AccelerateStage(req);
+
+        finalResult.NewDwellDays.Should().BeLessThanOrEqualTo(14.0);
+        finalResult.NewDwellDays.Should().BeGreaterThanOrEqualTo(12.0); // Floored at benchmark
     }
 }

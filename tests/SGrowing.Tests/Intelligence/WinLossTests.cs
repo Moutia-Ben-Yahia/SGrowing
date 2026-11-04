@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using SGrowing.Api.Modules.Intelligence.WinLoss;
 using Xunit;
 
@@ -20,6 +22,13 @@ public class WinLossTests
     }
 
     [Fact]
+    public void GetPostMortemByDealId_ReturnsNullForUnknownDeal()
+    {
+        var pm = _engine.GetPostMortemByDealId("unknown_deal_999");
+        Assert.Null(pm);
+    }
+
+    [Fact]
     public void AnalyzeDeal_IdentifiesPricingResistance()
     {
         var request = new AnalyzeDealRequest(
@@ -38,11 +47,50 @@ public class WinLossTests
     }
 
     [Fact]
-    public void GetAllPostMortems_ReturnsAllHistoricalDeals()
+    public void AnalyzeDeal_IdentifiesSecurityHurdle()
+    {
+        var request = new AnalyzeDealRequest(
+            "deal_sec_review",
+            "Health Shield",
+            150000m,
+            DealOutcome.LostToCompetitor,
+            "Deal stalled because CISO demanded HIPAA compliance and security audit certifications early in evaluation.",
+            "LegacyCorp"
+        );
+
+        var result = _engine.AnalyzeDeal(request);
+
+        Assert.NotNull(result);
+        Assert.Contains(result.RootCauses, c => c.Category == "SecurityHurdle");
+        Assert.Contains(result.FeatureGapsTagged, g => g.Contains("CISO"));
+    }
+
+    [Fact]
+    public void AnalyzeDeal_HandlesGeneralOutcomeWhenNoSpecificKeywordsPresent()
+    {
+        var request = new AnalyzeDealRequest(
+            "deal_general_won",
+            "Standard Enterprises",
+            60000m,
+            DealOutcome.WonClosed,
+            "Smooth sales cycle with executive sponsor alignment.",
+            null
+        );
+
+        var result = _engine.AnalyzeDeal(request);
+
+        Assert.NotNull(result);
+        Assert.Contains(result.RootCauses, c => c.Category == "General");
+        Assert.Empty(result.CompetitorInsights);
+    }
+
+    [Fact]
+    public void GetAllPostMortems_ReturnsAllHistoricalDeals_SortedDescending()
     {
         var all = _engine.GetAllPostMortems();
 
         Assert.NotNull(all);
         Assert.True(all.Count >= 2);
+        Assert.True(all.First().AnalyzedAtUtc >= all.Last().AnalyzedAtUtc);
     }
 }

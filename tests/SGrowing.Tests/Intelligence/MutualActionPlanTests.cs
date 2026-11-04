@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using SGrowing.Api.Modules.Intelligence.MutualActionPlan;
@@ -20,6 +21,28 @@ public class MutualActionPlanTests
         plan.ContractValueUsd.Should().Be(185000m);
         plan.Milestones.Should().HaveCount(4);
         plan.ChampionHealthScore.Should().BeGreaterThan(80);
+    }
+
+    [Fact]
+    public void GetPlan_ReturnsNullForUnknownId()
+    {
+        var plan = _engine.GetPlan("unknown_plan_999");
+        plan.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetPlanByDealId_ReturnsPlanForKnownDeal()
+    {
+        var plan = _engine.GetPlanByDealId("deal_aurora_9901");
+        plan.Should().NotBeNull();
+        plan!.PlanId.Should().Be("map_enterprise_aurora_01");
+    }
+
+    [Fact]
+    public void GetPlanByDealId_ReturnsNullForUnknownDeal()
+    {
+        var plan = _engine.GetPlanByDealId("deal_never_seen_123");
+        plan.Should().BeNull();
     }
 
     [Fact]
@@ -57,6 +80,20 @@ public class MutualActionPlanTests
         updated.IsAtRiskOfSlipping.Should().BeTrue();
         updated.SlippageRiskRationale.Should().Contain("blocked");
         updated.ChampionHealthScore.Should().BeLessThan(88);
+    }
+
+    [Fact]
+    public void UpdateMilestone_ThrowsWhenPlanNotFound()
+    {
+        var act = () => _engine.UpdateMilestone(new UpdateMilestoneRequest("missing_plan", "ms_01", BuyerMilestoneStatus.CompletedVerified, null));
+        act.Should().Throw<KeyNotFoundException>();
+    }
+
+    [Fact]
+    public void RefreshRiskAnalysis_ThrowsWhenPlanNotFound()
+    {
+        var act = () => _engine.RefreshRiskAnalysis("missing_plan_id");
+        act.Should().Throw<KeyNotFoundException>();
     }
 
     [Fact]
