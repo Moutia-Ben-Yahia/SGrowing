@@ -37,4 +37,15 @@ describe('VideoAvatarCockpitComponent', () => {
     component.projectSlide(2);
     expect(component.activeSlideIndex()).toBe(2);
   });
+
+  it('should toggle stream session and ignore synthesizeSpeech when speechPromptInput is empty', () => {
+    expect(component.isStreaming()).toBe(true);
+    component.toggleStreamSession();
+    expect(component.isStreaming()).toBe(false);
+
+    const prevUtterance = component.lastSpokenUtterance();
+    component.speechPromptInput = '   ';
+    component.synthesizeSpeech();
+    expect(component.lastSpokenUtterance()).toBe(prevUtterance);
+  });
 });

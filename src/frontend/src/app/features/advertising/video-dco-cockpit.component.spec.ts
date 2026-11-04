@@ -46,4 +46,12 @@ describe('VideoDcoCockpitComponent', () => {
     expect(usVariant?.localizedCurrency).toBe('USD');
     expect(usVariant?.displayedPrice).toBe(299);
   });
+
+  it('should allow modifying cdnHitRatio and clearing variants signal', () => {
+    const comp = new VideoDcoCockpitComponent();
+    comp.cdnHitRatio.set(99.4);
+    comp.variants.set([]);
+    expect(comp.cdnHitRatio()).toBe(99.4);
+    expect(comp.variants().length).toBe(0);
+  });
 });

@@ -42,4 +42,17 @@ describe('SemanticRagCockpitComponent', () => {
 
     expect(component.groundedAnswer()).toBe(initialAnswer);
   });
+
+  it('should ignore ingestChunk when newDocTitle or newDocContent is empty', () => {
+    const initial = component.totalChunks();
+    component.newDocTitle = '';
+    component.newDocContent = 'Content without title';
+    component.ingestChunk();
+    expect(component.totalChunks()).toBe(initial);
+
+    component.newDocTitle = 'Title without content';
+    component.newDocContent = '   ';
+    component.ingestChunk();
+    expect(component.totalChunks()).toBe(initial);
+  });
 });

@@ -42,4 +42,13 @@ describe('RetargetingMatrixCockpitComponent', () => {
     comp.syncNegativeExclusions();
     expect(comp.negativeExclusionCount()).toBe(before + 350);
   });
+
+  it('should return 0 for totalAudience and avgFatigue when segments list is empty', () => {
+    const comp = new RetargetingMatrixCockpitComponent();
+    comp.segments.set([]);
+    expect(comp.totalAudience()).toBe(0);
+    expect(comp.avgFatigue()).toBe(0);
+    expect(comp.activeSegmentCount()).toBe(0);
+    expect(comp.pausedSegmentCount()).toBe(0);
+  });
 });

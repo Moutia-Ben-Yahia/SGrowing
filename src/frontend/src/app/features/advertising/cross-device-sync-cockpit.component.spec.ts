@@ -47,4 +47,13 @@ describe('CrossDeviceSyncCockpitComponent', () => {
     expect(comp.lastMatch()?.amount).toBe(199.99);
     expect(comp.lastMatch()?.transactionId).toBe('POS-TX-99881');
   });
+
+  it('should update posTxId and verify matched conversion contains custom transactionId', () => {
+    const comp = new CrossDeviceSyncCockpitComponent();
+    comp.posTxId = 'TX-CUSTOM-776';
+    comp.posAmount = 1250.00;
+    comp.matchOfflineConversion();
+    expect(comp.lastMatch()?.transactionId).toBe('TX-CUSTOM-776');
+    expect(comp.lastMatch()?.attributedChannel).toContain('Omnichannel CAPI');
+  });
 });

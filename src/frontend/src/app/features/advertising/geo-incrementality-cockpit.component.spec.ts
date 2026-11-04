@@ -45,4 +45,20 @@ describe('GeoIncrementalityCockpitComponent', () => {
     expect(totalIncrementalRev).toBe(941000); // 580000 + 361000
     expect(comp.experiments()[0].status).toBe('RUNNING_HOLD_OUT');
   });
+
+  it('should allow dynamically adding new test cells to cells signal', () => {
+    const comp = new GeoIncrementalityCockpitComponent();
+    comp.cells.update(cells => [
+      ...cells,
+      {
+        cellId: 'CELL-DMA-NYC',
+        dmaRegionName: 'New York DMA #1',
+        marketRole: 'TEST_TREATMENT',
+        baselineWeeklyRevenueUsd: 950000,
+        syntheticWeightCoefficient: 1.0
+      }
+    ]);
+    expect(comp.cells().length).toBe(3);
+    expect(comp.cells()[2].cellId).toBe('CELL-DMA-NYC');
+  });
 });

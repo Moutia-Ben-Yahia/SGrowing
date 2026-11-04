@@ -92,4 +92,30 @@ describe('AgentWorkforceCockpitComponent', () => {
     expect(component.inspectedRole()).toEqual(mockRoles[0]);
     expect(component.inspectedRole()?.displayName).toBe('Growth Architect');
   });
+
+  it('should compute filteredRoles when roleFilter changes and compute averageGoalProgress', () => {
+    component.roleFilter.set('business');
+    expect(component.filteredRoles().length).toBe(1);
+    expect(component.filteredRoles()[0].roleCode).toBe('growth_architect');
+
+    component.roleFilter.set('engineering');
+    expect(component.filteredRoles().length).toBe(1);
+    expect(component.filteredRoles()[0].roleCode).toBe('frontend_engineer');
+
+    expect(component.averageGoalProgress()).toBe(0);
+    component.activeGoalTrees.set([
+      {
+        id: 'tree-1',
+        tenantId: 't-1',
+        executiveGoalText: 'Goal 1',
+        targetTimeframe: 'Q4',
+        status: 'Active',
+        overallAchievementPercentage: 80,
+        nodes: [],
+        createdAtUtc: '',
+        updatedAtUtc: ''
+      }
+    ]);
+    expect(component.averageGoalProgress()).toBe(80);
+  });
 });

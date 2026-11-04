@@ -58,4 +58,12 @@ describe('AgentMissionCockpitComponent', () => {
     expect(component.getToolDisplayName('outbound_send_spintax_campaign')).toBe('Dispatch Spintax Campaign');
     expect(component.getToolDisplayName('courier_generate_waybill')).toBe('Generate COD Waybill');
   });
+
+  it('should toggle showCreateModal and handle createMission', () => {
+    component.showCreateModal.set(true);
+    expect(component.showCreateModal()).toBe(true);
+    component.createMission();
+    expect(component.showCreateModal()).toBe(false);
+    expect(component.currentMission()?.status).toBe('Running');
+  });
 });

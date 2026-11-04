@@ -54,4 +54,10 @@ describe('GrowthDirectorMissionCockpitComponent (Domain J3 Supervised Autonomous
     expect(component.missionStatus()).toBe('PendingApproval');
     expect(component.auditTrail()[0]).toContain('Decomposed mission for target: 100 Qualified Leads');
   });
+
+  it('should return 0 totalAllocatedBudget and false requiresHumanReview when tasks list is empty', () => {
+    component.tasks.set([]);
+    expect(component.totalAllocatedBudget()).toBe(0);
+    expect(component.requiresHumanReview()).toBe(false);
+  });
 });

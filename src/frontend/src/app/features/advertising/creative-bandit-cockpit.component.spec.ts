@@ -42,4 +42,11 @@ describe('CreativeBanditCockpitComponent', () => {
     expect(topVariant?.angle).toBe('PainPointAgitation');
     expect(topVariant?.isFatigued).toBe(false);
   });
+
+  it('should calculate conversions and shares when variant metrics are dynamically updated', () => {
+    const comp = new CreativeBanditCockpitComponent();
+    comp.variants.update(vars => vars.map(v => ({ ...v, impressions: v.impressions * 2, conversions: v.conversions * 2 })));
+    expect(comp.totalConversions()).toBe(655 * 2);
+    expect(comp.blendedCvr()).toBe('2.38');
+  });
 });

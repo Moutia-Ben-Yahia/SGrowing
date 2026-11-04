@@ -45,4 +45,12 @@ describe('SponsoredBrandAdsCockpitComponent', () => {
     expect(camp.featuredSkusCount).toBe(3);
     expect(camp.slotType).toBe('TopSearchHeaderBanner');
   });
+
+  it('should allow updating auctionsToday and avgCpcUsd metrics', () => {
+    const comp = new SponsoredBrandAdsCockpitComponent();
+    comp.auctionsToday.set(10500);
+    comp.avgCpcUsd.set(3.15);
+    expect(comp.auctionsToday()).toBe(10500);
+    expect(comp.avgCpcUsd()).toBe(3.15);
+  });
 });

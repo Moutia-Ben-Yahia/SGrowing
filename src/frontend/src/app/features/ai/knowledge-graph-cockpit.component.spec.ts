@@ -44,4 +44,9 @@ describe('KnowledgeGraphCockpitComponent', () => {
     expect(component.entities().length).toBe(initialEntCount);
     expect(component.showIngestModal()).toBe(true);
   });
+
+  it('should return 0 avgConfidence when triples list is empty', () => {
+    component.triples.set([]);
+    expect(component.avgConfidence()).toBe(0);
+  });
 });
