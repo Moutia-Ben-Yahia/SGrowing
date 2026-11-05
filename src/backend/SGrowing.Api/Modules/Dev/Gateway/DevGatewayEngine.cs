@@ -1,6 +1,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using SGrowing.Api.Data;
+using SGrowing.Core.Entities;
+using StackExchange.Redis;
 
 namespace SGrowing.Api.Modules.Dev.Gateway;
 
@@ -23,8 +30,17 @@ public sealed class DevGatewayEngine : IDevGatewayEngine
         public object SyncLock { get; } = new();
     }
 
+    private sealed record TokenBucketRecord(double Tokens, DateTime RefillUtc);
+
     private readonly ConcurrentDictionary<string, TokenBucketState> _buckets = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, SandboxSessionConfig> _sandboxSessions = new(StringComparer.OrdinalIgnoreCase);
+
+    private readonly IConnectionMultiplexer? _redis;
+    private readonly IServiceScopeFactory? _scopeFactory;
+    private readonly SGrowingDbContext? _dbContext;
+    private readonly IDevGatewayPersistenceStore? _persistenceStore;
+    private readonly ILogger<DevGatewayEngine>? _logger;
+    private readonly object _dbLock = new();
 
     private static readonly Dictionary<DeveloperTier, TierQuotaInfo> QuotaMap = new()
     {
@@ -33,6 +49,83 @@ public sealed class DevGatewayEngine : IDevGatewayEngine
         [DeveloperTier.Enterprise] = new TierQuotaInfo(DeveloperTier.Enterprise, RequestsPerMinute: 2500, BurstCapacity: 500, SandboxAllowed: true, WebhookReplayAllowed: true, MaxWebhooks: 50),
         [DeveloperTier.Partner] = new TierQuotaInfo(DeveloperTier.Partner, RequestsPerMinute: 10000, BurstCapacity: 2000, SandboxAllowed: true, WebhookReplayAllowed: true, MaxWebhooks: 200)
     };
+
+    public DevGatewayEngine()
+        : this(null, null, null, null, null)
+    {
+    }
+
+    public DevGatewayEngine(
+        IConnectionMultiplexer? redis = null,
+        IServiceScopeFactory? scopeFactory = null,
+        SGrowingDbContext? dbContext = null,
+        IDevGatewayPersistenceStore? persistenceStore = null,
+        ILogger<DevGatewayEngine>? logger = null)
+    {
+        _redis = redis;
+        _scopeFactory = scopeFactory;
+        _dbContext = dbContext;
+        _persistenceStore = persistenceStore;
+        _logger = logger;
+
+        WarmupFromPersistence();
+    }
+
+    public DevGatewayEngine(IDevGatewayPersistenceStore persistenceStore)
+        : this(null, null, null, persistenceStore, null)
+    {
+    }
+
+    public DevGatewayEngine(SGrowingDbContext dbContext)
+        : this(null, null, dbContext, null, null)
+    {
+    }
+
+    private void WarmupFromPersistence()
+    {
+        try
+        {
+            if (_dbContext != null)
+            {
+                lock (_dbLock)
+                {
+                    LoadFromDbContext(_dbContext);
+                }
+            }
+            else if (_scopeFactory != null)
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
+                if (db != null)
+                {
+                    LoadFromDbContext(db);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Failed to warm up DevGatewayEngine cache from DbContext");
+        }
+    }
+
+    private void LoadFromDbContext(SGrowingDbContext db)
+    {
+        var sessions = db.DevSandboxSessions.ToList();
+        foreach (var entity in sessions)
+        {
+            _sandboxSessions[entity.TenantId] = entity.ToConfig();
+        }
+
+        var buckets = db.DevRateLimitBuckets.ToList();
+        foreach (var entity in buckets)
+        {
+            _buckets[entity.BucketKey] = new TokenBucketState
+            {
+                CurrentTokens = entity.CurrentTokens,
+                LastRefillUtc = entity.LastRefillUtc
+            };
+        }
+    }
 
     public TierQuotaInfo GetTierQuota(DeveloperTier tier)
     {
@@ -47,10 +140,23 @@ public sealed class DevGatewayEngine : IDevGatewayEngine
         var bucketKey = $"{request.TenantId}:{request.ApiKey}";
         var now = DateTime.UtcNow;
 
-        var bucket = _buckets.GetOrAdd(bucketKey, _ => new TokenBucketState
+        var bucket = _buckets.GetOrAdd(bucketKey, key =>
         {
-            CurrentTokens = quota.BurstCapacity,
-            LastRefillUtc = now
+            var loaded = LoadBucketFromDurableStore(key);
+            if (loaded.HasValue)
+            {
+                return new TokenBucketState
+                {
+                    CurrentTokens = loaded.Value.CurrentTokens,
+                    LastRefillUtc = loaded.Value.LastRefillUtc
+                };
+            }
+
+            return new TokenBucketState
+            {
+                CurrentTokens = quota.BurstCapacity,
+                LastRefillUtc = now
+            };
         });
 
         lock (bucket.SyncLock)
@@ -63,48 +169,343 @@ public sealed class DevGatewayEngine : IDevGatewayEngine
 
             int requested = Math.Max(1, request.RequestedTokens);
 
-            if (bucket.CurrentTokens >= requested)
+            bool isAllowed = bucket.CurrentTokens >= requested;
+            double retryAfterSeconds = 0;
+
+            if (isAllowed)
             {
                 bucket.CurrentTokens -= requested;
-                return new RateLimitCheckResult(
-                    IsAllowed: true,
-                    RemainingTokens: (int)Math.Floor(bucket.CurrentTokens),
-                    Capacity: quota.BurstCapacity,
-                    RefillRatePerSecond: Math.Round(refillRatePerSecond, 2),
-                    RetryAfterSeconds: 0,
-                    Tier: request.Tier,
-                    CheckedAtUtc: now
-                );
             }
             else
             {
                 double shortfall = requested - bucket.CurrentTokens;
-                double retryAfterSeconds = Math.Ceiling(shortfall / refillRatePerSecond);
+                retryAfterSeconds = Math.Max(1, Math.Ceiling(shortfall / refillRatePerSecond));
+            }
 
-                return new RateLimitCheckResult(
-                    IsAllowed: false,
-                    RemainingTokens: (int)Math.Floor(bucket.CurrentTokens),
-                    Capacity: quota.BurstCapacity,
-                    RefillRatePerSecond: Math.Round(refillRatePerSecond, 2),
-                    RetryAfterSeconds: Math.Max(1, retryAfterSeconds),
-                    Tier: request.Tier,
-                    CheckedAtUtc: now
-                );
+            PersistBucketState(bucketKey, bucket.CurrentTokens, bucket.LastRefillUtc);
+
+            return new RateLimitCheckResult(
+                IsAllowed: isAllowed,
+                RemainingTokens: (int)Math.Floor(bucket.CurrentTokens),
+                Capacity: quota.BurstCapacity,
+                RefillRatePerSecond: Math.Round(refillRatePerSecond, 2),
+                RetryAfterSeconds: retryAfterSeconds,
+                Tier: request.Tier,
+                CheckedAtUtc: now
+            );
+        }
+    }
+
+    private (double CurrentTokens, DateTime LastRefillUtc)? LoadBucketFromDurableStore(string bucketKey)
+    {
+        if (_redis != null && _redis.IsConnected)
+        {
+            try
+            {
+                var db = _redis.GetDatabase();
+                var val = db.StringGet($"devgw:ratelimit:{bucketKey}");
+                if (val.HasValue)
+                {
+                    var parsed = JsonSerializer.Deserialize<TokenBucketRecord>(val.ToString());
+                    if (parsed != null)
+                    {
+                        return (parsed.Tokens, parsed.RefillUtc);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogWarning(ex, "Failed to read rate-limit bucket {BucketKey} from Redis", bucketKey);
             }
         }
+
+        if (_persistenceStore != null)
+        {
+            try
+            {
+                var state = _persistenceStore.GetTokenBucket(bucketKey);
+                if (state.HasValue)
+                {
+                    return state;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogWarning(ex, "Failed to read rate-limit bucket {BucketKey} from PersistenceStore", bucketKey);
+            }
+        }
+
+        try
+        {
+            if (_dbContext != null)
+            {
+                lock (_dbLock)
+                {
+                    var entity = _dbContext.DevRateLimitBuckets.FirstOrDefault(b => b.BucketKey == bucketKey);
+                    if (entity != null)
+                    {
+                        return (entity.CurrentTokens, entity.LastRefillUtc);
+                    }
+                }
+            }
+            else if (_scopeFactory != null)
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
+                if (db != null)
+                {
+                    var entity = db.DevRateLimitBuckets.FirstOrDefault(b => b.BucketKey == bucketKey);
+                    if (entity != null)
+                    {
+                        return (entity.CurrentTokens, entity.LastRefillUtc);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Failed to read rate-limit bucket {BucketKey} from DbContext", bucketKey);
+        }
+
+        return null;
+    }
+
+    private void PersistBucketState(string bucketKey, double currentTokens, DateTime lastRefillUtc)
+    {
+        if (_redis != null && _redis.IsConnected)
+        {
+            try
+            {
+                var db = _redis.GetDatabase();
+                var payload = JsonSerializer.Serialize(new TokenBucketRecord(currentTokens, lastRefillUtc));
+                db.StringSet($"devgw:ratelimit:{bucketKey}", payload, TimeSpan.FromHours(24), flags: CommandFlags.FireAndForget);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogWarning(ex, "Failed to persist rate-limit bucket {BucketKey} to Redis", bucketKey);
+            }
+        }
+
+        try
+        {
+            _persistenceStore?.SaveTokenBucket(bucketKey, currentTokens, lastRefillUtc);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Failed to persist rate-limit bucket {BucketKey} to PersistenceStore", bucketKey);
+        }
+
+        try
+        {
+            if (_dbContext != null)
+            {
+                lock (_dbLock)
+                {
+                    SaveBucketEntityToDb(_dbContext, bucketKey, currentTokens, lastRefillUtc);
+                }
+            }
+            else if (_scopeFactory != null)
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
+                if (db != null)
+                {
+                    SaveBucketEntityToDb(db, bucketKey, currentTokens, lastRefillUtc);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Failed to persist rate-limit bucket {BucketKey} to DbContext", bucketKey);
+        }
+    }
+
+    private static void SaveBucketEntityToDb(SGrowingDbContext db, string bucketKey, double currentTokens, DateTime lastRefillUtc)
+    {
+        var entity = db.DevRateLimitBuckets.FirstOrDefault(b => b.BucketKey == bucketKey);
+        if (entity == null)
+        {
+            entity = new DevRateLimitBucketEntity
+            {
+                Id = Guid.NewGuid(),
+                BucketKey = bucketKey,
+                CurrentTokens = currentTokens,
+                LastRefillUtc = lastRefillUtc,
+                UpdatedAtUtc = DateTime.UtcNow
+            };
+            db.DevRateLimitBuckets.Add(entity);
+        }
+        else
+        {
+            entity.CurrentTokens = currentTokens;
+            entity.LastRefillUtc = lastRefillUtc;
+            entity.UpdatedAtUtc = DateTime.UtcNow;
+        }
+
+        db.SaveChanges();
     }
 
     public SandboxSessionConfig ConfigureSandboxSession(SandboxSessionConfig config)
     {
         _sandboxSessions[config.TenantId] = config;
+
+        if (_redis != null && _redis.IsConnected)
+        {
+            try
+            {
+                var db = _redis.GetDatabase();
+                var json = JsonSerializer.Serialize(config);
+                db.StringSet($"devgw:sandbox:{config.TenantId}", json, TimeSpan.FromDays(30), flags: CommandFlags.FireAndForget);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogWarning(ex, "Failed to persist sandbox session {TenantId} to Redis", config.TenantId);
+            }
+        }
+
+        try
+        {
+            _persistenceStore?.SaveSandboxSession(config);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Failed to persist sandbox session {TenantId} to PersistenceStore", config.TenantId);
+        }
+
+        try
+        {
+            if (_dbContext != null)
+            {
+                lock (_dbLock)
+                {
+                    SaveSandboxSessionToDb(_dbContext, config);
+                }
+            }
+            else if (_scopeFactory != null)
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
+                if (db != null)
+                {
+                    SaveSandboxSessionToDb(db, config);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Failed to persist sandbox session {TenantId} to DbContext", config.TenantId);
+        }
+
         return config;
+    }
+
+    private static void SaveSandboxSessionToDb(SGrowingDbContext db, SandboxSessionConfig config)
+    {
+        var entity = db.DevSandboxSessions.FirstOrDefault(s => s.TenantId == config.TenantId);
+        if (entity == null)
+        {
+            entity = config.ToEntity();
+            db.DevSandboxSessions.Add(entity);
+        }
+        else
+        {
+            entity.IsSandboxMode = config.IsSandboxMode;
+            entity.SimulatedLatencyMs = config.SimulatedLatencyMs;
+            entity.SimulateFailures = config.SimulateFailures;
+            entity.FailureRatePercent = config.FailureRatePercent;
+            entity.MockHeadersJson = JsonSerializer.Serialize(config.MockHeaders ?? new List<string>());
+            entity.UpdatedAtUtc = DateTime.UtcNow;
+        }
+
+        db.SaveChanges();
     }
 
     public SandboxSessionConfig? GetSandboxSession(string tenantId)
     {
-        return _sandboxSessions.TryGetValue(tenantId, out var config)
-            ? config
-            : new SandboxSessionConfig(tenantId, IsSandboxMode: true, SimulatedLatencyMs: 45, SimulateFailures: false, FailureRatePercent: 0.0, new List<string> { "X-SGrowing-Sandbox: true" });
+        if (_sandboxSessions.TryGetValue(tenantId, out var config))
+        {
+            return config;
+        }
+
+        if (_redis != null && _redis.IsConnected)
+        {
+            try
+            {
+                var db = _redis.GetDatabase();
+                var val = db.StringGet($"devgw:sandbox:{tenantId}");
+                if (val.HasValue)
+                {
+                    var loaded = JsonSerializer.Deserialize<SandboxSessionConfig>(val.ToString());
+                    if (loaded != null)
+                    {
+                        _sandboxSessions[tenantId] = loaded;
+                        return loaded;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogWarning(ex, "Failed to load sandbox session {TenantId} from Redis", tenantId);
+            }
+        }
+
+        if (_persistenceStore != null)
+        {
+            try
+            {
+                var loaded = _persistenceStore.GetSandboxSession(tenantId);
+                if (loaded != null)
+                {
+                    _sandboxSessions[tenantId] = loaded;
+                    return loaded;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogWarning(ex, "Failed to load sandbox session {TenantId} from PersistenceStore", tenantId);
+            }
+        }
+
+        try
+        {
+            DevSandboxSessionEntity? entity = null;
+            if (_dbContext != null)
+            {
+                lock (_dbLock)
+                {
+                    entity = _dbContext.DevSandboxSessions.FirstOrDefault(s => s.TenantId == tenantId);
+                }
+            }
+            else if (_scopeFactory != null)
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
+                if (db != null)
+                {
+                    entity = db.DevSandboxSessions.FirstOrDefault(s => s.TenantId == tenantId);
+                }
+            }
+
+            if (entity != null)
+            {
+                var loaded = entity.ToConfig();
+                _sandboxSessions[tenantId] = loaded;
+                return loaded;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Failed to load sandbox session {TenantId} from DbContext", tenantId);
+        }
+
+        return new SandboxSessionConfig(
+            tenantId,
+            IsSandboxMode: true,
+            SimulatedLatencyMs: 45,
+            SimulateFailures: false,
+            FailureRatePercent: 0.0,
+            new List<string> { "X-SGrowing-Sandbox: true" }
+        );
     }
 
     public SandboxSimulationResponse SimulateRequest(SandboxSimulationRequest request)

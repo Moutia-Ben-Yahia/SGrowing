@@ -1,21 +1,19 @@
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using SGrowing.Api.Common;
 
 namespace SGrowing.Api.Modules.Dev.Gateway;
 
-public static class DevGatewayEndpoints
+/// <summary>
+/// Modular endpoint definition for the Public Developer Gateway and Sandbox.
+/// </summary>
+public class DevGatewayEndpoints : IEndpointModule
 {
-    public static IServiceCollection AddDevGatewayServices(this IServiceCollection services)
+    public void MapEndpoints(IEndpointRouteBuilder app)
     {
-        services.AddSingleton<IDevGatewayEngine, DevGatewayEngine>();
-        return services;
-    }
-
-    public static IEndpointRouteBuilder MapDevGatewayEndpoints(this IEndpointRouteBuilder endpoints)
-    {
-        var group = endpoints.MapGroup("/api/v1/developer/gateway")
+        var group = app.MapGroup("/api/v1/developer/gateway")
             .WithTags("Public Developer Gateway & Sandbox");
 
         group.MapPost("/rate-limit/check", (RateLimitCheckRequest request, IDevGatewayEngine engine) =>
@@ -56,7 +54,23 @@ public static class DevGatewayEndpoints
             var result = engine.ExportOpenApiSpec(query);
             return Results.Ok(result);
         }).WithName("ExportOpenApiSpec");
+    }
+}
 
+/// <summary>
+/// Extension methods for registering and mapping Developer Gateway endpoints.
+/// </summary>
+public static class DevGatewayEndpointExtensions
+{
+    public static IServiceCollection AddDevGatewayServices(this IServiceCollection services)
+    {
+        services.AddSingleton<IDevGatewayEngine, DevGatewayEngine>();
+        return services;
+    }
+
+    public static IEndpointRouteBuilder MapDevGatewayEndpoints(this IEndpointRouteBuilder endpoints)
+    {
+        new DevGatewayEndpoints().MapEndpoints(endpoints);
         return endpoints;
     }
 }

@@ -1,4 +1,6 @@
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Conversations.Unified;
 using Xunit;
 
@@ -292,5 +294,172 @@ public class UnifiedInboxTests
         alphaAll.Should().HaveCount(2);
         alphaEscalated.Should().HaveCount(1).And.Contain(t => t.Id == t2.Id);
         betaAll.Should().HaveCount(1).And.Contain(t => t.Id == t3.Id);
+    }
+
+    [Fact]
+    public void IngestMessage_WithDbContext_PersistsThreadAndMessagesToDatabase()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(dbName)
+            .Options;
+
+        using var db = new SGrowingDbContext(options);
+        var engine = new UnifiedInboxEngine(db);
+
+        var req = new IngestMessageRequest(
+            TenantId: "tenant_ef_persist",
+            Channel: ConversationChannel.Email,
+            CustomerEmail: "customer@domain.com",
+            CustomerPhone: "+15551234567",
+            SenderName: "John Doe",
+            Content: "I need help with my integration please."
+        );
+
+        var thread = engine.IngestMessage(req);
+
+        // Verify thread entity in DbContext
+        var threadEntity = db.UnifiedInboxThreads.Include(t => t.Messages).FirstOrDefault(t => t.Id == thread.Id);
+        threadEntity.Should().NotBeNull();
+        threadEntity!.TenantId.Should().Be("tenant_ef_persist");
+        threadEntity.CustomerEmail.Should().Be("customer@domain.com");
+        threadEntity.Messages.Should().HaveCount(1);
+        threadEntity.Messages[0].Content.Should().Be("I need help with my integration please.");
+    }
+
+    [Fact]
+    public void EngineRestart_WithDbContext_RestoresThreadsAndMessagesFromDatabase()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(dbName)
+            .Options;
+
+        Guid savedThreadId;
+
+        using (var db1 = new SGrowingDbContext(options))
+        {
+            var engine1 = new UnifiedInboxEngine(db1);
+            var req = new IngestMessageRequest(
+                TenantId: "tenant_restart_test",
+                Channel: ConversationChannel.WhatsApp,
+                CustomerEmail: "alice@acme.corp",
+                CustomerPhone: "+100200300",
+                SenderName: "Alice",
+                Content: "Urgent issue with production sync!"
+            );
+
+            var t = engine1.IngestMessage(req);
+            savedThreadId = t.Id;
+        }
+
+        // Simulate app restart by instantiating a completely new engine with a fresh DbContext instance pointing to same DB
+        using (var db2 = new SGrowingDbContext(options))
+        {
+            var engine2 = new UnifiedInboxEngine(db2);
+
+            var restoredThread = engine2.GetThread("tenant_restart_test", savedThreadId);
+            restoredThread.Should().NotBeNull();
+            restoredThread!.CustomerEmail.Should().Be("alice@acme.corp");
+            restoredThread.CustomerPhone.Should().Be("+100200300");
+            restoredThread.ActiveChannels.Should().Contain(ConversationChannel.WhatsApp);
+            restoredThread.Messages.Should().HaveCount(1);
+            restoredThread.Messages[0].Content.Should().Be("Urgent issue with production sync!");
+        }
+    }
+
+    [Fact]
+    public void OmnichannelStitching_SurvivesEngineRestart_WhenPersistedToDbContext()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(dbName)
+            .Options;
+
+        var tenantId = "tenant_stitch_restart";
+        Guid threadId;
+
+        // Session 1: customer sends Email
+        using (var db1 = new SGrowingDbContext(options))
+        {
+            var engine1 = new UnifiedInboxEngine(db1);
+            var req1 = new IngestMessageRequest(
+                TenantId: tenantId,
+                Channel: ConversationChannel.Email,
+                CustomerEmail: "bob@builder.com",
+                CustomerPhone: "",
+                SenderName: "Bob Builder",
+                Content: "Can we fix it?"
+            );
+            var t1 = engine1.IngestMessage(req1);
+            threadId = t1.Id;
+        }
+
+        // Session 2: after restart, customer follows up on WhatsApp with phone + email
+        using (var db2 = new SGrowingDbContext(options))
+        {
+            var engine2 = new UnifiedInboxEngine(db2);
+            var req2 = new IngestMessageRequest(
+                TenantId: tenantId,
+                Channel: ConversationChannel.WhatsApp,
+                CustomerEmail: "bob@builder.com",
+                CustomerPhone: "+1999888777",
+                SenderName: "Bob Builder",
+                Content: "Yes we can!"
+            );
+            var t2 = engine2.IngestMessage(req2);
+
+            t2.Id.Should().Be(threadId, "Should stitch into the thread loaded from database");
+            t2.ActiveChannels.Should().Contain(ConversationChannel.Email);
+            t2.ActiveChannels.Should().Contain(ConversationChannel.WhatsApp);
+            t2.Messages.Should().HaveCount(2);
+        }
+    }
+
+    [Fact]
+    public void EscalateAndAgentReply_WithDbContext_PersistsStatusChangesAcrossRestarts()
+    {
+        var dbName = Guid.NewGuid().ToString();
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(dbName)
+            .Options;
+
+        var tenantId = "tenant_escalate_restart";
+        Guid threadId;
+
+        using (var db1 = new SGrowingDbContext(options))
+        {
+            var engine1 = new UnifiedInboxEngine(db1);
+            var t = engine1.IngestMessage(new IngestMessageRequest(
+                TenantId: tenantId,
+                Channel: ConversationChannel.WebChat,
+                CustomerEmail: "user@enterprise.com",
+                CustomerPhone: "+123",
+                SenderName: "Enterprise User",
+                Content: "Broken database migration after release"
+            ));
+            threadId = t.Id;
+
+            // Escalate
+            engine1.EscalateTicket(new EscalateTicketRequest(threadId, tenantId, "Enterprise SLA Tier 1", TicketPriority.Urgent));
+
+            // Agent replies
+            engine1.AppendAgentReply(tenantId, threadId, "agent_lead_01", "Lead Engineer", "We are hotfixing right away.", ConversationChannel.WebChat);
+        }
+
+        // Verify across restart
+        using (var db2 = new SGrowingDbContext(options))
+        {
+            var engine2 = new UnifiedInboxEngine(db2);
+            var thread = engine2.GetThread(tenantId, threadId);
+
+            thread.Should().NotBeNull();
+            thread!.Status.Should().Be(TicketStatus.PendingCustomer);
+            thread.Priority.Should().Be(TicketPriority.Urgent);
+            thread.AssignedAgentId.Should().Be("agent_lead_01");
+            thread.Messages.Should().HaveCount(3);
+            thread.Messages[1].SenderName.Should().Be("Escalation Engine");
+            thread.Messages[2].SenderName.Should().Be("Lead Engineer");
+        }
     }
 }

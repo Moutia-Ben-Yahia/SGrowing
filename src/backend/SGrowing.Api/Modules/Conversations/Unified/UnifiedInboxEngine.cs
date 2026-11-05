@@ -1,4 +1,13 @@
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using SGrowing.Api.Data;
+using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.Conversations.Unified;
 
@@ -16,14 +25,88 @@ public class UnifiedInboxEngine : IUnifiedInboxEngine
 {
     private readonly ConcurrentDictionary<Guid, UnifiedThread> _threads = new();
     private readonly Func<DateTime> _clock;
+    private readonly SGrowingDbContext? _dbContext;
+    private readonly IServiceScopeFactory? _scopeFactory;
+    private readonly ILogger<UnifiedInboxEngine>? _logger;
+    private readonly object _dbLock = new();
 
-    public UnifiedInboxEngine() : this(null)
+    public UnifiedInboxEngine()
+        : this((IServiceScopeFactory?)null, null, null)
     {
     }
 
     public UnifiedInboxEngine(Func<DateTime>? clock)
+        : this((IServiceScopeFactory?)null, clock, null)
     {
+    }
+
+    public UnifiedInboxEngine(
+        IServiceScopeFactory? scopeFactory,
+        Func<DateTime>? clock = null,
+        ILogger<UnifiedInboxEngine>? logger = null)
+        : this(null, scopeFactory, clock, logger)
+    {
+    }
+
+    public UnifiedInboxEngine(
+        SGrowingDbContext? dbContext,
+        Func<DateTime>? clock = null,
+        ILogger<UnifiedInboxEngine>? logger = null)
+        : this(dbContext, null, clock, logger)
+    {
+    }
+
+    public UnifiedInboxEngine(
+        SGrowingDbContext? dbContext,
+        IServiceScopeFactory? scopeFactory,
+        Func<DateTime>? clock = null,
+        ILogger<UnifiedInboxEngine>? logger = null)
+    {
+        _dbContext = dbContext;
+        _scopeFactory = scopeFactory;
         _clock = clock ?? (() => DateTime.UtcNow);
+        _logger = logger;
+
+        LoadThreadsFromDb();
+    }
+
+    private void LoadThreadsFromDb()
+    {
+        try
+        {
+            if (_dbContext != null)
+            {
+                lock (_dbLock)
+                {
+                    PopulateFromDb(_dbContext);
+                }
+            }
+            else if (_scopeFactory != null)
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
+                if (db != null)
+                {
+                    PopulateFromDb(db);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Failed to initialize UnifiedInboxEngine cache from database");
+        }
+    }
+
+    private void PopulateFromDb(SGrowingDbContext db)
+    {
+        var entities = db.UnifiedInboxThreads
+            .Include(t => t.Messages)
+            .ToList();
+
+        foreach (var entity in entities)
+        {
+            _threads[entity.Id] = entity.ToModel();
+        }
     }
 
     public static CustomerSentiment AnalyzeSentiment(string? content)
@@ -130,6 +213,15 @@ public class UnifiedInboxEngine : IUnifiedInboxEngine
                 (!string.IsNullOrEmpty(normPhone) && !string.IsNullOrEmpty(t.CustomerPhone) &&
                  string.Equals(NormalizePhone(t.CustomerPhone), normPhone, StringComparison.OrdinalIgnoreCase)));
 
+        if (existing == null && (_dbContext != null || _scopeFactory != null))
+        {
+            existing = FindUnresolvedThreadInDb(request.TenantId, normEmail, normPhone);
+            if (existing != null)
+            {
+                _threads[existing.Id] = existing;
+            }
+        }
+
         if (existing != null)
         {
             var msg = new CustomerMessage(
@@ -177,6 +269,7 @@ public class UnifiedInboxEngine : IUnifiedInboxEngine
 
             updatedThread = RefreshSla(updatedThread);
             _threads[existing.Id] = updatedThread;
+            SyncThreadToDb(updatedThread, msg);
             return updatedThread;
         }
         else
@@ -216,13 +309,15 @@ public class UnifiedInboxEngine : IUnifiedInboxEngine
 
             newThread = RefreshSla(newThread);
             _threads[threadId] = newThread;
+            SyncThreadToDb(newThread, msg);
             return newThread;
         }
     }
 
     public AiDeflectionResult EvaluateAiDeflection(string tenantId, Guid threadId)
     {
-        if (!_threads.TryGetValue(threadId, out var thread) || thread.TenantId != tenantId)
+        var thread = GetThreadInternal(tenantId, threadId);
+        if (thread == null)
         {
             throw new KeyNotFoundException($"Thread '{threadId}' not found for tenant '{tenantId}'.");
         }
@@ -282,7 +377,9 @@ public class UnifiedInboxEngine : IUnifiedInboxEngine
         if (canAutoSend)
         {
             var updated = thread with { AiDeflected = true, UpdatedAtUtc = _clock() };
-            _threads[threadId] = RefreshSla(updated);
+            updated = RefreshSla(updated);
+            _threads[threadId] = updated;
+            SyncThreadToDb(updated);
         }
 
         return new AiDeflectionResult(
@@ -296,7 +393,8 @@ public class UnifiedInboxEngine : IUnifiedInboxEngine
 
     public UnifiedThread EscalateTicket(EscalateTicketRequest request)
     {
-        if (!_threads.TryGetValue(request.ThreadId, out var thread) || thread.TenantId != request.TenantId)
+        var thread = GetThreadInternal(request.TenantId, request.ThreadId);
+        if (thread == null)
         {
             throw new KeyNotFoundException($"Thread '{request.ThreadId}' not found for tenant '{request.TenantId}'.");
         }
@@ -330,12 +428,14 @@ public class UnifiedInboxEngine : IUnifiedInboxEngine
 
         updatedThread = RefreshSla(updatedThread);
         _threads[thread.Id] = updatedThread;
+        SyncThreadToDb(updatedThread, escalationNote);
         return updatedThread;
     }
 
     public UnifiedThread AppendAgentReply(string tenantId, Guid threadId, string agentId, string agentName, string content, ConversationChannel channel)
     {
-        if (!_threads.TryGetValue(threadId, out var thread) || thread.TenantId != tenantId)
+        var thread = GetThreadInternal(tenantId, threadId);
+        if (thread == null)
         {
             throw new KeyNotFoundException($"Thread '{threadId}' not found for tenant '{tenantId}'.");
         }
@@ -373,21 +473,37 @@ public class UnifiedInboxEngine : IUnifiedInboxEngine
 
         updatedThread = RefreshSla(updatedThread);
         _threads[threadId] = updatedThread;
+        SyncThreadToDb(updatedThread, reply);
         return updatedThread;
     }
 
-    public UnifiedThread? GetThread(string tenantId, Guid threadId)
+    private UnifiedThread? GetThreadInternal(string tenantId, Guid threadId)
     {
         if (_threads.TryGetValue(threadId, out var thread) && thread.TenantId == tenantId)
         {
-            return RefreshSla(thread);
+            return thread;
+        }
+
+        var loaded = LoadThreadFromDb(tenantId, threadId);
+        if (loaded != null)
+        {
+            _threads[loaded.Id] = loaded;
+            return loaded;
         }
 
         return null;
     }
 
+    public UnifiedThread? GetThread(string tenantId, Guid threadId)
+    {
+        var thread = GetThreadInternal(tenantId, threadId);
+        return thread is not null ? RefreshSla(thread) : null;
+    }
+
     public List<UnifiedThread> GetThreads(string tenantId, TicketStatus? status = null)
     {
+        EnsureTenantThreadsLoaded(tenantId);
+
         var query = _threads.Values
             .Where(t => t.TenantId == tenantId);
 
@@ -400,5 +516,207 @@ public class UnifiedInboxEngine : IUnifiedInboxEngine
             .OrderByDescending(t => t.UpdatedAtUtc)
             .Select(RefreshSla)
             .ToList();
+    }
+
+    private void EnsureTenantThreadsLoaded(string tenantId)
+    {
+        if (_dbContext == null && _scopeFactory == null) return;
+
+        try
+        {
+            if (_dbContext != null)
+            {
+                lock (_dbLock)
+                {
+                    LoadTenantThreadsFromDb(_dbContext, tenantId);
+                }
+            }
+            else if (_scopeFactory != null)
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
+                if (db != null)
+                {
+                    LoadTenantThreadsFromDb(db, tenantId);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Failed to load tenant threads from DbContext for tenant {TenantId}", tenantId);
+        }
+    }
+
+    private void LoadTenantThreadsFromDb(SGrowingDbContext db, string tenantId)
+    {
+        var entities = db.UnifiedInboxThreads
+            .Include(t => t.Messages)
+            .Where(t => t.TenantId == tenantId)
+            .ToList();
+
+        foreach (var entity in entities)
+        {
+            _threads.TryAdd(entity.Id, entity.ToModel());
+        }
+    }
+
+    private UnifiedThread? LoadThreadFromDb(string tenantId, Guid threadId)
+    {
+        try
+        {
+            if (_dbContext != null)
+            {
+                lock (_dbLock)
+                {
+                    var entity = _dbContext.UnifiedInboxThreads
+                        .Include(t => t.Messages)
+                        .FirstOrDefault(t => t.Id == threadId && t.TenantId == tenantId);
+                    return entity?.ToModel();
+                }
+            }
+            else if (_scopeFactory != null)
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
+                if (db != null)
+                {
+                    var entity = db.UnifiedInboxThreads
+                        .Include(t => t.Messages)
+                        .FirstOrDefault(t => t.Id == threadId && t.TenantId == tenantId);
+                    return entity?.ToModel();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Failed to load thread {ThreadId} from DbContext", threadId);
+        }
+
+        return null;
+    }
+
+    private UnifiedThread? FindUnresolvedThreadInDb(string tenantId, string normEmail, string normPhone)
+    {
+        try
+        {
+            if (_dbContext != null)
+            {
+                lock (_dbLock)
+                {
+                    return QueryUnresolvedThreadInDb(_dbContext, tenantId, normEmail, normPhone);
+                }
+            }
+            else if (_scopeFactory != null)
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
+                if (db != null)
+                {
+                    return QueryUnresolvedThreadInDb(db, tenantId, normEmail, normPhone);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Failed to query unresolved thread in DbContext for tenant {TenantId}", tenantId);
+        }
+
+        return null;
+    }
+
+    private static UnifiedThread? QueryUnresolvedThreadInDb(SGrowingDbContext db, string tenantId, string normEmail, string normPhone)
+    {
+        var resolvedStatus = TicketStatus.Resolved.ToString();
+
+        var candidates = db.UnifiedInboxThreads
+            .Include(t => t.Messages)
+            .Where(t => t.TenantId == tenantId && t.Status != resolvedStatus)
+            .OrderByDescending(t => t.UpdatedAtUtc)
+            .ToList();
+
+        var match = candidates.FirstOrDefault(t =>
+            (!string.IsNullOrEmpty(normEmail) && !string.IsNullOrEmpty(t.CustomerEmail) &&
+             string.Equals(t.CustomerEmail.Trim(), normEmail, StringComparison.OrdinalIgnoreCase)) ||
+            (!string.IsNullOrEmpty(normPhone) && !string.IsNullOrEmpty(t.CustomerPhone) &&
+             string.Equals(NormalizePhone(t.CustomerPhone), normPhone, StringComparison.OrdinalIgnoreCase)));
+
+        return match?.ToModel();
+    }
+
+    private void SyncThreadToDb(UnifiedThread thread, CustomerMessage? newMessage = null)
+    {
+        if (_dbContext == null && _scopeFactory == null) return;
+
+        try
+        {
+            if (_dbContext != null)
+            {
+                lock (_dbLock)
+                {
+                    SaveThreadToDbContext(_dbContext, thread, newMessage);
+                }
+            }
+            else if (_scopeFactory != null)
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
+                if (db != null)
+                {
+                    SaveThreadToDbContext(db, thread, newMessage);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Failed to persist UnifiedInbox thread {ThreadId} to database", thread.Id);
+        }
+    }
+
+    private static void SaveThreadToDbContext(SGrowingDbContext db, UnifiedThread thread, CustomerMessage? newMessage)
+    {
+        var existing = db.UnifiedInboxThreads
+            .Include(t => t.Messages)
+            .FirstOrDefault(t => t.Id == thread.Id);
+
+        if (existing == null)
+        {
+            var entity = thread.ToEntity();
+            db.UnifiedInboxThreads.Add(entity);
+        }
+        else
+        {
+            existing.CustomerEmail = thread.CustomerEmail;
+            existing.CustomerPhone = thread.CustomerPhone;
+            existing.ActiveChannelsJson = JsonSerializer.Serialize(thread.ActiveChannels ?? new List<ConversationChannel>());
+            existing.Status = thread.Status.ToString();
+            existing.Priority = thread.Priority.ToString();
+            existing.SlaDueAtUtc = thread.SlaDueAtUtc;
+            existing.SlaBreached = thread.SlaBreached;
+            existing.AssignedAgentId = thread.AssignedAgentId;
+            existing.AiDeflected = thread.AiDeflected;
+            existing.UpdatedAtUtc = thread.UpdatedAtUtc;
+
+            if (newMessage != null)
+            {
+                if (!existing.Messages.Any(m => m.Id == newMessage.Id))
+                {
+                    var msgEntity = newMessage.ToEntity();
+                    existing.Messages.Add(msgEntity);
+                    db.UnifiedInboxMessages.Add(msgEntity);
+                }
+            }
+            else if (thread.Messages != null)
+            {
+                var existingIds = existing.Messages.Select(m => m.Id).ToHashSet();
+                foreach (var msg in thread.Messages.Where(m => !existingIds.Contains(m.Id)))
+                {
+                    var msgEntity = msg.ToEntity();
+                    existing.Messages.Add(msgEntity);
+                    db.UnifiedInboxMessages.Add(msgEntity);
+                }
+            }
+        }
+
+        db.SaveChanges();
     }
 }

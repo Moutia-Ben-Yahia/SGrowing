@@ -1,4 +1,4 @@
-using Scalar.AspNetCore;
+﻿using Scalar.AspNetCore;
 using SGrowing.Api.Modules.Attribution.MultiTouch;
 using SGrowing.Api.Modules.Funnels.MabOptimizer;
 using SGrowing.Api.Modules.Deliverability.WarmupSwarm;
@@ -514,109 +514,6 @@ app.MapDataSovereigntyEndpoints();
 // Horizons 91-95 Endpoint Mappings
 
 app.MapDocumentGroundingEndpoints();
-
-// Horizons 96-100 Endpoint Mappings (Century Capstone Wave)
-
-// Horizons 101-105 Endpoint Mappings (Next-Era Wave)
-
-// Horizons 106-110 Endpoint Mappings (Deep Infrastructure Wave)
-
-// Horizons 111-115 Endpoint Mappings (Precision Decarbonization & Cyber-Physical Systems)
-
-
-
-// Horizons 116-120 Endpoint Mappings (Nuclear SMR, Hypersonic Aerospace, QKD, Global Trade & ZK Biometrics)
-
-
-// Horizons 121-125 Endpoint Mappings (Fusion Tokamak MHD, BCI Kinematics, Gravitational Interferometer, EUV Pellicle & HFT Microstructure)
-
-
-// Horizons 126-130 Endpoint Mappings (Deep-Sea Submersible, Cryo Turbopump, CRISPR Cleavage, Ring Signatures & UHV Corona)
-
-// Horizons 131-135 Endpoint Mappings (Solid-State Battery EIS, Subsea DWDM Raman, Superconducting Qubit Gates, Aerocapture Guidance & Threshold ML-DSA)
-
-// Horizons 136-140 Endpoint Mappings (MRI Quench Arbiter, Space Elevator Tether, PEM Electrolyzer, Spiking Retina & ZK State Relay)
-
-// Horizons 141-145 Endpoint Mappings (CV-QKD Coherent State, Molten Salt CSP Thermocline, Microbial CRISPR Cascade, Fusion Divertor Detachment & Hypersonic Waverider Shock)
-
-// Horizons 146-150 Endpoint Mappings (Quantum Dot MEG, Hall Thruster Pole Erosion, Nanopore Basecaller, ZK L3 Watchtower & Superhot EGS)
-
-// Horizons 151-155 Endpoint Mappings (THz 6G Beam Squint, Cryo Fusion Pellets, CAR-T Exhaustion, DMFC Poisoning & Deep-Space RTG Decay)
-
-// Horizons 156-160 Endpoint Mappings (Gravitational Microlensing Exoplanets, HTS REBCO Delamination, Antibody Affinity Maturation, ZK Solvency & Hypersonic BLT)
-
-// Horizons 161-165 Endpoint Mappings (SOEC Co-Electrolysis, OISL Laser Jitter, Spatial Transcriptomics, PQC-HTLC & Tokamak Runaway Suppression)
-
-// Horizons 166-170 Endpoint Mappings (QCL Photoacoustic Spectroscopy, Scramjet Shock Train, CRISPR Prime Editing Flap, AMM LVR & Supercritical Wellbore)
-
-// Horizons 171-175 Endpoint Mappings (Liquid Metal Blanket Hartmann Flow, Microbial Electrosynthesis, VASIMR Propulsion, OFA MEV & High-NA EUV)
-
-
-// Horizons 176-180 Endpoint Mappings (sCO2 Brayton Compressor Surge, Direct-to-Cell LEO Doppler, CRISPR Cas12a DETECTR, ZK Dark Pool VDF & Lunar Regolith Microwave Sintering)
-
-// Horizons 181-185 Endpoint Mappings (SMES Quench Fast Dump, Adaptive Optics Phase Conjugation, Cell-Free Protein Translation, DeFi Bad Debt Socialization & Hypersonic Skip-Glide)
-
-// Horizons 186-190 Endpoint Mappings (CV-QKD Excess Noise, DAC Solid-Amine Chemisorption, Martian Aerocapture Guidance, HFT Micro-Price & LNG BOG Re-Liquefaction)
-
-// Horizons 191-195 Endpoint Mappings (Kilopower Space Brayton, Neuromorphic STDP, API Polymorph Continuous Crystallization, Re-Staking Slashing & HEMP Substation Protection)
-
-// Horizons 196-200 Endpoint Mappings (Double Century Milestone: Dilution Refrigerator ADR, Targeted Alpha TRT, Oblique Detonation Wave Engine, CBDC Atomic DvP & Neutrino Tomography)
-
-// Horizons 201-205 Endpoint Mappings (MBE RHEED Growth, CRISPR Base Editing Bystander, Stratospheric HALE Solar Balance, ZK Recursive Folding & MCFC Carbon Capture)
-
-
-// Horizons 206-210 Endpoint Mappings (Maglev Inductrack EDS, Optical Coherence Elastography, Superconducting Marine MHD, ZK Rollup Censorship Resistance & Supercritical Thermosiphon Geothermal)
-
-
-// Horizons 211-215 Endpoint Mappings (Microfluidic LNP mRNA, QCL Atmospheric Plume, Dual-Stage Hall Thruster, ZK Solvency Audit & Tokamak Liquid Lithium CPS Divertor)
-
-// Horizons 216-220 Endpoint Mappings (Strontium-87 Optical Clock, AMD Bioleaching, Aerogel TPS Ablation, LSD Depeg Arbitrage & Hyperloop Kantrowitz Aerodynamics)
-
-
-// Horizons 221-225 Endpoint Mappings (STED Super-Resolution, PACE Continuous Evolution, M2P2 Plasma Propulsion, Sovereign Debt Climate Resilience & Seismic Metamaterial Cloak)
-
-// Horizons 226-230 Endpoint Mappings (Photonic GBS, Epigenetic Clock, Electrodynamic Tether, VPIN Toxic Flow & Adiabatic CAES)
-
-// Horizons 231-235 Endpoint Mappings (Cold Atom Gravimeter, IVT mRNA Capping, Aerogravity-Assist, Cross-Asset Spillover & SCWO PFAS Elimination)
-
-// Horizons 236-240 Endpoint Mappings (Neutral Atom Rydberg Gates, CAR-T Exhaustion Reprogramming, Solar Sail Radiation Pressure, Dynamic Margin Collateral VaR & Microbial Fuel Cell Bioenergy)
-
-// Horizons 241-245 Endpoint Mappings (NV Center Magnetometry, Prime Editing Search-and-Replace, MHD Boundary Layer Flow Control, AMM Impermanent Loss Dynamic Hedge & Direct Methanol Fuel Cell)
-
-// Horizons 246-250 Endpoint Mappings (Topological Majorana Braiding, CRISPR RNP Electroporation, Nuclear Thermal Propulsion, Cross-Currency Flash Swap Arbitrage & Ocean Thermal Energy Conversion)
-
-// Horizons 251-255 Endpoint Mappings (Cavity Optomechanics Phonon Squeezing, AAV Capsid Evolution, Rotating Detonation Combustor, Order Flow Adverse Selection & Alkaline Water Electrolysis)
-
-// Horizons 256-260 Endpoint Mappings (Superconducting Fluxonium Coherence, Cytidine Base Editing Bystander, Hypersonic Aerocapture, Ornstein-Uhlenbeck Stat Arb & SOEC Co-Electrolysis)
-
-// Horizons 261-265 Endpoint Mappings (NV Center Nuclear Spin Register, Lentiviral Integration Oncogenesis, Lunar Crater Tether, SABR Volatility Surface & LFP Battery Thermal Runaway)
-
-// Horizons 266-270 Endpoint Mappings (Bosonic Cat Qubit Protection, Engineered Exosome Cargo, Asteroid Kinetic Impactor, Hierarchical Risk Parity & VRFB Spectrophotometry Balancing)
-
-// Horizons 271-275 Endpoint Mappings (TWPA Readout, PROTAC Kinetics, Scramjet Isolator, FX Basis CIP & Compressed Gas Geothermal)
-
-// Horizons 276-280 Endpoint Mappings (Neutral Atom Tweezer Rearrangement, Cell-Free Protein Synthesis, Hall-Effect Thruster Erosion, Microstructure Kyle's Lambda & Solid-State Battery Dendrite Suppression)
-
-// Horizons 281-285 Endpoint Mappings (Diamond Color Center Nanophotonics, Oligo Synthesis, Dual-Comb Spectroscopy, Merton Jump Diffusion & Perovskite Tandem)
-
-// Horizons 286-290 Endpoint Mappings (Superconducting Crosstalk Cancellation, Single-Cell Ambient RNA Decontamination, Reaction Wheel Jitter, Bond Portfolio Immunization & Molten Salt CSP)
-
-// Horizons 291-295 Endpoint Mappings (Rare-Earth Optical Memory, HMW DNA Extraction, Lunar Orbit Insertion, CDO Copula Tranches & Solid Oxide Fuel Cells)
-
-// Horizons 296-300 Endpoint Mappings (Silicon Spin Qubit Exchange, Nanopore Squiggle Basecalling, Aerobraking Drag, Almgren-Chriss Liquidation & Tokamak NTM ECCD Suppression)
-
-// Horizons 301-305 Endpoint Mappings (CV Cluster Teleportation, Cryo-ET Subtomogram Averaging, Solar CME Shock Arrival, FX LSV Barrier Options & PEM Electrolyzer Gas Crossover)
-
-// Horizons 306-310 Endpoint Mappings (Superconducting Quantum Acoustics, GUIDE-Seq Prime Editing, Atmospheric Entry Guidance, TIPS Real Yield & DAC TVSA Sorbent)
-
-// Horizons 311-315 Endpoint Mappings (Majorana Zero Modes, Organoid Morphogenesis, OISL Crosslink PAT, CDS Index Tranche & Fischer-Tropsch SAF)
-
-// Horizons 316-320 Endpoint Mappings (Surface Code Lattice Surgery, Droplet Single-Cell Microfluidics, Spacecraft Charging, Cross-Currency Basis & VRFB Shunt Currents)
-
-// Horizons 321-325 Endpoint Mappings (Dual-Species Tweezers, CODEX Proteomics, Spacecraft RCS Plume Impingement, SVI Volatility Surface & SOEC Steam Electrolysis)
-
-// Horizons 326-330 Core ERP Suite (MRP II, AP 3-Way Match, Warehouse Bin Cycle Counting, Multi-Tier Payroll & COD Settlement)
-
 
 // Domain B3 CDP Identity Resolution, Domain C6 Advertising Sync & Domain E1 Automation Visual DAG Telemetry
 app.MapCdpIdentityEndpoints();

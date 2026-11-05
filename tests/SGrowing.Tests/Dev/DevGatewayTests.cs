@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Dev.Gateway;
 using Xunit;
 
@@ -187,5 +189,147 @@ public class DevGatewayTests
         Assert.True(fallback.IsSandboxMode);
         Assert.Equal(45, fallback.SimulatedLatencyMs);
         Assert.False(fallback.SimulateFailures);
+    }
+
+    [Fact]
+    public void ConfigureSandboxSession_WithDurableStore_PreservesSessionAcrossEngineRestarts()
+    {
+        var store = new InMemoryDurableDevGatewayPersistenceStore();
+        var engine1 = new DevGatewayEngine(store);
+
+        var config = new SandboxSessionConfig(
+            TenantId: "tenant_durable_sbx",
+            IsSandboxMode: true,
+            SimulatedLatencyMs: 150,
+            SimulateFailures: true,
+            FailureRatePercent: 75.0,
+            MockHeaders: new List<string> { "X-Durable: true" }
+        );
+
+        engine1.ConfigureSandboxSession(config);
+
+        // Simulate application restart with a fresh engine instance sharing the durable store
+        var engine2 = new DevGatewayEngine(store);
+        var restored = engine2.GetSandboxSession("tenant_durable_sbx");
+
+        Assert.NotNull(restored);
+        Assert.Equal(150, restored.SimulatedLatencyMs);
+        Assert.True(restored.SimulateFailures);
+        Assert.Equal(75.0, restored.FailureRatePercent);
+        Assert.Contains("X-Durable: true", restored.MockHeaders);
+    }
+
+    [Fact]
+    public void EvaluateRateLimit_WithDurableStore_PreservesTokenConsumptionAcrossEngineRestarts()
+    {
+        var store = new InMemoryDurableDevGatewayPersistenceStore();
+        var engine1 = new DevGatewayEngine(store);
+
+        var req = new RateLimitCheckRequest(
+            ApiKey: "durable_key_001",
+            TenantId: "tenant_ratelimit_durable",
+            Tier: DeveloperTier.Starter,
+            RequestedTokens: 20 // Starter has 25 burst capacity
+        );
+
+        var res1 = engine1.EvaluateRateLimit(req);
+        Assert.True(res1.IsAllowed);
+        Assert.Equal(5, res1.RemainingTokens);
+
+        // Simulate application restart
+        var engine2 = new DevGatewayEngine(store);
+
+        // Request 20 tokens: restored bucket had only 5 remaining (out of 25 capacity), so requesting 20 must fail
+        var req2 = new RateLimitCheckRequest(
+            ApiKey: "durable_key_001",
+            TenantId: "tenant_ratelimit_durable",
+            Tier: DeveloperTier.Starter,
+            RequestedTokens: 20
+        );
+
+        var res2 = engine2.EvaluateRateLimit(req2);
+        Assert.False(res2.IsAllowed, "Rate limit state must be preserved across restarts to prevent quota evasion");
+        Assert.True(res2.RemainingTokens < 20);
+        Assert.True(res2.RetryAfterSeconds >= 1);
+    }
+
+    [Fact]
+    public void ConfigureSandboxSession_WithDbContext_SavesEntityAndSurvivesEngineRestart()
+    {
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+
+        using (var db1 = new SGrowingDbContext(options))
+        {
+            var engine1 = new DevGatewayEngine(db1);
+            var config = new SandboxSessionConfig(
+                TenantId: "tenant_ef_sandbox",
+                IsSandboxMode: true,
+                SimulatedLatencyMs: 95,
+                SimulateFailures: false,
+                FailureRatePercent: 0.0,
+                MockHeaders: new List<string> { "X-EF-Persistence: active" }
+            );
+
+            engine1.ConfigureSandboxSession(config);
+
+            // Verify directly in DbContext
+            var entity = Assert.Single(db1.DevSandboxSessions);
+            Assert.Equal("tenant_ef_sandbox", entity.TenantId);
+            Assert.Equal(95, entity.SimulatedLatencyMs);
+        }
+
+        // Restart with fresh DbContext and fresh engine
+        using (var db2 = new SGrowingDbContext(options))
+        {
+            var engine2 = new DevGatewayEngine(db2);
+            var restored = engine2.GetSandboxSession("tenant_ef_sandbox");
+
+            Assert.NotNull(restored);
+            Assert.Equal(95, restored.SimulatedLatencyMs);
+            Assert.Contains("X-EF-Persistence: active", restored.MockHeaders);
+        }
+    }
+
+    [Fact]
+    public void EvaluateRateLimit_WithDbContext_SavesRateLimitBucketAndSurvivesEngineRestart()
+    {
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+
+        using (var db1 = new SGrowingDbContext(options))
+        {
+            var engine1 = new DevGatewayEngine(db1);
+            var req = new RateLimitCheckRequest(
+                ApiKey: "api_key_ef_db",
+                TenantId: "tenant_ef_rate",
+                Tier: DeveloperTier.Growth, // 100 burst capacity
+                RequestedTokens: 90
+            );
+
+            var res1 = engine1.EvaluateRateLimit(req);
+            Assert.True(res1.IsAllowed);
+            Assert.Equal(10, res1.RemainingTokens);
+
+            var bucket = Assert.Single(db1.DevRateLimitBuckets);
+            Assert.Equal("tenant_ef_rate:api_key_ef_db", bucket.BucketKey);
+        }
+
+        using (var db2 = new SGrowingDbContext(options))
+        {
+            var engine2 = new DevGatewayEngine(db2);
+            var reqExceed = new RateLimitCheckRequest(
+                ApiKey: "api_key_ef_db",
+                TenantId: "tenant_ef_rate",
+                Tier: DeveloperTier.Growth,
+                RequestedTokens: 90 // Fresh bucket has 100 capacity. Restored bucket has consumed tokens, so requesting 90 must fail!
+            );
+
+            var res2 = engine2.EvaluateRateLimit(reqExceed);
+            Assert.False(res2.IsAllowed, "Restored bucket has consumed tokens and must reject large request");
+            Assert.True(res2.RemainingTokens < 90);
+        }
     }
 }

@@ -234,6 +234,10 @@ public class SGrowingDbContext : DbContext
     public DbSet<TenantApiKey> TenantApiKeys => Set<TenantApiKey>();
     public DbSet<WebhookSubscriptionRecord> WebhookSubscriptionRecords => Set<WebhookSubscriptionRecord>();
     public DbSet<WebhookDeliveryAttemptLog> WebhookDeliveryAttemptLogs => Set<WebhookDeliveryAttemptLog>();
+    public DbSet<DevSandboxSessionEntity> DevSandboxSessions => Set<DevSandboxSessionEntity>();
+    public DbSet<DevRateLimitBucketEntity> DevRateLimitBuckets => Set<DevRateLimitBucketEntity>();
+    public DbSet<UnifiedInboxThreadEntity> UnifiedInboxThreads => Set<UnifiedInboxThreadEntity>();
+    public DbSet<UnifiedInboxMessageEntity> UnifiedInboxMessages => Set<UnifiedInboxMessageEntity>();
 
     // Digital Goods, Expiring Download Tokens & PIM Variant Matrix (Frontier 2)
     public DbSet<DigitalAsset> DigitalAssets => Set<DigitalAsset>();
@@ -346,8 +350,66 @@ public class SGrowingDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // ====================================================================
+        // PRD Section 5.1 & 5.13: Explicit PostgreSQL Schemas & Composite Indexes
+        // ====================================================================
+
+        // --------------------------------------------------------------------
+        // Schema: platform
+        // --------------------------------------------------------------------
+        modelBuilder.Entity<OutboxMessage>(b =>
+        {
+            b.ToTable("OutboxMessages", "platform");
+            b.HasKey(o => o.Id);
+            b.Property(o => o.EventType).IsRequired().HasMaxLength(100);
+            b.HasIndex(o => new { o.ProcessedOnUtc, o.OccurredOnUtc });
+            b.HasIndex(o => new { o.TenantId, o.OccurredOnUtc });
+        });
+
+        // --------------------------------------------------------------------
+        // Schema: identity
+        // --------------------------------------------------------------------
+        modelBuilder.Entity<User>(b =>
+        {
+            b.ToTable("Users", "identity");
+            b.HasKey(u => u.Id);
+            b.Property(u => u.Email).IsRequired().HasMaxLength(256);
+            b.HasIndex(u => new { u.TenantId, u.Email }).IsUnique();
+        });
+
+        modelBuilder.Entity<SystemRole>(b =>
+        {
+            b.ToTable("SystemRoles", "identity");
+            b.HasKey(r => r.Id);
+            b.Property(r => r.RoleName).IsRequired().HasMaxLength(100);
+            b.HasIndex(r => new { r.TenantId, r.RoleName });
+        });
+
+        modelBuilder.Entity<RolePermissionClaim>(b =>
+        {
+            b.ToTable("RolePermissionClaims", "identity");
+            b.HasKey(p => p.Id);
+            b.Property(p => p.Resource).IsRequired().HasMaxLength(100);
+            b.Property(p => p.Action).IsRequired().HasMaxLength(100);
+            b.HasIndex(p => new { p.TenantId, p.RoleId });
+        });
+
+        modelBuilder.Entity<TenantApiKey>(b =>
+        {
+            b.ToTable("TenantApiKeys", "identity");
+            b.HasKey(k => k.Id);
+            b.Property(k => k.KeyPrefix).IsRequired().HasMaxLength(50);
+            b.Property(k => k.KeyMasked).IsRequired().HasMaxLength(100);
+            b.Property(k => k.HashedSecret).IsRequired();
+            b.HasIndex(k => new { k.TenantId, k.KeyPrefix });
+        });
+
+        // --------------------------------------------------------------------
+        // Schema: tenancy
+        // --------------------------------------------------------------------
         modelBuilder.Entity<Tenant>(b =>
         {
+            b.ToTable("Tenants", "tenancy");
             b.HasKey(t => t.Id);
             b.Property(t => t.Name).IsRequired().HasMaxLength(200);
             b.Property(t => t.Slug).IsRequired().HasMaxLength(100);
@@ -356,30 +418,29 @@ public class SGrowingDbContext : DbContext
 
         modelBuilder.Entity<Workspace>(b =>
         {
+            b.ToTable("Workspaces", "tenancy");
             b.HasKey(w => w.Id);
             b.Property(w => w.Name).IsRequired().HasMaxLength(200);
             b.Property(w => w.Slug).IsRequired().HasMaxLength(100);
             b.HasIndex(w => new { w.TenantId, w.Slug }).IsUnique();
         });
 
-        // Dynamic Multi-Tenant Isolation Global Query Filters applied at the end of OnModelCreating
-
-        modelBuilder.Entity<User>(b =>
+        modelBuilder.Entity<WilayaZone>(b =>
         {
-            b.HasKey(u => u.Id);
-            b.Property(u => u.Email).IsRequired().HasMaxLength(256);
-            b.HasIndex(u => new { u.TenantId, u.Email }).IsUnique();
+            b.ToTable("WilayaZones", "tenancy");
+            b.HasKey(z => z.Id);
+            b.Property(z => z.Code).IsRequired().HasMaxLength(50);
+            b.Property(z => z.CountryCode).IsRequired().HasMaxLength(10);
+            b.Property(z => z.StandardShippingFee).HasPrecision(18, 2);
+            b.HasIndex(z => new { z.CountryCode, z.Code });
         });
 
-        modelBuilder.Entity<OutboxMessage>(b =>
-        {
-            b.HasKey(o => o.Id);
-            b.Property(o => o.EventType).IsRequired().HasMaxLength(100);
-            b.HasIndex(o => new { o.ProcessedOnUtc, o.OccurredOnUtc });
-        });
-
+        // --------------------------------------------------------------------
+        // Schema: crm
+        // --------------------------------------------------------------------
         modelBuilder.Entity<Contact>(b =>
         {
+            b.ToTable("Contacts", "crm");
             b.HasKey(c => c.Id);
             b.Property(c => c.FirstName).HasMaxLength(100);
             b.Property(c => c.LastName).HasMaxLength(100);
@@ -391,19 +452,170 @@ public class SGrowingDbContext : DbContext
 
         modelBuilder.Entity<Company>(b =>
         {
+            b.ToTable("Companies", "crm");
             b.HasKey(c => c.Id);
             b.Property(c => c.Name).IsRequired().HasMaxLength(200);
             b.HasIndex(c => new { c.TenantId, c.Domain });
         });
 
+        modelBuilder.Entity<Deal>(b =>
+        {
+            b.ToTable("Deals", "crm");
+            b.HasKey(d => d.Id);
+            b.Property(d => d.Title).IsRequired().HasMaxLength(200);
+            b.Property(d => d.Amount).HasPrecision(18, 2);
+            b.HasIndex(d => new { d.TenantId, d.Stage });
+            b.HasIndex(d => new { d.TenantId, d.CreatedAtUtc });
+            b.HasIndex(d => new { d.TenantId, d.ContactId });
+        });
+
         modelBuilder.Entity<Activity>(b =>
         {
+            b.ToTable("Activities", "crm");
             b.HasKey(a => a.Id);
+            b.HasIndex(a => new { a.TenantId, a.CreatedAtUtc });
             b.HasIndex(a => new { a.TenantId, a.ContactId, a.CreatedAtUtc });
         });
 
+        modelBuilder.Entity<CustomFieldDefinition>(b =>
+        {
+            b.ToTable("CustomFieldDefinitions", "crm");
+            b.HasKey(f => f.Id);
+            b.Property(f => f.EntityType).IsRequired().HasMaxLength(50);
+            b.Property(f => f.FieldName).IsRequired().HasMaxLength(100);
+            b.HasIndex(f => new { f.TenantId, f.EntityType, f.FieldName });
+        });
+
+        modelBuilder.Entity<CustomFieldValueRecord>(b =>
+        {
+            b.ToTable("CustomFieldValues", "crm");
+            b.HasKey(v => v.Id);
+            b.Property(v => v.ValueNumber).HasPrecision(18, 4);
+            b.HasIndex(v => new { v.TenantId, v.EntityId, v.FieldDefinitionId });
+        });
+
+        // --------------------------------------------------------------------
+        // Schema: sales
+        // --------------------------------------------------------------------
+        modelBuilder.Entity<QuoteProposal>(b =>
+        {
+            b.ToTable("QuoteProposals", "sales");
+            b.HasKey(q => q.Id);
+            b.Property(q => q.QuoteNumber).IsRequired().HasMaxLength(100);
+            b.Property(q => q.Subtotal).HasPrecision(18, 2);
+            b.Property(q => q.DiscountPercent).HasPrecision(18, 2);
+            b.Property(q => q.TaxPercent).HasPrecision(18, 2);
+            b.Property(q => q.TotalAmount).HasPrecision(18, 2);
+            b.HasIndex(q => new { q.TenantId, q.QuoteNumber });
+            b.HasIndex(q => new { q.TenantId, q.ContactId });
+        });
+
+        modelBuilder.Entity<QuoteLineItem>(b =>
+        {
+            b.ToTable("QuoteLineItems", "sales");
+            b.HasKey(i => i.Id);
+            b.Property(i => i.UnitPrice).HasPrecision(18, 2);
+            b.HasIndex(i => i.QuoteProposalId);
+        });
+
+        modelBuilder.Entity<DigitalContract>(b =>
+        {
+            b.ToTable("DigitalContracts", "sales");
+            b.HasKey(c => c.Id);
+            b.Property(c => c.Title).IsRequired().HasMaxLength(200);
+            b.Property(c => c.ContractValue).HasPrecision(18, 2);
+            b.HasIndex(c => new { c.TenantId, c.Status });
+            b.HasIndex(c => new { c.TenantId, c.Title });
+        });
+
+        modelBuilder.Entity<SalesCommissionPlan>(b =>
+        {
+            b.ToTable("SalesCommissionPlans", "sales");
+            b.HasKey(p => p.Id);
+            b.Property(p => p.PlanName).IsRequired().HasMaxLength(200);
+            b.Property(p => p.BaseRatePercent).HasPrecision(18, 2);
+            b.Property(p => p.QuotaThresholdPercent).HasPrecision(18, 2);
+            b.Property(p => p.AcceleratedRatePercent).HasPrecision(18, 2);
+            b.HasIndex(p => new { p.TenantId, p.PlanName });
+        });
+
+        modelBuilder.Entity<SalesCommissionStatement>(b =>
+        {
+            b.ToTable("SalesCommissionStatements", "sales");
+            b.HasKey(s => s.Id);
+            b.Property(s => s.TotalDealsValue).HasPrecision(18, 2);
+            b.Property(s => s.CalculatedCommission).HasPrecision(18, 2);
+            b.HasIndex(s => new { s.TenantId, s.PeriodId, s.SalesRepUserId });
+            b.HasIndex(s => new { s.TenantId, s.Status });
+        });
+
+        // --------------------------------------------------------------------
+        // Schema: commerce
+        // --------------------------------------------------------------------
+        modelBuilder.Entity<Product>(b =>
+        {
+            b.ToTable("Products", "commerce");
+            b.HasKey(p => p.Id);
+            b.Property(p => p.Name).IsRequired().HasMaxLength(200);
+            b.Property(p => p.Slug).IsRequired().HasMaxLength(100);
+            b.Property(p => p.BasePrice).HasPrecision(18, 2);
+            b.HasIndex(p => new { p.TenantId, p.Slug });
+        });
+
+        modelBuilder.Entity<ProductVariant>(b =>
+        {
+            b.ToTable("ProductVariants", "commerce");
+            b.HasKey(pv => pv.Id);
+            b.Property(pv => pv.SKU).IsRequired().HasMaxLength(100);
+            b.Property(pv => pv.Price).HasPrecision(18, 2);
+            b.HasIndex(pv => new { pv.TenantId, pv.ProductId, pv.SKU });
+        });
+
+        modelBuilder.Entity<CodOrder>(b =>
+        {
+            b.ToTable("CodOrders", "commerce");
+            b.HasKey(o => o.Id);
+            b.Property(o => o.OrderNumber).IsRequired().HasMaxLength(100);
+            b.Property(o => o.TotalAmount).HasPrecision(18, 2);
+            b.Property(o => o.ShippingFee).HasPrecision(18, 2);
+            b.HasIndex(o => new { o.TenantId, o.OrderNumber });
+            b.HasIndex(o => new { o.TenantId, o.Status });
+            b.HasIndex(o => new { o.TenantId, o.CreatedAtUtc });
+        });
+
+        modelBuilder.Entity<Warehouse>(b =>
+        {
+            b.ToTable("Warehouses", "commerce");
+            b.HasKey(w => w.Id);
+            b.Property(w => w.Name).IsRequired().HasMaxLength(200);
+            b.Property(w => w.Code).IsRequired().HasMaxLength(50);
+            b.HasIndex(w => new { w.TenantId, w.Code });
+        });
+
+        modelBuilder.Entity<WarehouseInventory>(b =>
+        {
+            b.ToTable("WarehouseInventories", "commerce");
+            b.HasKey(wi => wi.Id);
+            b.Property(wi => wi.Sku).IsRequired().HasMaxLength(100);
+            b.HasIndex(wi => new { wi.TenantId, wi.WarehouseId, wi.Sku });
+        });
+
+        modelBuilder.Entity<CartReservationLockRecord>(b =>
+        {
+            b.ToTable("CartReservationLocks", "commerce");
+            b.HasKey(l => l.Id);
+            b.Property(l => l.Sku).IsRequired().HasMaxLength(100);
+            b.Property(l => l.Status).IsRequired().HasMaxLength(50);
+            b.HasIndex(l => new { l.TenantId, l.Status, l.ExpiresAtUtc });
+            b.HasIndex(l => new { l.TenantId, l.WarehouseId, l.Sku });
+        });
+
+        // --------------------------------------------------------------------
+        // Schema: engagement
+        // --------------------------------------------------------------------
         modelBuilder.Entity<Inbox>(b =>
         {
+            b.ToTable("Inboxes", "engagement");
             b.HasKey(i => i.Id);
             b.Property(i => i.Name).IsRequired().HasMaxLength(100);
             b.HasIndex(i => new { i.TenantId, i.ChannelType });
@@ -411,22 +623,242 @@ public class SGrowingDbContext : DbContext
 
         modelBuilder.Entity<Conversation>(b =>
         {
+            b.ToTable("Conversations", "engagement");
             b.HasKey(c => c.Id);
+            b.HasIndex(c => new { c.TenantId, c.Status });
             b.HasIndex(c => new { c.TenantId, c.Status, c.LastMessageAtUtc });
             b.HasIndex(c => new { c.TenantId, c.ContactId });
         });
 
         modelBuilder.Entity<Message>(b =>
         {
+            b.ToTable("Messages", "engagement");
             b.HasKey(m => m.Id);
+            b.HasIndex(m => new { m.TenantId, m.CreatedAtUtc });
             b.HasIndex(m => new { m.TenantId, m.ConversationId, m.CreatedAtUtc });
             b.HasIndex(m => new { m.TenantId, m.ExternalMessageId });
         });
 
         modelBuilder.Entity<AiDraft>(b =>
         {
+            b.ToTable("AiDrafts", "engagement");
             b.HasKey(d => d.Id);
             b.HasIndex(d => new { d.TenantId, d.ConversationId, d.Status });
+        });
+
+        modelBuilder.Entity<SenderAccount>(b =>
+        {
+            b.ToTable("SenderAccounts", "engagement");
+            b.HasKey(s => s.Id);
+            b.Property(s => s.Email).IsRequired().HasMaxLength(256);
+            b.HasIndex(s => new { s.TenantId, s.Email });
+            b.HasIndex(s => new { s.TenantId, s.Status });
+        });
+
+        modelBuilder.Entity<WhatsAppTemplate>(b =>
+        {
+            b.ToTable("WhatsAppTemplates", "engagement");
+            b.HasKey(t => t.Id);
+            b.Property(t => t.Name).IsRequired().HasMaxLength(200);
+            b.HasIndex(t => new { t.TenantId, t.Name });
+        });
+
+        modelBuilder.Entity<BroadcastCampaign>(b =>
+        {
+            b.ToTable("BroadcastCampaigns", "engagement");
+            b.HasKey(bc => bc.Id);
+            b.Property(bc => bc.Name).IsRequired().HasMaxLength(200);
+            b.HasIndex(bc => new { bc.TenantId, bc.Status });
+        });
+
+        // --------------------------------------------------------------------
+        // Schema: automation
+        // --------------------------------------------------------------------
+        modelBuilder.Entity<CustomerJourney>(b =>
+        {
+            b.ToTable("CustomerJourneys", "automation");
+            b.HasKey(j => j.Id);
+            b.Property(j => j.Name).IsRequired().HasMaxLength(200);
+            b.HasIndex(j => new { j.TenantId, j.Status });
+        });
+
+        modelBuilder.Entity<JourneyStep>(b =>
+        {
+            b.ToTable("JourneySteps", "automation");
+            b.HasKey(s => s.Id);
+            b.HasIndex(s => new { s.TenantId, s.JourneyId });
+        });
+
+        modelBuilder.Entity<WorkflowGraph>(b =>
+        {
+            b.ToTable("WorkflowGraphs", "automation");
+            b.HasKey(g => g.Id);
+            b.Property(g => g.Name).IsRequired().HasMaxLength(200);
+            b.HasIndex(g => new { g.TenantId, g.IsActive });
+        });
+
+        // --------------------------------------------------------------------
+        // Schema: support
+        // --------------------------------------------------------------------
+        modelBuilder.Entity<HelpCategory>(b =>
+        {
+            b.ToTable("HelpCategories", "support");
+            b.HasKey(h => h.Id);
+            b.Property(h => h.Name).IsRequired().HasMaxLength(200);
+            b.Property(h => h.Slug).IsRequired().HasMaxLength(100);
+            b.HasIndex(h => new { h.TenantId, h.Slug });
+        });
+
+        modelBuilder.Entity<HelpArticle>(b =>
+        {
+            b.ToTable("HelpArticles", "support");
+            b.HasKey(a => a.Id);
+            b.Property(a => a.Title).IsRequired().HasMaxLength(256);
+            b.Property(a => a.Slug).IsRequired().HasMaxLength(150);
+            b.HasIndex(a => new { a.TenantId, a.CategoryId, a.Slug });
+        });
+
+        modelBuilder.Entity<SlaPolicy>(b =>
+        {
+            b.ToTable("SlaPolicies", "support");
+            b.HasKey(s => s.Id);
+            b.Property(s => s.Name).IsRequired().HasMaxLength(200);
+            b.HasIndex(s => new { s.TenantId, s.Priority });
+        });
+
+        modelBuilder.Entity<SurveyForm>(b =>
+        {
+            b.ToTable("SurveyForms", "support");
+            b.HasKey(f => f.Id);
+            b.Property(f => f.Title).IsRequired().HasMaxLength(200);
+            b.HasIndex(f => new { f.TenantId, f.IsActive });
+        });
+
+        modelBuilder.Entity<SurveyResponse>(b =>
+        {
+            b.ToTable("SurveyResponses", "support");
+            b.HasKey(r => r.Id);
+            b.HasIndex(r => new { r.TenantId, r.SurveyFormId });
+            b.HasIndex(r => new { r.TenantId, r.ContactId });
+        });
+
+        // --------------------------------------------------------------------
+        // Schema: billing
+        // --------------------------------------------------------------------
+        modelBuilder.Entity<TenantSubscription>(b =>
+        {
+            b.ToTable("TenantSubscriptions", "billing");
+            b.HasKey(s => s.Id);
+            b.Property(s => s.MonthlyPrice).HasPrecision(18, 2);
+            b.HasIndex(s => new { s.TenantId, s.Status });
+        });
+
+        modelBuilder.Entity<FeatureEntitlement>(b =>
+        {
+            b.ToTable("FeatureEntitlements", "billing");
+            b.HasKey(e => e.Id);
+            b.HasIndex(e => new { e.TenantId, e.PlanTier });
+        });
+
+        modelBuilder.Entity<UsageMeterRecord>(b =>
+        {
+            b.ToTable("UsageMeterRecords", "billing");
+            b.HasKey(u => u.Id);
+            b.HasIndex(u => new { u.TenantId, u.Metric, u.RecordedAtUtc });
+        });
+
+        modelBuilder.Entity<BillingInvoiceRecord>(b =>
+        {
+            b.ToTable("BillingInvoiceRecords", "billing");
+            b.HasKey(i => i.Id);
+            b.Property(i => i.AmountDue).HasPrecision(18, 2);
+            b.HasIndex(i => new { i.TenantId, i.Status });
+        });
+
+        // --------------------------------------------------------------------
+        // Schema: analytics
+        // --------------------------------------------------------------------
+        modelBuilder.Entity<AttributionTouchpoint>(b =>
+        {
+            b.ToTable("AttributionTouchpoints", "analytics");
+            b.HasKey(a => a.Id);
+            b.Property(a => a.Cost).HasPrecision(18, 2);
+            b.HasIndex(a => new { a.TenantId, a.ContactId, a.OccurredAtUtc });
+        });
+
+        modelBuilder.Entity<TelemetryEvent>(b =>
+        {
+            b.ToTable("TelemetryEvents", "analytics");
+            b.HasKey(t => t.Id);
+            b.HasIndex(t => new { t.TenantId, t.TimestampUtc });
+        });
+
+        modelBuilder.Entity<VisitorSession>(b =>
+        {
+            b.ToTable("VisitorSessions", "analytics");
+            b.HasKey(v => v.Id);
+            b.HasIndex(v => new { v.TenantId, v.SessionId });
+            b.HasIndex(v => new { v.TenantId, v.VisitorId });
+        });
+
+        // --------------------------------------------------------------------
+        // Schema: ai
+        // --------------------------------------------------------------------
+        modelBuilder.Entity<DynamicAgentTool>(b =>
+        {
+            b.ToTable("DynamicAgentTools", "ai");
+            b.HasKey(t => t.Id);
+            b.Property(t => t.Name).IsRequired().HasMaxLength(150);
+            b.HasIndex(t => new { t.TenantId, t.Name });
+        });
+
+        modelBuilder.Entity<AiAgentBudget>(b =>
+        {
+            b.ToTable("AiAgentBudgets", "ai");
+            b.HasKey(b => b.Id);
+            b.Property(b => b.MaxMonthlyCostUsd).HasPrecision(18, 2);
+            b.Property(b => b.CostSpentUsd).HasPrecision(18, 2);
+            b.HasIndex(b => new { b.TenantId, b.CurrentMonthStartUtc });
+        });
+
+        modelBuilder.Entity<AgentMission>(b =>
+        {
+            b.ToTable("AgentMissions", "ai");
+            b.HasKey(m => m.Id);
+            b.Property(m => m.TotalBudgetUsd).HasPrecision(18, 2);
+            b.Property(m => m.SpentBudgetUsd).HasPrecision(18, 2);
+            b.HasIndex(m => new { m.TenantId, m.Status });
+        });
+
+        modelBuilder.Entity<DocumentChunk>(b =>
+        {
+            b.ToTable("DocumentChunks", "ai");
+            b.HasKey(d => d.Id);
+            b.HasIndex(d => new { d.TenantId, d.DocumentId });
+        });
+
+        // --------------------------------------------------------------------
+        // Critical Composite Indexes (PRD Section 5.13)
+        // --------------------------------------------------------------------
+        modelBuilder.Entity<CustomerEvent>(b =>
+        {
+            b.HasKey(e => e.Id);
+            b.HasIndex(e => new { e.TenantId, e.OccurredAtUtc });
+            b.HasIndex(e => new { e.TenantId, e.ContactId, e.OccurredAtUtc });
+        });
+
+        modelBuilder.Entity<WorkflowExecution>(b =>
+        {
+            b.HasKey(w => w.Id);
+            b.HasIndex(w => new { w.TenantId, w.Status });
+            b.HasIndex(w => new { w.TenantId, w.CreatedAtUtc });
+        });
+
+        modelBuilder.Entity<OutboundCampaign>(b =>
+        {
+            b.HasKey(c => c.Id);
+            b.HasIndex(c => new { c.TenantId, c.Status });
+            b.HasIndex(c => new { c.TenantId, c.CreatedAtUtc });
         });
 
         // Strategic Recommendations Configurations (Ever-Teams, Open-Mercato, Ever-Demand & Ever-Gauzy)
@@ -702,6 +1134,37 @@ public class SGrowingDbContext : DbContext
             b.Property(e => e.StepsJson).HasColumnType("jsonb");
             b.HasIndex(e => new { e.TenantId, e.WorkflowId });
             b.HasIndex(e => new { e.TenantId, e.Status });
+        });
+
+        modelBuilder.Entity<DevSandboxSessionEntity>(b =>
+        {
+            b.HasKey(e => e.Id);
+            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.HasIndex(e => e.TenantId).IsUnique();
+        });
+
+        modelBuilder.Entity<DevRateLimitBucketEntity>(b =>
+        {
+            b.HasKey(e => e.Id);
+            b.Property(e => e.BucketKey).IsRequired().HasMaxLength(200);
+            b.HasIndex(e => e.BucketKey).IsUnique();
+        });
+
+        modelBuilder.Entity<UnifiedInboxThreadEntity>(b =>
+        {
+            b.HasKey(e => e.Id);
+            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.HasIndex(e => new { e.TenantId, e.Status });
+            b.HasIndex(e => new { e.TenantId, e.CustomerEmail });
+            b.HasIndex(e => new { e.TenantId, e.CustomerPhone });
+            b.HasMany(e => e.Messages).WithOne(m => m.Thread).HasForeignKey(m => m.ThreadId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<UnifiedInboxMessageEntity>(b =>
+        {
+            b.HasKey(m => m.Id);
+            b.Property(m => m.TenantId).IsRequired().HasMaxLength(100);
+            b.HasIndex(m => new { m.ThreadId, m.TimestampUtc });
         });
 
         ConfigureGlobalTenantFilters(modelBuilder);
