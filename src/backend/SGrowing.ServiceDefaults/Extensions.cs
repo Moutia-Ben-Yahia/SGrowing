@@ -44,7 +44,8 @@ public static class Extensions
                        .AddRuntimeInstrumentation()
                        .AddMeter("SGrowing.Api")
                        .AddMeter("SGrowing.Worker")
-                       .AddMeter("SGrowing.Core");
+                       .AddMeter("SGrowing.Core")
+                       .AddMeter("SGrowing.Platform");
             })
             .WithTracing(tracing =>
             {
@@ -52,7 +53,8 @@ public static class Extensions
                        .AddHttpClientInstrumentation()
                        .AddSource("SGrowing.Api")
                        .AddSource("SGrowing.Worker")
-                       .AddSource("SGrowing.Core");
+                       .AddSource("SGrowing.Core")
+                       .AddSource("SGrowing.Platform");
             });
 
         builder.AddOpenTelemetryExporters();

@@ -355,6 +355,8 @@ public class SGrowingDbContext : DbContext
     public DbSet<TopicalClusterEntity> TopicClusters => Set<TopicalClusterEntity>();
     public DbSet<DynamicElasticityPricingEntity> PricingElasticityModels => Set<DynamicElasticityPricingEntity>();
     public DbSet<RetentionBanditArmEntity> RetentionBanditArms => Set<RetentionBanditArmEntity>();
+    public DbSet<ApprovalRequestEntity> ApprovalRequests => Set<ApprovalRequestEntity>();
+    public DbSet<CourierDeliveryRecordEntity> CourierDeliveryRecords => Set<CourierDeliveryRecordEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -894,6 +896,24 @@ public class SGrowingDbContext : DbContext
             b.HasKey(r => r.Id);
             b.Property(r => r.TotalLtvRetainedDzd).HasPrecision(18, 2);
             b.HasIndex(r => new { r.TenantId, r.IncentiveType });
+        });
+
+        modelBuilder.Entity<ApprovalRequestEntity>(b =>
+        {
+            b.ToTable("ApprovalRequests", "ai");
+            b.HasKey(a => a.Id);
+            b.Property(a => a.FinancialImpactUsd).HasPrecision(18, 2);
+            b.HasIndex(a => new { a.TenantId, a.Status });
+            b.HasIndex(a => a.ApprovalTokenHash);
+        });
+
+        modelBuilder.Entity<CourierDeliveryRecordEntity>(b =>
+        {
+            b.ToTable("CourierDeliveryRecords", "commerce");
+            b.HasKey(c => c.Id);
+            b.Property(c => c.CashCollected).HasPrecision(18, 2);
+            b.HasIndex(c => new { c.TenantId, c.ParcelId });
+            b.HasIndex(c => new { c.TenantId, c.CourierDriverId });
         });
 
         // --------------------------------------------------------------------

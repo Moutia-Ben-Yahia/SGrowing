@@ -264,6 +264,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<IPostgreSqlRlsService, PostgreSqlRlsService>();
         services.AddScoped<TenantRlsConnectionInterceptor>();
+        services.AddScoped<SGrowing.Api.Common.Tenancy.PostgreSqlRlsInterceptor>();
+        services.AddSingleton<SGrowing.Api.Common.Tenancy.IRlsPolicySqlGenerator, SGrowing.Api.Common.Tenancy.RlsPolicySqlGenerator>();
         services.AddDbContext<SGrowingDbContext>((sp, options) =>
         {
             var connStr = configuration.GetConnectionString("DefaultConnection");
@@ -421,6 +423,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IInventoryLiquidationService, InventoryLiquidationService>();
         services.AddScoped<ICodCheckoutService, CodCheckoutService>();
         services.AddScoped<IB2BCreditAndFactoringService, B2BCreditAndFactoringService>();
+        services.AddScoped<ICourierDeliverySyncService, CourierDeliverySyncService>();
         services.AddScoped<ICallCenterAntiCollisionService, CallCenterAntiCollisionService>();
         services.AddScoped<ICodNetMarginLedgerService, CodNetMarginLedgerService>();
         services.AddScoped<ICartReservationService, CartReservationService>();
