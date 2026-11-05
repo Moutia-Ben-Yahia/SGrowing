@@ -351,6 +351,10 @@ public class SGrowingDbContext : DbContext
     public DbSet<CampaignRoasSnapshotEntity> CampaignRoasSnapshots => Set<CampaignRoasSnapshotEntity>();
     public DbSet<WorkflowDagEntity> WorkflowDags => Set<WorkflowDagEntity>();
     public DbSet<WorkflowTelemetryTraceEntity> WorkflowTelemetryTraces => Set<WorkflowTelemetryTraceEntity>();
+    public DbSet<CashflowForecastEntity> CashflowForecasts => Set<CashflowForecastEntity>();
+    public DbSet<TopicalClusterEntity> TopicClusters => Set<TopicalClusterEntity>();
+    public DbSet<DynamicElasticityPricingEntity> PricingElasticityModels => Set<DynamicElasticityPricingEntity>();
+    public DbSet<RetentionBanditArmEntity> RetentionBanditArms => Set<RetentionBanditArmEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -852,6 +856,44 @@ public class SGrowingDbContext : DbContext
             b.HasKey(d => d.Id);
             b.HasIndex(d => new { d.TenantId, d.DocumentId });
             b.HasIndex(d => new { d.TenantId, d.DocumentTitle });
+        });
+
+        modelBuilder.Entity<CashflowForecastEntity>(b =>
+        {
+            b.ToTable("CashflowForecasts", "analytics");
+            b.HasKey(c => c.Id);
+            b.Property(c => c.ProjectedCashBalance).HasPrecision(18, 2);
+            b.Property(c => c.NetBurnRate).HasPrecision(18, 2);
+            b.Property(c => c.ConfidenceIntervalLower).HasPrecision(18, 2);
+            b.Property(c => c.ConfidenceIntervalUpper).HasPrecision(18, 2);
+            b.HasIndex(c => new { c.TenantId, c.ForecastDateUtc });
+        });
+
+        modelBuilder.Entity<TopicalClusterEntity>(b =>
+        {
+            b.ToTable("TopicClusters", "engagement");
+            b.HasKey(t => t.Id);
+            b.HasIndex(t => new { t.TenantId, t.TargetKeyword });
+            b.HasIndex(t => new { t.TenantId, t.ClusterId });
+        });
+
+        modelBuilder.Entity<DynamicElasticityPricingEntity>(b =>
+        {
+            b.ToTable("PricingElasticityModels", "sales");
+            b.HasKey(p => p.Id);
+            b.Property(p => p.BasePrice).HasPrecision(18, 2);
+            b.Property(p => p.OptimalPrice).HasPrecision(18, 2);
+            b.Property(p => p.MaxContributionMargin).HasPrecision(18, 2);
+            b.Property(p => p.CurrentElasticityScore).HasPrecision(18, 4);
+            b.HasIndex(p => new { p.TenantId, p.ProductId });
+        });
+
+        modelBuilder.Entity<RetentionBanditArmEntity>(b =>
+        {
+            b.ToTable("RetentionBanditArms", "engagement");
+            b.HasKey(r => r.Id);
+            b.Property(r => r.TotalLtvRetainedDzd).HasPrecision(18, 2);
+            b.HasIndex(r => new { r.TenantId, r.IncentiveType });
         });
 
         // --------------------------------------------------------------------

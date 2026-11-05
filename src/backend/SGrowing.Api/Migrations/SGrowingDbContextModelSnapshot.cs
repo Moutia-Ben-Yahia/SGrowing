@@ -1917,6 +1917,51 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("CartReservationLocks", "commerce");
                 });
 
+            modelBuilder.Entity("SGrowing.Core.Entities.CashflowForecastEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CalculatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("ConfidenceIntervalLower")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("ConfidenceIntervalUpper")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("DeficitSeverity")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("ForecastDateUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("NetBurnRate")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("ProjectedCashBalance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int>("RunwayDays")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "ForecastDateUtc");
+
+                    b.ToTable("CashflowForecasts", "analytics");
+                });
+
             modelBuilder.Entity("SGrowing.Core.Entities.ChannelCredential", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3987,6 +4032,52 @@ namespace SGrowing.Api.Migrations
                     b.HasIndex("TenantId", "Name");
 
                     b.ToTable("DynamicAgentTools", "ai");
+                });
+
+            modelBuilder.Entity("SGrowing.Core.Entities.DynamicElasticityPricingEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("BasePrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("CurrentElasticityScore")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<string>("ElasticityCategory")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("MaxContributionMargin")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("OptimalPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("RecommendedDiscountFloorPercent")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "ProductId");
+
+                    b.ToTable("PricingElasticityModels", "sales");
                 });
 
             modelBuilder.Entity("SGrowing.Core.Entities.DynamicFormDefinition", b =>
@@ -6938,6 +7029,46 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("ReplenishmentSchedules");
                 });
 
+            modelBuilder.Entity("SGrowing.Core.Entities.RetentionBanditArmEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<double>("Alpha")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("ArmId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<double>("Beta")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("IncentiveType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("TotalLtvRetainedDzd")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int>("TotalTrials")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "IncentiveType");
+
+                    b.ToTable("RetentionBanditArms", "engagement");
+                });
+
             modelBuilder.Entity("SGrowing.Core.Entities.ReturnMerchandiseAuthorization", b =>
                 {
                     b.Property<Guid>("Id")
@@ -8938,6 +9069,59 @@ namespace SGrowing.Api.Migrations
                     b.HasIndex("TenantId", "Status");
 
                     b.ToTable("TenantSubscriptions", "billing");
+                });
+
+            modelBuilder.Entity("SGrowing.Core.Entities.TopicalClusterEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ClusterId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CoveredEntitiesJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("MissingSubTopicsCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PillarTopic")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("RecommendedClusterExpansionsJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TargetKeyword")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<double>("TopicalAuthorityScore")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("TotalSubArticles")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "ClusterId");
+
+                    b.HasIndex("TenantId", "TargetKeyword");
+
+                    b.ToTable("TopicClusters", "engagement");
                 });
 
             modelBuilder.Entity("SGrowing.Core.Entities.TouchpointExecution", b =>

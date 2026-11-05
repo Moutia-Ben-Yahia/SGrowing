@@ -17,6 +17,7 @@
     <PackageReference Include="Scalar.AspNetCore" />
     <PackageReference Include="StackExchange.Redis" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
   </ItemGroup>
 
   <PropertyGroup>
