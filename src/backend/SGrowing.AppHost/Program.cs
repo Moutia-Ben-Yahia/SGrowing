@@ -1,6 +1,6 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Infrastructure: PostgreSQL 17 with pgvector + Redis 7.4
+// Infrastructure: PostgreSQL 17 with pgvector + Redis 7.4 + ClickHouse 24.8 OLAP
 var postgres = builder.AddPostgres("postgres")
     .WithImage("pgvector/pgvector", "pg17")
     .WithDataVolume("sgrowing-postgres-data");
@@ -10,6 +10,11 @@ var db = postgres.AddDatabase("sgrowing");
 var redis = builder.AddRedis("redis")
     .WithImage("redis", "7.4-alpine")
     .WithDataVolume("sgrowing-redis-data");
+
+var clickhouse = builder.AddContainer("clickhouse", "clickhouse/clickhouse-server", "24.8-alpine")
+    .WithHttpEndpoint(port: 8123, targetPort: 8123, name: "http")
+    .WithEndpoint(port: 9000, targetPort: 9000, name: "tcp")
+    .WithDataVolume("sgrowing-clickhouse-data");
 
 // SGrowing Api Module
 var api = builder.AddProject<Projects.SGrowing_Api>("api")

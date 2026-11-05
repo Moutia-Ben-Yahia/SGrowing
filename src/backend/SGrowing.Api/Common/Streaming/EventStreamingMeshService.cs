@@ -233,8 +233,11 @@ public class EventStreamingMeshService : IEventStreamingMesh
         CancellationToken ct = default)
     {
         var key = $"{consumerGroup.Trim().ToLowerInvariant()}:{topic.Trim().ToLowerInvariant()}:{partitionId}";
-        _consumerOffsets.TryGetValue(key, out var offset);
-        return Task.FromResult(offset);
+        if (_consumerOffsets.TryGetValue(key, out var offset))
+        {
+            return Task.FromResult(offset);
+        }
+        return Task.FromResult(-1L);
     }
 
     public Task<IReadOnlyList<DeadLetterStreamMessage>> GetDeadLetterMessagesAsync(

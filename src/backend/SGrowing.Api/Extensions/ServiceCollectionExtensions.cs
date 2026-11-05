@@ -300,6 +300,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IEventStreamBroker, InMemoryEventStreamBroker>();
         services.AddScoped<IMultiBrokerEventFanoutService, MultiBrokerEventFanoutService>();
         services.AddSingleton<SGrowing.Api.Common.Streaming.IEventStreamingMesh, SGrowing.Api.Common.Streaming.EventStreamingMeshService>();
+        services.AddSingleton<SGrowing.Api.Modules.Analytics.IClickHouseAnalyticsProjectionService, SGrowing.Api.Modules.Analytics.ClickHouseAnalyticsProjectionService>();
 
         // Channel Adapters
         services.AddSingleton<WhatsAppCloudAdapter>();
@@ -429,6 +430,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICodNetMarginLedgerService, CodNetMarginLedgerService>();
         services.AddScoped<ICartReservationService, CartReservationService>();
         services.AddSingleton<IAffiliateCommissionService, AffiliateCommissionService>();
+        services.AddScoped<SGrowing.Api.Modules.Gateways.ICarrierRemittanceReconciliationService, SGrowing.Api.Modules.Gateways.CarrierRemittanceReconciliationService>();
+        services.AddSingleton<SGrowing.Api.Modules.Voice.Streaming.ISipTrunkBridgeService, SGrowing.Api.Modules.Voice.Streaming.TwilioMediaStreamBridgeService>();
 
         // Customer 360, RMA & Self-Service Portal
         services.AddScoped<ICustomerIdentityGraphService, CustomerIdentityGraphService>();
@@ -1017,6 +1020,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddSingleton<SGrowing.Api.Modules.AI.IPromptInjectionGuardService, SGrowing.Api.Modules.AI.PromptInjectionGuardService>();
         services.AddScoped<DatabaseSeeder>();
         services.AddSGrowingRateLimiting();
         services.AddOpenApi(options =>

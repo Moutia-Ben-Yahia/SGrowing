@@ -30,6 +30,7 @@ app.MapDefaultEndpoints();
 
 // Middleware Pipeline
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+app.UseMiddleware<SGrowing.Api.Common.Security.CspNonceMiddleware>();
 app.UseCors();
 app.UseRateLimiter();
 app.UseAuthentication();
