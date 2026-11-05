@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using SGrowing.Api.Common;
 
 namespace SGrowing.Api.Modules.SEO;
 
@@ -11,7 +12,14 @@ public record UpdateRankDto(Guid TenantId, int NewRank);
 public record RecordAeoDto(Guid TenantId, string BrandName, string AiEngine, string PromptQuery, bool IsMentioned, string Sentiment, string Snippet, int? CitationRank = 1);
 public record ComputeGeoScoreDto(Guid TenantId, string BrandName, string DomainUrl);
 
-public static class SeoEndpoints
+public class SeoEndpoints : IEndpointModule
+{
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapSeoEndpoints();
+
+    public static IEndpointRouteBuilder MapSeoEndpoints(IEndpointRouteBuilder app) => app.MapSeoEndpoints();
+}
+
+public static class SeoEndpointExtensions
 {
     public static IEndpointRouteBuilder MapSeoEndpoints(this IEndpointRouteBuilder endpoints)
     {

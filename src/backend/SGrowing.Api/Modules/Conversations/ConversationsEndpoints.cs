@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SGrowing.Api.Common;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.Channels;
 using SGrowing.Api.Modules.Conversations;
@@ -7,7 +8,14 @@ using SGrowing.Core.Channels;
 
 namespace SGrowing.Api.Modules.Conversations;
 
-public static class ConversationsEndpoints
+public class ConversationsEndpoints : IEndpointModule
+{
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapConversationsEndpoints();
+
+    public static IEndpointRouteBuilder MapConversationsEndpoints(IEndpointRouteBuilder app) => app.MapConversationsEndpoints();
+}
+
+public static class ConversationsEndpointExtensions
 {
     public static IEndpointRouteBuilder MapConversationsEndpoints(this IEndpointRouteBuilder app)
     {

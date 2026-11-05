@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Dev;
 using SGrowing.Api.Modules.Documents;
@@ -11,7 +12,14 @@ using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.Dev;
 
-public static class DeveloperGatewayEndpoints
+public class DeveloperGatewayEndpoints : IEndpointModule
+{
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapDeveloperGatewayEndpoints();
+
+    public static IEndpointRouteBuilder MapDeveloperGatewayEndpoints(IEndpointRouteBuilder app) => app.MapDeveloperGatewayEndpoints();
+}
+
+public static class DeveloperGatewayEndpointExtensions
 {
     public static IEndpointRouteBuilder MapDeveloperGatewayEndpoints(this IEndpointRouteBuilder app)
     {

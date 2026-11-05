@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Conversations;
 using SGrowing.Api.Modules.Dev;
@@ -9,7 +10,14 @@ using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.Diagnostics;
 
-public static class HealthEndpoints
+public class HealthEndpoints : IEndpointModule
+{
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapHealthEndpoints();
+
+    public static IEndpointRouteBuilder MapHealthEndpoints(IEndpointRouteBuilder app) => app.MapHealthEndpoints();
+}
+
+public static class HealthEndpointExtensions
 {
     public static IEndpointRouteBuilder MapHealthEndpoints(this IEndpointRouteBuilder app)
     {

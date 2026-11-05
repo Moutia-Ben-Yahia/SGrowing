@@ -238,6 +238,11 @@ public class SGrowingDbContext : DbContext
     public DbSet<DevRateLimitBucketEntity> DevRateLimitBuckets => Set<DevRateLimitBucketEntity>();
     public DbSet<UnifiedInboxThreadEntity> UnifiedInboxThreads => Set<UnifiedInboxThreadEntity>();
     public DbSet<UnifiedInboxMessageEntity> UnifiedInboxMessages => Set<UnifiedInboxMessageEntity>();
+    public DbSet<B2BProposalEntity> B2BProposalRecords => Set<B2BProposalEntity>();
+    public DbSet<B2BProposalLineItemEntity> B2BProposalLineItemRecords => Set<B2BProposalLineItemEntity>();
+    public DbSet<B2BUsageRecordEntity> B2BUsageRecords => Set<B2BUsageRecordEntity>();
+    public DbSet<SwarmMissionEntity> SwarmMissions => Set<SwarmMissionEntity>();
+    public DbSet<SwarmTaskEntity> SwarmTasks => Set<SwarmTaskEntity>();
 
     // Digital Goods, Expiring Download Tokens & PIM Variant Matrix (Frontier 2)
     public DbSet<DigitalAsset> DigitalAssets => Set<DigitalAsset>();
@@ -1033,7 +1038,7 @@ public class SGrowingDbContext : DbContext
         {
             b.ToTable("identities", "customer_data");
             b.HasKey(e => e.Id);
-            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.TenantId).IsRequired();
             b.Property(e => e.Type).IsRequired().HasMaxLength(50);
             b.Property(e => e.Value).IsRequired().HasMaxLength(256);
             b.Property(e => e.CanonicalProfileId).IsRequired().HasMaxLength(100);
@@ -1045,7 +1050,7 @@ public class SGrowingDbContext : DbContext
         {
             b.ToTable("profiles", "customer_data");
             b.HasKey(e => e.Id);
-            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.TenantId).IsRequired();
             b.Property(e => e.CanonicalProfileId).IsRequired().HasMaxLength(100);
             b.Property(e => e.UnifiedTraitsJson).HasColumnType("jsonb");
             b.HasIndex(e => new { e.TenantId, e.CanonicalProfileId });
@@ -1055,7 +1060,7 @@ public class SGrowingDbContext : DbContext
         {
             b.ToTable("identity_links", "customer_data");
             b.HasKey(e => e.Id);
-            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.TenantId).IsRequired();
             b.Property(e => e.SourceIdentifierJson).HasColumnType("jsonb");
             b.Property(e => e.TargetIdentifierJson).HasColumnType("jsonb");
             b.HasIndex(e => e.TenantId);
@@ -1065,7 +1070,7 @@ public class SGrowingDbContext : DbContext
         {
             b.ToTable("visitor_sessions", "customer_data");
             b.HasKey(e => e.SessionId);
-            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.TenantId).IsRequired();
             b.Property(e => e.AnonymousId).IsRequired().HasMaxLength(100);
             b.Property(e => e.PageViewsJson).HasColumnType("jsonb");
             b.Property(e => e.UtmParametersJson).HasColumnType("jsonb");
@@ -1077,7 +1082,7 @@ public class SGrowingDbContext : DbContext
         {
             b.ToTable("conversions", "advertising");
             b.HasKey(e => e.EventId);
-            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.TenantId).IsRequired();
             b.Property(e => e.Platform).IsRequired().HasMaxLength(50);
             b.Property(e => e.EventName).IsRequired().HasMaxLength(100);
             b.Property(e => e.Currency).HasMaxLength(10);
@@ -1089,7 +1094,7 @@ public class SGrowingDbContext : DbContext
         {
             b.ToTable("audience_syncs", "advertising");
             b.HasKey(e => e.Id);
-            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.TenantId).IsRequired();
             b.Property(e => e.AudienceId).IsRequired().HasMaxLength(100);
             b.Property(e => e.Platform).IsRequired().HasMaxLength(50);
             b.HasIndex(e => new { e.TenantId, e.AudienceId });
@@ -1100,7 +1105,7 @@ public class SGrowingDbContext : DbContext
         {
             b.ToTable("campaign_roas_snapshots", "advertising");
             b.HasKey(e => e.Id);
-            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.TenantId).IsRequired();
             b.Property(e => e.CampaignId).IsRequired().HasMaxLength(100);
             b.Property(e => e.Platform).IsRequired().HasMaxLength(50);
             b.Property(e => e.Spend).HasPrecision(18, 4);
@@ -1116,7 +1121,7 @@ public class SGrowingDbContext : DbContext
         {
             b.ToTable("workflows", "automation");
             b.HasKey(e => e.WorkflowId);
-            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.TenantId).IsRequired();
             b.Property(e => e.Name).IsRequired().HasMaxLength(200);
             b.Property(e => e.NodesJson).HasColumnType("jsonb");
             b.Property(e => e.EdgesJson).HasColumnType("jsonb");
@@ -1127,7 +1132,7 @@ public class SGrowingDbContext : DbContext
         {
             b.ToTable("telemetry_traces", "automation");
             b.HasKey(e => e.ExecutionId);
-            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.TenantId).IsRequired();
             b.Property(e => e.WorkflowId).IsRequired().HasMaxLength(100);
             b.Property(e => e.ContactId).HasMaxLength(100);
             b.Property(e => e.Status).IsRequired().HasMaxLength(50);
@@ -1165,6 +1170,43 @@ public class SGrowingDbContext : DbContext
             b.HasKey(m => m.Id);
             b.Property(m => m.TenantId).IsRequired().HasMaxLength(100);
             b.HasIndex(m => new { m.ThreadId, m.TimestampUtc });
+        });
+
+        modelBuilder.Entity<B2BProposalEntity>(b =>
+        {
+            b.HasKey(e => e.Id);
+            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.HasIndex(e => new { e.TenantId, e.Status });
+            b.HasMany(e => e.LineItems).WithOne(i => i.Proposal).HasForeignKey(i => i.ProposalId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<B2BProposalLineItemEntity>(b =>
+        {
+            b.HasKey(e => e.Id);
+            b.HasIndex(e => e.ProposalId);
+        });
+
+        modelBuilder.Entity<B2BUsageRecordEntity>(b =>
+        {
+            b.HasKey(e => e.Id);
+            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.HasIndex(e => new { e.TenantId, e.MetricType, e.TimestampUtc });
+        });
+
+        modelBuilder.Entity<SwarmMissionEntity>(b =>
+        {
+            b.HasKey(e => e.Id);
+            b.Property(e => e.TenantId).IsRequired().HasMaxLength(100);
+            b.Property(e => e.MissionId).IsRequired().HasMaxLength(100);
+            b.HasIndex(e => new { e.TenantId, e.MissionId }).IsUnique();
+            b.HasMany(e => e.Tasks).WithOne(t => t.Mission).HasForeignKey(t => t.MissionEntityId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SwarmTaskEntity>(b =>
+        {
+            b.HasKey(e => e.Id);
+            b.Property(e => e.TaskId).IsRequired().HasMaxLength(100);
+            b.HasIndex(e => new { e.MissionEntityId, e.TaskId });
         });
 
         ConfigureGlobalTenantFilters(modelBuilder);

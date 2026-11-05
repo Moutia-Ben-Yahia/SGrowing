@@ -3,10 +3,18 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using SGrowing.Api.Common;
 
 namespace SGrowing.Api.Modules.Auth;
 
-public static class AuthEndpoints
+public class AuthEndpoints : IEndpointModule
+{
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapAuthEndpoints();
+
+    public static IEndpointRouteBuilder MapAuthEndpoints(IEndpointRouteBuilder app) => app.MapAuthEndpoints();
+}
+
+public static class AuthEndpointExtensions
 {
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder endpoints)
     {

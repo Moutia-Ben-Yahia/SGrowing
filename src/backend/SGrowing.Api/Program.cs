@@ -1,4 +1,4 @@
-﻿using Scalar.AspNetCore;
+using Scalar.AspNetCore;
 using SGrowing.Api.Modules.Attribution.MultiTouch;
 using SGrowing.Api.Modules.Funnels.MabOptimizer;
 using SGrowing.Api.Modules.Deliverability.WarmupSwarm;
@@ -289,26 +289,11 @@ app.MapScalarApiReference(options =>
            .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
 });
 
-// ----------------- Core Modular Slice Endpoints -----------------
-app.MapHealthEndpoints();
-app.MapAuthEndpoints();
-app.MapCrmEndpoints();
-app.MapConversationsEndpoints();
-app.MapOutboundSdrEndpoints();
-app.MapJourneysFeedbackEndpoints();
-app.MapChannelsMessagingEndpoints();
-app.MapCommerceEndpoints();
-app.MapMarketingEndpoints();
-app.MapVoiceEndpoints();
-app.MapAiGatewayEndpoints();
-app.MapFinanceEndpoints();
-app.MapDeveloperGatewayEndpoints();
+// ----------------- Modular Endpoint Registration -----------------
+app.MapEndpointModules(typeof(Program).Assembly);
 
 // ----------------- Enterprise Strategic Horizon Endpoints -----------------
-app.MapDevEndpoints();
-app.MapSeoEndpoints();
 app.MapProgrammaticSeoEndpoints();
-app.MapFunnelEndpoints();
 app.MapCalendarEndpoints();
 app.MapDeliverabilityEndpoints();
 app.MapTelemetryEndpoints();
@@ -521,7 +506,6 @@ app.MapFirmographicsEndpoints();
 app.MapAdsSyncEndpoints();
 app.MapWorkflowTelemetryEndpoints();
 app.MapOmnichannelSequenceEndpoints();
-app.MapDevGatewayEndpoints();
 app.MapB2BProposalEndpoints();
 app.MapUnifiedInboxEndpoints();
 app.MapMultiTouchAttributionEndpoints();

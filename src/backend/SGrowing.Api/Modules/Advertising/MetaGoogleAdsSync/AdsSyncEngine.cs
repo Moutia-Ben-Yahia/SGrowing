@@ -393,10 +393,11 @@ public class AdsSyncEngine : IAdsSyncEngine
 
         try
         {
+            var tenantGuid = Guid.TryParse(tenantId, out var parsedGuid) ? parsedGuid : Guid.Empty;
             foreach (var (evt, payloadHash, isDedup) in events)
             {
                 var existing = await db.CapiConversions.FirstOrDefaultAsync(
-                    c => c.TenantId == tenantId && c.Platform == platform && c.EventId == evt.EventId,
+                    c => c.TenantId == tenantGuid && c.Platform == platform && c.EventId == evt.EventId,
                     cancellationToken);
 
                 if (existing == null)
@@ -404,7 +405,7 @@ public class AdsSyncEngine : IAdsSyncEngine
                     await db.CapiConversions.AddAsync(new CapiConversionEntity
                     {
                         EventId = evt.EventId,
-                        TenantId = tenantId,
+                        TenantId = tenantGuid,
                         Platform = platform,
                         EventName = evt.EventName,
                         ConversionValue = evt.ConversionValue,

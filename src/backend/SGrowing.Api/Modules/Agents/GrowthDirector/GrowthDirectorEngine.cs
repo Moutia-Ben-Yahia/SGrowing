@@ -22,7 +22,9 @@ public class GrowthDirectorEngine : IGrowthDirectorEngine
     private readonly ConcurrentDictionary<string, GrowthMissionPlan> _store = new(StringComparer.OrdinalIgnoreCase);
     private readonly ICascadingModelRouterService? _router;
     private readonly IServiceScopeFactory? _scopeFactory;
+    private readonly SGrowingDbContext? _dbContext;
     private readonly ILogger<GrowthDirectorEngine>? _logger;
+    private readonly object _dbLock = new();
 
     private static string StoreKey(string tenantId, string missionId) => $"{tenantId}:{missionId}";
 
@@ -30,14 +32,32 @@ public class GrowthDirectorEngine : IGrowthDirectorEngine
         ICascadingModelRouterService? router = null,
         IServiceScopeFactory? scopeFactory = null,
         ILogger<GrowthDirectorEngine>? logger = null)
+        : this(router, scopeFactory, null, logger)
+    {
+    }
+
+    public GrowthDirectorEngine(
+        SGrowingDbContext dbContext,
+        ICascadingModelRouterService? router = null,
+        ILogger<GrowthDirectorEngine>? logger = null)
+        : this(router, null, dbContext, logger)
+    {
+    }
+
+    public GrowthDirectorEngine(
+        ICascadingModelRouterService? router,
+        IServiceScopeFactory? scopeFactory,
+        SGrowingDbContext? dbContext,
+        ILogger<GrowthDirectorEngine>? logger)
     {
         _router = router;
         _scopeFactory = scopeFactory;
+        _dbContext = dbContext;
         _logger = logger;
     }
 
     public GrowthDirectorEngine()
-        : this(null, null, null)
+        : this(null, null, null, null)
     {
     }
 
@@ -286,6 +306,11 @@ Decompose this growth objective into coordinated specialist agent sub-tasks.";
         var key = StoreKey(tenantId, missionId);
         if (!_store.TryGetValue(key, out var existingPlan))
         {
+            existingPlan = LoadMissionFromDb(tenantId, missionId);
+        }
+
+        if (existingPlan == null)
+        {
             return new ExecuteMissionResult(
                 Success: false,
                 MissionId: missionId,
@@ -368,70 +393,93 @@ Decompose this growth objective into coordinated specialist agent sub-tasks.";
             return plan;
         }
 
-        return LoadMissionFromDb(tenantId, missionId);
+        var loaded = LoadMissionFromDb(tenantId, missionId);
+        if (loaded != null)
+        {
+            _store[StoreKey(tenantId, missionId)] = loaded;
+            return loaded;
+        }
+
+        return null;
     }
 
     private void PersistMissionPlanToDb(GrowthMissionPlan plan, Guid missionGuid)
     {
-        if (_scopeFactory == null) return;
+        if (_scopeFactory == null && _dbContext == null) return;
 
         try
         {
-            using var scope = _scopeFactory.CreateScope();
-            var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
-            if (db == null) return;
-
-            var tenantGuid = ResolveTenantGuid(plan.Objective.TenantId);
-
-            var missionEntity = new AgentMission
+            if (_dbContext != null)
             {
-                Id = missionGuid,
-                TenantId = tenantGuid,
-                Title = plan.Objective.Title,
-                TargetGoal = $"{plan.Objective.TargetMetric}: {plan.Objective.TargetValue}",
-                Status = plan.Status == GrowthMissionStatus.AutoApproved ? AgentMissionStatus.Running : AgentMissionStatus.PausedForApproval,
-                AutonomyMode = plan.ExceedsAutoApprovalThreshold ? "Human-in-the-Loop" : "Auto-Approve",
-                TotalBudgetUsd = plan.TotalEstimatedCostUsd,
-                SpentBudgetUsd = 0m,
-                TokensConsumed = 0,
-                CurrentStepIndex = 0,
-                ReasoningTrace = $"[GrowthDirector] Decomposed objective '{plan.Objective.Title}' into {plan.SubTasks.Count} subtasks. Status: {plan.Status}.",
-                CreatedAtUtc = plan.CreatedAtUtc
-            };
-
-            for (int i = 0; i < plan.SubTasks.Count; i++)
-            {
-                var task = plan.SubTasks[i];
-                var stepEntity = new AgentMissionStep
+                lock (_dbLock)
                 {
-                    Id = Guid.NewGuid(),
-                    MissionId = missionGuid,
-                    StepIndex = i,
-                    ToolName = task.AgentType,
-                    InputArgumentsJson = JsonSerializer.Serialize(new
-                    {
-                        taskId = task.TaskId,
-                        title = task.Title,
-                        allocatedBudget = task.AllocatedBudget
-                    }),
-                    ReasoningThought = task.Description,
-                    Status = task.Status == GrowthTaskStatus.AutoApproved ? AgentMissionStepStatus.Pending : AgentMissionStepStatus.AwaitingApproval,
-                    ApprovalRequired = task.RequiresHumanApproval,
-                    CostUsd = task.AllocatedBudget,
-                    CreatedAtUtc = DateTime.UtcNow
-                };
-
-                missionEntity.Steps.Add(stepEntity);
-                db.AgentMissionSteps.Add(stepEntity);
+                    SaveMissionEntity(_dbContext, plan, missionGuid);
+                }
             }
-
-            db.AgentMissions.Add(missionEntity);
-            db.SaveChanges();
+            else if (_scopeFactory != null)
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
+                if (db != null)
+                {
+                    SaveMissionEntity(db, plan, missionGuid);
+                }
+            }
         }
         catch (Exception ex)
         {
             _logger?.LogWarning(ex, "Failed to persist GrowthMissionPlan '{MissionId}' to database.", plan.MissionId);
         }
+    }
+
+    private static void SaveMissionEntity(SGrowingDbContext db, GrowthMissionPlan plan, Guid missionGuid)
+    {
+        var tenantGuid = ResolveTenantGuid(plan.Objective.TenantId);
+
+        var missionEntity = new AgentMission
+        {
+            Id = missionGuid,
+            TenantId = tenantGuid,
+            Title = plan.Objective.Title,
+            TargetGoal = $"{plan.Objective.TargetMetric}: {plan.Objective.TargetValue}",
+            Status = plan.Status == GrowthMissionStatus.AutoApproved ? AgentMissionStatus.Running : AgentMissionStatus.PausedForApproval,
+            AutonomyMode = plan.ExceedsAutoApprovalThreshold ? "Human-in-the-Loop" : "Auto-Approve",
+            TotalBudgetUsd = plan.TotalEstimatedCostUsd,
+            SpentBudgetUsd = 0m,
+            TokensConsumed = 0,
+            CurrentStepIndex = 0,
+            ReasoningTrace = $"[GrowthDirector] Decomposed objective '{plan.Objective.Title}' into {plan.SubTasks.Count} subtasks. Status: {plan.Status}.",
+            CreatedAtUtc = plan.CreatedAtUtc
+        };
+
+        for (int i = 0; i < plan.SubTasks.Count; i++)
+        {
+            var task = plan.SubTasks[i];
+            var stepEntity = new AgentMissionStep
+            {
+                Id = Guid.NewGuid(),
+                MissionId = missionGuid,
+                StepIndex = i,
+                ToolName = task.AgentType,
+                InputArgumentsJson = JsonSerializer.Serialize(new
+                {
+                    taskId = task.TaskId,
+                    title = task.Title,
+                    allocatedBudget = task.AllocatedBudget
+                }),
+                ReasoningThought = task.Description,
+                Status = task.Status == GrowthTaskStatus.AutoApproved ? AgentMissionStepStatus.Pending : AgentMissionStepStatus.AwaitingApproval,
+                ApprovalRequired = task.RequiresHumanApproval,
+                CostUsd = task.AllocatedBudget,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+
+            missionEntity.Steps.Add(stepEntity);
+            db.AgentMissionSteps.Add(stepEntity);
+        }
+
+        db.AgentMissions.Add(missionEntity);
+        db.SaveChanges();
     }
 
     private void UpdateMissionInDb(
@@ -442,44 +490,28 @@ Decompose this growth objective into coordinated specialist agent sub-tasks.";
         int pendingCount,
         string overallStatus)
     {
-        if (_scopeFactory == null) return;
+        if (_scopeFactory == null && _dbContext == null) return;
 
         try
         {
             if (!TryExtractGuid(missionId, out var missionGuid)) return;
 
-            using var scope = _scopeFactory.CreateScope();
-            var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
-            if (db == null) return;
-
-            var missionEntity = db.AgentMissions
-                .Include(m => m.Steps)
-                .FirstOrDefault(m => m.Id == missionGuid);
-
-            if (missionEntity == null) return;
-
-            var approvedSet = new HashSet<string>(approvedTaskIds, StringComparer.OrdinalIgnoreCase);
-
-            foreach (var step in missionEntity.Steps)
+            if (_dbContext != null)
             {
-                bool isApproved = approvedSet.Any(tid => tid.Contains(step.ToolName, StringComparison.OrdinalIgnoreCase));
-                if (isApproved)
+                lock (_dbLock)
                 {
-                    step.Status = AgentMissionStepStatus.Completed;
-                    step.ExecutedAtUtc = DateTime.UtcNow;
-                    step.ApprovedAtUtc = DateTime.UtcNow;
-                    step.ApprovedBy = "GrowthDirector";
+                    ApplyMissionUpdate(_dbContext, missionGuid, approvedTaskIds, totalApprovedSpend, executedCount, pendingCount);
                 }
             }
-
-            missionEntity.SpentBudgetUsd = totalApprovedSpend;
-            missionEntity.Status = pendingCount == 0 && executedCount > 0 ? AgentMissionStatus.Completed : AgentMissionStatus.Running;
-            if (missionEntity.Status == AgentMissionStatus.Completed)
+            else if (_scopeFactory != null)
             {
-                missionEntity.CompletedAtUtc = DateTime.UtcNow;
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
+                if (db != null)
+                {
+                    ApplyMissionUpdate(db, missionGuid, approvedTaskIds, totalApprovedSpend, executedCount, pendingCount);
+                }
             }
-
-            db.SaveChanges();
         }
         catch (Exception ex)
         {
@@ -487,63 +519,151 @@ Decompose this growth objective into coordinated specialist agent sub-tasks.";
         }
     }
 
+    private static void ApplyMissionUpdate(
+        SGrowingDbContext db,
+        Guid missionGuid,
+        List<string> approvedTaskIds,
+        decimal totalApprovedSpend,
+        int executedCount,
+        int pendingCount)
+    {
+        var missionEntity = db.AgentMissions
+            .Include(m => m.Steps)
+            .FirstOrDefault(m => m.Id == missionGuid);
+
+        if (missionEntity == null) return;
+
+        var approvedSet = new HashSet<string>(approvedTaskIds, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var step in missionEntity.Steps)
+        {
+            string? stepTaskId = null;
+            if (!string.IsNullOrWhiteSpace(step.InputArgumentsJson))
+            {
+                try
+                {
+                    using var doc = JsonDocument.Parse(step.InputArgumentsJson);
+                    if (doc.RootElement.TryGetProperty("taskId", out var tidProp) && tidProp.ValueKind == JsonValueKind.String)
+                        stepTaskId = tidProp.GetString();
+                }
+                catch { }
+            }
+
+            bool isApproved = (stepTaskId != null && approvedSet.Contains(stepTaskId))
+                || approvedSet.Contains(step.ToolName)
+                || approvedSet.Any(tid => tid.Contains(step.ToolName, StringComparison.OrdinalIgnoreCase));
+
+            if (isApproved)
+            {
+                step.Status = AgentMissionStepStatus.Completed;
+                step.ExecutedAtUtc = DateTime.UtcNow;
+                step.ApprovedAtUtc = DateTime.UtcNow;
+                step.ApprovedBy = "GrowthDirector";
+            }
+        }
+
+        missionEntity.SpentBudgetUsd = totalApprovedSpend;
+        missionEntity.Status = pendingCount == 0 && executedCount > 0 ? AgentMissionStatus.Completed : AgentMissionStatus.Running;
+        if (missionEntity.Status == AgentMissionStatus.Completed)
+        {
+            missionEntity.CompletedAtUtc = DateTime.UtcNow;
+        }
+
+        db.SaveChanges();
+    }
+
     private GrowthMissionPlan? LoadMissionFromDb(string tenantId, string missionId)
     {
-        if (_scopeFactory == null) return null;
+        if (_scopeFactory == null && _dbContext == null) return null;
 
         try
         {
             if (!TryExtractGuid(missionId, out var missionGuid)) return null;
 
-            using var scope = _scopeFactory.CreateScope();
-            var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
-            if (db == null) return null;
-
-            var tenantGuid = ResolveTenantGuid(tenantId);
-            var missionEntity = db.AgentMissions
-                .Include(m => m.Steps)
-                .FirstOrDefault(m => m.Id == missionGuid && m.TenantId == tenantGuid);
-
-            if (missionEntity == null) return null;
-
-            var subTasks = missionEntity.Steps
-                .OrderBy(s => s.StepIndex)
-                .Select(s => new DecomposedSubTask(
-                    TaskId: $"task-{missionId}-{s.ToolName.ToLowerInvariant()}",
-                    AgentType: s.ToolName,
-                    Title: s.ToolName,
-                    Description: s.ReasoningThought,
-                    AllocatedBudget: s.CostUsd,
-                    RequiresHumanApproval: s.ApprovalRequired,
-                    Status: s.Status == AgentMissionStepStatus.Completed ? GrowthTaskStatus.Executed : GrowthTaskStatus.PendingApproval
-                ))
-                .ToList();
-
-            var objective = new GrowthMissionObjective(
-                ObjectiveId: missionEntity.Id.ToString("N"),
-                TenantId: tenantId,
-                Title: missionEntity.Title,
-                TargetMetric: missionEntity.TargetGoal,
-                TargetValue: 0m,
-                MaxBudgetUsd: missionEntity.TotalBudgetUsd,
-                DeadlineUtc: DateTime.UtcNow.AddDays(30)
-            );
-
-            return new GrowthMissionPlan(
-                MissionId: missionId,
-                Objective: objective,
-                SubTasks: subTasks,
-                TotalEstimatedCostUsd: missionEntity.TotalBudgetUsd,
-                ExceedsAutoApprovalThreshold: missionEntity.AutonomyMode == "Human-in-the-Loop",
-                Status: missionEntity.Status == AgentMissionStatus.Completed ? GrowthMissionStatus.Executed : GrowthMissionStatus.PendingApproval,
-                CreatedAtUtc: missionEntity.CreatedAtUtc
-            );
+            if (_dbContext != null)
+            {
+                lock (_dbLock)
+                {
+                    return QueryMissionFromDb(_dbContext, tenantId, missionId, missionGuid);
+                }
+            }
+            else if (_scopeFactory != null)
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
+                if (db != null)
+                {
+                    return QueryMissionFromDb(db, tenantId, missionId, missionGuid);
+                }
+            }
         }
         catch (Exception ex)
         {
             _logger?.LogWarning(ex, "Failed to load mission '{MissionId}' from database.", missionId);
-            return null;
         }
+
+        return null;
+    }
+
+    private static GrowthMissionPlan? QueryMissionFromDb(SGrowingDbContext db, string tenantId, string missionId, Guid missionGuid)
+    {
+        var tenantGuid = ResolveTenantGuid(tenantId);
+        var missionEntity = db.AgentMissions
+            .Include(m => m.Steps)
+            .FirstOrDefault(m => m.Id == missionGuid && m.TenantId == tenantGuid);
+
+        if (missionEntity == null) return null;
+
+        var subTasks = missionEntity.Steps
+            .OrderBy(s => s.StepIndex)
+            .Select(s =>
+            {
+                string taskId = $"task-{missionId}-{s.ToolName.ToLowerInvariant()}";
+                string title = s.ToolName;
+                if (!string.IsNullOrWhiteSpace(s.InputArgumentsJson))
+                {
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(s.InputArgumentsJson);
+                        if (doc.RootElement.TryGetProperty("taskId", out var tidProp) && tidProp.ValueKind == JsonValueKind.String)
+                            taskId = tidProp.GetString() ?? taskId;
+                        if (doc.RootElement.TryGetProperty("title", out var titleProp) && titleProp.ValueKind == JsonValueKind.String)
+                            title = titleProp.GetString() ?? title;
+                    }
+                    catch { }
+                }
+
+                return new DecomposedSubTask(
+                    TaskId: taskId,
+                    AgentType: s.ToolName,
+                    Title: title,
+                    Description: s.ReasoningThought,
+                    AllocatedBudget: s.CostUsd,
+                    RequiresHumanApproval: s.ApprovalRequired,
+                    Status: s.Status == AgentMissionStepStatus.Completed ? GrowthTaskStatus.Executed : GrowthTaskStatus.PendingApproval
+                );
+            })
+            .ToList();
+
+        var objective = new GrowthMissionObjective(
+            ObjectiveId: missionEntity.Id.ToString("N"),
+            TenantId: tenantId,
+            Title: missionEntity.Title,
+            TargetMetric: missionEntity.TargetGoal,
+            TargetValue: 0m,
+            MaxBudgetUsd: missionEntity.TotalBudgetUsd,
+            DeadlineUtc: DateTime.UtcNow.AddDays(30)
+        );
+
+        return new GrowthMissionPlan(
+            MissionId: missionId,
+            Objective: objective,
+            SubTasks: subTasks,
+            TotalEstimatedCostUsd: missionEntity.TotalBudgetUsd,
+            ExceedsAutoApprovalThreshold: missionEntity.AutonomyMode == "Human-in-the-Loop",
+            Status: missionEntity.Status == AgentMissionStatus.Completed ? GrowthMissionStatus.Executed : GrowthMissionStatus.PendingApproval,
+            CreatedAtUtc: missionEntity.CreatedAtUtc
+        );
     }
 
     private static Guid ResolveTenantGuid(string tenantId)

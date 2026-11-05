@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.CRM;
 using SGrowing.Core.Entities;
@@ -9,7 +10,14 @@ namespace SGrowing.Api.Modules.CRM;
 
 public record CreateWorkspaceDto(Guid TenantId, string Name, string? Slug);
 
-public static class CrmEndpoints
+public class CrmEndpoints : IEndpointModule
+{
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapCrmEndpoints();
+
+    public static IEndpointRouteBuilder MapCrmEndpoints(IEndpointRouteBuilder app) => app.MapCrmEndpoints();
+}
+
+public static class CrmEndpointExtensions
 {
     public static IEndpointRouteBuilder MapCrmEndpoints(this IEndpointRouteBuilder app)
     {

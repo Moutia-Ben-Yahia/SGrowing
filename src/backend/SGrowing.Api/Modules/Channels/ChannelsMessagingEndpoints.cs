@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Channels;
 using SGrowing.Api.Modules.Channels.WhatsApp.Catalog;
@@ -7,7 +8,14 @@ using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.Channels;
 
-public static class ChannelsMessagingEndpoints
+public class ChannelsMessagingEndpoints : IEndpointModule
+{
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapChannelsMessagingEndpoints();
+
+    public static IEndpointRouteBuilder MapChannelsMessagingEndpoints(IEndpointRouteBuilder app) => app.MapChannelsMessagingEndpoints();
+}
+
+public static class ChannelsMessagingEndpointExtensions
 {
     public static IEndpointRouteBuilder MapChannelsMessagingEndpoints(this IEndpointRouteBuilder app)
     {

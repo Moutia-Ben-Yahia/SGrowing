@@ -1,4 +1,6 @@
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using SGrowing.Api.Data;
 using SGrowing.Api.Modules.AI.SwarmCoordination;
 using Xunit;
 
@@ -173,5 +175,80 @@ public class SwarmCoordinationTests
 
         var actTelemetry = () => _engine.GetTelemetry("tenant_err", "mis_fake");
         actTelemetry.Should().Throw<KeyNotFoundException>();
+    }
+
+    [Fact]
+    public void SwarmCoordinationEngine_WithDbContext_MissionsTasksAndScratchpadSurviveRestart()
+    {
+        // Arrange
+        var dbName = $"SwarmCoordinationDurability_{Guid.NewGuid():N}";
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(dbName)
+            .Options;
+
+        const string tenantId = "tenant_swarm_durable_01";
+        string missionId;
+
+        // Instance 1: Create mission, update scratchpad, approve a task
+        using (var db1 = new SGrowingDbContext(options))
+        {
+            var engine1 = new SwarmCoordinationEngine(db1);
+
+            var created = engine1.CreateMission(new CreateMissionRequest(
+                TenantId: tenantId,
+                Title: "Autonomous Expansion Mission",
+                HighLevelGoal: "Scale multi-channel B2B leads"
+            ));
+
+            missionId = created.MissionId;
+
+            // Update scratchpad
+            engine1.UpdateScratchpad(new UpdateScratchpadRequest(
+                TenantId: tenantId,
+                MissionId: missionId,
+                Key: "custom_funnel_stage",
+                Value: "HighTouchNurture"
+            ));
+
+            // Approve task
+            var approvalTask = created.Tasks.First(t => t.RequiresHumanApproval);
+            engine1.ApproveTask(new ApproveTaskRequest(
+                TenantId: tenantId,
+                MissionId: missionId,
+                TaskId: approvalTask.TaskId,
+                Approved: true,
+                ApproverId: "cgo_approver_99"
+            ));
+        }
+
+        // Instance 2: Fresh engine instance connected to same DB (simulates restart)
+        using (var db2 = new SGrowingDbContext(options))
+        {
+            var engine2 = new SwarmCoordinationEngine(db2);
+
+            // Mission retrieval
+            var retrieved = engine2.GetMission(tenantId, missionId);
+            retrieved.Should().NotBeNull();
+            retrieved!.MissionId.Should().Be(missionId);
+            retrieved.Title.Should().Be("Autonomous Expansion Mission");
+            retrieved.Scratchpad.Should().ContainKey("custom_funnel_stage");
+            retrieved.Scratchpad["custom_funnel_stage"].Should().Be("HighTouchNurture");
+            retrieved.Scratchpad["last_approved_task"].Should().Be("tsk_5_dispatch");
+
+            var approvedTask = retrieved.Tasks.First(t => t.TaskId == "tsk_5_dispatch");
+            approvedTask.Status.Should().Be(SwarmTaskStatus.Completed);
+            approvedTask.OutputArtifact.Should().Contain("[APPROVED by cgo_approver_99]");
+
+            // List missions
+            var list = engine2.ListMissions(tenantId);
+            list.Should().HaveCount(1);
+            list[0].MissionId.Should().Be(missionId);
+
+            // Telemetry
+            var telemetry = engine2.GetTelemetry(tenantId, missionId);
+            telemetry.TotalTasks.Should().Be(5);
+            telemetry.CompletedTasks.Should().Be(5);
+            telemetry.PendingApprovalCount.Should().Be(0);
+        }
     }
 }

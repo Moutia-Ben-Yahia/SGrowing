@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using SGrowing.Api.Common;
 using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.Funnels;
@@ -14,7 +15,14 @@ public record RecordFunnelEventDto(Guid TenantId, FunnelEventType EventType, dec
 public record ResolveVariantRequest(Guid TenantId, Guid StepId, string VisitorCookieId, int VariantAWeight = 50);
 public record OneClickUpsellRequest(Guid TenantId, Guid OrderId, Guid UpsellOfferId, string VaultToken);
 
-public static class FunnelEndpoints
+public class FunnelEndpoints : IEndpointModule
+{
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapFunnelEndpoints();
+
+    public static IEndpointRouteBuilder MapFunnelEndpoints(IEndpointRouteBuilder app) => app.MapFunnelEndpoints();
+}
+
+public static class FunnelEndpointExtensions
 {
     public static IEndpointRouteBuilder MapFunnelEndpoints(this IEndpointRouteBuilder endpoints)
     {

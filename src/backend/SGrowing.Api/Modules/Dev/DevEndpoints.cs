@@ -1,10 +1,18 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using SGrowing.Api.Common;
 
 namespace SGrowing.Api.Modules.Dev;
 
-public static class DevEndpoints
+public class DevEndpoints : IEndpointModule
+{
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapDevEndpoints();
+
+    public static IEndpointRouteBuilder MapDevEndpoints(IEndpointRouteBuilder app) => app.MapDevEndpoints();
+}
+
+public static class DevEndpointExtensions
 {
     public static IEndpointRouteBuilder MapDevEndpoints(this IEndpointRouteBuilder endpoints)
     {

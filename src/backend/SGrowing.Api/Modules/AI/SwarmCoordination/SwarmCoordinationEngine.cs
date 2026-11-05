@@ -1,4 +1,13 @@
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using SGrowing.Api.Data;
+using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.AI.SwarmCoordination;
 
@@ -15,8 +24,198 @@ public interface ISwarmCoordinationEngine
 public class SwarmCoordinationEngine : ISwarmCoordinationEngine
 {
     private readonly ConcurrentDictionary<string, MissionPlan> _missions = new();
+    private readonly SGrowingDbContext? _dbContext;
+    private readonly IServiceScopeFactory? _scopeFactory;
+    private readonly ILogger<SwarmCoordinationEngine>? _logger;
+    private readonly object _dbLock = new();
 
     private static string BuildKey(string tenantId, string missionId) => $"{tenantId}::{missionId}";
+
+    public SwarmCoordinationEngine()
+        : this((IServiceScopeFactory?)null, null)
+    {
+    }
+
+    public SwarmCoordinationEngine(IServiceScopeFactory? scopeFactory, ILogger<SwarmCoordinationEngine>? logger = null)
+        : this(null, scopeFactory, logger)
+    {
+    }
+
+    public SwarmCoordinationEngine(SGrowingDbContext? dbContext, ILogger<SwarmCoordinationEngine>? logger = null)
+        : this(dbContext, null, logger)
+    {
+    }
+
+    public SwarmCoordinationEngine(
+        SGrowingDbContext? dbContext,
+        IServiceScopeFactory? scopeFactory,
+        ILogger<SwarmCoordinationEngine>? logger = null)
+    {
+        _dbContext = dbContext;
+        _scopeFactory = scopeFactory;
+        _logger = logger;
+
+        WarmupFromPersistence();
+    }
+
+    private void WarmupFromPersistence()
+    {
+        try
+        {
+            if (_dbContext != null)
+            {
+                lock (_dbLock)
+                {
+                    LoadFromDb(_dbContext);
+                }
+            }
+            else if (_scopeFactory != null)
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
+                if (db != null)
+                {
+                    LoadFromDb(db);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Failed to warm up SwarmCoordinationEngine cache from database.");
+        }
+    }
+
+    private void LoadFromDb(SGrowingDbContext db)
+    {
+        var missions = db.SwarmMissions
+            .AsNoTracking()
+            .Include(m => m.Tasks)
+            .ToList();
+
+        foreach (var m in missions)
+        {
+            _missions[BuildKey(m.TenantId, m.MissionId)] = m.ToModel();
+        }
+    }
+
+    private void SyncMissionToDb(MissionPlan plan)
+    {
+        try
+        {
+            ExecuteWithDb(db =>
+            {
+                var existing = db.SwarmMissions
+                    .Include(m => m.Tasks)
+                    .FirstOrDefault(m => m.MissionId == plan.MissionId);
+
+                if (existing == null)
+                {
+                    var entity = plan.ToEntity();
+                    db.SwarmMissions.Add(entity);
+                }
+                else
+                {
+                    existing.Title = plan.Title;
+                    existing.HighLevelGoal = plan.HighLevelGoal;
+                    existing.ScratchpadJson = JsonSerializer.Serialize(plan.Scratchpad);
+                    existing.FinishedAtUtc = plan.FinishedAtUtc;
+                    existing.UpdatedAtUtc = DateTime.UtcNow;
+
+                    foreach (var taskModel in plan.Tasks)
+                    {
+                        var existingTask = existing.Tasks.FirstOrDefault(t => t.TaskId == taskModel.TaskId);
+                        if (existingTask != null)
+                        {
+                            existingTask.Title = taskModel.Title;
+                            existingTask.Description = taskModel.Description;
+                            existingTask.AssignedTo = taskModel.AssignedTo.ToString();
+                            existingTask.Priority = taskModel.Priority.ToString();
+                            existingTask.Status = taskModel.Status.ToString();
+                            existingTask.RequiresHumanApproval = taskModel.RequiresHumanApproval;
+                            existingTask.OutputArtifact = taskModel.OutputArtifact;
+                            existingTask.CompletedAtUtc = taskModel.CompletedAtUtc;
+                        }
+                        else
+                        {
+                            existing.Tasks.Add(taskModel.ToEntity(existing.Id));
+                        }
+                    }
+                }
+
+                db.SaveChanges();
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Failed to persist swarm mission {MissionId} to database.", plan.MissionId);
+        }
+    }
+
+    private MissionPlan? LoadMissionFromDb(string tenantId, string missionId)
+    {
+        try
+        {
+            return QueryWithDb(db =>
+            {
+                var entity = db.SwarmMissions
+                    .AsNoTracking()
+                    .Include(m => m.Tasks)
+                    .FirstOrDefault(m => m.TenantId == tenantId && m.MissionId == missionId);
+
+                return entity?.ToModel();
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Failed to query swarm mission {MissionId} from database.", missionId);
+            return null;
+        }
+    }
+
+    private void ExecuteWithDb(Action<SGrowingDbContext> action)
+    {
+        if (_dbContext != null)
+        {
+            lock (_dbLock)
+            {
+                action(_dbContext);
+            }
+            return;
+        }
+
+        if (_scopeFactory != null)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
+            if (db != null)
+            {
+                action(db);
+            }
+        }
+    }
+
+    private T? QueryWithDb<T>(Func<SGrowingDbContext, T?> query)
+    {
+        if (_dbContext != null)
+        {
+            lock (_dbLock)
+            {
+                return query(_dbContext);
+            }
+        }
+
+        if (_scopeFactory != null)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetService<SGrowingDbContext>();
+            if (db != null)
+            {
+                return query(db);
+            }
+        }
+
+        return default;
+    }
 
     public MissionPlan CreateMission(CreateMissionRequest request)
     {
@@ -113,17 +312,54 @@ public class SwarmCoordinationEngine : ISwarmCoordinationEngine
         );
 
         _missions[BuildKey(request.TenantId, missionId)] = plan;
+        SyncMissionToDb(plan);
         return plan;
     }
 
     public MissionPlan? GetMission(string tenantId, string missionId)
     {
-        _missions.TryGetValue(BuildKey(tenantId, missionId), out var plan);
-        return plan;
+        var key = BuildKey(tenantId, missionId);
+        if (_missions.TryGetValue(key, out var plan))
+        {
+            return plan;
+        }
+
+        var dbPlan = LoadMissionFromDb(tenantId, missionId);
+        if (dbPlan != null)
+        {
+            _missions[key] = dbPlan;
+            return dbPlan;
+        }
+
+        return null;
     }
 
     public List<MissionPlan> ListMissions(string tenantId)
     {
+        try
+        {
+            var dbMissions = QueryWithDb(db =>
+            {
+                return db.SwarmMissions
+                    .AsNoTracking()
+                    .Include(m => m.Tasks)
+                    .Where(m => m.TenantId == tenantId)
+                    .ToList();
+            });
+
+            if (dbMissions != null)
+            {
+                foreach (var entity in dbMissions)
+                {
+                    _missions[BuildKey(entity.TenantId, entity.MissionId)] = entity.ToModel();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Failed to query tenant missions for {TenantId} from database.", tenantId);
+        }
+
         return _missions.Values
             .Where(m => m.TenantId == tenantId)
             .OrderByDescending(m => m.StartedAtUtc)
@@ -135,7 +371,12 @@ public class SwarmCoordinationEngine : ISwarmCoordinationEngine
         var key = BuildKey(request.TenantId, request.MissionId);
         if (!_missions.TryGetValue(key, out var plan))
         {
-            throw new KeyNotFoundException($"Mission '{request.MissionId}' not found.");
+            plan = LoadMissionFromDb(request.TenantId, request.MissionId);
+            if (plan == null)
+            {
+                throw new KeyNotFoundException($"Mission '{request.MissionId}' not found.");
+            }
+            _missions[key] = plan;
         }
 
         var taskIdx = plan.Tasks.FindIndex(t => t.TaskId == request.TaskId);
@@ -172,6 +413,7 @@ public class SwarmCoordinationEngine : ISwarmCoordinationEngine
         };
 
         _missions[key] = updatedPlan;
+        SyncMissionToDb(updatedPlan);
         return updatedPlan;
     }
 
@@ -180,7 +422,12 @@ public class SwarmCoordinationEngine : ISwarmCoordinationEngine
         var key = BuildKey(request.TenantId, request.MissionId);
         if (!_missions.TryGetValue(key, out var plan))
         {
-            throw new KeyNotFoundException($"Mission '{request.MissionId}' not found.");
+            plan = LoadMissionFromDb(request.TenantId, request.MissionId);
+            if (plan == null)
+            {
+                throw new KeyNotFoundException($"Mission '{request.MissionId}' not found.");
+            }
+            _missions[key] = plan;
         }
 
         var updatedScratchpad = new Dictionary<string, string>(plan.Scratchpad)
@@ -190,6 +437,7 @@ public class SwarmCoordinationEngine : ISwarmCoordinationEngine
 
         var updatedPlan = plan with { Scratchpad = updatedScratchpad };
         _missions[key] = updatedPlan;
+        SyncMissionToDb(updatedPlan);
         return updatedPlan;
     }
 

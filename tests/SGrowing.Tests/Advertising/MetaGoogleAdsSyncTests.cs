@@ -200,8 +200,9 @@ public class MetaGoogleAdsSyncTests
             dbContext: db,
             logger: NullLogger<AdsSyncEngine>.Instance);
 
+        var tenantGuid = Guid.NewGuid();
         var request = new CapiUploadRequest(
-            TenantId: "tenant_meta_live",
+            TenantId: tenantGuid.ToString(),
             AdAccountId: "act_test_acc",
             Platform: "Meta",
             Events: new List<ConversionEvent>
@@ -233,7 +234,7 @@ public class MetaGoogleAdsSyncTests
         // Verify persistence in CapiConversions
         var savedEntity = await db.CapiConversions.FirstOrDefaultAsync(c => c.EventId == "evt_meta_live_001");
         savedEntity.Should().NotBeNull();
-        savedEntity!.TenantId.Should().Be("tenant_meta_live");
+        savedEntity!.TenantId.Should().Be(tenantGuid);
         savedEntity.Platform.Should().Be("Meta");
         savedEntity.ConversionValue.Should().Be(99.50m);
         savedEntity.IsDeduplicated.Should().BeFalse();
@@ -265,8 +266,9 @@ public class MetaGoogleAdsSyncTests
             dbContext: db,
             logger: NullLogger<AdsSyncEngine>.Instance);
 
+        var tenantGuid = Guid.NewGuid();
         var request = new CapiUploadRequest(
-            TenantId: "tenant_google_live",
+            TenantId: tenantGuid.ToString(),
             AdAccountId: "act_google_acc",
             Platform: "Google",
             Events: new List<ConversionEvent>
@@ -296,7 +298,7 @@ public class MetaGoogleAdsSyncTests
         // Verify persistence in CapiConversions
         var savedEntity = await db.CapiConversions.FirstOrDefaultAsync(c => c.EventId == "evt_google_live_001");
         savedEntity.Should().NotBeNull();
-        savedEntity!.TenantId.Should().Be("tenant_google_live");
+        savedEntity!.TenantId.Should().Be(tenantGuid);
         savedEntity.Platform.Should().Be("Google");
         savedEntity.ConversionValue.Should().Be(45.00m);
         savedEntity.IsDeduplicated.Should().BeFalse();

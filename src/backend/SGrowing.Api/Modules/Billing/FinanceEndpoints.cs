@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Analytics;
 using SGrowing.Api.Modules.Attribution;
@@ -11,7 +12,14 @@ using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.Billing;
 
-public static class FinanceEndpoints
+public class FinanceEndpoints : IEndpointModule
+{
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapFinanceEndpoints();
+
+    public static IEndpointRouteBuilder MapFinanceEndpoints(IEndpointRouteBuilder app) => app.MapFinanceEndpoints();
+}
+
+public static class FinanceEndpointExtensions
 {
     public static IEndpointRouteBuilder MapFinanceEndpoints(this IEndpointRouteBuilder app)
     {

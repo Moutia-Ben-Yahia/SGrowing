@@ -7,7 +7,7 @@ namespace SGrowing.Core.Entities;
 public class CustomerIdentityEntity
 {
     public Guid Id { get; set; } = Guid.NewGuid();
-    public string TenantId { get; set; } = string.Empty;
+    public Guid TenantId { get; set; }
     public string Type { get; set; } = string.Empty;
     public string Value { get; set; } = string.Empty;
     public string CanonicalProfileId { get; set; } = string.Empty;
@@ -17,7 +17,7 @@ public class CustomerIdentityEntity
 public class CustomerProfileEntity
 {
     public Guid Id { get; set; } = Guid.NewGuid();
-    public string TenantId { get; set; } = string.Empty;
+    public Guid TenantId { get; set; }
     public string CanonicalProfileId { get; set; } = string.Empty;
     public string UnifiedTraitsJson { get; set; } = "{}";
     public DateTime FirstSeenUtc { get; set; } = DateTime.UtcNow;
@@ -27,7 +27,7 @@ public class CustomerProfileEntity
 public class IdentityLinkEntity
 {
     public Guid Id { get; set; } = Guid.NewGuid();
-    public string TenantId { get; set; } = string.Empty;
+    public Guid TenantId { get; set; }
     public string SourceIdentifierJson { get; set; } = "{}";
     public string TargetIdentifierJson { get; set; } = "{}";
     public double ConfidenceScore { get; set; } = 1.0;
@@ -38,7 +38,7 @@ public class IdentityLinkEntity
 public class VisitorSessionEntity
 {
     public string SessionId { get; set; } = string.Empty;
-    public string TenantId { get; set; } = string.Empty;
+    public Guid TenantId { get; set; }
     public string AnonymousId { get; set; } = string.Empty;
     public DateTime StartedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime? EndedAtUtc { get; set; }
@@ -53,7 +53,7 @@ public class VisitorSessionEntity
 public class CapiConversionEntity
 {
     public string EventId { get; set; } = string.Empty;
-    public string TenantId { get; set; } = string.Empty;
+    public Guid TenantId { get; set; }
     public string Platform { get; set; } = string.Empty;
     public string EventName { get; set; } = string.Empty;
     public decimal ConversionValue { get; set; }
@@ -67,7 +67,7 @@ public class AudienceSyncEntity
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public string AudienceId { get; set; } = string.Empty;
-    public string TenantId { get; set; } = string.Empty;
+    public Guid TenantId { get; set; }
     public string Platform { get; set; } = string.Empty;
     public int ValidHashesCount { get; set; }
     public DateTime SyncedAtUtc { get; set; } = DateTime.UtcNow;
@@ -77,7 +77,7 @@ public class CampaignRoasSnapshotEntity
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public string CampaignId { get; set; } = string.Empty;
-    public string TenantId { get; set; } = string.Empty;
+    public Guid TenantId { get; set; }
     public string Platform { get; set; } = string.Empty;
     public decimal Spend { get; set; }
     public decimal Revenue { get; set; }
@@ -94,7 +94,7 @@ public class CampaignRoasSnapshotEntity
 public class WorkflowDagEntity
 {
     public string WorkflowId { get; set; } = string.Empty;
-    public string TenantId { get; set; } = string.Empty;
+    public Guid TenantId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string TriggerNodeId { get; set; } = string.Empty;
     public string NodesJson { get; set; } = "[]";
@@ -105,7 +105,7 @@ public class WorkflowDagEntity
 public class WorkflowTelemetryTraceEntity
 {
     public string ExecutionId { get; set; } = string.Empty;
-    public string TenantId { get; set; } = string.Empty;
+    public Guid TenantId { get; set; }
     public string WorkflowId { get; set; } = string.Empty;
     public string ContactId { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;

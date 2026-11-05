@@ -1,12 +1,20 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Marketing;
 using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.Marketing;
 
-public static class MarketingEndpoints
+public class MarketingEndpoints : IEndpointModule
+{
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapMarketingEndpoints();
+
+    public static IEndpointRouteBuilder MapMarketingEndpoints(IEndpointRouteBuilder app) => app.MapMarketingEndpoints();
+}
+
+public static class MarketingEndpointExtensions
 {
     public static IEndpointRouteBuilder MapMarketingEndpoints(this IEndpointRouteBuilder app)
     {

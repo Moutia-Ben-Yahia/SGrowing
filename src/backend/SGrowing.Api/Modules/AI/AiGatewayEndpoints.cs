@@ -1,11 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
+using SGrowing.Api.Common;
 using SGrowing.Api.Modules.AI;
 using SGrowing.Api.Modules.KnowledgeBase;
 using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.AI;
 
-public static class AiGatewayEndpoints
+public class AiGatewayEndpoints : IEndpointModule
+{
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapAiGatewayEndpoints();
+
+    public static IEndpointRouteBuilder MapAiGatewayEndpoints(IEndpointRouteBuilder app) => app.MapAiGatewayEndpoints();
+}
+
+public static class AiGatewayEndpointExtensions
 {
     public static IEndpointRouteBuilder MapAiGatewayEndpoints(this IEndpointRouteBuilder app)
     {

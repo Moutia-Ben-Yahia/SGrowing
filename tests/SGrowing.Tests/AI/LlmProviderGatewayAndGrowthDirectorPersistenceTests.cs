@@ -262,4 +262,63 @@ public class LlmProviderGatewayAndGrowthDirectorPersistenceTests
             adStep.Status.Should().Be(AgentMissionStepStatus.AwaitingApproval);
         }
     }
+
+    [Fact]
+    public void GrowthDirectorEngine_RestartSurvivesAcrossFreshInstances_AndCanBeApproved()
+    {
+        var dbName = $"GrowthDirectorRestartDb_{Guid.NewGuid():N}";
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(dbName)
+            .Options;
+
+        var tenantGuid = Guid.NewGuid();
+        var tenantId = tenantGuid.ToString();
+        string missionId;
+        string taskToApproveId;
+
+        // Instance 1: Create mission plan
+        using (var db1 = new SGrowingDbContext(options))
+        {
+            var engine1 = new GrowthDirectorEngine(db1, null, NullLogger<GrowthDirectorEngine>.Instance);
+
+            var objective = new GrowthMissionObjective(
+                ObjectiveId: "obj-gd-restart",
+                TenantId: tenantId,
+                Title: "Omnichannel Acquisition Campaign",
+                TargetMetric: "SQLs",
+                TargetValue: 150m,
+                MaxBudgetUsd: 1800m,
+                DeadlineUtc: DateTime.UtcNow.AddDays(20)
+            );
+
+            var plan = engine1.DecomposeObjective(objective);
+            missionId = plan.MissionId;
+            taskToApproveId = plan.SubTasks.First(t => t.RequiresHumanApproval).TaskId;
+        }
+
+        // Instance 2: Fresh engine instance simulating application restart
+        using (var db2 = new SGrowingDbContext(options))
+        {
+            var engine2 = new GrowthDirectorEngine(db2, null, NullLogger<GrowthDirectorEngine>.Instance);
+
+            var retrieved = engine2.GetMission(tenantId, missionId);
+            retrieved.Should().NotBeNull();
+            retrieved!.MissionId.Should().Be(missionId);
+            retrieved.SubTasks.Should().NotBeEmpty();
+
+            var execResult = engine2.ApproveAndExecuteMission(tenantId, missionId, new List<string> { taskToApproveId });
+            execResult.Success.Should().BeTrue();
+            execResult.TasksExecuted.Should().Be(1);
+        }
+
+        // Verify database state reflects execution
+        using (var db3 = new SGrowingDbContext(options))
+        {
+            var mission = db3.AgentMissions.Include(m => m.Steps).FirstOrDefault(m => m.TenantId == tenantGuid);
+            mission.Should().NotBeNull();
+            mission!.SpentBudgetUsd.Should().BeGreaterThan(0);
+            var completed = mission.Steps.FirstOrDefault(s => s.Status == AgentMissionStepStatus.Completed);
+            completed.Should().NotBeNull();
+        }
+    }
 }

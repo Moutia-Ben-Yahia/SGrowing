@@ -40,10 +40,11 @@ public class GrowthOsPersistenceTests
         primaryKey!.Properties.Select(p => p.Name).Should().Equal(nameof(CustomerIdentityEntity.Id));
 
         // Verify persistence round-trip
+        var tenantId = Guid.NewGuid();
         var identity = new CustomerIdentityEntity
         {
             Id = Guid.NewGuid(),
-            TenantId = "tenant_alpha_01",
+            TenantId = tenantId,
             Type = "email",
             Value = "founder@nextgenbrands.com",
             CanonicalProfileId = "prof_lead_8801",
@@ -55,7 +56,7 @@ public class GrowthOsPersistenceTests
 
         var saved = await context.CustomerIdentities.FindAsync(identity.Id);
         saved.Should().NotBeNull();
-        saved!.TenantId.Should().Be("tenant_alpha_01");
+        saved!.TenantId.Should().Be(tenantId);
         saved.Type.Should().Be("email");
         saved.Value.Should().Be("founder@nextgenbrands.com");
         saved.CanonicalProfileId.Should().Be("prof_lead_8801");
@@ -78,6 +79,7 @@ public class GrowthOsPersistenceTests
 
         // Verify persistence of JSONB document
         var profileId = Guid.NewGuid();
+        var profileTenantId = Guid.NewGuid();
         const string unifiedTraits = """
         {
             "segment": "enterprise_buyer",
@@ -91,7 +93,7 @@ public class GrowthOsPersistenceTests
         var profile = new CustomerProfileEntity
         {
             Id = profileId,
-            TenantId = "tenant_alpha_01",
+            TenantId = profileTenantId,
             CanonicalProfileId = "prof_lead_8801",
             UnifiedTraitsJson = unifiedTraits,
             FirstSeenUtc = DateTime.UtcNow.AddMonths(-6),
@@ -128,10 +130,11 @@ public class GrowthOsPersistenceTests
         dedupeIndex!.IsUnique.Should().BeTrue();
 
         // Verify persistence with deduplication hash and flag
+        var conversionTenantId = Guid.NewGuid();
         var conversion = new CapiConversionEntity
         {
             EventId = "evt_purchase_meta_98124",
-            TenantId = "tenant_ads_meta",
+            TenantId = conversionTenantId,
             Platform = "MetaCapi",
             EventName = "Purchase",
             ConversionValue = 429.99m,
@@ -146,7 +149,7 @@ public class GrowthOsPersistenceTests
 
         var saved = await context.CapiConversions.FindAsync(conversion.EventId);
         saved.Should().NotBeNull();
-        saved!.TenantId.Should().Be("tenant_ads_meta");
+        saved!.TenantId.Should().Be(conversionTenantId);
         saved.Platform.Should().Be("MetaCapi");
         saved.ConversionValue.Should().Be(429.99m);
         saved.Currency.Should().Be("USD");
@@ -192,10 +195,11 @@ public class GrowthOsPersistenceTests
         ]
         """;
 
+        var dagTenantId = Guid.NewGuid();
         var dag = new WorkflowDagEntity
         {
             WorkflowId = "wf_omnichannel_cart_recovery",
-            TenantId = "tenant_alpha_01",
+            TenantId = dagTenantId,
             Name = "Omnichannel WhatsApp Recovery DAG",
             TriggerNodeId = "node_trigger",
             NodesJson = nodesJson,
@@ -237,10 +241,11 @@ public class GrowthOsPersistenceTests
         ]
         """;
 
+        var traceTenantId = Guid.NewGuid();
         var trace = new WorkflowTelemetryTraceEntity
         {
             ExecutionId = "exec_trace_d98124_fa8",
-            TenantId = "tenant_alpha_01",
+            TenantId = traceTenantId,
             WorkflowId = "wf_omnichannel_cart_recovery",
             ContactId = "cont_corp_99",
             Status = "Completed",
@@ -276,10 +281,11 @@ public class GrowthOsPersistenceTests
         entityType.FindProperty(nameof(IdentityLinkEntity.SourceIdentifierJson))?.FindAnnotation("Relational:ColumnType")?.Value?.ToString().Should().Be("jsonb");
         entityType.FindProperty(nameof(IdentityLinkEntity.TargetIdentifierJson))?.FindAnnotation("Relational:ColumnType")?.Value?.ToString().Should().Be("jsonb");
 
+        var linkTenantId = Guid.NewGuid();
         var link = new IdentityLinkEntity
         {
             Id = Guid.NewGuid(),
-            TenantId = "tenant_alpha_01",
+            TenantId = linkTenantId,
             SourceIdentifierJson = "{\"type\":\"cookie\",\"value\":\"ck_anon_982\"}",
             TargetIdentifierJson = "{\"type\":\"phone\",\"value\":\"+21698765432\"}",
             ConfidenceScore = 0.98,
@@ -292,7 +298,7 @@ public class GrowthOsPersistenceTests
 
         var retrieved = await context.IdentityLinks.FindAsync(link.Id);
         retrieved.Should().NotBeNull();
-        retrieved!.TenantId.Should().Be("tenant_alpha_01");
+        retrieved!.TenantId.Should().Be(linkTenantId);
         retrieved.ConfidenceScore.Should().Be(0.98);
         retrieved.MatchReason.Should().Be("WhatsApp click-to-chat parameter match");
         retrieved.SourceIdentifierJson.Should().Contain("ck_anon_982");
@@ -314,10 +320,11 @@ public class GrowthOsPersistenceTests
                 .SequenceEqual(new[] { "TenantId", "AnonymousId" }));
         sessionIndex.Should().NotBeNull();
 
+        var sessionTenantId = Guid.NewGuid();
         var session = new VisitorSessionEntity
         {
             SessionId = "sess_web_78129",
-            TenantId = "tenant_alpha_01",
+            TenantId = sessionTenantId,
             AnonymousId = "anon_visitor_007",
             StartedAtUtc = DateTime.UtcNow.AddMinutes(-25),
             EndedAtUtc = DateTime.UtcNow,
@@ -345,11 +352,12 @@ public class GrowthOsPersistenceTests
         entityType!.GetSchema().Should().Be("advertising");
         entityType.GetTableName().Should().Be("campaign_roas_snapshots");
 
+        var roasTenantId = Guid.NewGuid();
         var snapshot = new CampaignRoasSnapshotEntity
         {
             Id = Guid.NewGuid(),
             CampaignId = "cmp_meta_retargeting_q4",
-            TenantId = "tenant_alpha_01",
+            TenantId = roasTenantId,
             Platform = "MetaAds",
             Spend = 1450.7500m,
             Revenue = 5820.2500m,

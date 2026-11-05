@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Voice;
 using SGrowing.Api.Modules.Voice.Streaming;
@@ -7,7 +8,14 @@ using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.Voice;
 
-public static class VoiceEndpoints
+public class VoiceEndpoints : IEndpointModule
+{
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapVoiceEndpoints();
+
+    public static IEndpointRouteBuilder MapVoiceEndpoints(IEndpointRouteBuilder app) => app.MapVoiceEndpoints();
+}
+
+public static class VoiceEndpointExtensions
 {
     public static IEndpointRouteBuilder MapVoiceEndpoints(this IEndpointRouteBuilder app)
     {

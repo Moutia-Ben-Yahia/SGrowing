@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Marketing;
 using SGrowing.Api.Modules.Outbound;
@@ -7,7 +8,14 @@ using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.Outbound;
 
-public static class OutboundSdrEndpoints
+public class OutboundSdrEndpoints : IEndpointModule
+{
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapOutboundSdrEndpoints();
+
+    public static IEndpointRouteBuilder MapOutboundSdrEndpoints(IEndpointRouteBuilder app) => app.MapOutboundSdrEndpoints();
+}
+
+public static class OutboundSdrEndpointExtensions
 {
     public static IEndpointRouteBuilder MapOutboundSdrEndpoints(this IEndpointRouteBuilder app)
     {

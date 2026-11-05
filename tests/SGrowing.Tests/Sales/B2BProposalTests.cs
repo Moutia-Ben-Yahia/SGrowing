@@ -1,4 +1,6 @@
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Sales.Proposals;
 using Xunit;
 
@@ -238,4 +240,73 @@ public class B2BProposalTests
         var crossTenant = _engine.GetProposal("different-tenant-id", proposal.Id);
         crossTenant.Should().BeNull();
     }
+
+    [Fact]
+    public void B2BProposalEngine_WithDbContext_ProposalsLineItemsAndDigitalSealSurviveRestart()
+    {
+        // Arrange: DbContext backed store
+        var dbName = $"B2BProposalDurability_{Guid.NewGuid():N}";
+        var options = new DbContextOptionsBuilder<SGrowingDbContext>()
+            .UseInMemoryDatabase(dbName)
+            .Options;
+
+        Guid proposalId;
+        string expectedSeal;
+
+        // Instance 1: Create, sign proposal and record usage
+        using (var db = new SGrowingDbContext(options))
+        {
+            var engine1 = new B2BProposalEngine(db);
+
+            var items = new List<QuoteLineItem>
+            {
+                new("SKU-GROWTH-01", "Enterprise Growth Suite", 10, 200m, 5m, 1900m, 80m),
+                new("SKU-ANALYTICS-01", "Advanced CAPI Pipeline", 2, 500m, 0m, 1000m, 150m)
+            };
+
+            var proposal = engine1.CreateProposal(TenantId, CustomerCompany, CustomerEmail, items, discountPercent: 10m);
+            proposalId = proposal.Id;
+
+            var signed = engine1.SignProposal(new SignProposalRequest(
+                ProposalId: proposalId,
+                TenantId: TenantId,
+                SignerName: "Jane Doe, VP Sales",
+                SignerEmail: CustomerEmail,
+                SignerIp: "192.168.1.100"
+            ));
+
+            signed.Status.Should().Be(ProposalStatus.Signed);
+            signed.SignedPdfHash.Should().NotBeNullOrWhiteSpace();
+            expectedSeal = signed.SignedPdfHash!;
+
+            engine1.RecordUsage(new RecordUsageRequest(TenantId, UsageMetricType.ApiRequests, 150_000));
+            engine1.RecordUsage(new RecordUsageRequest(TenantId, UsageMetricType.CapiConversions, 75_000));
+        }
+
+        // Instance 2: Simulate complete application restart with a fresh engine instance
+        using (var db2 = new SGrowingDbContext(options))
+        {
+            var engine2 = new B2BProposalEngine(db2);
+
+            var loaded = engine2.GetProposal(TenantId, proposalId);
+            loaded.Should().NotBeNull();
+            loaded!.Id.Should().Be(proposalId);
+            loaded.CustomerCompany.Should().Be(CustomerCompany);
+            loaded.CustomerEmail.Should().Be(CustomerEmail);
+            loaded.Status.Should().Be(ProposalStatus.Signed);
+            loaded.SignerName.Should().Be("Jane Doe, VP Sales");
+            loaded.SignedPdfHash.Should().Be(expectedSeal);
+            loaded.LineItems.Should().HaveCount(2);
+            loaded.LineItems.First().Sku.Should().Be("SKU-GROWTH-01");
+
+            // Persisted usage records should calculate invoice summary accurately
+            var invoice = engine2.GenerateUsageInvoice(TenantId, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow.AddDays(1));
+            invoice.ConsumedUnits[UsageMetricType.ApiRequests].Should().Be(150_000);
+            invoice.ConsumedUnits[UsageMetricType.CapiConversions].Should().Be(75_000);
+            invoice.OverageCharges[UsageMetricType.ApiRequests].Should().Be(50.00m); // 50k over 100k quota * 0.001 = 50.00
+            invoice.OverageCharges[UsageMetricType.CapiConversions].Should().Be(50.00m); // 25k over 50k quota * 0.002 = 50.00
+            invoice.TotalOverageAmount.Should().Be(100.00m);
+        }
+    }
 }
+

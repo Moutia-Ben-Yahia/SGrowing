@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Commerce;
 using SGrowing.Api.Modules.Commerce.AntiFraud;
@@ -14,7 +15,14 @@ using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.Commerce;
 
-public static class CommerceEndpoints
+public class CommerceEndpoints : IEndpointModule
+{
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapCommerceEndpoints();
+
+    public static IEndpointRouteBuilder MapCommerceEndpoints(IEndpointRouteBuilder app) => app.MapCommerceEndpoints();
+}
+
+public static class CommerceEndpointExtensions
 {
     public static IEndpointRouteBuilder MapCommerceEndpoints(this IEndpointRouteBuilder app)
     {

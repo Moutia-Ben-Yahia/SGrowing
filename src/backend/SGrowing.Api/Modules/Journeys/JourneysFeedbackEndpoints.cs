@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SGrowing.Api.Common;
 using SGrowing.Api.Data;
 using SGrowing.Api.Modules.Automation;
 using SGrowing.Api.Modules.Feedback;
@@ -9,7 +10,14 @@ using SGrowing.Core.Entities;
 
 namespace SGrowing.Api.Modules.Journeys;
 
-public static class JourneysFeedbackEndpoints
+public class JourneysFeedbackEndpoints : IEndpointModule
+{
+    public void MapEndpoints(IEndpointRouteBuilder app) => app.MapJourneysFeedbackEndpoints();
+
+    public static IEndpointRouteBuilder MapJourneysFeedbackEndpoints(IEndpointRouteBuilder app) => app.MapJourneysFeedbackEndpoints();
+}
+
+public static class JourneysFeedbackEndpointExtensions
 {
     public static IEndpointRouteBuilder MapJourneysFeedbackEndpoints(this IEndpointRouteBuilder app)
     {
