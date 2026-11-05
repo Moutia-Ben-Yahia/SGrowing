@@ -87,6 +87,11 @@ builder.Services.AddHostedService<CallCenterLockSweeperDaemon>();
 builder.Services.AddHostedService<SerpRankScheduledTrackerDaemon>();
 builder.Services.AddHostedService<AndroidSmsQueueDispatcherDaemon>();
 builder.Services.AddHostedService<MultiInboxDispatchDaemon>();
+builder.Services.AddSingleton<SGrowing.Api.Modules.Analytics.IClickHouseAnalyticsProjectionService, SGrowing.Api.Modules.Analytics.ClickHouseAnalyticsProjectionService>();
+builder.Services.AddScoped<SGrowing.Api.Modules.AI.Governance.IApprovalGatekeeperService, SGrowing.Api.Modules.AI.Governance.ApprovalGatekeeperService>();
+builder.Services.AddScoped<SGrowing.Api.Modules.AI.IAutonomousSwarmPersistenceService, SGrowing.Api.Modules.AI.AutonomousSwarmPersistenceService>();
+builder.Services.AddScoped<SGrowing.Api.Modules.AI.IAutonomousCampaignLoopDaemonService, SGrowing.Api.Modules.AI.AutonomousCampaignLoopDaemonService>();
+builder.Services.AddHostedService<AutonomousCampaignLoopDaemon>();
 
 var host = builder.Build();
 host.Run();

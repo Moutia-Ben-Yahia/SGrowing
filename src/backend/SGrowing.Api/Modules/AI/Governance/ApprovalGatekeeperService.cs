@@ -98,7 +98,8 @@ public class ApprovalGatekeeperService : IApprovalGatekeeperService
 
         // Financial Threshold: Ad Spend > $500
         if (op.Equals("AdSpendAdjustment", StringComparison.OrdinalIgnoreCase) ||
-            op.Equals("AdCampaignBudget", StringComparison.OrdinalIgnoreCase))
+            op.Equals("AdCampaignBudget", StringComparison.OrdinalIgnoreCase) ||
+            op.Equals("CampaignSpendReallocation", StringComparison.OrdinalIgnoreCase))
         {
             if (financialImpactUsd > AdSpendHighRiskThresholdUsd)
                 return ApprovalRiskLevel.High;

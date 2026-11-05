@@ -584,6 +584,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDocumentTelemetryService, DocumentTelemetryService>();
         services.AddScoped<ICryptographicPdfSealingService, CryptographicPdfSealingService>();
         services.AddScoped<IPersistentDocumentVaultService, PersistentDocumentVaultService>();
+        services.AddSingleton<SGrowing.Api.Modules.Documents.IMinioDocumentMirrorService, SGrowing.Api.Modules.Documents.MinioDocumentMirrorService>();
+        services.AddSingleton<SGrowing.Api.Common.Streaming.ISyntheticTrafficLoadGeneratorService, SGrowing.Api.Common.Streaming.SyntheticTrafficLoadGeneratorService>();
+        services.AddScoped<SGrowing.Api.Modules.AI.IAutonomousCampaignLoopDaemonService, SGrowing.Api.Modules.AI.AutonomousCampaignLoopDaemonService>();
         services.AddScoped<ISegmentTelemetryAndJourneysService, SegmentTelemetryAndJourneysService>();
 
         // Deliverability & Spintax
