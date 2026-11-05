@@ -1,12 +1,14 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Infrastructure: PostgreSQL + Redis
+// Infrastructure: PostgreSQL 17 with pgvector + Redis 7.4
 var postgres = builder.AddPostgres("postgres")
+    .WithImage("pgvector/pgvector", "pg17")
     .WithDataVolume("sgrowing-postgres-data");
 
 var db = postgres.AddDatabase("sgrowing");
 
 var redis = builder.AddRedis("redis")
+    .WithImage("redis", "7.4-alpine")
     .WithDataVolume("sgrowing-redis-data");
 
 // SGrowing Api Module

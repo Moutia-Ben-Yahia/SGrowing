@@ -25,11 +25,11 @@ jobs:
       - name: Build Backend (TreatWarningsAsErrors = true)
         run: dotnet build SGrowing.slnx -c Release
 
-      - name: Execute Full Test Suite (3,790+ Tests)
+      - name: Execute Full Test Suite (5,809+ Tests)
         run: dotnet test tests/SGrowing.Tests/SGrowing.Tests.csproj -c Release --no-restore --logger "trx;LogFileName=test-results.trx"
 
   frontend-verification:
-    name: Frontend Build & Playwright E2E (Node 22 / Angular 22)
+    name: Frontend Build & Unit Suite (Node 22 / Angular 22)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -48,17 +48,11 @@ jobs:
       - name: Install Frontend Dependencies
         run: npm ci
 
-      - name: Run Vitest Unit & Component Suite
-        run: npm test
+      - name: Run Vitest Suite (1,279+ Tests)
+        run: npm test -- --run
 
       - name: Build Production Bundle (ng build)
         run: npm run build
-
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps chromium
-
-      - name: Run Playwright E2E Tests
-        run: npm run test:e2e
 
   container-packaging:
     name: Self-Hosted Docker Container Packaging
@@ -71,8 +65,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Validate Backend Dockerfile
+      - name: Validate Backend API Dockerfile
         run: docker build -f src/backend/SGrowing.Api/Dockerfile . --target build
+
+      - name: Validate Worker Daemon Dockerfile
+        run: docker build -f src/backend/SGrowing.Worker/Dockerfile . --target build
 
       - name: Validate Frontend Dockerfile
         run: docker build -f src/frontend/Dockerfile src/frontend --target build

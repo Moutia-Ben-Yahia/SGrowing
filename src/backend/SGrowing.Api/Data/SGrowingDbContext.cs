@@ -357,6 +357,7 @@ public class SGrowingDbContext : DbContext
     public DbSet<RetentionBanditArmEntity> RetentionBanditArms => Set<RetentionBanditArmEntity>();
     public DbSet<ApprovalRequestEntity> ApprovalRequests => Set<ApprovalRequestEntity>();
     public DbSet<CourierDeliveryRecordEntity> CourierDeliveryRecords => Set<CourierDeliveryRecordEntity>();
+    public DbSet<DocumentSealRecordEntity> DocumentSealRecords => Set<DocumentSealRecordEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -914,6 +915,14 @@ public class SGrowingDbContext : DbContext
             b.Property(c => c.CashCollected).HasPrecision(18, 2);
             b.HasIndex(c => new { c.TenantId, c.ParcelId });
             b.HasIndex(c => new { c.TenantId, c.CourierDriverId });
+        });
+
+        modelBuilder.Entity<DocumentSealRecordEntity>(b =>
+        {
+            b.ToTable("DocumentSealRecords", "compliance");
+            b.HasKey(d => d.Id);
+            b.HasIndex(d => new { d.TenantId, d.DocumentId });
+            b.HasIndex(d => d.VerificationToken);
         });
 
         // --------------------------------------------------------------------

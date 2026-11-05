@@ -4040,6 +4040,72 @@ namespace SGrowing.Api.Migrations
                     b.ToTable("DocumentEnvelopes");
                 });
 
+            modelBuilder.Entity("SGrowing.Core.Entities.DocumentSealRecordEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AuditChecksum")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CertificateIssuer")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CertificateThumbprintSha256")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("HasRfc3161Timestamp")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsTampered")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("SealedPdfUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Sha256Hash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SignatureFormat")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SignerEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SignerIpAddress")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("TimestampUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("VerificationToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VerificationToken");
+
+                    b.HasIndex("TenantId", "DocumentId");
+
+                    b.ToTable("DocumentSealRecords", "compliance");
+                });
+
             modelBuilder.Entity("SGrowing.Core.Entities.DomainDnsHealthRecord", b =>
                 {
                     b.Property<Guid>("Id")

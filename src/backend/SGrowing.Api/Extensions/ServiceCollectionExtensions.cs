@@ -299,6 +299,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IEventDeduplicationService, EventDeduplicationService>();
         services.AddSingleton<IEventStreamBroker, InMemoryEventStreamBroker>();
         services.AddScoped<IMultiBrokerEventFanoutService, MultiBrokerEventFanoutService>();
+        services.AddSingleton<SGrowing.Api.Common.Streaming.IEventStreamingMesh, SGrowing.Api.Common.Streaming.EventStreamingMeshService>();
 
         // Channel Adapters
         services.AddSingleton<WhatsAppCloudAdapter>();
@@ -532,6 +533,7 @@ public static class ServiceCollectionExtensions
         // AI Agents, Missions & Conversational BI
         services.AddScoped<IAiAgentOrchestratorService, AiAgentOrchestratorService>();
         services.AddScoped<IAutonomousAgentMissionService, AutonomousAgentMissionService>();
+        services.AddScoped<IAutonomousSwarmPersistenceService, AutonomousSwarmPersistenceService>();
         services.AddScoped<IConversationalBiService, ConversationalBiService>();
         services.AddScoped<IAgentPersonaService, AgentPersonaService>();
         services.AddScoped<IAiModelRouterService, AiModelRouterService>();
@@ -578,6 +580,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICpqQuoteAndEavService, CpqQuoteAndEavService>();
         services.AddScoped<IDocumentTelemetryService, DocumentTelemetryService>();
         services.AddScoped<ICryptographicPdfSealingService, CryptographicPdfSealingService>();
+        services.AddScoped<IPersistentDocumentVaultService, PersistentDocumentVaultService>();
         services.AddScoped<ISegmentTelemetryAndJourneysService, SegmentTelemetryAndJourneysService>();
 
         // Deliverability & Spintax
