@@ -40,4 +40,12 @@ describe('LiveCallCopilotCockpitComponent', () => {
     component.utterances.set([]);
     expect(component.averageSentiment()).toBe(0);
   });
+
+  it('should assign negative sentiment when simulated utterance contains negative keywords', () => {
+    component.simulatedUtterance = 'This looks too expensive for our current tier.';
+    component.sendUtterance();
+
+    const latest = component.utterances()[component.utterances().length - 1];
+    expect(latest.sentiment).toBe(-0.50);
+  });
 });

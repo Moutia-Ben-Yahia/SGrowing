@@ -80,4 +80,24 @@ describe('WorkflowStudioComponent', () => {
     }, ...logs]);
     expect(component.executionLogs()[0].message).toContain('[Custom Log]');
   });
+
+  it('should allow clearing and restoring nodes signal and verify inactive status by default', () => {
+    component.nodes.set([]);
+    expect(component.nodes().length).toBe(0);
+    expect(component.isRunning()).toBe(false);
+
+    component.nodes.set([
+      {
+        id: 'single_test',
+        type: 'trigger',
+        title: 'Single Node Test',
+        subtitle: 'Validation only',
+        icon: '⚡',
+        color: 'bg-cyan-500/20 text-cyan-300',
+        active: false
+      }
+    ]);
+    expect(component.nodes().length).toBe(1);
+    expect(component.nodes()[0].title).toBe('Single Node Test');
+  });
 });

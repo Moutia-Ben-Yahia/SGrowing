@@ -40,4 +40,12 @@ describe('WorkflowExecutionCockpitComponent', () => {
     expect(step2?.status).toBe('Completed');
     expect(step2?.error).toBeUndefined();
   });
+
+  it('should return 100 successRate when executions list is empty and handle unknown execution selection', () => {
+    component.executions.set([]);
+    expect(component.successRate()).toBe(100);
+
+    component.selectExecution('unknown_id_999');
+    expect(component.activeExecution()).toBeUndefined();
+  });
 });

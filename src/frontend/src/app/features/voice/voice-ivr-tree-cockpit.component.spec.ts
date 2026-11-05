@@ -44,4 +44,19 @@ describe('VoiceIvrTreeCockpitComponent', () => {
     component.campaigns.set([]);
     expect(component.totalMinutes()).toBe(1420);
   });
+
+  it('should allow modifying IVR tree nodes and routes structure', () => {
+    component.nodes.update(list => [...list, {
+      id: 'node_custom_survey',
+      title: 'Customer CSAT Survey',
+      type: 'MenuPrompt',
+      prompt: 'Rate your experience from 1 to 5.',
+      allowedDtmf: ['1', '2', '3', '4', '5'],
+      routes: {}
+    }]);
+
+    expect(component.nodes().length).toBe(5);
+    const surveyNode = component.nodes().find(n => n.id === 'node_custom_survey');
+    expect(surveyNode?.allowedDtmf.length).toBe(5);
+  });
 });

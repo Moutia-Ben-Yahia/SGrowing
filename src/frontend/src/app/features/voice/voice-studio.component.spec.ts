@@ -57,4 +57,24 @@ describe('VoiceStudioComponent', () => {
     expect(component.dialNumber).toBe('+1 (555) 303-9999');
     expect(component.isCallActive()).toBe(true);
   });
+
+  it('should allow clearing and adding records to callLogs list', () => {
+    component.callLogs.set([]);
+    expect(component.callLogs().length).toBe(0);
+
+    component.callLogs.set([
+      {
+        id: '99',
+        caller: '+15550001111',
+        contactName: 'Bruce Wayne',
+        direction: 'Inbound',
+        status: 'Completed',
+        durationSeconds: 60,
+        timeAgo: 'Just now',
+        transcriptSnippet: 'Security architecture audit inquiry.'
+      }
+    ]);
+    expect(component.callLogs().length).toBe(1);
+    expect(component.callLogs()[0].contactName).toBe('Bruce Wayne');
+  });
 });

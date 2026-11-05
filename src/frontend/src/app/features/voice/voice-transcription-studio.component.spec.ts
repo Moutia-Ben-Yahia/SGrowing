@@ -127,4 +127,15 @@ describe('VoiceTranscriptionStudioComponent', () => {
     expect(component.currentCall()?.summary?.crmDealStage).toBe('Negotiation');
     expect(component.isGeneratingSummary()).toBe(false);
   });
+
+  it('should allow toggling simulatedSpeaker and updating simulatedConfidence and selectedCallId', () => {
+    component.simulatedSpeaker.set('Agent');
+    expect(component.simulatedSpeaker()).toBe('Agent');
+
+    component.simulatedConfidence.set(0.99);
+    expect(component.simulatedConfidence()).toBe(0.99);
+
+    component.selectedCallId.set('CALL-NON-EXISTENT');
+    expect(component.currentCall()).toBeNull();
+  });
 });

@@ -45,4 +45,14 @@ describe('SpeechStreamingMeshCockpitComponent', () => {
     }]);
     expect(comp.sessions().length).toBe(3);
   });
+
+  it('should allow clearing bargeIns list and repopulating via triggerBargeIn', () => {
+    const comp = new SpeechStreamingMeshCockpitComponent();
+    comp.bargeIns.set([]);
+    expect(comp.bargeIns().length).toBe(0);
+
+    comp.triggerBargeIn();
+    expect(comp.bargeIns().length).toBe(1);
+    expect(comp.bargeIns()[0].sessionId).toBe('S2S-STREAM-902');
+  });
 });

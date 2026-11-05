@@ -45,4 +45,15 @@ describe('TelephonyWhisperCockpitComponent', () => {
     expect(comp.avgLatency()).toBe(68.5);
     expect(comp.activeCallsCount()).toBe(4);
   });
+
+  it('should allow modifying sessions and whispers signals', () => {
+    const comp = new TelephonyWhisperCockpitComponent();
+    comp.sessions.set([]);
+    comp.whispers.set([]);
+    expect(comp.sessions().length).toBe(0);
+    expect(comp.whispers().length).toBe(0);
+
+    comp.takeoverCount.set(3);
+    expect(comp.takeoverCount()).toBe(3);
+  });
 });

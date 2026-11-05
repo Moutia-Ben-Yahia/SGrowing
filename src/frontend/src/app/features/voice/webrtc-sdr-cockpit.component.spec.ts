@@ -38,4 +38,15 @@ describe('WebRtcSdrCockpitComponent', () => {
     expect(component.callStatus()).toBe('Completed');
     expect(component.vadState()).toBe('Silence');
   });
+
+  it('should compute vadClass based on vadState and ignore simulateLeadBargeIn when call is not Active', () => {
+    expect(component.vadClass()).toBe('bg-slate-100 text-slate-700');
+
+    component.vadState.set('UserSpeaking');
+    expect(component.vadClass()).toContain('animate-pulse');
+
+    component.callStatus.set('Idle');
+    component.simulateLeadBargeIn();
+    expect(component.vadState()).toBe('UserSpeaking'); // not modified because call not active
+  });
 });

@@ -37,4 +37,13 @@ describe('ObjectionScoringCockpitComponent (Horizon 58)', () => {
     expect(component.avgScore()).toBe(0);
     expect(component.sqlRate()).toBe(0);
   });
+
+  it('should support updating customUtterance and verify sub-200ms rebuttal latency', () => {
+    component.customUtterance = 'We are locked into annual contracts until next year.';
+    component.testObjectionRebuttal();
+
+    expect(component.customUtterance).toContain('annual contracts');
+    expect(component.activeRebuttal()?.latencyMs).toBeLessThan(200);
+    expect(component.activeRebuttal()?.followUps.length).toBeGreaterThanOrEqual(2);
+  });
 });

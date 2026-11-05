@@ -46,4 +46,14 @@ describe('VoiceIntentCockpitComponent', () => {
     expect(comp.p99Latency()).toBe(16.5);
     expect(comp.acousticConfidence()).toBe(0.985);
   });
+
+  it('should allow clearing and re-initializing predictions list', () => {
+    const comp = new VoiceIntentCockpitComponent();
+    comp.predictions.set([]);
+    expect(comp.predictions().length).toBe(0);
+
+    comp.classifyNewIntent();
+    expect(comp.predictions().length).toBe(1);
+    expect(comp.predictions()[0].detectedIntent).toBe('SHIPPING_REROUTE_CONFIRMATION');
+  });
 });

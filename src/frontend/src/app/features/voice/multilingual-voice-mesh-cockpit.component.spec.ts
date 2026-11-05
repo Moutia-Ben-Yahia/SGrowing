@@ -44,4 +44,14 @@ describe('MultilingualVoiceMeshCockpitComponent', () => {
     }]);
     expect(comp.sessions().length).toBe(3);
   });
+
+  it('should allow clearing and repopulating voice profiles', () => {
+    const comp = new MultilingualVoiceMeshCockpitComponent();
+    comp.profiles.set([]);
+    expect(comp.profiles().length).toBe(0);
+
+    comp.registerVoiceClone();
+    expect(comp.profiles().length).toBe(1);
+    expect(comp.profiles()[0].timbreResonanceScore).toBe(0.985);
+  });
 });

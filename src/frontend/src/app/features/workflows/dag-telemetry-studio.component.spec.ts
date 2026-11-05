@@ -53,4 +53,13 @@ describe('DagTelemetryStudioComponent (Domain E1 Workflow DAG Telemetry & Simula
     expect(component.telemetrySteps()[1].status).toBe('ConditionFailed');
     expect(component.actionsDispatched()[0]).toContain('standard_nurture');
   });
+
+  it('should abort runSimulation early when a cycle is present in the graph', () => {
+    component.injectCycle();
+    expect(component.hasCycle()).toBe(true);
+
+    const initialSteps = [...component.telemetrySteps()];
+    component.runSimulation();
+    expect(component.telemetrySteps()).toEqual(initialSteps);
+  });
 });
