@@ -36,4 +36,24 @@ describe('AgentWhisperCockpitComponent', () => {
     expect(comp.adherenceRate()).toBe(96.8);
     expect(comp.winRateLift()).toBe(31.2);
   });
+
+  it('should allow clearing and repopulating sessions signal', () => {
+    const comp = new AgentWhisperCockpitComponent();
+    comp.sessions.set([]);
+    expect(comp.sessions().length).toBe(0);
+
+    comp.sessions.set([
+      {
+        callSessionId: 'CALL-TEST-01',
+        repName: 'Alice Tester',
+        buyerOrganization: 'Acme Test Corp',
+        targetDealAcv: 50000,
+        currentCallPhase: 'Discovery',
+        sentimentScore: 0.8,
+        activeWhisperPrompt: 'Propose pilot trial'
+      }
+    ]);
+    expect(comp.sessions().length).toBe(1);
+    expect(comp.sessions()[0].repName).toBe('Alice Tester');
+  });
 });

@@ -45,4 +45,23 @@ describe('SentimentDeescalationCockpitComponent', () => {
     expect(comp.resolvedCount()).toBe(0);
     expect(comp.avgSentiment()).toBe(0);
   });
+
+  it('should handle applyPlaybook for unknown incident without mutating existing list', () => {
+    const comp = new SentimentDeescalationCockpitComponent();
+    const initial = [...comp.incidents()];
+    comp.applyPlaybook({
+      incidentId: 'unknown-id-999',
+      customerName: 'Ghost Corp',
+      channel: 'Zendesk',
+      sentimentScore: -0.5,
+      riskTier: 'Critical',
+      triggerReason: 'None',
+      recommendedPlaybook: 'None',
+      status: 'ActiveIntervention',
+      timestamp: '2026-11-03T01:00:00Z'
+    });
+
+    expect(comp.incidents().length).toBe(initial.length);
+    expect(comp.incidents()).toEqual(initial);
+  });
 });

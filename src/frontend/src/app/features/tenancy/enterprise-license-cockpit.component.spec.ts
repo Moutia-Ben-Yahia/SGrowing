@@ -47,4 +47,10 @@ describe('EnterpriseLicenseCockpitComponent', () => {
     expect(modules).toContain('Executive Revenue Intelligence');
     expect(component.license().fingerprint).toBe('NODE-01-MAC-48-2C');
   });
+
+  it('should allow updating license seat limits and monthly event quotas', () => {
+    component.license.update(l => ({ ...l, maxSeats: 1000, maxMonthlyEvents: 25000000 }));
+    expect(component.license().maxSeats).toBe(1000);
+    expect(component.license().maxMonthlyEvents).toBe(25000000);
+  });
 });

@@ -175,4 +175,13 @@ describe('ProductAnalyticsCockpitComponent', () => {
     component.activeTab.set('crashes');
     expect(component.activeTab()).toBe('crashes');
   });
+
+  it('should compute stickinessProgressWidth, totalCohortAcquired, and toggle showSimulateModal', () => {
+    expect(component.stickinessProgressWidth()).toBe(75); // 37.5 * 2 = 75
+    expect(component.totalCohortAcquired()).toBe(100);
+
+    expect(component.showSimulateModal()).toBe(false);
+    component.showSimulateModal.set(true);
+    expect(component.showSimulateModal()).toBe(true);
+  });
 });

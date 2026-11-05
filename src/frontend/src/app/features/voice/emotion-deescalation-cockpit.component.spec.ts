@@ -46,4 +46,25 @@ describe('EmotionDeescalationCockpitComponent', () => {
     }]);
     expect(comp.escalations().length).toBe(2);
   });
+
+  it('should allow modifying calls list and verifying empty calls handling', () => {
+    const comp = new EmotionDeescalationCockpitComponent();
+    comp.calls.set([]);
+    expect(comp.calls().length).toBe(0);
+
+    comp.calls.set([
+      {
+        callId: 'CALL-TEST-01',
+        agentId: 'AGT-TEST-01',
+        customerPhone: '+1-555-1234',
+        pitchVarianceHz: 50.0,
+        speechVelocityWordsPerMin: 120.0,
+        frustrationScore: 0.1,
+        detectedEmotion: 'CALM_COLLABORATIVE',
+        recommendedResponseStrategy: 'Proceed normally'
+      }
+    ]);
+    expect(comp.calls().length).toBe(1);
+    expect(comp.calls()[0].frustrationScore).toBe(0.1);
+  });
 });

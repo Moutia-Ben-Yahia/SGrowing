@@ -53,4 +53,14 @@ describe('DialectSynthesisCockpitComponent', () => {
     expect(comp.activeUtterance()?.adaptedText).toBe('Standard statement without alterations.');
     expect(comp.activeUtterance()?.dialectCode).toBe('EN-US-STANDARD');
   });
+
+  it('should fallback to default dialect code when selectedProfile is null', () => {
+    const comp = new DialectSynthesisCockpitComponent();
+    comp.selectedProfile.set(null);
+    comp.callerTranscript = 'Unassigned profile test.';
+    comp.detectAndSynthesize();
+
+    expect(comp.activeUtterance()?.dialectCode).toBe('EN-GB-SCOTTISH');
+    expect(comp.activeUtterance()?.adaptedText).toBe('Unassigned profile test.');
+  });
 });

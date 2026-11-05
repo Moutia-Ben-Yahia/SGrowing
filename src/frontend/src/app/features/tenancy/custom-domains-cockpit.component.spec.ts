@@ -50,4 +50,11 @@ describe('CustomDomainsCockpitComponent', () => {
     component.submitRegisterDomain();
     expect(component.domains().length).toBe(initialLen);
   });
+
+  it('should compute activeDomainsCount and allow selecting a domain', () => {
+    expect(component.activeDomainsCount()).toBe(1);
+    const hyperGrowth = component.domains()[1];
+    component.selectDomain(hyperGrowth);
+    expect(component.selectedDomain()?.id).toBe(hyperGrowth.id);
+  });
 });

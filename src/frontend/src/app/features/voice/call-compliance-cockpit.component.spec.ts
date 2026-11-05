@@ -35,4 +35,14 @@ describe('CallComplianceCockpitComponent', () => {
     expect(comp.averageAdherence()).toBe(0);
     expect(comp.flaggedCount()).toBe(0);
   });
+
+  it('should update selectedAudit status and clear flags when approved while selected', () => {
+    const comp = new CallComplianceCockpitComponent();
+    expect(comp.selectedAudit()?.auditId).toBe('audit_rec_103');
+    expect(comp.selectedAudit()?.status).toBe('FlaggedForReview');
+
+    comp.approveCompliance('audit_rec_103');
+    expect(comp.selectedAudit()?.status).toBe('CompliantPassed');
+    expect(comp.selectedAudit()?.flaggedSnippets.length).toBe(0);
+  });
 });

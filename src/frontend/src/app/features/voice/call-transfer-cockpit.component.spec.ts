@@ -37,4 +37,15 @@ describe('CallTransferCockpitComponent', () => {
     expect(call?.state).toBe('TransferCompleted');
     expect(call?.callerSentimentScore).toBeGreaterThan(0.7);
   });
+
+  it('should recalculate deflectionRate when a call is transferred or when calls is empty', () => {
+    const comp = new CallTransferCockpitComponent();
+    expect(comp.deflectionRate()).toBe(100);
+
+    comp.initiateWarmTransfer('call_voice_01', 'Support Agent');
+    expect(comp.deflectionRate()).toBeCloseTo(66.67, 1);
+
+    comp.calls.set([]);
+    expect(comp.deflectionRate()).toBe(100);
+  });
 });

@@ -102,4 +102,11 @@ describe('TelemetryStudioComponent', () => {
     mockAuth.currentTenant.set(null);
     expect(component.tenantId).toBe('00000000-0000-0000-0000-000000000001');
   });
+
+  it('should allow clearing summary and recentEvents signals', () => {
+    component.summary.set(null);
+    component.recentEvents.set([]);
+    expect(component.summary()).toBeNull();
+    expect(component.recentEvents().length).toBe(0);
+  });
 });

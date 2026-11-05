@@ -39,4 +39,18 @@ describe('AgentAssistCockpitComponent', () => {
     comp.repTalkPercentage.set(62.5);
     expect(comp.repTalkPercentage()).toBe(62.5);
   });
+
+  it('should allow modifying transcripts and battlecards lists', () => {
+    const comp = new AgentAssistCockpitComponent();
+    comp.transcripts.set([]);
+    comp.battlecards.set([]);
+    expect(comp.transcripts().length).toBe(0);
+    expect(comp.battlecards().length).toBe(0);
+
+    comp.transcripts.set([
+      { id: 't_custom', speaker: 'Customer', text: 'Tell me about pricing', timeSec: 5.0 }
+    ]);
+    expect(comp.transcripts().length).toBe(1);
+    expect(comp.transcripts()[0].text).toBe('Tell me about pricing');
+  });
 });

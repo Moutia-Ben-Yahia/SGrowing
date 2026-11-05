@@ -46,4 +46,14 @@ describe('CallStateResumptionCockpitComponent', () => {
     }]);
     expect(comp.snapshots().length).toBe(3);
   });
+
+  it('should allow clearing and reinitializing resumptions list', () => {
+    const comp = new CallStateResumptionCockpitComponent();
+    comp.resumptions.set([]);
+    expect(comp.resumptions().length).toBe(0);
+
+    comp.simulateAutoCallback();
+    expect(comp.resumptions().length).toBe(1);
+    expect(comp.resumptions()[0].resumptionStatus).toBe('AUTO_CALLED_BACK');
+  });
 });
