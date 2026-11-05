@@ -3799,6 +3799,8 @@ namespace SGrowing.Api.Migrations
 
                     b.HasIndex("TenantId", "DocumentId");
 
+                    b.HasIndex("TenantId", "DocumentTitle");
+
                     b.ToTable("DocumentChunks", "ai");
                 });
 
@@ -6134,6 +6136,65 @@ namespace SGrowing.Api.Migrations
                     b.HasIndex("TenantId", "OccurredOnUtc");
 
                     b.ToTable("OutboxMessages", "platform");
+                });
+
+            modelBuilder.Entity("SGrowing.Core.Entities.OutboxMessageEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CorrelationId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DestinationTopic")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("LastError")
+                        .HasColumnType("text");
+
+                    b.Property<int>("MaxRetries")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("NextAttemptAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PayloadJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ProcessedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CorrelationId");
+
+                    b.HasIndex("Status", "NextAttemptAtUtc");
+
+                    b.HasIndex("TenantId", "CreatedAtUtc");
+
+                    b.ToTable("outbox_messages", "platform");
                 });
 
             modelBuilder.Entity("SGrowing.Core.Entities.PageAuditResult", b =>
@@ -10407,7 +10468,7 @@ namespace SGrowing.Api.Migrations
 
                     b.HasIndex("TenantId", "Status");
 
-                    b.ToTable("WorkflowExecutions");
+                    b.ToTable("WorkflowExecutions", "automation");
                 });
 
             modelBuilder.Entity("SGrowing.Core.Entities.WorkflowGraph", b =>

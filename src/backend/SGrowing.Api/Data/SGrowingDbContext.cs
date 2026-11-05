@@ -22,6 +22,7 @@ public class SGrowingDbContext : DbContext
     public DbSet<Workspace> Workspaces => Set<Workspace>();
     public DbSet<User> Users => Set<User>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+    public DbSet<OutboxMessageEntity> TransactionalOutboxMessages => Set<OutboxMessageEntity>();
     public DbSet<Contact> Contacts => Set<Contact>();
     public DbSet<Company> Companies => Set<Company>();
     public DbSet<Activity> Activities => Set<Activity>();
@@ -362,6 +363,16 @@ public class SGrowingDbContext : DbContext
         // --------------------------------------------------------------------
         // Schema: platform
         // --------------------------------------------------------------------
+        modelBuilder.Entity<OutboxMessageEntity>(b =>
+        {
+            b.ToTable("outbox_messages", "platform");
+            b.HasKey(o => o.Id);
+            b.Property(o => o.EventType).IsRequired().HasMaxLength(200);
+            b.Property(o => o.PayloadJson).IsRequired();
+            b.HasIndex(o => new { o.Status, o.NextAttemptAtUtc });
+            b.HasIndex(o => new { o.TenantId, o.CreatedAtUtc });
+            b.HasIndex(o => o.CorrelationId);
+        });
         modelBuilder.Entity<OutboxMessage>(b =>
         {
             b.ToTable("OutboxMessages", "platform");
@@ -840,6 +851,7 @@ public class SGrowingDbContext : DbContext
             b.ToTable("DocumentChunks", "ai");
             b.HasKey(d => d.Id);
             b.HasIndex(d => new { d.TenantId, d.DocumentId });
+            b.HasIndex(d => new { d.TenantId, d.DocumentTitle });
         });
 
         // --------------------------------------------------------------------
@@ -854,6 +866,7 @@ public class SGrowingDbContext : DbContext
 
         modelBuilder.Entity<WorkflowExecution>(b =>
         {
+            b.ToTable("WorkflowExecutions", "automation");
             b.HasKey(w => w.Id);
             b.HasIndex(w => new { w.TenantId, w.Status });
             b.HasIndex(w => new { w.TenantId, w.CreatedAtUtc });

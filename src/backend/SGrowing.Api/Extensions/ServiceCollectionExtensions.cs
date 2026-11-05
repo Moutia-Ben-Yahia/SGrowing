@@ -286,6 +286,8 @@ public static class ServiceCollectionExtensions
     {
         // Core & Outbox
         services.AddScoped<IOutbox, OutboxService>();
+        services.AddScoped<SGrowing.Api.Common.Outbox.IOutboxService, SGrowing.Api.Common.Outbox.OutboxService>();
+        SGrowing.Api.Common.Caching.CachingServiceExtensions.AddGrowthOsCaching(services);
         services.AddScoped<IRealtimeNotifier, RealtimeNotifier>();
         services.AddScoped<IAiCopilotService, AiCopilotService>();
         services.AddScoped<ChannelIngressService>();

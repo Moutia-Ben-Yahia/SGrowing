@@ -163,7 +163,19 @@ public class PostgreSqlSchemaAndIndexTests
         using var context = CreateDbContext();
         var model = context.Model;
 
-        model.FindEntityType(typeof(OutboxMessage))!.GetSchema().Should().Be("platform");
+        var entityType = model.FindEntityType(typeof(OutboxMessageEntity))!;
+        entityType.GetSchema().Should().Be("platform");
+        entityType.GetTableName().Should().Be("outbox_messages");
+
+        // Verify Status + NextAttemptAtUtc index
+        var statusIndex = entityType.GetIndexes()
+            .FirstOrDefault(idx => idx.Properties.Select(p => p.Name).SequenceEqual(new[] { "Status", "NextAttemptAtUtc" }));
+        statusIndex.Should().NotBeNull();
+
+        // Verify CorrelationId index
+        var corrIndex = entityType.GetIndexes()
+            .FirstOrDefault(idx => idx.Properties.Select(p => p.Name).SequenceEqual(new[] { "CorrelationId" }));
+        corrIndex.Should().NotBeNull();
     }
 
     [Fact]
@@ -192,10 +204,15 @@ public class PostgreSqlSchemaAndIndexTests
             .FirstOrDefault(idx => idx.Properties.Select(p => p.Name).SequenceEqual(new[] { "TenantId", "OccurredAtUtc" }));
         custEvtIndex.Should().NotBeNull();
 
-        // OutboxMessage: (TenantId, OccurredOnUtc)
-        var outboxIndex = model.FindEntityType(typeof(OutboxMessage))!.GetIndexes()
-            .FirstOrDefault(idx => idx.Properties.Select(p => p.Name).SequenceEqual(new[] { "TenantId", "OccurredOnUtc" }));
-        outboxIndex.Should().NotBeNull();
+        // OutboxMessageEntity: (TenantId, CreatedAtUtc)
+        var outboxCreatedIndex = model.FindEntityType(typeof(OutboxMessageEntity))!.GetIndexes()
+            .FirstOrDefault(idx => idx.Properties.Select(p => p.Name).SequenceEqual(new[] { "TenantId", "CreatedAtUtc" }));
+        outboxCreatedIndex.Should().NotBeNull();
+
+        // DocumentChunk: (TenantId, DocumentTitle)
+        var docChunkIndex = model.FindEntityType(typeof(DocumentChunk))!.GetIndexes()
+            .FirstOrDefault(idx => idx.Properties.Select(p => p.Name).SequenceEqual(new[] { "TenantId", "DocumentTitle" }));
+        docChunkIndex.Should().NotBeNull();
     }
 
     [Fact]
