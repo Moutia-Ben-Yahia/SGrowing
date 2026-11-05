@@ -1,0 +1,144 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: sgrowing-staging-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sgrowing
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_enterprise_secure_pwd_2026!
+    ports:
+      - "5432:5432"
+    volumes:
+      - staging-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sgrowing"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: sgrowing-staging-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "redis_enterprise_secure_pwd_2026!"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - staging-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis_enterprise_secure_pwd_2026!", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8-alpine
+    container_name: sgrowing-staging-clickhouse
+    restart: unless-stopped
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - staging-clickhouse-data:/var/lib/clickhouse
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8123/ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:RELEASE.2024-11-07T00-52-20Z
+    container_name: sgrowing-staging-minio
+    restart: unless-stopped
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minio_enterprise_secure_pwd_2026!
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - staging-minio-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: src/backend/SGrowing.Api/Dockerfile
+    container_name: sgrowing-staging-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Staging
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=sgrowing;Username=postgres;Password=postgres_enterprise_secure_pwd_2026!"
+      ConnectionStrings__Redis: "redis:6379,password=redis_enterprise_secure_pwd_2026!,abortConnect=false"
+      ClickHouse__Endpoint: "http://clickhouse:8123"
+      Minio__Endpoint: "http://minio:9000"
+      Minio__AccessKey: "minioadmin"
+      Minio__SecretKey: "minio_enterprise_secure_pwd_2026!"
+    ports:
+      - "5000:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: src/backend/SGrowing.Worker/Dockerfile
+    container_name: sgrowing-staging-worker
+    restart: unless-stopped
+    environment:
+      DOTNET_ENVIRONMENT: Staging
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=sgrowing;Username=postgres;Password=postgres_enterprise_secure_pwd_2026!"
+      ConnectionStrings__Redis: "redis:6379,password=redis_enterprise_secure_pwd_2026!,abortConnect=false"
+      ClickHouse__Endpoint: "http://clickhouse:8123"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+
+  mcpserver:
+    build:
+      context: .
+      dockerfile: src/backend/SGrowing.McpServer/Dockerfile
+    container_name: sgrowing-staging-mcpserver
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Staging
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=sgrowing;Username=postgres;Password=postgres_enterprise_secure_pwd_2026!"
+    ports:
+      - "5001:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: src/frontend
+      dockerfile: Dockerfile
+    container_name: sgrowing-staging-frontend
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+
+volumes:
+  staging-postgres-data:
+  staging-redis-data:
+  staging-clickhouse-data:
+  staging-minio-data:
