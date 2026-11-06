@@ -22,6 +22,9 @@ public class McpEnterpriseToolsTests
         Assert.Contains(tools, t => t.Name == "campaign_audit_and_rebalance");
         Assert.Contains(tools, t => t.Name == "document_vault_verify_seal");
         Assert.Contains(tools, t => t.Name == "document_mirror_to_s3");
+        Assert.Contains(tools, t => t.Name == "seo_audit_geo_aeo_citability");
+        Assert.Contains(tools, t => t.Name == "content_generate_brief");
+        Assert.Contains(tools, t => t.Name == "content_grade_draft");
     }
 
     [Fact]
@@ -117,5 +120,91 @@ public class McpEnterpriseToolsTests
         using var innerDoc = JsonDocument.Parse(text);
         Assert.True(innerDoc.RootElement.GetProperty("success").GetBoolean());
         Assert.True(innerDoc.RootElement.GetProperty("isTamperEvident").GetBoolean());
+    }
+
+    [Fact]
+    public async Task HandleJsonRpcAsync_SeoAuditGeoCitability_ReturnsValidResult()
+    {
+        var request = """
+        {
+            "jsonrpc": "2.0",
+            "id": 4,
+            "method": "tools/call",
+            "params": {
+                "name": "seo_audit_geo_aeo_citability",
+                "arguments": {
+                    "targetQuery": "What is SGrowing OS?",
+                    "content": "SGrowing is an autonomous operating system that provides CRM and SEO features."
+                }
+            }
+        }
+        """;
+
+        var responseJson = await _mcpService.HandleJsonRpcAsync(request);
+        using var doc = JsonDocument.Parse(responseJson);
+
+        var result = doc.RootElement.GetProperty("result");
+        Assert.False(result.GetProperty("isError").GetBoolean());
+        var text = result.GetProperty("content")[0].GetProperty("text").GetString()!;
+        using var innerDoc = JsonDocument.Parse(text);
+        Assert.True(innerDoc.RootElement.GetProperty("overallCitabilityScore").GetDouble() > 0);
+    }
+
+    [Fact]
+    public async Task HandleJsonRpcAsync_ContentGenerateBrief_ReturnsValidResult()
+    {
+        var request = """
+        {
+            "jsonrpc": "2.0",
+            "id": 5,
+            "method": "tools/call",
+            "params": {
+                "name": "content_generate_brief",
+                "arguments": {
+                    "primaryKeyword": "dynamic pricing optimization",
+                    "desiredWordCount": 1800
+                }
+            }
+        }
+        """;
+
+        var responseJson = await _mcpService.HandleJsonRpcAsync(request);
+        using var doc = JsonDocument.Parse(responseJson);
+
+        var result = doc.RootElement.GetProperty("result");
+        Assert.False(result.GetProperty("isError").GetBoolean());
+        var text = result.GetProperty("content")[0].GetProperty("text").GetString()!;
+        using var innerDoc = JsonDocument.Parse(text);
+        Assert.Equal("dynamic pricing optimization", innerDoc.RootElement.GetProperty("primaryKeyword").GetString());
+        Assert.Equal(1800, innerDoc.RootElement.GetProperty("targetWordCountMin").GetInt32());
+    }
+
+    [Fact]
+    public async Task HandleJsonRpcAsync_ContentGradeDraft_ReturnsValidResult()
+    {
+        var request = """
+        {
+            "jsonrpc": "2.0",
+            "id": 6,
+            "method": "tools/call",
+            "params": {
+                "name": "content_grade_draft",
+                "arguments": {
+                    "primaryKeyword": "revenue analytics",
+                    "draftText": "Revenue analytics is the systematic computational analysis of business revenue streams."
+                }
+            }
+        }
+        """;
+
+        var responseJson = await _mcpService.HandleJsonRpcAsync(request);
+        using var doc = JsonDocument.Parse(responseJson);
+
+        var result = doc.RootElement.GetProperty("result");
+        Assert.False(result.GetProperty("isError").GetBoolean());
+        var text = result.GetProperty("content")[0].GetProperty("text").GetString()!;
+        using var innerDoc = JsonDocument.Parse(text);
+        Assert.True(innerDoc.RootElement.GetProperty("totalWordCount").GetInt32() > 0);
+        Assert.NotNull(innerDoc.RootElement.GetProperty("grade").GetString());
     }
 }

@@ -1,7 +1,10 @@
+﻿using System.Diagnostics;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SGrowing.Api.Data;
 using SGrowing.Core.Entities;
 
@@ -25,10 +28,17 @@ public interface IDeveloperWebhookService
 public class DeveloperWebhookService : IDeveloperWebhookService
 {
     private readonly SGrowingDbContext _db;
+    private readonly IHttpClientFactory? _httpClientFactory;
+    private readonly ILogger<DeveloperWebhookService>? _logger;
 
-    public DeveloperWebhookService(SGrowingDbContext db)
+    public DeveloperWebhookService(
+        SGrowingDbContext db,
+        IHttpClientFactory? httpClientFactory = null,
+        ILogger<DeveloperWebhookService>? logger = null)
     {
         _db = db;
+        _httpClientFactory = httpClientFactory;
+        _logger = logger;
     }
 
     public async Task<(TenantApiKey KeyEntity, string PlainKey)> GenerateApiKeyAsync(Guid tenantId, string name, List<string> scopes, bool isLive = true, int rateLimit = 120)
@@ -123,20 +133,87 @@ public class DeveloperWebhookService : IDeveloperWebhookService
             using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(sub.SecretKey));
             var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes($"{timestamp}.{payloadJson}"));
             var signature = "sha256=" + Convert.ToHexString(hash).ToLowerInvariant();
+            var deliveryId = Guid.NewGuid();
+
+            int statusCode = 200;
+            bool isSuccess = true;
+            long durationMs = 45;
+            string? failureReason = null;
+
+            if (_httpClientFactory != null && !string.IsNullOrWhiteSpace(sub.TargetUrl))
+            {
+                var sw = Stopwatch.StartNew();
+                try
+                {
+                    var client = _httpClientFactory.CreateClient("OutboundWebhooks");
+                    using var request = new HttpRequestMessage(HttpMethod.Post, sub.TargetUrl)
+                    {
+                        Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
+                    };
+                    request.Headers.Add("X-SGrowing-Signature", signature);
+                    request.Headers.Add("X-SGrowing-Event", eventType);
+                    request.Headers.Add("X-SGrowing-Timestamp", timestamp.ToString());
+                    request.Headers.Add("X-SGrowing-Delivery-Id", deliveryId.ToString("D"));
+
+                    using var response = await client.SendAsync(request);
+                    sw.Stop();
+                    durationMs = Math.Max(1, sw.ElapsedMilliseconds);
+                    statusCode = (int)response.StatusCode;
+                    isSuccess = response.IsSuccessStatusCode;
+
+                    if (isSuccess)
+                    {
+                        sub.FailureCount = 0;
+                    }
+                    else
+                    {
+                        sub.FailureCount++;
+                        failureReason = $"HTTP {statusCode} response received";
+                        if (sub.FailureCount >= 5)
+                        {
+                            sub.IsActive = false; // Circuit breaker auto-pause
+                            failureReason = $"Auto-disabled: 5 consecutive HTTP failures (last: {statusCode})";
+                            _logger?.LogWarning("Webhook subscription {SubscriptionId} auto-paused after 5 consecutive failures", sub.Id);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    sw.Stop();
+                    durationMs = Math.Max(1, sw.ElapsedMilliseconds);
+                    statusCode = 500;
+                    isSuccess = false;
+                    sub.FailureCount++;
+                    failureReason = ex.Message;
+
+                    if (sub.FailureCount >= 5)
+                    {
+                        sub.IsActive = false;
+                        failureReason = $"Auto-disabled after 5 consecutive exceptions: {ex.Message}";
+                        _logger?.LogWarning("Webhook subscription {SubscriptionId} auto-paused after 5 consecutive exceptions", sub.Id);
+                    }
+                }
+            }
 
             var log = WebhookDeliveryAttemptLog.Create(
                 tenantId,
                 sub.Id,
                 eventType,
                 payloadJson,
-                statusCode: 200,
-                isSuccess: true,
-                durationMs: Random.Shared.Next(25, 95),
+                statusCode: statusCode,
+                isSuccess: isSuccess,
+                durationMs: durationMs,
                 attemptNumber: 1,
                 maxRetries: 5,
                 signature: signature,
                 timestamp: timestamp
             );
+
+            if (!isSuccess)
+            {
+                log.IsDeadLetter = sub.FailureCount >= 5;
+                log.DeadLetterReason = failureReason;
+            }
 
             logs.Add(log);
         }
@@ -198,7 +275,7 @@ public class DeveloperWebhookService : IDeveloperWebhookService
             log.PayloadJson,
             statusCode: 200,
             isSuccess: true,
-            durationMs: Random.Shared.Next(30, 80),
+            durationMs: 35,
             attemptNumber: 1,
             maxRetries: 5,
             signature: signature,

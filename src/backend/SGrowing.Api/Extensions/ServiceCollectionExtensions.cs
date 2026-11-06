@@ -53,6 +53,7 @@ using SGrowing.Api.Modules.Voice.ObjectionScoring;
 using SGrowing.Api.Modules.SEO.TopicalAuthority;
 using SGrowing.Api.Modules.Infrastructure.FeatureFlags;
 using SGrowing.Api.Modules.Intelligence.WaterfallEnrichment;
+using SGrowing.Api.Modules.Content;
 using SGrowing.Api.Modules.Content.SocialProof;
 using SGrowing.Api.Modules.Commerce.CartRescue;
 using SGrowing.Api.Modules.Partnerships.DealRegistration;
@@ -515,6 +516,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAutonomousFunnelPipelineService, AutonomousFunnelPipelineService>();
         services.AddScoped<IFunnelSplitTestService, FunnelSplitTestService>();
         services.AddScoped<IAutonomousFunnelBuilderService, AutonomousFunnelBuilderService>();
+        services.AddScoped<IContentBriefGeneratorService, ContentBriefGeneratorService>();
+        services.AddScoped<IGeoAeoCitabilityService, GeoAeoCitabilityService>();
 
         // Calendar, Telemetry & Partitions
         services.AddScoped<ICalendarSchedulingService, CalendarSchedulingService>();

@@ -1,5 +1,12 @@
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using SGrowing.Api.Common;
 using SGrowing.Core.Entities;
+using SGrowing.Core.Tenancy;
 
 namespace SGrowing.Api.Modules.Integrations;
 
@@ -27,6 +34,64 @@ public record TestDispatchWebhookRequest(
     string EventType,
     object Payload
 );
+
+public class DeveloperWebhookEndpointModule : IEndpointModule
+{
+    public void MapEndpoints(IEndpointRouteBuilder app)
+    {
+        app.MapDeveloperWebhookEndpoints();
+    }
+}
+
+public class ApiKeyScopeEndpointFilter : IEndpointFilter
+{
+    private readonly string[] _requiredScopes;
+
+    public ApiKeyScopeEndpointFilter(params string[] requiredScopes)
+    {
+        _requiredScopes = requiredScopes;
+    }
+
+    public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+    {
+        var httpContext = context.HttpContext;
+        string? apiKey = null;
+
+        if (httpContext.Request.Headers.TryGetValue("X-Api-Key", out var headerKey) && !string.IsNullOrWhiteSpace(headerKey))
+        {
+            apiKey = headerKey.ToString();
+        }
+        else if (httpContext.Request.Headers.TryGetValue("Authorization", out var authHeader) &&
+                 authHeader.ToString().StartsWith("Bearer sg_", StringComparison.OrdinalIgnoreCase))
+        {
+            apiKey = authHeader.ToString()["Bearer ".Length..].Trim();
+        }
+
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            return Results.Json(new { error = "Unauthorized: Missing X-Api-Key or Bearer API token." }, statusCode: StatusCodes.Status401Unauthorized);
+        }
+
+        var service = httpContext.RequestServices.GetRequiredService<IDeveloperWebhookService>();
+        var keyEntity = await service.ValidateApiKeyAsync(apiKey);
+
+        if (keyEntity == null || keyEntity.IsRevoked)
+        {
+            return Results.Json(new { error = "Unauthorized: Invalid or revoked API key." }, statusCode: StatusCodes.Status401Unauthorized);
+        }
+
+        var allowedScopes = JsonSerializer.Deserialize<List<string>>(keyEntity.AllowedScopesJson) ?? new List<string>();
+        if (!allowedScopes.Contains("*") && _requiredScopes.Any(s => !allowedScopes.Contains(s, StringComparer.OrdinalIgnoreCase)))
+        {
+            return Results.Json(new { error = $"Forbidden: API key lacks required scope(s): {string.Join(", ", _requiredScopes)}" }, statusCode: StatusCodes.Status403Forbidden);
+        }
+
+        var tenantContext = httpContext.RequestServices.GetService<ITenantContext>();
+        tenantContext?.SetTenant(keyEntity.TenantId);
+
+        return await next(context);
+    }
+}
 
 public static class DeveloperWebhookEndpoints
 {
@@ -63,6 +128,13 @@ public static class DeveloperWebhookEndpoints
             var success = await service.RevokeApiKeyAsync(tenantId, id);
             return success ? Results.Ok(new { message = "API key revoked" }) : Results.NotFound();
         });
+
+        // Scoped Key Verification Ping
+        group.MapGet("/v1/auth-test", () =>
+        {
+            return Results.Ok(new { authenticated = true, timestampUtc = DateTime.UtcNow, message = "Scoped developer API key accepted" });
+        })
+        .AddEndpointFilter(new ApiKeyScopeEndpointFilter("developer:read"));
 
         // 2. Webhook Subscriptions
         group.MapPost("/webhooks/subscriptions", async ([FromBody] CreateSubscriptionRequest req, IDeveloperWebhookService service) =>

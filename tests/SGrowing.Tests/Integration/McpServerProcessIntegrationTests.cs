@@ -75,7 +75,7 @@ public class McpServerProcessIntegrationTests
         var toolsJson = JsonNode.Parse(toolsLine!);
         var tools = toolsJson!["result"]?["tools"]?.AsArray();
         tools.Should().NotBeNull();
-        tools!.Count.Should().Be(17);
+        tools!.Count.Should().Be(20);
 
         // 6. Send tools/call for analytics_get_realtime_roas
         await writer.WriteLineAsync("""{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"analytics_get_realtime_roas","arguments":{"channel":"meta","daysBack":7}}}""");

@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Nodes;
+using System.Text.Json.Nodes;
 using FluentAssertions;
 using SGrowing.McpServer.Services;
 using Xunit;
@@ -59,7 +59,7 @@ public class McpJsonRpcProtocolTests
 
         var toolsArray = node["result"]?["tools"]?.AsArray();
         toolsArray.Should().NotBeNull();
-        toolsArray!.Count.Should().Be(17);
+        toolsArray!.Count.Should().Be(20);
 
         var names = toolsArray.Select(t => t?["name"]?.GetValue<string>()).ToList();
         names.Should().Contain("crm_search_leads");
