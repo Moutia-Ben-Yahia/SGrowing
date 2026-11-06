@@ -303,5 +303,8 @@ export const routes: Routes = [
   { path: 'advertising/cross-device-sync', loadComponent: () => import('./features/advertising/cross-device-sync-cockpit.component').then(m => m.CrossDeviceSyncCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/quota-capacity', loadComponent: () => import('./features/sales/quota-capacity-cockpit.component').then(m => m.QuotaCapacityCockpitComponent), canActivate: [authGuard] },
   { path: 'voice/dialect-synthesis', loadComponent: () => import('./features/voice/dialect-synthesis-cockpit.component').then(m => m.DialectSynthesisCockpitComponent), canActivate: [authGuard] },
+  { path: 'ai/mission-control', loadComponent: () => import('./features/ai/ai-mission-control-cockpit.component').then(m => m.AiMissionControlCockpitComponent), canActivate: [authGuard] },
+  { path: 'commerce/connector-marketplace', loadComponent: () => import('./features/commerce/connector-marketplace-studio.component').then(m => m.ConnectorMarketplaceStudioComponent), canActivate: [authGuard] },
+  { path: 'telemetry/sre-radar', loadComponent: () => import('./features/telemetry/sre-telemetry-cockpit.component').then(m => m.SreTelemetryCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

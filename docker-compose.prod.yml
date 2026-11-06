@@ -1,33 +1,162 @@
+# ==============================================================================
+# SGrowing AI-Native Growth OS — Enterprise Production Compose Orchestration
+# Specification: PRD 9.2, 9.3 & Phase 11 Enterprise Packaging
+# Architecture: Isolated Network Mesh, Multi-Instance API, Hardened Infrastructure
+# ==============================================================================
+
 services:
+  # ----------------------------------------------------------------------------
+  # 1. PostgreSQL 17 Enterprise Engine with pgvector & Row-Level Security (RLS)
+  # ----------------------------------------------------------------------------
   postgres:
     image: pgvector/pgvector:pg17
     container_name: sgrowing_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-sgrowing_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sgrowing_secure_password_2026}
-      POSTGRES_DB: ${POSTGRES_DB:-sgrowing_db}
+      POSTGRES_USER: ${POSTGRES_USER:-sgrowing_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Database password is required}
+      POSTGRES_DB: ${POSTGRES_DB:-sgrowing_prod}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    command: >-
+      postgres
+      -c shared_buffers=1GB
+      -c work_mem=32MB
+      -c wal_buffers=16MB
+      -c max_connections=200
+      -c effective_cache_size=3GB
+      -c maintenance_work_mem=256MB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+      -c checkpoint_completion_target=0.9
+      -c checkpoint_timeout=15min
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c log_min_duration_statement=500
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pg_prod_data:/var/lib/postgresql/data
+      - ./docker/full_migration.sql:/docker-entrypoint-initdb.d/01-full_migration.sql:ro
+      - ./docker/init-rls.sql:/docker-entrypoint-initdb.d/02-init-rls.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sgrowing_user} -d ${POSTGRES_DB:-sgrowing_db}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sgrowing_app} -d ${POSTGRES_DB:-sgrowing_prod}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+    networks:
+      - sgrowing_prod_mesh
 
+  # ----------------------------------------------------------------------------
+  # 2. Redis 7.4 Distributed State, Outbox Stream & Distributed Locks
+  # ----------------------------------------------------------------------------
   redis:
-    image: redis:7-alpine
+    image: redis:7.4-alpine
     container_name: sgrowing_redis
     restart: unless-stopped
+    command: >-
+      redis-server
+      --requirepass ${REDIS_PASSWORD:?Redis password is required}
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 1gb
+      --maxmemory-policy volatile-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
     volumes:
-      - redisdata:/data
+      - redis_prod_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD}\" ping | grep -q PONG"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1.5G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    networks:
+      - sgrowing_prod_mesh
 
-  api:
+  # ----------------------------------------------------------------------------
+  # 3. MinIO S3 Object Storage — Sealed Contract Vault & Document Mirroring
+  # ----------------------------------------------------------------------------
+  minio:
+    image: minio/minio:RELEASE.2024-10-02T17-50-41Z
+    container_name: sgrowing_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-sgrowing_admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MinIO root password is required}
+      MINIO_BROWSER: "on"
+      MINIO_PROMETHEUS_AUTH_TYPE: "public"
+    volumes:
+      - minio_prod_data:/data
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    networks:
+      - sgrowing_prod_mesh
+
+  # ----------------------------------------------------------------------------
+  # 4. OpenTelemetry Collector (Contrib Alpine) — Distributed Traces & Metrics
+  # ----------------------------------------------------------------------------
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.111.0
+    container_name: sgrowing_otel_collector
+    restart: unless-stopped
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ./docker/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "8889:8889"   # Prometheus metrics scrape endpoint
+      - "13133:13133" # Internal health check endpoint
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:13133/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    networks:
+      - sgrowing_prod_mesh
+
+  # ----------------------------------------------------------------------------
+  # 5. SGrowing Core API (.NET 10 Enterprise Web App, Multi-Instance Ready)
+  # ----------------------------------------------------------------------------
+  sgrowing-api:
     build:
       context: .
       dockerfile: src/backend/SGrowing.Api/Dockerfile
@@ -35,26 +164,63 @@ services:
     restart: unless-stopped
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-sgrowing_db};Username=${POSTGRES_USER:-sgrowing_user};Password=${POSTGRES_PASSWORD:-sgrowing_secure_password_2026}
-      - Redis__ConnectionString=redis:6379
-      - Jwt__SecretKey=${JWT_SECRET:-SGrowing_SuperSecretEnterpriseMasterKey_998877665544332211!!}
-      - Jwt__Issuer=SGrowing.Api
-      - Jwt__Audience=SGrowing.Clients
+      - ASPNETCORE_URLS=http://+:5000
+      - ASPNETCORE_HTTP_PORTS=5000
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-sgrowing_prod};Username=${POSTGRES_USER:-sgrowing_app};Password=${POSTGRES_PASSWORD};Include Error Detail=false;Pooling=true;Minimum Pool Size=10;Maximum Pool Size=100;Connection Lifetime=300;
+      - ConnectionStrings__Redis=redis:6379,password=${REDIS_PASSWORD},abortConnect=false,connectTimeout=5000,syncTimeout=5000
+      - Redis__ConnectionString=redis:6379,password=${REDIS_PASSWORD}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=sgrowing-api
+      - MinIO__Endpoint=http://minio:9000
+      - MinIO__AccessKey=${MINIO_ROOT_USER:-sgrowing_admin}
+      - MinIO__SecretKey=${MINIO_ROOT_PASSWORD}
+      - MinIO__BucketName=${MINIO_DEFAULT_BUCKET:-sgrowing-vault}
+      - Jwt__Key=${JWT_KEY:?JWT secret key is required}
+      - Jwt__Issuer=${JWT_ISSUER:-https://api.sgrowing.io}
+      - Jwt__Audience=${JWT_AUDIENCE:-SGrowing.Clients}
+      - Jwt__TokenLifetimeMinutes=${JWT_LIFETIME_MINUTES:-60}
+      - Security__MasterEncryptionKey=${MASTER_ENCRYPTION_KEY:?Master encryption key is required}
+      - AI__OpenAI__ApiKey=${AI_OPENAI_API_KEY:-}
+      - AI__Anthropic__ApiKey=${AI_ANTHROPIC_API_KEY:-}
+      - AI__Gemini__ApiKey=${AI_GEMINI_API_KEY:-}
+      - Outbound__Email__ResendApiKey=${OUTBOUND_RESEND_API_KEY:-}
+      - Outbound__Twilio__AccountSid=${OUTBOUND_TWILIO_ACCOUNT_SID:-}
+      - Outbound__Twilio__AuthToken=${OUTBOUND_TWILIO_AUTH_TOKEN:-}
+      - Outbound__WhatsApp__AccessToken=${OUTBOUND_WHATSAPP_ACCESS_TOKEN:-}
     ports:
-      - "5000:8080"
+      - "${API_PORT:-5000}:5000"
+    expose:
+      - "5000"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      minio:
+        condition: service_healthy
+      otel-collector:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/healthz/live || exit 1"]
-      interval: 15s
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"]
+      interval: 10s
       timeout: 5s
       retries: 3
+      start_period: 25s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.50'
+          memory: 512M
+    networks:
+      - sgrowing_prod_mesh
 
-  worker:
+  # ----------------------------------------------------------------------------
+  # 6. SGrowing Background Worker (Outbox, Stream Partitions & Cadence Dispatch)
+  # ----------------------------------------------------------------------------
+  sgrowing-worker:
     build:
       context: .
       dockerfile: src/backend/SGrowing.Worker/Dockerfile
@@ -62,25 +228,126 @@ services:
     restart: unless-stopped
     environment:
       - DOTNET_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-sgrowing_db};Username=${POSTGRES_USER:-sgrowing_user};Password=${POSTGRES_PASSWORD:-sgrowing_secure_password_2026}
-      - Redis__ConnectionString=redis:6379
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-sgrowing_prod};Username=${POSTGRES_USER:-sgrowing_app};Password=${POSTGRES_PASSWORD};Include Error Detail=false;Pooling=true;
+      - ConnectionStrings__Redis=redis:6379,password=${REDIS_PASSWORD},abortConnect=false
+      - Redis__ConnectionString=redis:6379,password=${REDIS_PASSWORD}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=sgrowing-worker
+      - MinIO__Endpoint=http://minio:9000
+      - MinIO__AccessKey=${MINIO_ROOT_USER:-sgrowing_admin}
+      - MinIO__SecretKey=${MINIO_ROOT_PASSWORD}
+      - Security__MasterEncryptionKey=${MASTER_ENCRYPTION_KEY:?Master encryption key is required}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      otel-collector:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1.5G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    networks:
+      - sgrowing_prod_mesh
 
-  web:
+  # ----------------------------------------------------------------------------
+  # 7. SGrowing Enterprise Model Context Protocol (MCP) Tool Server
+  # ----------------------------------------------------------------------------
+  sgrowing-mcp:
+    build:
+      context: .
+      dockerfile: src/backend/SGrowing.McpServer/Dockerfile
+    container_name: sgrowing_mcpserver
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:7890
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-sgrowing_prod};Username=${POSTGRES_USER:-sgrowing_app};Password=${POSTGRES_PASSWORD};
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=sgrowing-mcp
+    ports:
+      - "${MCP_PORT:-7890}:7890"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:7890/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.20'
+          memory: 256M
+    networks:
+      - sgrowing_prod_mesh
+
+  # ----------------------------------------------------------------------------
+  # 8. SGrowing Web (Nginx 1.27 Alpine + Angular 22 SPA Production Bundle)
+  # ----------------------------------------------------------------------------
+  sgrowing-web:
     build:
       context: src/frontend
       dockerfile: Dockerfile
     container_name: sgrowing_web
     restart: unless-stopped
+    volumes:
+      - ./docker/nginx/nginx.prod.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
-      - api
+      sgrowing-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:80/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.10'
+          memory: 64M
+    networks:
+      - sgrowing_prod_mesh
 
+# ------------------------------------------------------------------------------
+# Persistent Storage Volumes
+# ------------------------------------------------------------------------------
 volumes:
-  pgdata:
-  redisdata:
+  pg_prod_data:
+    name: sgrowing_pg_prod_data
+    driver: local
+  redis_prod_data:
+    name: sgrowing_redis_prod_data
+    driver: local
+  minio_prod_data:
+    name: sgrowing_minio_prod_data
+    driver: local
+
+# ------------------------------------------------------------------------------
+# Isolated Production Network Mesh
+# ------------------------------------------------------------------------------
+networks:
+  sgrowing_prod_mesh:
+    name: sgrowing_prod_mesh
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
