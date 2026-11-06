@@ -11,19 +11,18 @@ try {
 
 const store = new Map<string, string>();
 const mockStorage: Storage = {
-  length: 0,
+  get length() {
+    return store.size;
+  },
   clear: () => {
     store.clear();
-    mockStorage.length = 0;
   },
   getItem: (key: string) => store.get(key) ?? null,
   setItem: (key: string, value: string) => {
     store.set(key, String(value));
-    mockStorage.length = store.size;
   },
   removeItem: (key: string) => {
     store.delete(key);
-    mockStorage.length = store.size;
   },
   key: (index: number) => Array.from(store.keys())[index] ?? null,
 };

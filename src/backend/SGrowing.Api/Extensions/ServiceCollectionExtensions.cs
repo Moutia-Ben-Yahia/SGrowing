@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SGrowing.Api.Common;
 using SGrowing.Api.Modules.AI.Gateway;
+using SGrowing.Api.Modules.AI.Missions;
 using SGrowing.Api.Modules.Attribution.MultiTouch;
 using SGrowing.Api.Modules.AI.Governance;
 using SGrowing.Api.Modules.Marketing.SocialPublishing;
@@ -47,6 +48,7 @@ using SGrowing.Api.Modules.Advertising.SpendAutopilot;
 using SGrowing.Api.Modules.Analytics.DataCleanRoom;
 using SGrowing.Api.Modules.Channels.FlowInteractive;
 using SGrowing.Api.Modules.Infrastructure.SelfHealing;
+using SGrowing.Api.Modules.Infrastructure.Telemetry;
 using SGrowing.Api.Modules.Intelligence.DeAnonymization;
 using SGrowing.Api.Modules.Advertising.AudienceSync;
 using SGrowing.Api.Modules.Voice.ObjectionScoring;
@@ -152,6 +154,7 @@ using SGrowing.Api.Modules.Commerce.AntiFraud;
 using SGrowing.Api.Modules.Commerce.CallCenter;
 using SGrowing.Api.Modules.Commerce.CartReservations;
 using SGrowing.Api.Modules.Commerce.Connectors;
+using SGrowing.Api.Modules.Commerce.Connectors.Marketplace;
 using SGrowing.Api.Modules.Contracts;
 using SGrowing.Api.Modules.Conversations;
 using SGrowing.Api.Modules.Conversations.Macros;
@@ -544,6 +547,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAgentPersonaService, AgentPersonaService>();
         services.AddScoped<IAiModelRouterService, AiModelRouterService>();
         services.AddScoped<AiModelRouterService>();
+        services.AddSingleton<IAiMissionPlannerService, AiMissionPlannerService>();
 
         // Phase 14: Autonomous Multi-Agent Swarm Defense, Semantic Vector Tool Caching & Prompt Firewalls
         services.AddAiGovernanceServices();
@@ -608,6 +612,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICodAntiFraudEngine, CodAntiFraudEngine>();
         services.AddScoped<IShopifyConnectorService, ShopifyConnectorService>();
         services.AddScoped<IWooCommerceConnectorService, WooCommerceConnectorService>();
+        services.AddSingleton<IConnectorMarketplaceService, ConnectorMarketplaceService>();
 
         // Ever-Teams & Ever-Gauzy
         services.AddScoped<IProjectTaskService, ProjectTaskService>();
@@ -923,6 +928,7 @@ public static class ServiceCollectionExtensions
         services.AddDataCleanRoomServices();
         services.AddFlowInteractiveServices();
         services.AddSelfHealingMeshServices();
+        services.AddGrowthOsTelemetryServices();
         services.AddDeAnonymizationServices();
         services.AddAudienceSyncServices();
         services.AddObjectionScoringServices();
