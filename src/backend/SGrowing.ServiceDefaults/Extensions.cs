@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -93,6 +93,16 @@ public static class Extensions
         });
 
         app.MapHealthChecks("/ready", new HealthCheckOptions
+        {
+            Predicate = r => r.Tags.Contains("ready")
+        });
+
+        app.MapHealthChecks("/health/live", new HealthCheckOptions
+        {
+            Predicate = r => r.Tags.Contains("live")
+        });
+
+        app.MapHealthChecks("/health/ready", new HealthCheckOptions
         {
             Predicate = r => r.Tags.Contains("ready")
         });

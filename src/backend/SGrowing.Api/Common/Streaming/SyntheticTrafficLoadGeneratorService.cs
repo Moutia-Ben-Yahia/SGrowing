@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -110,8 +110,17 @@ public class SyntheticTrafficLoadGeneratorService : ISyntheticTrafficLoadGenerat
             await mesh.PublishEventAsync(topic, partitionKey, evt, token);
         });
 
-        // 2. Project from streaming mesh into ClickHouse
-        var projectedCount = await olap.ProjectFromStreamingMeshAsync(mesh, topic, consumerGroup, maxBatchSize: 500, ct: ct);
+        // 2. Project from streaming mesh into ClickHouse until all partitions are drained
+        var totalProjectedCount = 0;
+        while (true)
+        {
+            var batchCount = await olap.ProjectFromStreamingMeshAsync(mesh, topic, consumerGroup, maxBatchSize: 1000, ct: ct);
+            if (batchCount == 0)
+            {
+                break;
+            }
+            totalProjectedCount += batchCount;
+        }
 
         sw.Stop();
         var elapsedMs = Math.Max(1, sw.ElapsedMilliseconds);
@@ -129,7 +138,7 @@ public class SyntheticTrafficLoadGeneratorService : ISyntheticTrafficLoadGenerat
             PartitionsUtilized: utilizedPartitions.Count,
             EventsPerSecond: eps,
             TotalDurationMs: elapsedMs,
-            ZeroMessageLoss: projectedCount == totalEvents,
+            ZeroMessageLoss: totalProjectedCount == totalEvents,
             TotalProjectedRevenue: accumulatedRevenue,
             FinishedAtUtc: DateTime.UtcNow
         );

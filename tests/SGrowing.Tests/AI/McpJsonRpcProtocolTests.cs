@@ -1,4 +1,4 @@
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
 using FluentAssertions;
 using SGrowing.McpServer.Services;
 using Xunit;
@@ -234,5 +234,63 @@ public class McpJsonRpcProtocolTests
         node!["id"]?.GetValue<int>().Should().Be(7);
         node["error"]?["code"]?.GetValue<int>().Should().Be(-32602);
         node["error"]?["message"]?.GetValue<string>().Should().Contain("Missing tool name in params");
+    }
+
+    [Fact]
+    public async Task HandleJsonRpc_Ping_ShouldReturnEmptyResult()
+    {
+        // Arrange
+        const string request = """
+        {
+            "jsonrpc": "2.0",
+            "id": 8,
+            "method": "ping"
+        }
+        """;
+
+        // Act
+        var responseJson = await _mcpService.HandleJsonRpcAsync(request);
+
+        // Assert
+        var node = JsonNode.Parse(responseJson);
+        node.Should().NotBeNull();
+        node!["id"]?.GetValue<int>().Should().Be(8);
+        node["result"].Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task HandleJsonRpc_NotificationsInitialized_ShouldReturnEmptyString()
+    {
+        // Arrange
+        const string request = """
+        {
+            "jsonrpc": "2.0",
+            "method": "notifications/initialized"
+        }
+        """;
+
+        // Act
+        var responseJson = await _mcpService.HandleJsonRpcAsync(request);
+
+        // Assert
+        responseJson.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task HandleJsonRpc_GenericNotificationWithoutId_ShouldReturnEmptyString()
+    {
+        // Arrange
+        const string request = """
+        {
+            "jsonrpc": "2.0",
+            "method": "notifications/custom_telemetry"
+        }
+        """;
+
+        // Act
+        var responseJson = await _mcpService.HandleJsonRpcAsync(request);
+
+        // Assert
+        responseJson.Should().BeEmpty();
     }
 }

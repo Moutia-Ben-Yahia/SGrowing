@@ -1,4 +1,4 @@
-services:
+﻿services:
   postgres:
     image: pgvector/pgvector:pg17
     container_name: sgrowing-staging-postgres
@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres_enterprise_secure_pwd_2026!
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5434}:5432"
     volumes:
       - staging-postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -23,7 +23,7 @@ services:
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes", "--requirepass", "redis_enterprise_secure_pwd_2026!"]
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6381}:6379"
     volumes:
       - staging-redis-data:/data
     healthcheck:
@@ -37,8 +37,8 @@ services:
     container_name: sgrowing-staging-clickhouse
     restart: unless-stopped
     ports:
-      - "8123:8123"
-      - "9000:9000"
+      - "${CLICKHOUSE_HTTP_PORT:-8123}:8123"
+      - "${CLICKHOUSE_NATIVE_PORT:-9002}:9000"
     volumes:
       - staging-clickhouse-data:/var/lib/clickhouse
     healthcheck:
@@ -56,8 +56,8 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minio_enterprise_secure_pwd_2026!
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
     volumes:
       - staging-minio-data:/data
     healthcheck:
@@ -81,7 +81,7 @@ services:
       Minio__AccessKey: "minioadmin"
       Minio__SecretKey: "minio_enterprise_secure_pwd_2026!"
     ports:
-      - "5000:8080"
+      - "${API_PORT:-5000}:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -121,7 +121,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Staging
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=sgrowing;Username=postgres;Password=postgres_enterprise_secure_pwd_2026!"
     ports:
-      - "5001:8080"
+      - "${MCPSERVER_PORT:-5001}:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -133,7 +133,7 @@ services:
     container_name: sgrowing-staging-frontend
     restart: unless-stopped
     ports:
-      - "4200:80"
+      - "${FRONTEND_PORT:-4200}:80"
     depends_on:
       - api
 

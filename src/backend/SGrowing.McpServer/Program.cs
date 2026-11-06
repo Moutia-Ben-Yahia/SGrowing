@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -7,6 +7,20 @@ using SGrowing.Core.Tenancy;
 using SGrowing.McpServer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+bool isStdio = args.Contains("--stdio");
+
+if (isStdio)
+{
+    // Ensure 100% clean stdout for MCP JSON-RPC protocol compliance with Claude Desktop & Cursor
+    builder.Logging.ClearProviders();
+    builder.Logging.AddConsole(c => c.LogToStandardErrorThreshold = LogLevel.Trace);
+    builder.Services.PostConfigure<ConsoleLifetimeOptions>(options => options.SuppressStatusMessages = true);
+    builder.WebHost.ConfigureKestrel(serverOptions =>
+    {
+        serverOptions.Listen(System.Net.IPAddress.Loopback, 0); // Dynamic local port prevents port collision with running backend APIs
+    });
+}
+
 builder.AddServiceDefaults();
 
 builder.Services.AddOpenApi();
@@ -75,7 +89,7 @@ toolsGroup.MapGet("/", (McpToolService toolService) =>
     return Results.Ok(toolService.GetTools());
 })
 .WithName("ListMcpTools")
-.WithSummary("Enumerate all 11 enterprise tools exposed by the MCP server");
+.WithSummary("Enumerate all 17 enterprise tools exposed by the MCP server");
 
 toolsGroup.MapPost("/call", async (McpToolCallRequest request, McpToolService toolService) =>
 {
@@ -90,23 +104,36 @@ toolsGroup.MapPost("/call", async (McpToolCallRequest request, McpToolService to
 .WithSummary("Direct HTTP invocation proxy for an MCP tool");
 
 // ----------------- STDIO Transport loop for local desktop AI (Claude Desktop/Cursor) -----------------
-if (args.Contains("--stdio"))
+await app.StartAsync();
+
+if (isStdio)
 {
-    _ = Task.Run(async () =>
+    using var reader = new StreamReader(Console.OpenStandardInput());
+    using var writer = new StreamWriter(Console.OpenStandardOutput()) { AutoFlush = true };
+    var toolService = app.Services.GetRequiredService<McpToolService>();
+
+    while (await reader.ReadLineAsync() is { } line)
     {
-        using var reader = new StreamReader(Console.OpenStandardInput());
-        using var writer = new StreamWriter(Console.OpenStandardOutput()) { AutoFlush = true };
-        var toolService = app.Services.GetRequiredService<McpToolService>();
-
-        while (await reader.ReadLineAsync() is { } line)
+        if (string.IsNullOrWhiteSpace(line)) continue;
+        try
         {
-            if (string.IsNullOrWhiteSpace(line)) continue;
             var responseJson = await toolService.HandleJsonRpcAsync(line);
-            await writer.WriteLineAsync(responseJson);
+            if (!string.IsNullOrEmpty(responseJson))
+            {
+                await writer.WriteLineAsync(responseJson);
+            }
         }
-    });
-}
+        catch (Exception ex)
+        {
+            await Console.Error.WriteLineAsync($"[MCP STDIO ERROR] {ex.Message}");
+        }
+    }
 
-app.Run();
+    await app.StopAsync();
+}
+else
+{
+    await app.WaitForShutdownAsync();
+}
 
 public record McpToolCallRequest(string Name, JsonObject Arguments);

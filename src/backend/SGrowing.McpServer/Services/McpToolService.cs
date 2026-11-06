@@ -360,7 +360,23 @@ public class McpToolService
                         }
                     }, JsonOptions);
 
+                case "ping":
+                    return JsonSerializer.Serialize(new
+                    {
+                        jsonrpc = "2.0",
+                        id,
+                        result = new { }
+                    }, JsonOptions);
+
+                case "notifications/initialized":
+                case "notifications/cancelled":
+                    return string.Empty;
+
                 default:
+                    if (id == null && method?.StartsWith("notifications/") == true)
+                    {
+                        return string.Empty;
+                    }
                     return CreateErrorResponse(id, -32601, $"Method not found: '{method}'");
             }
         }

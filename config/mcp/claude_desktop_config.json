@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "sgrowing-growth-os": {
+      "command": "C:\\Business\\Software\\SGrowing\\src\\backend\\SGrowing.McpServer\\bin\\Debug\\net10.0\\SGrowing.McpServer.exe",
+      "args": ["--stdio"],
+      "env": {
+        "ConnectionStrings__DefaultConnection": "Host=localhost;Port=5432;Database=sgrowing;Username=postgres;Password=postgres_enterprise_secure_pwd_2026!",
+        "ClickHouse__Endpoint": "http://localhost:8123",
+        "Minio__Endpoint": "http://localhost:9000"
+      }
+    }
+  }
+}
