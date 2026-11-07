@@ -210,8 +210,10 @@ export const routes: Routes = [
   { path: 'integrations/marketplace', loadComponent: () => import('./features/integrations/app-marketplace-cockpit.component').then(m => m.AppMarketplaceCockpitComponent), canActivate: [authGuard] },
   { path: 'voice/webrtc-sdr', loadComponent: () => import('./features/voice/webrtc-sdr-cockpit.component').then(m => m.WebRtcSdrCockpitComponent), canActivate: [authGuard] },
   { path: 'analytics/executive', loadComponent: () => import('./features/analytics/executive-revenue-cockpit.component').then(m => m.ExecutiveRevenueCockpitComponent), canActivate: [authGuard] },
+  { path: 'analytics/revenue-simulation', loadComponent: () => import('./features/analytics/revenue-forecast-simulation-studio.component').then(m => m.RevenueForecastSimulationStudioComponent), canActivate: [authGuard] },
   { path: 'tenancy/licensing', loadComponent: () => import('./features/tenancy/enterprise-license-cockpit.component').then(m => m.EnterpriseLicenseCockpitComponent), canActivate: [authGuard] },
   { path: 'seo/geo-visibility', loadComponent: () => import('./features/seo/geo-visibility-cockpit.component').then(m => m.GeoVisibilityCockpitComponent), canActivate: [authGuard] },
+  { path: 'seo/geo-aeo-radar', loadComponent: () => import('./features/seo/geo-aeo-visibility-studio.component').then(m => m.GeoAeoVisibilityStudioComponent), canActivate: [authGuard] },
   { path: 'seo/content-brief', loadComponent: () => import('./features/seo/content-brief-studio.component').then(m => m.ContentBriefStudioComponent), canActivate: [authGuard] },
   { path: 'outreach/whatsapp-broadcast', loadComponent: () => import('./features/outreach/whatsapp-broadcast-cockpit.component').then(m => m.WhatsAppBroadcastCockpitComponent), canActivate: [authGuard] },
   { path: 'ai/knowledge-rag', loadComponent: () => import('./features/ai/semantic-rag-cockpit.component').then(m => m.SemanticRagCockpitComponent), canActivate: [authGuard] },
@@ -280,6 +282,7 @@ export const routes: Routes = [
   { path: 'commerce/commission-settlement', loadComponent: () => import('./features/commerce/commission-settlement-cockpit.component').then(m => m.CommissionSettlementCockpitComponent), canActivate: [authGuard] },
   { path: 'sales/territory-rebalancing', loadComponent: () => import('./features/sales/territory-rebalancing-cockpit.component').then(m => m.TerritoryRebalancingCockpitComponent), canActivate: [authGuard] },
   { path: 'support/screen-diagnostic', loadComponent: () => import('./features/support/screen-diagnostic-cockpit.component').then(m => m.ScreenDiagnosticCockpitComponent), canActivate: [authGuard] },
+  { path: 'support/escalation-desk', loadComponent: () => import('./features/support/support-escalation-desk-studio.component').then(m => m.SupportEscalationDeskStudioComponent), canActivate: [authGuard] },
   { path: 'sales/intent-rollup', loadComponent: () => import('./features/sales/intent-rollup-cockpit.component').then(m => m.IntentRollupCockpitComponent), canActivate: [authGuard] },
   { path: 'voice/agent-whisper', loadComponent: () => import('./features/voice/agent-whisper-cockpit.component').then(m => m.AgentWhisperCockpitComponent), canActivate: [authGuard] },
   { path: 'infrastructure/db-query-router', loadComponent: () => import('./features/infrastructure/db-query-router-cockpit.component').then(m => m.DbQueryRouterCockpitComponent), canActivate: [authGuard] },
@@ -318,5 +321,6 @@ export const routes: Routes = [
   { path: 'commerce/courier-reconciliation', loadComponent: () => import('./features/commerce/cod-courier-reconciliation-studio.component').then(m => m.CodCourierReconciliationStudioComponent), canActivate: [authGuard] },
   { path: 'telemetry/sre-radar', loadComponent: () => import('./features/telemetry/sre-telemetry-cockpit.component').then(m => m.SreTelemetryCockpitComponent), canActivate: [authGuard] },
   { path: 'commerce/b2b-pricing', loadComponent: () => import('./features/commerce/b2b-contract-pricing-studio.component').then(m => m.B2BContractPricingStudioComponent), canActivate: [authGuard] },
+  { path: 'outbound/linkedin-cadence', loadComponent: () => import('./features/outbound/linkedin-outreach-studio.component').then(m => m.LinkedInOutreachStudioComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

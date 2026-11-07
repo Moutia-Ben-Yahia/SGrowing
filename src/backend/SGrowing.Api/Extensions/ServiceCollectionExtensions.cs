@@ -21,6 +21,7 @@ using SGrowing.Api.Modules.AI.SwarmCoordination;
 using SGrowing.Api.Modules.Integrations.Marketplace;
 using SGrowing.Api.Modules.Voice.WebRtcSdr;
 using SGrowing.Api.Modules.Analytics.RevenueIntelligence;
+using SGrowing.Api.Modules.Analytics.RevenueSimulation;
 using SGrowing.Api.Modules.Tenancy.Licensing;
 using SGrowing.Api.Modules.SEO.GeoVisibility;
 using SGrowing.Api.Modules.Channels.WhatsAppBroadcast;
@@ -78,6 +79,7 @@ using SGrowing.Api.Modules.Security.EphemeralVault;
 using SGrowing.Api.Modules.Intelligence.WinLoss;
 using SGrowing.Api.Modules.Advertising.RetargetingMatrix;
 using SGrowing.Api.Modules.Support.SentimentDeescalation;
+using SGrowing.Api.Modules.Support.TicketEscalation;
 using SGrowing.Api.Modules.Billing.ConsumptionMetering;
 using SGrowing.Api.Modules.Intelligence.MutualActionPlan;
 using SGrowing.Api.Modules.Advertising.CatalogFeeds;
@@ -199,6 +201,7 @@ using SGrowing.Api.Modules.Organizations;
 using SGrowing.Api.Modules.Outbound;
 using SGrowing.Api.Modules.Outbound.EmailVerification;
 using SGrowing.Api.Modules.Outbound.Enrichment;
+using SGrowing.Api.Modules.Outbound.LinkedInCadence;
 using SGrowing.Api.Modules.Outbound.Research;
 using SGrowing.Api.Modules.Outbound.Spintax;
 using SGrowing.Api.Modules.Projects;
@@ -207,6 +210,7 @@ using SGrowing.Api.Modules.Scheduling;
 using SGrowing.Api.Modules.Security;
 using SGrowing.Api.Modules.Security.Vault;
 using SGrowing.Api.Modules.SEO;
+using SGrowing.Api.Modules.SEO.GeoAeoRadar;
 using SGrowing.Api.Modules.Social;
 using SGrowing.Api.Modules.CRM.Pipeline;
 using SGrowing.Api.Modules.Documents.Security;
@@ -416,6 +420,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<LinkedInOutreachAdapter>();
         services.AddScoped<MultiTouchCadenceOrchestrator>();
         services.AddScoped<ISalesCadenceEngine, SalesCadenceEngine>();
+        services.AddSingleton<ILinkedInCadenceService, LinkedInCadenceService>();
 
         // Commerce, WMS & Logistics
         services.AddScoped<ProductCatalogService>();
@@ -535,6 +540,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAutonomousFunnelBuilderService, AutonomousFunnelBuilderService>();
         services.AddScoped<IContentBriefGeneratorService, ContentBriefGeneratorService>();
         services.AddScoped<IGeoAeoCitabilityService, GeoAeoCitabilityService>();
+        services.AddSingleton<IGeoAeoRadarService, GeoAeoRadarService>();
 
         // Calendar, Telemetry & Partitions
         services.AddScoped<ICalendarSchedulingService, CalendarSchedulingService>();
@@ -730,6 +736,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISyntheticDataGeneratorService, SyntheticDataGeneratorService>();
         services.AddSingleton<IUniversalSearchEngineService, UniversalSearchEngineService>();
         services.AddSingleton<IPrivacyGovernanceService, PrivacyGovernanceService>();
+        services.AddSingleton<IRevenueSimulationService, RevenueSimulationService>();
 
         // Horizons 16-20 Services
         services.AddMultiAgentSwarmServices();
@@ -1017,6 +1024,7 @@ public static class ServiceCollectionExtensions
         services.AddLeadRoutingCapacityServices();
         services.AddDialectSynthesisServices();
         services.AddVideoCreativePipelineServices();
+        services.AddSingleton<ITicketEscalationService, TicketEscalationService>();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
