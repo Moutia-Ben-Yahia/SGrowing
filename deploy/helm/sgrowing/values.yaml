@@ -1,59 +1,167 @@
-# Default values for SGrowing Enterprise Helm Chart
-replicaCount:
-  api: 3
-  web: 2
+# ==============================================================================
+# SGrowing Enterprise Growth OS - Default Helm Chart Values
+# ==============================================================================
 
+# Pod replica count for API tier
+replicaCount: 2
+
+# Container image for SGrowing API
 image:
-  api:
-    repository: registry.sgrowing.io/enterprise/sgrowing-api
-    pullPolicy: IfNotPresent
-    tag: "latest"
-  web:
-    repository: registry.sgrowing.io/enterprise/sgrowing-web
-    pullPolicy: IfNotPresent
-    tag: "latest"
+  repository: ghcr.io/sgrowing/api
+  tag: "latest"
+  pullPolicy: IfNotPresent
 
-service:
-  api:
-    type: ClusterIP
-    port: 8080
-  web:
-    type: LoadBalancer
-    port: 80
+# Image pull secrets if using private registry
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
 
-resources:
-  api:
-    limits:
-      cpu: 2000m
-      memory: 4096Mi
+# Background worker configuration
+worker:
+  replicaCount: 2
+  image:
+    repository: ghcr.io/sgrowing/worker
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  resources:
     requests:
-      cpu: 500m
-      memory: 1024Mi
-  web:
+      cpu: 150m
+      memory: 256Mi
     limits:
       cpu: 500m
       memory: 512Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
 
-env:
-  aspnetcoreEnvironment: Production
-  databaseHost: postgresql-ha.infra.svc.cluster.local
-  redisHost: redis-ha.infra.svc.cluster.local
+# Service configuration
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
 
+# Kubernetes Resource Management for API
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+# Health and liveness probes
+livenessProbe:
+  path: /healthz
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  path: /readyz
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+# Ingress controller configuration
 ingress:
-  enabled: true
+  enabled: false
   className: nginx
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/proxy-body-size: "64m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/websocket-services: "sgrowing-api"
+    nginx.org/websocket-services: "sgrowing-api"
   hosts:
-    - host: growth.enterprise.internal
+    - host: sgrowing.internal
       paths:
         - path: /
           pathType: Prefix
-          service: web
-        - path: /api
-          pathType: Prefix
-          service: api
+  tls: []
+
+# Horizontal Pod Autoscaling (HPA v2)
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+
+# OpenTelemetry Collector Sidecar
+otelCollector:
+  enabled: true
+  image:
+    repository: otel/opentelemetry-collector-contrib
+    tag: "0.111.0"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  endpoint: "http://localhost:4317"
+
+# Persistent Infrastructure Connections
+postgresql:
+  host: postgresql.infra.svc.cluster.local
+  port: 5432
+  database: sgrowing_db
+  username: sgrowing_user
+  password: sgrowing_secure_password_2026
+  sslMode: Prefer
+  existingSecret: ""
+  existingSecretPasswordKey: ""
+
+redis:
+  host: redis.infra.svc.cluster.local
+  port: 6379
+  password: ""
+  existingSecret: ""
+  existingSecretPasswordKey: ""
+
+# Security Contexts adhering to Kubernetes Pod Security Standards (Restricted)
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# Zero-trust Network Policy
+networkPolicy:
+  enabled: true
+  allowIngressFromNamespaces: []
+
+# Service Account & RBAC
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+# Application Secrets
+secrets:
+  jwtSecretKey: super_secret_sgrowing_jwt_key_at_least_32_chars_2026!
+  jwtIssuer: https://api.sgrowing.io
+  jwtAudience: SGrowing.Clients
+  webhookSigningSecret: whsec_sgrowing_production_signing_key_2026
+
+# Application Environment Configuration
+config:
+  aspnetcoreEnvironment: Production
+  logLevel: Information
+  otelEndpoint: http://localhost:4317
+  allowedHosts: "*"

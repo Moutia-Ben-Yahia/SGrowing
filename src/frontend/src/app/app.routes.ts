@@ -97,6 +97,8 @@ export const routes: Routes = [
   { path: 'onboarding', component: OnboardingWizardComponent, canActivate: [authGuard] },
   { path: 'agents/missions', component: AgentMissionCockpitComponent, canActivate: [authGuard] },
   { path: 'developer/webhooks', component: DeveloperWebhooksCockpitComponent, canActivate: [authGuard] },
+  { path: 'developer/playground', loadComponent: () => import('./features/developer/developer-webhook-playground.component').then(m => m.DeveloperWebhookPlaygroundComponent), canActivate: [authGuard] },
+  { path: 'developer/docs', redirectTo: 'developer/playground' },
   { path: 'analytics/attribution', component: FunnelAttributionCockpitComponent, canActivate: [authGuard] },
   { path: 'outreach/warmup', loadComponent: () => import('./features/deliverability/mailbox-warmup-radar.component').then(m => m.MailboxWarmupRadarComponent), canActivate: [authGuard] },
   { path: 'outbound/spintax', component: SpintaxEngineComponent, canActivate: [authGuard] },

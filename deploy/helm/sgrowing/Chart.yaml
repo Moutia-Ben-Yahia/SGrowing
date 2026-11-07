@@ -1,15 +1,19 @@
 apiVersion: v2
-name: sgrowing-growth-os
-description: Enterprise Helm Chart for SGrowing Autonomous Growth Operating System
+name: sgrowing
+description: SGrowing Enterprise Multi-Agent Growth OS Helm Chart
 type: application
 version: 1.0.0
-appVersion: "2026.4.0"
+appVersion: "1.0.0"
 keywords:
   - b2b
   - crm
-  - ai-swarm
-  - webrtc
+  - ai-agents
   - growth-os
+  - signalr
+  - enterprise
 maintainers:
   - name: SGrowing DevOps & Infrastructure Engineering
     email: devops@sgrowing.io
+home: https://sgrowing.io
+sources:
+  - https://github.com/sgrowing/sgrowing

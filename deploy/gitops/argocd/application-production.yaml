@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sgrowing-production
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: sgrowing-production
+    app.kubernetes.io/part-of: sgrowing-growth-os
+    environment: production
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/sgrowing/sgrowing.git
+    targetRevision: main
+    path: deploy/helm/sgrowing
+    helm:
+      valueFiles:
+        - values.yaml
+        - values.production.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sgrowing-production
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ApplyOutOfSyncOnly=true
+    retry:
+      limit: 10
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 5m

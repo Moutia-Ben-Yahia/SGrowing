@@ -45,6 +45,16 @@ public interface IGrowthOsTelemetryService
     void RecordAgentTokensConsumed(string agentRole, int tokenCount);
 
     /// <summary>
+    /// Records execution metrics for an autonomous AI agent mission.
+    /// </summary>
+    void RecordMissionExecutionMetric(Guid missionId, string status, double durationMs = 0);
+
+    /// <summary>
+    /// Records commerce order intake metrics from connector marketplace.
+    /// </summary>
+    void RecordCommerceOrderMetric(string connectorId, decimal amount, string currency);
+
+    /// <summary>
     /// Evaluates current platform metrics against SLO targets (99.9%) and generates the SRE Health Radar report.
     /// </summary>
     SreHealthRadarReport GetSreHealthRadar(int currentDlqDepth = 0, int activeMissions = 0);
@@ -63,6 +73,8 @@ public class GrowthOsTelemetryService : IGrowthOsTelemetryService
     private readonly Histogram<double> _webhookDurationHistogram;
     private readonly Counter<long> _clickstreamEventsCounter;
     private readonly Counter<long> _tokensConsumedCounter;
+    private readonly Counter<long> _missionExecutionsCounter;
+    private readonly Counter<long> _commerceOrdersCounter;
 
     private readonly ConcurrentQueue<double> _latencyReservoir = new();
     private const int MaxReservoirCapacity = 1000;
@@ -93,6 +105,16 @@ public class GrowthOsTelemetryService : IGrowthOsTelemetryService
             name: "growthos.ai.tokens",
             unit: "{token}",
             description: "Total LLM tokens consumed across agent missions");
+
+        _missionExecutionsCounter = GrowthOsMeter.CreateCounter<long>(
+            name: "growthos.missions.executed",
+            unit: "{mission}",
+            description: "Total number of autonomous AI agent missions executed");
+
+        _commerceOrdersCounter = GrowthOsMeter.CreateCounter<long>(
+            name: "growthos.commerce.orders",
+            unit: "{order}",
+            description: "Total number of commerce orders ingested through connectors");
     }
 
     public Activity? StartWebhookSpan(string eventType, string destinationUrl, Guid deliveryId)
@@ -193,6 +215,20 @@ public class GrowthOsTelemetryService : IGrowthOsTelemetryService
     public void RecordAgentTokensConsumed(string agentRole, int tokenCount)
     {
         _tokensConsumedCounter.Add(tokenCount, new KeyValuePair<string, object?>("agent_role", agentRole));
+    }
+
+    public void RecordMissionExecutionMetric(Guid missionId, string status, double durationMs = 0)
+    {
+        _missionExecutionsCounter.Add(1,
+            new KeyValuePair<string, object?>("status", status),
+            new KeyValuePair<string, object?>("mission_id", missionId.ToString()));
+    }
+
+    public void RecordCommerceOrderMetric(string connectorId, decimal amount, string currency)
+    {
+        _commerceOrdersCounter.Add(1,
+            new KeyValuePair<string, object?>("connector_id", connectorId),
+            new KeyValuePair<string, object?>("currency", currency));
     }
 
     public SreHealthRadarReport GetSreHealthRadar(int currentDlqDepth = 0, int activeMissions = 0)

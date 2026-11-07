@@ -1,0 +1,67 @@
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "sgrowing.fullname" . }}
+  labels:
+    {{- include "sgrowing.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow incoming traffic from ingress controller or pods in designated namespaces
+    - from:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/component: controller
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.service.targetPort }}
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+        - protocol: TCP
+          port: 13133
+  egress:
+    # 1. DNS Resolution (kube-dns / CoreDNS)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # 2. Database Connectivity (PostgreSQL)
+    - ports:
+        - protocol: TCP
+          port: {{ .Values.postgresql.port }}
+    # 3. Distributed Cache Connectivity (Redis)
+    - ports:
+        - protocol: TCP
+          port: {{ .Values.redis.port }}
+    # 4. Outbound HTTPS (LLM APIs, Stripe, Resend, Meta WhatsApp)
+    - ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 80
+    # 5. OpenTelemetry OTLP Collector Export
+    - ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+{{- end }}

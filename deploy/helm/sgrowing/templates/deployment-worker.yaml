@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sgrowing.fullname" . }}-worker
+  labels:
+    {{- include "sgrowing.workerLabels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.worker.replicaCount | default .Values.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "sgrowing.workerSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+      labels:
+        {{- include "sgrowing.workerLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "sgrowing.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.securityContext | nindent 8 }}
+      containers:
+        - name: sgrowing-worker
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
+          env:
+            - name: DOTNET_ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "sgrowing.fullname" . }}-config
+                  key: ASPNETCORE_ENVIRONMENT
+            - name: DOTNET_EnableDiagnostics
+              value: "0"
+            - name: Logging__LogLevel__Default
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "sgrowing.fullname" . }}-config
+                  key: Logging__LogLevel__Default
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "sgrowing.fullname" . }}-config
+                  key: OTEL_EXPORTER_OTLP_ENDPOINT
+            - name: OTEL_SERVICE_NAME
+              value: "{{ include "sgrowing.fullname" . }}-worker"
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sgrowing.fullname" . }}-secret
+                  key: ConnectionStrings__DefaultConnection
+            - name: Redis__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sgrowing.fullname" . }}-secret
+                  key: Redis__ConnectionString
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+            - name: secrets-volume
+              mountPath: /app/secrets
+              readOnly: true
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}
+        - name: config-volume
+          configMap:
+            name: {{ include "sgrowing.fullname" . }}-config
+        - name: secrets-volume
+          secret:
+            secretName: {{ include "sgrowing.fullname" . }}-secret

@@ -1,0 +1,50 @@
+# ==============================================================================
+# SGrowing Enterprise Growth OS - Staging Environment Overrides
+# ==============================================================================
+
+replicaCount: 1
+
+worker:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
+    nginx.ingress.kubernetes.io/websocket-services: "sgrowing-api"
+    nginx.org/websocket-services: "sgrowing-api"
+  hosts:
+    - host: staging-api.sgrowing.internal
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+autoscaling:
+  enabled: false
+
+podDisruptionBudget:
+  enabled: false
+
+config:
+  aspnetcoreEnvironment: Staging
+  logLevel: Debug
+  allowedHosts: "*"

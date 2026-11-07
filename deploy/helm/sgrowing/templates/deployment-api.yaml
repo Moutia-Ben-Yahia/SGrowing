@@ -1,44 +1,183 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-api
+  name: {{ include "sgrowing.fullname" . }}-api
   labels:
-    app.kubernetes.io/name: sgrowing-api
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- include "sgrowing.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.replicaCount.api }}
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
   selector:
     matchLabels:
-      app.kubernetes.io/name: sgrowing-api
-      app.kubernetes.io/instance: {{ .Release.Name }}
+      {{- include "sgrowing.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
       labels:
-        app.kubernetes.io/name: sgrowing-api
-        app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- include "sgrowing.labels" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "sgrowing.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.securityContext | nindent 8 }}
       containers:
-        - name: api
-          image: "{{ .Values.image.api.repository }}:{{ .Values.image.api.tag }}"
-          imagePullPolicy: {{ .Values.image.api.pullPolicy }}
+        - name: sgrowing-api
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 8080
+              containerPort: {{ .Values.service.targetPort }}
               protocol: TCP
           env:
             - name: ASPNETCORE_ENVIRONMENT
-              value: {{ .Values.env.aspnetcoreEnvironment }}
-          resources:
-            {{- toYaml .Values.resources.api | nindent 12 }}
-          readinessProbe:
-            httpGet:
-              path: /api/v1/health
-              port: http
-            initialDelaySeconds: 10
-            periodSeconds: 10
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "sgrowing.fullname" . }}-config
+                  key: ASPNETCORE_ENVIRONMENT
+            - name: ASPNETCORE_URLS
+              value: "http://+:{{ .Values.service.targetPort }}"
+            - name: DOTNET_EnableDiagnostics
+              value: "0"
+            - name: AllowedHosts
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "sgrowing.fullname" . }}-config
+                  key: AllowedHosts
+            - name: Logging__LogLevel__Default
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "sgrowing.fullname" . }}-config
+                  key: Logging__LogLevel__Default
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "sgrowing.fullname" . }}-config
+                  key: OTEL_EXPORTER_OTLP_ENDPOINT
+            - name: OTEL_SERVICE_NAME
+              value: "{{ include "sgrowing.fullname" . }}-api"
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sgrowing.fullname" . }}-secret
+                  key: ConnectionStrings__DefaultConnection
+            - name: Redis__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sgrowing.fullname" . }}-secret
+                  key: Redis__ConnectionString
+            - name: Jwt__Key
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sgrowing.fullname" . }}-secret
+                  key: Jwt__Key
+            - name: Jwt__Issuer
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sgrowing.fullname" . }}-secret
+                  key: Jwt__Issuer
+            - name: Jwt__Audience
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sgrowing.fullname" . }}-secret
+                  key: Jwt__Audience
+            - name: Webhook__SigningSecret
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "sgrowing.fullname" . }}-secret
+                  key: Webhook__SigningSecret
           livenessProbe:
             httpGet:
-              path: /api/v1/health
+              path: {{ .Values.livenessProbe.path }}
               port: http
-            initialDelaySeconds: 20
-            periodSeconds: 15
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+            - name: secrets-volume
+              mountPath: /app/secrets
+              readOnly: true
+        {{- if .Values.otelCollector.enabled }}
+        - name: otel-collector
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          image: "{{ .Values.otelCollector.image.repository }}:{{ .Values.otelCollector.image.tag }}"
+          imagePullPolicy: {{ .Values.otelCollector.image.pullPolicy }}
+          command:
+            - "/otelcol-contrib"
+            - "--config=/etc/otelcol/config.yaml"
+          ports:
+            - name: otlp-grpc
+              containerPort: 4317
+              protocol: TCP
+            - name: otlp-http
+              containerPort: 4318
+              protocol: TCP
+            - name: otel-health
+              containerPort: 13133
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: otel-health
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: otel-health
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.otelCollector.resources | nindent 12 }}
+          volumeMounts:
+            - name: otel-collector-config
+              mountPath: /etc/otelcol
+              readOnly: true
+        {{- end }}
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}
+        - name: config-volume
+          configMap:
+            name: {{ include "sgrowing.fullname" . }}-config
+        - name: secrets-volume
+          secret:
+            secretName: {{ include "sgrowing.fullname" . }}-secret
+        {{- if .Values.otelCollector.enabled }}
+        - name: otel-collector-config
+          configMap:
+            name: {{ include "sgrowing.fullname" . }}-otel-config
+        {{- end }}

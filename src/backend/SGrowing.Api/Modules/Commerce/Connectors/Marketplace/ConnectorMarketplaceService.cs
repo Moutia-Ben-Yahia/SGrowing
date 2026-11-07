@@ -33,6 +33,11 @@ public interface IConnectorMarketplaceService
     /// Dynamically transforms provider-specific order JSON into canonical SGrowing format.
     /// </summary>
     TransformPayloadResult TransformOrderPayload(string connectorId, string rawJsonPayload, Dictionary<string, string>? customFieldMappings = null);
+
+    /// <summary>
+    /// Ingests and transforms external order payload into a UnifiedCommerceOrder.
+    /// </summary>
+    UnifiedCommerceOrder IngestUnifiedOrder(string connectorId, string rawJsonPayload, string defaultPaymentMethod = "COD", Dictionary<string, string>? customFieldMappings = null);
 }
 
 /// <summary>
@@ -183,6 +188,15 @@ public class ConnectorMarketplaceService : IConnectorMarketplaceService
 
             var items = ExtractItems(primaryScope, fallbackScope, customFieldMappings);
 
+            var taxAmount = ExtractDecimal(
+                primaryScope, fallbackScope,
+                BuildCandidatePaths("TaxAmount", customFieldMappings, "amounts.tax.amount", "tax_amount", "vat_amount", "total_tax", "tax.amount", "tax", "vat"));
+
+            if (taxAmount == 0m && totalAmount > 0m && (currency.Equals("SAR", StringComparison.OrdinalIgnoreCase) || country.Contains("Saudi", StringComparison.OrdinalIgnoreCase)))
+            {
+                taxAmount = Math.Round(totalAmount - (totalAmount / 1.15m), 2);
+            }
+
             var canonicalOrder = new CanonicalOrderPayload(
                 ExternalOrderId: canonicalId,
                 OrderNumber: orderNumber,
@@ -193,7 +207,8 @@ public class ConnectorMarketplaceService : IConnectorMarketplaceService
                 ShippingCity: city,
                 ShippingCountry: country,
                 Items: items,
-                OrderDateUtc: orderDateUtc
+                OrderDateUtc: orderDateUtc,
+                TaxAmount: taxAmount
             );
 
             return new TransformPayloadResult(true, "Order", canonicalOrder);
@@ -206,6 +221,64 @@ public class ConnectorMarketplaceService : IConnectorMarketplaceService
         {
             return new TransformPayloadResult(false, "Order", null, $"Transformation failed: {ex.Message}");
         }
+    }
+
+    public UnifiedCommerceOrder IngestUnifiedOrder(string connectorId, string rawJsonPayload, string defaultPaymentMethod = "COD", Dictionary<string, string>? customFieldMappings = null)
+    {
+        var result = TransformOrderPayload(connectorId, rawJsonPayload, customFieldMappings);
+        if (!result.Success || result.TransformedOrder == null)
+        {
+            throw new InvalidOperationException(result.ErrorMessage ?? "Payload transformation failed.");
+        }
+
+        var order = result.TransformedOrder;
+        using var doc = JsonDocument.Parse(rawJsonPayload);
+        var root = doc.RootElement;
+        var primaryScope = (root.ValueKind == JsonValueKind.Object && root.TryGetProperty("data", out var dataElem) && dataElem.ValueKind == JsonValueKind.Object)
+            ? dataElem
+            : root;
+
+        var firstName = ExtractString(primaryScope, root, BuildCandidatePaths("FirstName", customFieldMappings, "customer.first_name", "customer.name", "buyer.first_name", "customer_name")) ?? string.Empty;
+        var lastName = ExtractString(primaryScope, root, BuildCandidatePaths("LastName", customFieldMappings, "customer.last_name", "buyer.last_name")) ?? string.Empty;
+        var customerName = $"{firstName} {lastName}".Trim();
+        if (string.IsNullOrWhiteSpace(customerName))
+        {
+            customerName = ExtractString(primaryScope, root, BuildCandidatePaths("CustomerName", customFieldMappings, "customer.name", "name", "recipient_name", "buyer.name")) ?? "Riyadh Customer";
+        }
+
+        var paymentMethod = ExtractString(primaryScope, root, BuildCandidatePaths("PaymentMethod", customFieldMappings, "payment_method", "payment.method", "gateway", "payment_type", "payment_mode"))
+            ?? defaultPaymentMethod;
+
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["ConnectorId"] = connectorId,
+            ["PlatformTier"] = GetManifest(connectorId)?.Tier.ToString() ?? "RegionalMENA",
+            ["IngestedAtUtc"] = DateTime.UtcNow.ToString("O"),
+            ["Currency"] = order.Currency,
+            ["PaymentMode"] = paymentMethod
+        };
+
+        if (paymentMethod.Equals("COD", StringComparison.OrdinalIgnoreCase) || paymentMethod.Contains("cash", StringComparison.OrdinalIgnoreCase))
+        {
+            metadata["PaymentCollectionMode"] = "CashOnDelivery";
+        }
+
+        return new UnifiedCommerceOrder(
+            OrderId: order.ExternalOrderId,
+            OrderNumber: order.OrderNumber,
+            CustomerName: customerName,
+            CustomerPhone: order.CustomerPhone,
+            CustomerEmail: order.CustomerEmail,
+            ShippingCity: order.ShippingCity,
+            ShippingCountry: order.ShippingCountry,
+            TotalAmount: order.TotalAmount,
+            TaxAmount: order.TaxAmount,
+            Currency: order.Currency,
+            PaymentMethod: paymentMethod,
+            Items: order.Items,
+            PlacedAtUtc: order.OrderDateUtc,
+            Metadata: metadata
+        );
     }
 
     private void RegisterDefaultManifests()

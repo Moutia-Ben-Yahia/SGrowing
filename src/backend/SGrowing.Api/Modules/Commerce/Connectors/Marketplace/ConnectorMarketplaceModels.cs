@@ -84,7 +84,28 @@ public record CanonicalOrderPayload(
     string ShippingCity,
     string ShippingCountry,
     List<CanonicalOrderItem> Items,
-    DateTime OrderDateUtc
+    DateTime OrderDateUtc,
+    decimal TaxAmount = 0m
+);
+
+/// <summary>
+/// Unified normalized commerce order representation ingested from any marketplace connector.
+/// </summary>
+public record UnifiedCommerceOrder(
+    string OrderId,
+    string OrderNumber,
+    string CustomerName,
+    string CustomerPhone,
+    string CustomerEmail,
+    string ShippingCity,
+    string ShippingCountry,
+    decimal TotalAmount,
+    decimal TaxAmount,
+    string Currency,
+    string PaymentMethod,
+    List<CanonicalOrderItem> Items,
+    DateTime PlacedAtUtc,
+    Dictionary<string, string>? Metadata = null
 );
 
 /// <summary>
