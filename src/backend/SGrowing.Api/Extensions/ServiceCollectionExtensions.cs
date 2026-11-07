@@ -29,6 +29,7 @@ using SGrowing.Api.Modules.SEO.Programmatic;
 using SGrowing.Api.Modules.Billing.TaxCompliance;
 using SGrowing.Api.Modules.Sales.DealCopilot;
 using SGrowing.Api.Modules.CMS.ContentFactory;
+using SGrowing.Api.Modules.CMS.VideoCreativePipeline;
 using SGrowing.Api.Modules.Growth.Affiliates;
 using SGrowing.Api.Modules.Voice.CallCopilot;
 using SGrowing.Api.Modules.Sales.TerritoryRouting;
@@ -213,6 +214,7 @@ using SGrowing.Api.Modules.Social.Listening;
 using SGrowing.Api.Modules.Analytics.PredictiveLtv;
 using SGrowing.Api.Modules.Voice.IVR;
 using SGrowing.Api.Modules.Security.SyntheticData;
+using SGrowing.Api.Modules.Security.PrivacyGovernance;
 using SGrowing.Api.Modules.Search.Universal;
 using SGrowing.Api.Modules.Storage.Media;
 using SGrowing.Api.Modules.Telemetry;
@@ -257,6 +259,7 @@ using SGrowing.Api.Modules.Advertising.SponsoredBrandAds;
 using SGrowing.Api.Modules.Sales.RepRamp;
 using SGrowing.Api.Modules.Advertising.CrossDeviceSync;
 using SGrowing.Api.Modules.Sales.QuotaCapacity;
+using SGrowing.Api.Modules.Sales.LeadRouting;
 using SGrowing.Api.Modules.Voice.DialectSynthesis;
 using SGrowing.Api.Services;
 using SGrowing.Core.Channels;
@@ -726,6 +729,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IVoiceIvrEngineService, VoiceIvrEngineService>();
         services.AddSingleton<ISyntheticDataGeneratorService, SyntheticDataGeneratorService>();
         services.AddSingleton<IUniversalSearchEngineService, UniversalSearchEngineService>();
+        services.AddSingleton<IPrivacyGovernanceService, PrivacyGovernanceService>();
 
         // Horizons 16-20 Services
         services.AddMultiAgentSwarmServices();
@@ -1010,7 +1014,9 @@ public static class ServiceCollectionExtensions
         services.AddRepRampServices();
         services.AddCrossDeviceSyncServices();
         services.AddQuotaCapacityServices();
+        services.AddLeadRoutingCapacityServices();
         services.AddDialectSynthesisServices();
+        services.AddVideoCreativePipelineServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
