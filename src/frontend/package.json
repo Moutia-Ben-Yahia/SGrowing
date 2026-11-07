@@ -3,13 +3,13 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
+    "start": "node init && ng serve",
+    "build": "node init && ng build",
     "watch": "ng build --watch --configuration development",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "build:mobile": "ng build && npx cap sync android || echo Mobile build complete",
+    "build:mobile": "node init && ng build && npx cap sync android || echo Mobile build complete",
     "cap": "cap",
     "postinstall": "node patch-node-version.js"
   },

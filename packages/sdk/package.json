@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "node init && tsc",
     "test": "npm run build && node --test test/sdk.spec.ts"
   },
   "keywords": [

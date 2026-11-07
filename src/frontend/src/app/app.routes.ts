@@ -322,5 +322,9 @@ export const routes: Routes = [
   { path: 'telemetry/sre-radar', loadComponent: () => import('./features/telemetry/sre-telemetry-cockpit.component').then(m => m.SreTelemetryCockpitComponent), canActivate: [authGuard] },
   { path: 'commerce/b2b-pricing', loadComponent: () => import('./features/commerce/b2b-contract-pricing-studio.component').then(m => m.B2BContractPricingStudioComponent), canActivate: [authGuard] },
   { path: 'outbound/linkedin-cadence', loadComponent: () => import('./features/outbound/linkedin-outreach-studio.component').then(m => m.LinkedInOutreachStudioComponent), canActivate: [authGuard] },
+  { path: 'crm/intent-scoring', loadComponent: () => import('./features/crm/lead-intent-scoring-studio.component').then(m => m.LeadIntentScoringStudioComponent), canActivate: [authGuard] },
+  { path: 'infrastructure/event-mesh', loadComponent: () => import('./features/infrastructure/event-outbox-mesh-studio.component').then(m => m.EventOutboxMeshStudioComponent), canActivate: [authGuard] },
+  { path: 'retention/health-radar', loadComponent: () => import('./features/retention/customer-health-radar-studio.component').then(m => m.CustomerHealthRadarStudioComponent), canActivate: [authGuard] },
+  { path: 'tenancy/fleet-licensing', loadComponent: () => import('./features/tenancy/enterprise-fleet-licensing-studio.component').then(m => m.EnterpriseFleetLicensingStudioComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

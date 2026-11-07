@@ -5,6 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SGrowing.Api.Common;
 using SGrowing.Api.Modules.AI.Gateway;
+using SGrowing.Api.Modules.CRM.IntentScoring;
+using SGrowing.Api.Modules.Infrastructure.EventOutbox;
+using SGrowing.Api.Modules.Retention.CustomerHealth;
+using SGrowing.Api.Modules.Tenancy.FleetLicensing;
 using SGrowing.Api.Modules.AI.Evaluation;
 using SGrowing.Api.Modules.AI.Marketplace;
 using SGrowing.Api.Modules.AI.Memory;
@@ -1025,6 +1029,10 @@ public static class ServiceCollectionExtensions
         services.AddDialectSynthesisServices();
         services.AddVideoCreativePipelineServices();
         services.AddSingleton<ITicketEscalationService, TicketEscalationService>();
+        services.AddSingleton<IIntentScoringService, IntentScoringService>();
+        services.AddEventOutboxServices();
+        services.AddSingleton<ICustomerHealthService, CustomerHealthService>();
+        services.AddFleetLicensingServices();
 
         services.AddHttpClient("WebScraperClient", client =>
         {
