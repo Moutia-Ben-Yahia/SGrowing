@@ -5,7 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SGrowing.Api.Common;
 using SGrowing.Api.Modules.AI.Gateway;
+using SGrowing.Api.Modules.AI.Evaluation;
 using SGrowing.Api.Modules.AI.Marketplace;
+using SGrowing.Api.Modules.AI.Memory;
 using SGrowing.Api.Modules.AI.Missions;
 using SGrowing.Api.Modules.Attribution.MultiTouch;
 using SGrowing.Api.Modules.AI.Governance;
@@ -32,6 +34,7 @@ using SGrowing.Api.Modules.Voice.CallCopilot;
 using SGrowing.Api.Modules.Sales.TerritoryRouting;
 using SGrowing.Api.Modules.Security.ComplianceVault;
 using SGrowing.Api.Modules.Journeys.LifecycleOrchestrator;
+using SGrowing.Api.Modules.Marketing.Journeys.Runtime;
 using SGrowing.Api.Modules.Funnels.CanvasBuilder;
 using SGrowing.Api.Modules.Analytics.BiReportBuilder;
 using SGrowing.Api.Modules.Dev.WebhookMesh;
@@ -451,6 +454,7 @@ public static class ServiceCollectionExtensions
         // Journeys, Feedback & Knowledge Base
         services.AddScoped<JourneyExecutionService>();
         services.AddScoped<IStatefulJourneyEngineService, StatefulJourneyEngineService>();
+        services.AddSingleton<ICustomerJourneyRuntimeService, CustomerJourneyRuntimeService>();
         services.AddScoped<FeedbackService>();
         services.AddScoped<HelpCenterRagService>();
         services.AddScoped<ICommunityFeedbackService, CommunityFeedbackService>();
@@ -550,6 +554,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AiModelRouterService>();
         services.AddSingleton<IAiMissionPlannerService, AiMissionPlannerService>();
         services.AddAgentWorkflowMarketplaceServices();
+        services.AddAiAgentEvaluationServices();
+        services.AddAgentMemoryServices();
 
         // Phase 14: Autonomous Multi-Agent Swarm Defense, Semantic Vector Tool Caching & Prompt Firewalls
         services.AddAiGovernanceServices();

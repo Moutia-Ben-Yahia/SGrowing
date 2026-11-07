@@ -148,6 +148,12 @@ import {
   ShippingLabelResult,
   CodFraudEvaluationResult
 } from '../models/pillars.models';
+import {
+  TriggerJourneyEventRequest,
+  AdvanceJourneyRequest,
+  CustomerJourneyProgress,
+  ActiveJourneySummary
+} from '../models/customer-journey-runtime.models';
 
 @Injectable({
   providedIn: 'root'
@@ -219,6 +225,30 @@ export class ApiService {
 
   public dispatchJourneys(tenantId: string): Observable<{ processed: number }> {
     return this.http.post<{ processed: number }>(`${this.baseUrl}/journeys/dispatch?tenantId=${tenantId}`, {});
+  }
+
+  // Event-Driven Customer Journey Runtime Execution Engine (PRD Domain E1, E2)
+  public triggerJourneyRuntime(req: TriggerJourneyEventRequest): Observable<CustomerJourneyProgress> {
+    return this.http.post<CustomerJourneyProgress>(`${this.baseUrl}/v1/journeys/runtime/trigger`, req);
+  }
+
+  public advanceJourneyRuntime(req: AdvanceJourneyRequest): Observable<CustomerJourneyProgress> {
+    return this.http.post<CustomerJourneyProgress>(`${this.baseUrl}/v1/journeys/runtime/advance`, req);
+  }
+
+  public getJourneyRuntimeContacts(journeyId: string, tenantId?: string): Observable<CustomerJourneyProgress[]> {
+    const query = tenantId ? `?tenantId=${tenantId}` : '';
+    return this.http.get<CustomerJourneyProgress[]>(`${this.baseUrl}/v1/journeys/runtime/${journeyId}/contacts${query}`);
+  }
+
+  public getJourneyRuntimeProgress(id: string, tenantId?: string): Observable<CustomerJourneyProgress> {
+    const query = tenantId ? `?tenantId=${tenantId}` : '';
+    return this.http.get<CustomerJourneyProgress>(`${this.baseUrl}/v1/journeys/runtime/progress/${id}${query}`);
+  }
+
+  public getActiveJourneyRuntimeSummaries(tenantId?: string): Observable<ActiveJourneySummary[]> {
+    const query = tenantId ? `?tenantId=${tenantId}` : '';
+    return this.http.get<ActiveJourneySummary[]>(`${this.baseUrl}/v1/journeys/runtime/active${query}`);
   }
 
   // Feedback & CSAT (Phase 4)

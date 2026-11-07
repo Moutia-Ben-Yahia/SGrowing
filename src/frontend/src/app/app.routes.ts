@@ -151,6 +151,7 @@ export const routes: Routes = [
   { path: 'workflows', component: WorkflowStudioComponent, canActivate: [authGuard] },
   { path: 'contracts', component: ContractsStudioComponent, canActivate: [authGuard] },
   { path: 'rag', component: RagStudioComponent, canActivate: [authGuard] },
+  { path: 'journeys/runtime', loadComponent: () => import('./features/journeys/customer-journey-runtime-cockpit.component').then(m => m.CustomerJourneyRuntimeCockpitComponent), canActivate: [authGuard] },
   { path: 'journeys/canvas', loadComponent: () => import('./features/journeys/journey-canvas-studio.component').then(m => m.JourneyCanvasStudioComponent), canActivate: [authGuard] },
   { path: 'journeys', component: JourneyStudioComponent, canActivate: [authGuard] },
   { path: 'feedback', component: FeedbackStudioComponent, canActivate: [authGuard] },
@@ -307,6 +308,8 @@ export const routes: Routes = [
   { path: 'voice/dialect-synthesis', loadComponent: () => import('./features/voice/dialect-synthesis-cockpit.component').then(m => m.DialectSynthesisCockpitComponent), canActivate: [authGuard] },
   { path: 'ai/mission-control', loadComponent: () => import('./features/ai/ai-mission-control-cockpit.component').then(m => m.AiMissionControlCockpitComponent), canActivate: [authGuard] },
   { path: 'ai/marketplace', loadComponent: () => import('./features/ai/agent-marketplace-hub.component').then(m => m.AgentMarketplaceHubComponent), canActivate: [authGuard] },
+  { path: 'ai/evaluation-radar', loadComponent: () => import('./features/ai/ai-agent-evaluation-radar.component').then(m => m.AiAgentEvaluationRadarComponent), canActivate: [authGuard] },
+  { path: 'ai/memory', loadComponent: () => import('./features/ai/agent-memory-studio.component').then(m => m.AgentMemoryStudioComponent), canActivate: [authGuard] },
   { path: 'commerce/connector-marketplace', loadComponent: () => import('./features/commerce/connector-marketplace-studio.component').then(m => m.ConnectorMarketplaceStudioComponent), canActivate: [authGuard] },
   { path: 'telemetry/sre-radar', loadComponent: () => import('./features/telemetry/sre-telemetry-cockpit.component').then(m => m.SreTelemetryCockpitComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }

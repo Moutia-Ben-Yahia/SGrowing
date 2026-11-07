@@ -1,0 +1,408 @@
+<div class="runtime-cockpit-container p-6 bg-slate-950 text-slate-100 min-h-screen">
+  <!-- Header & Live Engine Status Badges -->
+  <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-slate-800">
+    <div>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-cyan-500 flex items-center justify-center text-xl shadow-lg shadow-emerald-500/20">
+          ⚡
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            Customer Journey Runtime & Execution Cockpit
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              PRD Domain E1/E2
+            </span>
+          </h1>
+          <p class="text-sm text-slate-400">
+            Event-driven journey DAG runtime with multi-tenant event correlation, condition branching & automated delay timers
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Badges & Quick Action -->
+    <div class="flex flex-wrap items-center gap-3">
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span class="font-medium text-slate-200">Engine: Online</span>
+      </div>
+
+      <div class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300">
+        Mode: <span class="font-semibold text-cyan-400">Multi-Tenant Realtime</span>
+      </div>
+
+      <div class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300">
+        Correlation: <span class="font-semibold text-emerald-400">Active</span>
+      </div>
+
+      <button
+        type="button"
+        (click)="openSimulateDrawer()"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium text-sm shadow-lg shadow-emerald-600/20 transition-all cursor-pointer">
+        <span>⚡</span>
+        <span>Simulate Inbound Trigger</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Top Metric Cards -->
+  <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-6">
+    <!-- Enrolled Contacts -->
+    <div class="stat-card p-5 rounded-2xl bg-slate-900/80 border border-slate-800/80 backdrop-blur shadow-sm">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-xs uppercase font-semibold tracking-wider">Enrolled Contacts</span>
+        <span class="text-base p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400">👥</span>
+      </div>
+      <div class="text-3xl font-extrabold text-white tracking-tight">
+        {{ enrolledCount() | number }}
+      </div>
+      <div class="mt-2 text-xs text-indigo-400 flex items-center gap-1 font-medium">
+        <span>↑ 12.4%</span>
+        <span class="text-slate-500">vs last period</span>
+      </div>
+    </div>
+
+    <!-- Currently in Delay Nodes -->
+    <div class="stat-card p-5 rounded-2xl bg-slate-900/80 border border-slate-800/80 backdrop-blur shadow-sm">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-xs uppercase font-semibold tracking-wider">Currently in Delay Nodes</span>
+        <span class="text-base p-1.5 rounded-lg bg-amber-500/10 text-amber-400">⏳</span>
+      </div>
+      <div class="text-3xl font-extrabold text-amber-300 tracking-tight">
+        {{ delayCount() | number }}
+      </div>
+      <div class="mt-2 text-xs text-amber-400/80 flex items-center gap-1">
+        <span>Paused for 15m delay simulation</span>
+      </div>
+    </div>
+
+    <!-- Successfully Converted -->
+    <div class="stat-card p-5 rounded-2xl bg-slate-900/80 border border-slate-800/80 backdrop-blur shadow-sm">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-xs uppercase font-semibold tracking-wider">Successfully Converted</span>
+        <span class="text-base p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400">🏆</span>
+      </div>
+      <div class="text-3xl font-extrabold text-emerald-300 tracking-tight">
+        {{ convertedCount() | number }}
+      </div>
+      <div class="mt-2 text-xs text-emerald-400 flex items-center gap-1 font-medium">
+        <span>Checkout completed checkpoints</span>
+      </div>
+    </div>
+
+    <!-- Conversion Rate -->
+    <div class="stat-card p-5 rounded-2xl bg-slate-900/80 border border-slate-800/80 backdrop-blur shadow-sm">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-xs uppercase font-semibold tracking-wider">Conversion Rate</span>
+        <span class="text-base p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400">📈</span>
+      </div>
+      <div class="text-3xl font-extrabold text-cyan-300 tracking-tight">
+        {{ conversionRate() }}%
+      </div>
+      <div class="mt-2 text-xs text-cyan-400/80 flex items-center gap-1 font-medium">
+        <span>High-performing Ramadan COD cadence</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Journey Selector Dropdown & Journey Details Bar -->
+  <section class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <label for="journey-select" class="text-xs font-semibold uppercase text-slate-400 whitespace-nowrap">Active Journey:</label>
+      <select
+        id="journey-select"
+        [ngModel]="selectedJourneyId()"
+        (ngModelChange)="selectJourney($event)"
+        class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+        @for (journey of activeJourneys(); track journey.journeyId) {
+          <option [value]="journey.journeyId">
+            {{ journey.title }} ({{ journey.triggerEvent }})
+          </option>
+        }
+      </select>
+    </div>
+
+    @if (selectedJourney(); as cur) {
+      <div class="flex flex-wrap items-center gap-4 text-xs text-slate-400">
+        <span>Trigger: <code class="px-1.5 py-0.5 rounded bg-slate-800 text-amber-300 font-mono">{{ cur.triggerEvent }}</code></span>
+        <span>DAG Nodes: <strong class="text-slate-200">{{ cur.nodeCount }}</strong></span>
+        <span>Target Market: <strong class="text-slate-200">Saudi Arabia (SAR / COD)</strong></span>
+      </div>
+    }
+  </section>
+
+  <!-- Visual Node Execution Pipeline -->
+  <section class="mb-8">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-bold text-white flex items-center gap-2">
+        <span>🗺️</span>
+        <span>Visual Node Execution Pipeline</span>
+      </h2>
+      <span class="text-xs text-slate-400">Real-time contact progression & conditional routing</span>
+    </div>
+
+    <div class="pipeline-grid grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      @for (node of pipelineNodes; track node.id) {
+        @let queuedContacts = getContactsAtNode(node.id);
+        <div class="node-card p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition-all shadow-sm">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xl">{{ getNodeIcon(node.type) }}</span>
+              <span class="px-2 py-0.5 text-[10px] rounded-full font-medium uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700">
+                {{ node.badge }}
+              </span>
+            </div>
+            <h3 class="text-sm font-semibold text-white leading-tight mb-1">{{ node.title }}</h3>
+            <p class="text-xs text-slate-400 leading-snug">{{ node.subtitle }}</p>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-800/80">
+            <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+              <span>Active Contacts</span>
+              <span class="font-bold text-slate-200">{{ queuedContacts.length }}</span>
+            </div>
+
+            <!-- Chips for contacts present at this node -->
+            <div class="flex flex-col gap-1.5 max-h-28 overflow-y-auto pr-1">
+              @for (contact of queuedContacts; track contact.progressId) {
+                <div class="flex items-center justify-between px-2 py-1 rounded bg-slate-800/80 border border-slate-700/60 text-[11px]">
+                  <span class="truncate max-w-[110px] text-slate-200" [title]="contact.contactEmail">
+                    {{ contact.contextData['contact_name'] || contact.contactEmail.split('@')[0] }}
+                  </span>
+                  <span
+                    class="px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase border"
+                    [ngClass]="getStatusBadgeClass(contact.status)">
+                    {{ contact.status === JourneyExecutionStatus.PausedWaitingDelay ? '15m Wait' : contact.status }}
+                  </span>
+                </div>
+              }
+              @if (queuedContacts.length === 0) {
+                <div class="text-[11px] text-slate-600 italic py-1 text-center">No contacts queued</div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Live Execution Timeline Feed & Contacts Table -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Live Timeline Feed (2 cols) -->
+    <div class="lg:col-span-2 p-5 rounded-2xl bg-slate-900/80 border border-slate-800">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span>📜</span>
+          <span>Live Execution Timeline Feed</span>
+        </h3>
+        <span class="text-xs text-slate-400">Latest node transitions & branch decisions</span>
+      </div>
+
+      <div class="timeline-feed max-h-[420px] overflow-y-auto space-y-3 pr-2">
+        @for (log of recentTimeline(); track log.stepId) {
+          <div class="timeline-item p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-start justify-between gap-3 text-xs">
+            <div class="flex items-start gap-2.5">
+              <span class="text-base mt-0.5">{{ getNodeIcon(log.nodeType) }}</span>
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="font-semibold text-slate-200">{{ log.nodeId }}</span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                    {{ log.outcome }}
+                  </span>
+                </div>
+                <p class="text-slate-400 leading-relaxed">{{ log.details }}</p>
+              </div>
+            </div>
+            <div class="text-[11px] text-slate-500 whitespace-nowrap mt-0.5">
+              {{ formatTime(log.executedAtUtc) }}
+            </div>
+          </div>
+        }
+        @if (recentTimeline().length === 0) {
+          <div class="text-center py-8 text-slate-500 text-xs">
+            No execution step logs recorded yet. Run a simulation to see live events.
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Active Contacts Overview Panel (1 col) -->
+    <div class="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <span>👤</span>
+            <span>Contacts in Cadence</span>
+          </h3>
+          <span class="text-xs text-slate-400">{{ contacts().length }} total</span>
+        </div>
+
+        <div class="space-y-2.5 max-h-[350px] overflow-y-auto pr-1">
+          @for (c of contacts(); track c.progressId) {
+            <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between gap-2 text-xs">
+              <div class="truncate">
+                <div class="font-semibold text-slate-200 truncate">{{ c.contactEmail }}</div>
+                <div class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
+                  <span>Cart: <strong class="text-slate-300">{{ c.contextData['cart_amount'] || 'N/A' }}</strong></span>
+                  <span>•</span>
+                  <span class="text-slate-500">{{ c.currentNodeId }}</span>
+                </div>
+              </div>
+              <span
+                class="px-2 py-0.5 rounded text-[10px] font-medium uppercase border whitespace-nowrap"
+                [ngClass]="getStatusBadgeClass(c.status)">
+                {{ c.status === JourneyExecutionStatus.PausedWaitingDelay ? 'Paused (15m)' : c.status }}
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="pt-4 mt-4 border-t border-slate-800">
+        <button
+          type="button"
+          (click)="openSimulateDrawer()"
+          class="w-full py-2.5 px-4 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 font-medium text-xs text-center transition-all cursor-pointer">
+          + Test New Contact Simulation
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive "Simulate Inbound Trigger" Drawer / Modal -->
+  @if (isSimulateDrawerOpen()) {
+    <div class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex justify-end transition-opacity">
+      <div class="w-full max-w-lg bg-slate-900 border-l border-slate-800 h-full p-6 flex flex-col justify-between shadow-2xl overflow-y-auto">
+        <div>
+          <!-- Drawer Header -->
+          <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div>
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <span>⚡</span>
+                <span>Simulate Inbound Trigger</span>
+              </h3>
+              <p class="text-xs text-slate-400 mt-0.5">
+                Fire event into Ramadan cart recovery engine & watch real-time branching
+              </p>
+            </div>
+            <button
+              type="button"
+              (click)="closeSimulateDrawer()"
+              class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 text-sm cursor-pointer">
+              ✕
+            </button>
+          </div>
+
+          <!-- Simulation Form -->
+          <div class="space-y-4 my-5">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Inbound Event Name</label>
+              <input
+                type="text"
+                [ngModel]="simEventName()"
+                (ngModelChange)="simEventName.set($event)"
+                class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 font-mono" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Contact Email</label>
+              <input
+                type="email"
+                [ngModel]="simContactEmail()"
+                (ngModelChange)="simContactEmail.set($event)"
+                class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-sm text-slate-200 focus:outline-none focus:border-emerald-500" />
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-xs font-semibold text-slate-300 uppercase">Cart Amount (SAR)</label>
+                <div class="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    (click)="setCartPreset(450)"
+                    class="px-2 py-0.5 text-[10px] rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 cursor-pointer">
+                    VIP (450 SAR)
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setCartPreset(150)"
+                    class="px-2 py-0.5 text-[10px] rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 hover:bg-sky-500/30 cursor-pointer">
+                    Budget (150 SAR)
+                  </button>
+                </div>
+              </div>
+              <input
+                type="number"
+                [ngModel]="simCartAmount()"
+                (ngModelChange)="simCartAmount.set(+$event)"
+                class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 font-mono" />
+              <p class="text-[11px] text-slate-400 mt-1">
+                Threshold: <strong class="text-slate-200">>= 300 SAR</strong> routes to VIP WhatsApp 1-Click COD Promo; <strong class="text-slate-200">&lt; 300 SAR</strong> routes to Standard Email Voucher.
+              </p>
+            </div>
+          </div>
+
+          <!-- Trigger & Advance Buttons -->
+          <div class="grid grid-cols-2 gap-3 mb-5">
+            <button
+              type="button"
+              [disabled]="isSimulating()"
+              (click)="runTriggerSimulation()"
+              class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium text-xs shadow-lg shadow-emerald-600/20 disabled:opacity-50 transition-all cursor-pointer">
+              1. Fire Trigger Event
+            </button>
+
+            <button
+              type="button"
+              [disabled]="isSimulating() || !currentSimulationProgress()"
+              (click)="advanceSimulation()"
+              class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium text-xs shadow-lg shadow-indigo-600/20 disabled:opacity-50 transition-all cursor-pointer">
+              2. Advance Pipeline
+            </button>
+          </div>
+
+          <!-- Simulation Banner Alert -->
+          @if (simulationBanner(); as banner) {
+            <div class="p-3 mb-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs leading-relaxed">
+              <strong>Outcome:</strong> {{ banner }}
+            </div>
+          }
+
+          <!-- Execution Trace Feed for this simulation -->
+          <div class="mt-4">
+            <h4 class="text-xs font-semibold uppercase text-slate-400 mb-2">Simulation Execution Trace:</h4>
+            <div class="max-h-[220px] overflow-y-auto space-y-2 pr-1">
+              @for (step of simulationLogs(); track step.stepId) {
+                <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-[11px]">
+                  <div class="flex items-center justify-between text-slate-300 mb-1">
+                    <span class="font-semibold">{{ step.nodeId }}</span>
+                    <span class="text-slate-500">{{ step.outcome }}</span>
+                  </div>
+                  <p class="text-slate-400 leading-snug">{{ step.details }}</p>
+                </div>
+              }
+              @if (simulationLogs().length === 0) {
+                <div class="text-center py-4 text-slate-600 text-xs italic">
+                  Press "Fire Trigger Event" to start trace
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Drawer Footer -->
+        <div class="pt-4 border-t border-slate-800">
+          <button
+            type="button"
+            (click)="closeSimulateDrawer()"
+            class="w-full py-2 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition-all cursor-pointer">
+            Close Simulation Drawer
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
