@@ -1337,4 +1337,45 @@ public class SGrowingDbContext : DbContext
     {
         modelBuilder.Entity<TEntity>().HasQueryFilter(e => CurrentTenantIdString == null || EF.Property<string>(e, "TenantId") == CurrentTenantIdString);
     }
+
+    public bool BypassTenantIsolationValidation { get; set; }
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        ValidateTenantIsolation();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        ValidateTenantIsolation();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    private void ValidateTenantIsolation()
+    {
+        if (BypassTenantIsolationValidation) return;
+        if (!CurrentTenantId.HasValue) return;
+
+        var currentTenantId = CurrentTenantId.Value;
+        foreach (var entry in ChangeTracker.Entries())
+        {
+            if (entry.State is not (EntityState.Added or EntityState.Modified or EntityState.Deleted))
+                continue;
+
+            var prop = entry.Metadata.FindProperty("TenantId");
+            if (prop != null)
+            {
+                var val = entry.Property("TenantId").CurrentValue;
+                if (val is Guid tenantId && tenantId != Guid.Empty && tenantId != currentTenantId)
+                {
+                    throw new UnauthorizedAccessException($"Cross-tenant write operation rejected. Entity '{entry.Entity.GetType().Name}' belongs to tenant '{tenantId}', but context is scoped to tenant '{currentTenantId}'.");
+                }
+                else if (val is string strTenantId && !string.IsNullOrWhiteSpace(strTenantId) && !string.Equals(strTenantId, CurrentTenantIdString, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new UnauthorizedAccessException($"Cross-tenant write operation rejected. Entity '{entry.Entity.GetType().Name}' belongs to tenant '{strTenantId}', but context is scoped to tenant '{CurrentTenantIdString}'.");
+                }
+            }
+        }
+    }
 }

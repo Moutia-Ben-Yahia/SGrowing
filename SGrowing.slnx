@@ -8,6 +8,9 @@
     <Project Path="src/backend/SGrowing.ServiceDefaults/SGrowing.ServiceDefaults.csproj" />
     <Project Path="src/backend/SGrowing.Worker/SGrowing.Worker.csproj" />
   </Folder>
+  <Folder Name="/src/sdk/">
+    <Project Path="src/sdk/SGrowing.Client/SGrowing.Client.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SGrowing.Tests/SGrowing.Tests.csproj" />
   </Folder>

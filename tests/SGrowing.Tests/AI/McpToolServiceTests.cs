@@ -48,8 +48,8 @@ public class McpToolServiceTests
     [Fact]
     public async Task ExecuteToolAsync_CrmSearchLeads_WhenDbHasContacts_ReturnsRealLeads()
     {
-        var (_, db, toolService) = CreateContext();
-        var tenantId = Guid.NewGuid();
+        var (sp, db, toolService) = CreateContext();
+        var tenantId = sp.GetRequiredService<ITenantContext>().TenantId;
 
         var contact = Contact.Create(
             tenantId,

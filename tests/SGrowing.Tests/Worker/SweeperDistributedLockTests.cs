@@ -23,7 +23,6 @@ public class SweeperDistributedLockTests
             options.UseInMemoryDatabase(dbName));
 
         var tenant = new TenantContext();
-        tenant.SetTenant(Guid.NewGuid());
         services.AddSingleton<ITenantContext>(tenant);
 
         var lockService = new RedisConcurrencyLockService();

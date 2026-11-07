@@ -11,3 +11,4 @@ playwright-report/
 coolify.yaml
 .codegraph/
 inspire/**
+artifacts/

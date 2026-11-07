@@ -252,6 +252,7 @@ public class PostgreSqlSchemaAndIndexTests
         tenantCtx.SetTenant(tenant1);
 
         using var context = CreateDbContext(tenantCtx);
+        context.BypassTenantIsolationValidation = true;
 
         // Add contacts for both tenants
         var c1 = Contact.Create(tenant1, "Elena", "Fisher", "elena@example.com");
@@ -259,6 +260,7 @@ public class PostgreSqlSchemaAndIndexTests
 
         context.Contacts.AddRange(c1, c2);
         await context.SaveChangesAsync();
+        context.BypassTenantIsolationValidation = false;
 
         // With tenant1 active, only c1 should be returned
         var visibleContacts = await context.Contacts.ToListAsync();

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SGrowing.Api.Common;
 using SGrowing.Api.Modules.AI.Gateway;
+using SGrowing.Api.Modules.AI.Marketplace;
 using SGrowing.Api.Modules.AI.Missions;
 using SGrowing.Api.Modules.Attribution.MultiTouch;
 using SGrowing.Api.Modules.AI.Governance;
@@ -548,6 +549,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAiModelRouterService, AiModelRouterService>();
         services.AddScoped<AiModelRouterService>();
         services.AddSingleton<IAiMissionPlannerService, AiMissionPlannerService>();
+        services.AddAgentWorkflowMarketplaceServices();
 
         // Phase 14: Autonomous Multi-Agent Swarm Defense, Semantic Vector Tool Caching & Prompt Firewalls
         services.AddAiGovernanceServices();

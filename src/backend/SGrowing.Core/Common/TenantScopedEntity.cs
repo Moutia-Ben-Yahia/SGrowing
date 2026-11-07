@@ -5,7 +5,7 @@ namespace SGrowing.Core.Common;
 /// Provides consistent primary key, tenant isolation, auditing timestamps,
 /// soft deletion tracking, and concurrency control.
 /// </summary>
-public abstract class TenantScopedEntity
+public abstract class TenantScopedEntity : ITenantScoped
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     
