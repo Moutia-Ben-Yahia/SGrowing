@@ -35,6 +35,7 @@ using SGrowing.Api.Modules.Sales.TerritoryRouting;
 using SGrowing.Api.Modules.Security.ComplianceVault;
 using SGrowing.Api.Modules.Journeys.LifecycleOrchestrator;
 using SGrowing.Api.Modules.Marketing.Journeys.Runtime;
+using SGrowing.Api.Modules.Marketing.Loyalty;
 using SGrowing.Api.Modules.Funnels.CanvasBuilder;
 using SGrowing.Api.Modules.Analytics.BiReportBuilder;
 using SGrowing.Api.Modules.Dev.WebhookMesh;
@@ -113,6 +114,7 @@ using SGrowing.Api.Modules.CRM.SupportSwarm;
 using SGrowing.Api.Modules.Marketing.AdSpend;
 using SGrowing.Api.Modules.Tenancy.Governance;
 using SGrowing.Api.Modules.Commerce.CoOp;
+using SGrowing.Api.Modules.Commerce.Logistics.Reconciliation;
 using SGrowing.Api.Modules.CRM.RetentionConcierge;
 using SGrowing.Api.Modules.Revenue.YieldManagement;
 using SGrowing.Api.Modules.Security.VoiceLiveness;
@@ -222,6 +224,7 @@ using SGrowing.Api.Modules.Conversations.Incidents;
 using SGrowing.Api.Modules.Conversations.Hierarchy;
 using SGrowing.Api.Modules.Notifications;
 using SGrowing.Api.Modules.Commerce.CpqApproval;
+using SGrowing.Api.Modules.Commerce.B2B.ContractPricing;
 using SGrowing.Api.Modules.Marketing.AdSpendRedistribution;
 using SGrowing.Api.Modules.Commerce.CommissionSettlement;
 using SGrowing.Api.Modules.Sales.TerritoryRebalancing;
@@ -434,10 +437,12 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICodCheckoutService, CodCheckoutService>();
         services.AddScoped<IB2BCreditAndFactoringService, B2BCreditAndFactoringService>();
         services.AddScoped<ICourierDeliverySyncService, CourierDeliverySyncService>();
+        services.AddScoped<ICodCourierReconciliationService, CodCourierReconciliationService>();
         services.AddScoped<ICallCenterAntiCollisionService, CallCenterAntiCollisionService>();
         services.AddScoped<ICodNetMarginLedgerService, CodNetMarginLedgerService>();
         services.AddScoped<ICartReservationService, CartReservationService>();
         services.AddSingleton<IAffiliateCommissionService, AffiliateCommissionService>();
+        services.AddSingleton<IB2BContractPricingService, B2BContractPricingService>();
         services.AddScoped<SGrowing.Api.Modules.Gateways.ICarrierRemittanceReconciliationService, SGrowing.Api.Modules.Gateways.CarrierRemittanceReconciliationService>();
         services.AddSingleton<SGrowing.Api.Modules.Voice.Streaming.ISipTrunkBridgeService, SGrowing.Api.Modules.Voice.Streaming.TwilioMediaStreamBridgeService>();
 
@@ -469,6 +474,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUgcCreativeGeneratorService, UgcCreativeGeneratorService>();
         services.AddScoped<ICompetitorIntelligenceService, CompetitorIntelligenceService>();
         services.AddSingleton<ISocialPublishingService, SGrowing.Api.Modules.Social.SocialPublishingService>();
+        services.AddSingleton<ICustomerLoyaltyRewardsService, CustomerLoyaltyRewardsService>();
 
         // Workflows & Automation
         services.AddScoped<CompanyAccountService>();

@@ -198,6 +198,7 @@ export const routes: Routes = [
   { path: 'search/universal', loadComponent: () => import('./features/search/universal-search-cockpit.component').then(m => m.UniversalSearchCockpitComponent), canActivate: [authGuard] },
   { path: 'crm/identity-graph', loadComponent: () => import('./features/crm/identity-graph-cockpit.component').then(m => m.IdentityGraphCockpitComponent), canActivate: [authGuard] },
   { path: 'marketing/ad-capi-roas', loadComponent: () => import('./features/marketing/ad-capi-roas-cockpit.component').then(m => m.AdCapiRoasCockpitComponent), canActivate: [authGuard] },
+  { path: 'marketing/loyalty-rewards', loadComponent: () => import('./features/marketing/loyalty-referral-studio.component').then(m => m.LoyaltyReferralStudioComponent), canActivate: [authGuard] },
   { path: 'workflows/dag-telemetry', loadComponent: () => import('./features/workflows/dag-telemetry-studio.component').then(m => m.DagTelemetryStudioComponent), canActivate: [authGuard] },
   { path: 'agents/growth-director', loadComponent: () => import('./features/agents/growth-director-mission-cockpit.component').then(m => m.GrowthDirectorMissionCockpitComponent), canActivate: [authGuard] },
   { path: 'developer/sandbox', loadComponent: () => import('./features/developer/developer-sandbox-cockpit.component').then(m => m.DeveloperSandboxCockpitComponent), canActivate: [authGuard] },
@@ -311,6 +312,8 @@ export const routes: Routes = [
   { path: 'ai/evaluation-radar', loadComponent: () => import('./features/ai/ai-agent-evaluation-radar.component').then(m => m.AiAgentEvaluationRadarComponent), canActivate: [authGuard] },
   { path: 'ai/memory', loadComponent: () => import('./features/ai/agent-memory-studio.component').then(m => m.AgentMemoryStudioComponent), canActivate: [authGuard] },
   { path: 'commerce/connector-marketplace', loadComponent: () => import('./features/commerce/connector-marketplace-studio.component').then(m => m.ConnectorMarketplaceStudioComponent), canActivate: [authGuard] },
+  { path: 'commerce/courier-reconciliation', loadComponent: () => import('./features/commerce/cod-courier-reconciliation-studio.component').then(m => m.CodCourierReconciliationStudioComponent), canActivate: [authGuard] },
   { path: 'telemetry/sre-radar', loadComponent: () => import('./features/telemetry/sre-telemetry-cockpit.component').then(m => m.SreTelemetryCockpitComponent), canActivate: [authGuard] },
+  { path: 'commerce/b2b-pricing', loadComponent: () => import('./features/commerce/b2b-contract-pricing-studio.component').then(m => m.B2BContractPricingStudioComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];
